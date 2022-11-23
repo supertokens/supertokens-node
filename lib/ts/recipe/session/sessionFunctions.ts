@@ -16,7 +16,7 @@ import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
 import { getPayloadWithoutVerifiying } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { isAnIpAddress, maxVersion } from "../../utils";
@@ -332,8 +332,7 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     containsCustomHeader: boolean,
-    inputTransferMethod: "header" | "cookie",
-    outputTransferMethod: "header" | "cookie"
+    transferMethod: TokenTransferMethod
 ): Promise<CreateOrRefreshAPIResponse> {
     let handShakeInfo = await helpers.getHandshakeInfo();
 
@@ -344,10 +343,10 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
-        enableAntiCsrf: outputTransferMethod === "cookie" && handShakeInfo.antiCsrf === "VIA_TOKEN",
+        enableAntiCsrf: transferMethod === "cookie" && handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
-    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && inputTransferMethod === "cookie") {
+    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && transferMethod === "cookie") {
         if (!containsCustomHeader) {
             logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new STError({

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
     protected helpers: Helpers;
@@ -10,7 +10,7 @@ export default class Session implements SessionContainerInterface {
     protected userDataInAccessToken: any;
     protected res: BaseResponse;
     protected readonly req: BaseRequest;
-    protected readonly transferMethod: "cookie" | "header";
+    protected readonly transferMethod: TokenTransferMethod;
     constructor(
         helpers: Helpers,
         accessToken: string,
@@ -19,7 +19,7 @@ export default class Session implements SessionContainerInterface {
         userDataInAccessToken: any,
         res: BaseResponse,
         req: BaseRequest,
-        transferMethod: "cookie" | "header"
+        transferMethod: TokenTransferMethod
     );
     revokeSession: (userContext?: any) => Promise<void>;
     getSessionData: (userContext?: any) => Promise<any>;

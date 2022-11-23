@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
-import { TokenType, TypeNormalisedInput } from "./types";
+import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
+export declare const availableTokenTransferMethods: TokenTransferMethod[];
 /**
  * @description clears all the auth cookies from the response
  */
@@ -8,7 +9,8 @@ export declare function clearSession(
     config: TypeNormalisedInput,
     req: BaseRequest,
     res: BaseResponse,
-    userContext: any
+    userContext: any,
+    transferMethod?: TokenTransferMethod | "missing_auth_header"
 ): void;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;
@@ -23,7 +25,7 @@ export declare function isTokenInCookies(req: BaseRequest, tokenType: TokenType)
 export declare function getToken(
     req: BaseRequest,
     tokenType: TokenType,
-    transferMethod: "cookie" | "header"
+    transferMethod: TokenTransferMethod
 ): string | undefined;
 export declare function setToken(
     config: TypeNormalisedInput,
@@ -31,7 +33,7 @@ export declare function setToken(
     tokenType: TokenType,
     value: string,
     expires: number,
-    transferMethod: "cookie" | "header"
+    transferMethod: TokenTransferMethod
 ): void;
 export declare function setHeader(res: BaseResponse, name: string, value: string, expires: number): void;
 /**
@@ -53,3 +55,4 @@ export declare function setCookie(
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
 ): void;
+export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;

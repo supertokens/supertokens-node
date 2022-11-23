@@ -14,7 +14,7 @@
  */
 import { HEADER_RID } from "../../constants";
 import { BaseRequest, BaseResponse } from "../../framework";
-import { TokenType, TypeNormalisedInput } from "./types";
+import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 
 const authorizationHeaderKey = "authorization";
 const accessTokenCookieKey = "sAccessToken";
@@ -26,24 +26,34 @@ const antiCsrfHeaderKey = "anti-csrf";
 
 const frontTokenHeaderKey = "front-token";
 
+const authModeHeaderKey = "st-auth-mode";
+
+export const availableTokenTransferMethods: TokenTransferMethod[] = ["cookie", "header"];
+
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSession(config: TypeNormalisedInput, req: BaseRequest, res: BaseResponse, userContext: any) {
+export function clearSession(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    res: BaseResponse,
+    userContext: any,
+    transferMethod?: TokenTransferMethod | "missing_auth_header"
+) {
     // If we can tell it's a cookie based session we are not clearing using headers
-    let transferMethod = config.getTokenTransferMethod({ req, userContext });
+    let outputTransferMethod = transferMethod || config.getTokenTransferMethod({ req, userContext });
 
-    if (transferMethod === "MISSING_AUTH_HEADER") {
-        transferMethod = "header";
+    if (outputTransferMethod === "missing_auth_header") {
+        outputTransferMethod = "header";
     }
 
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        setToken(config, res, token, "", 0, transferMethod);
+        setToken(config, res, token, "", 0, outputTransferMethod);
 
         // This is to ensure we clear the cookies as well if the user has migrated to headers,
         // because this can't be done on the client side
-        if (transferMethod === "header" && isTokenInCookies(req, token)) {
+        if (outputTransferMethod === "header" && isTokenInCookies(req, token)) {
             setToken(config, res, token, "", 0, "cookie");
         }
     }
@@ -71,7 +81,7 @@ export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpi
 }
 
 export function getCORSAllowedHeaders(): string[] {
-    return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, refreshTokenHeaderKey];
+    return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, refreshTokenHeaderKey, authModeHeaderKey];
 }
 
 function getCookieNameFromTokenType(tokenType: TokenType) {
@@ -85,7 +95,7 @@ function getCookieNameFromTokenType(tokenType: TokenType) {
     }
 }
 
-function getHeaderNameFromTokenType(tokenType: TokenType) {
+function getResponseHeaderNameForTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             // We are getting the access token from the authorization header during verification.
@@ -102,18 +112,16 @@ export function isTokenInCookies(req: BaseRequest, tokenType: TokenType) {
     return req.getCookieValue(getCookieNameFromTokenType(tokenType)) !== undefined;
 }
 
-export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod: "cookie" | "header") {
+export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod: TokenTransferMethod) {
     if (transferMethod === "cookie") {
         return req.getCookieValue(getCookieNameFromTokenType(tokenType));
     } else if (transferMethod === "header") {
-        if (tokenType === "access") {
-            const value = req.getHeaderValue(authorizationHeaderKey);
-            if (value === undefined || !value.startsWith("Bearer ")) {
-                return undefined;
-            }
-            return value.replace(/^Bearer /, "");
+        const value = req.getHeaderValue(authorizationHeaderKey);
+        if (value === undefined || !value.startsWith("Bearer ")) {
+            return undefined;
         }
-        return req.getHeaderValue(getHeaderNameFromTokenType(tokenType));
+
+        return value.replace(/^Bearer /, "");
     } else {
         throw new Error("Should never happen: Unknown transferMethod: " + transferMethod);
     }
@@ -125,7 +133,7 @@ export function setToken(
     tokenType: TokenType,
     value: string,
     expires: number,
-    transferMethod: "cookie" | "header"
+    transferMethod: TokenTransferMethod
 ) {
     if (transferMethod === "cookie") {
         setCookie(
@@ -137,7 +145,7 @@ export function setToken(
             tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath"
         );
     } else if (transferMethod === "header") {
-        setHeader(res, getHeaderNameFromTokenType(tokenType), value, expires);
+        setHeader(res, getResponseHeaderNameForTokenType(tokenType), value, expires);
     }
 }
 
@@ -181,4 +189,8 @@ export function setCookie(
     let httpOnly = true;
 
     return res.setCookie(name, value, domain, secure, httpOnly, expires, path, sameSite);
+}
+
+export function getAuthModeFromHeader(req: BaseRequest): string | undefined {
+    return req.getHeaderValue(authModeHeaderKey);
 }

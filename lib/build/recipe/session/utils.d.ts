@@ -7,6 +7,7 @@ import {
     SessionClaimValidator,
     SessionContainerInterface,
     VerifySessionOptions,
+    TokenTransferMethod,
 } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
@@ -48,7 +49,7 @@ export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse,
-    transferMethod: "cookie" | "header"
+    transferMethod: TokenTransferMethod
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,

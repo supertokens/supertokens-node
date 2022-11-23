@@ -22,14 +22,15 @@ import {
     SessionClaimValidator,
     SessionContainerInterface,
     VerifySessionOptions,
+    TokenTransferMethod,
 } from "./types";
-import { setFrontTokenInHeaders, setAntiCsrfTokenInHeaders, setToken } from "./cookieAndHeaders";
+import { setFrontTokenInHeaders, setAntiCsrfTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
-import { getAuthModeFromHeader, isAnIpAddress } from "../../utils";
+import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -261,7 +262,7 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse,
-    transferMethod: "cookie" | "header"
+    transferMethod: TokenTransferMethod
 ) {
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
@@ -324,13 +325,13 @@ export async function validateClaimsInPayload(
     return validationErrors;
 }
 
-function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): "cookie" | "header" | "MISSING_AUTH_HEADER" {
+function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): TokenTransferMethod | "missing_auth_header" {
     switch (getAuthModeFromHeader(req)) {
         case "header":
             return "header";
         case "cookie":
             return "cookie";
         default:
-            return "MISSING_AUTH_HEADER";
+            return "missing_auth_header";
     }
 }

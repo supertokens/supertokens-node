@@ -8,6 +8,7 @@ import {
     SessionClaimValidator,
     SessionClaim,
     ClaimValidationError,
+    TokenTransferMethod,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -16,11 +17,13 @@ import {
     setFrontTokenInHeaders,
     getToken,
     setToken,
+    setCookie,
+    availableTokenTransferMethods,
 } from "./cookieAndHeaders";
 import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
-import { normaliseHttpMethod, frontendHasInterceptor, getRidFromHeader } from "../../utils";
+import { normaliseHttpMethod, getRidFromHeader } from "../../utils";
 import { Querier } from "../../querier";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -65,6 +68,9 @@ export type Helpers = {
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
 };
+
+// We are defining this here to reduce the scope of legacy code
+const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -125,14 +131,14 @@ export default function getRecipeInterface(
             userContext: any;
         }): Promise<Session> {
             logDebugMessage("createNewSession: Started");
-            let transferMethod = config.getTokenTransferMethod({ req, userContext });
-            logDebugMessage("createNewSession: got transfer method " + transferMethod);
-            if (transferMethod === "MISSING_AUTH_HEADER") {
-                transferMethod = "header";
+            let outputTransferMethod = config.getTokenTransferMethod({ req, userContext });
+            logDebugMessage("createNewSession: got transfer method " + outputTransferMethod);
+            if (outputTransferMethod === "missing_auth_header") {
+                outputTransferMethod = "header";
             }
-            logDebugMessage("createNewSession: using transfer method " + transferMethod);
+            logDebugMessage("createNewSession: using transfer method " + outputTransferMethod);
 
-            const disableAntiCSRF = transferMethod === "header";
+            const disableAntiCSRF = outputTransferMethod === "header";
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 userId,
@@ -140,7 +146,14 @@ export default function getRecipeInterface(
                 accessTokenPayload,
                 sessionData
             );
-            attachCreateOrRefreshSessionResponseToExpressRes(config, res, response, transferMethod);
+
+            for (const transferMethod of availableTokenTransferMethods) {
+                if (transferMethod !== outputTransferMethod) {
+                    clearSession(config, req, res, userContext, transferMethod);
+                }
+            }
+
+            attachCreateOrRefreshSessionResponseToExpressRes(config, res, response, outputTransferMethod);
             return new Session(
                 helpers,
                 response.accessToken.token,
@@ -149,7 +162,7 @@ export default function getRecipeInterface(
                 response.session.userDataInJWT,
                 res,
                 req,
-                transferMethod
+                outputTransferMethod
             );
         },
 
@@ -159,6 +172,9 @@ export default function getRecipeInterface(
             return input.claimValidatorsAddedByOtherRecipes;
         },
 
+        /* In all cases if sIdRefreshToken token exists (so it's a legacy session) we return TRY_REFRESH_TOKEN. The refresh endpoint will clear this cookie and try to upgrade the session.
+           Check https://supertokens.com/docs/contribute/decisions/session/0007 for further details and a table of expected behaviours
+         */
         getSession: async function ({
             req,
             res,
@@ -172,29 +188,30 @@ export default function getRecipeInterface(
         }): Promise<Session | undefined> {
             logDebugMessage("getSession: Started");
 
-            const sessionOptional =
-                options !== undefined && typeof options !== "boolean" && options.sessionRequired === false;
-            const gotRID = frontendHasInterceptor(req);
-            const method = req.getMethod();
+            // This token isn't handled by getToken to limit the scope of this legacy/migration code
+            if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
+                // This could create a spike on refresh calls during the update of the backend SDK
+                throw new STError({
+                    message: "using legacy session, please call the refresh API",
+                    type: STError.TRY_REFRESH_TOKEN,
+                });
+            }
 
+            const sessionOptional = options?.sessionRequired === false;
             logDebugMessage("getSession: optional validation: " + sessionOptional);
-            logDebugMessage("getSession: rid in header: " + gotRID);
-            logDebugMessage("getSession: request method: " + method);
-            let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
+
             const preferredTransferMethod = config.getTokenTransferMethod({ req, userContext });
 
-            let transferMethod = preferredTransferMethod === "MISSING_AUTH_HEADER" ? "header" : preferredTransferMethod;
+            let transferMethod = preferredTransferMethod === "missing_auth_header" ? "header" : preferredTransferMethod;
 
             let accessToken = getToken(req, "access", transferMethod);
             if (accessToken === undefined) {
                 const fallbackMethod = transferMethod === "cookie" ? "header" : "cookie";
-                // We are checking if we could've gone ahead with validation if the transferMethod was different
-                // However, we don't want to do the fallback here, but force a call to refresh
-                // This is done to ensure that the browsers update the transfermethod in a timely manner (basically on the next API call)
-                // instead of waiting for the session to expire
+                // We are checking if we could go ahead with validation if the transferMethod was different
+                // However, we don't want to allow fallback here if there is an up-to-date frontend SDK that sends the auth-mode header.
                 accessToken = getToken(req, "access", fallbackMethod);
                 if (accessToken !== undefined) {
-                    if (preferredTransferMethod === "MISSING_AUTH_HEADER") {
+                    if (preferredTransferMethod === "missing_auth_header") {
                         transferMethod = fallbackMethod;
                         logDebugMessage(
                             `getSession: falling back to use ${fallbackMethod} as an authentication-method`
@@ -212,14 +229,6 @@ export default function getRecipeInterface(
             }
 
             if (accessToken === undefined) {
-                // This is done here to ensure smooth migration of sessions started before removing the id-refresh-token
-                // This token isn't handled by getToken to limit the scope of this legacy/migration code
-                if (req.getCookieValue("sIRTFrontend") !== undefined) {
-                    throw new STError({
-                        message: "access token expired, please call the refresh API",
-                        type: STError.TRY_REFRESH_TOKEN,
-                    });
-                }
                 // we do not clear cookies here because of a
                 // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
@@ -241,18 +250,23 @@ export default function getRecipeInterface(
 
             try {
                 let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
-                const disableAntiCSRF = transferMethod === "header";
+                let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
                 if (doAntiCsrfCheck === undefined) {
                     doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
                 }
+
+                if (transferMethod === "header") {
+                    doAntiCsrfCheck = false;
+                }
+
                 logDebugMessage("getSession: Value of doAntiCsrfCheck is: " + doAntiCsrfCheck);
 
                 let response = await SessionFunctions.getSession(
                     helpers,
                     accessToken,
                     antiCsrfToken,
-                    !disableAntiCSRF && doAntiCsrfCheck,
+                    doAntiCsrfCheck,
                     getRidFromHeader(req) !== undefined
                 );
                 if (response.accessToken !== undefined) {
@@ -290,10 +304,6 @@ export default function getRecipeInterface(
 
                 return session;
             } catch (err) {
-                if (err.type === STError.TRY_REFRESH_TOKEN && sessionOptional && !gotRID && method !== "get") {
-                    return undefined;
-                }
-
                 if (err.type === STError.UNAUTHORISED) {
                     logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
                     clearSession(config, req, res, userContext);
@@ -386,55 +396,69 @@ export default function getRecipeInterface(
             return SessionFunctions.getSessionInformation(helpers, sessionHandle);
         },
 
+        /*
+            In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
+            Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
+         */
         refreshSession: async function (
             this: RecipeInterface,
             { req, res, userContext }: { req: BaseRequest; res: BaseResponse; userContext: any }
         ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
-            // We use a fallback mechanism here, to ensure there is a smooth upgrade path when switching transfer methods
-            // We only use it here and not while getting/validating sessions, because we want to "force" clients to upgrade
-            let outputTransferMethod = config.getTokenTransferMethod({ req, userContext });
-            logDebugMessage("refreshSession: Preferred transfer method: " + outputTransferMethod);
-            let inputTransferMethod = outputTransferMethod;
 
-            if (inputTransferMethod === "MISSING_AUTH_HEADER") {
-                inputTransferMethod = "header";
+            // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
+            if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
+                setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
             }
 
-            let inputRefreshToken = getToken(req, "refresh", inputTransferMethod);
-            if (inputRefreshToken === undefined) {
-                inputTransferMethod = inputTransferMethod === "cookie" ? "header" : "cookie";
-                inputRefreshToken = getToken(req, "refresh", inputTransferMethod);
+            const refreshTokens: {
+                [key in TokenTransferMethod]?: string;
+            } = {};
+
+            // We check all token transfer methods for available refresh tokens
+            // We do this so that we can later clear all we are not overwrite
+            for (const transferMethod of availableTokenTransferMethods) {
+                refreshTokens[transferMethod] = getToken(req, "refresh", transferMethod);
+                if (refreshTokens[transferMethod] !== undefined) {
+                    logDebugMessage("refreshSession: got refresh token from " + transferMethod);
+                }
             }
 
-            if (outputTransferMethod === "MISSING_AUTH_HEADER") {
-                outputTransferMethod = inputTransferMethod;
-            }
-
-            if (inputRefreshToken === undefined) {
+            let requestTransferMethod: TokenTransferMethod;
+            if (refreshTokens["header"] !== undefined) {
+                logDebugMessage("refreshSession: using header transfer method");
+                requestTransferMethod = "header";
+            } else if (refreshTokens["cookie"]) {
+                logDebugMessage("refreshSession: using header transfer method");
+                requestTransferMethod = "cookie";
+            } else {
                 logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
                 throw new STError({
                     message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
                     type: STError.UNAUTHORISED,
                 });
             }
-            logDebugMessage("refreshSession: Request used transfer method: " + inputRefreshToken);
 
             try {
                 let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
                 let response = await SessionFunctions.refreshSession(
                     helpers,
-                    inputRefreshToken,
+                    requestTransferMethod,
                     antiCsrfToken,
                     getRidFromHeader(req) !== undefined,
-                    inputTransferMethod,
-                    outputTransferMethod
+                    requestTransferMethod
                 );
-                logDebugMessage("refreshSession: Attaching refreshed session info as " + outputTransferMethod);
+                logDebugMessage("refreshSession: Attaching refreshed session info as " + requestTransferMethod);
 
-                // This will get the preferred transfer method again, and intentionally not use the fallback
-                // See above for the reasoning
-                attachCreateOrRefreshSessionResponseToExpressRes(config, res, response, outputTransferMethod);
+                // We clear the tokens in all token transfer methods we are not going to overwrite
+                for (const transferMethod of availableTokenTransferMethods) {
+                    if (transferMethod !== requestTransferMethod && refreshTokens[transferMethod] !== undefined) {
+                        clearSession(config, req, res, userContext, transferMethod);
+                    }
+                }
+
+                attachCreateOrRefreshSessionResponseToExpressRes(config, res, response, requestTransferMethod);
+
                 logDebugMessage("refreshSession: Success!");
                 return new Session(
                     helpers,
@@ -444,7 +468,7 @@ export default function getRecipeInterface(
                     response.session.userDataInJWT,
                     res,
                     req,
-                    outputTransferMethod
+                    requestTransferMethod
                 );
             } catch (err) {
                 if (
@@ -454,7 +478,7 @@ export default function getRecipeInterface(
                     logDebugMessage(
                         "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
                     );
-                    clearSession(config, req, res, userContext);
+                    clearSession(config, req, res, userContext, requestTransferMethod);
                 }
                 throw err;
             }

@@ -15,7 +15,7 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
 
 export default class Session implements SessionContainerInterface {
@@ -27,7 +27,7 @@ export default class Session implements SessionContainerInterface {
         protected userDataInAccessToken: any,
         protected res: BaseResponse,
         protected readonly req: BaseRequest,
-        protected readonly transferMethod: "cookie" | "header"
+        protected readonly transferMethod: TokenTransferMethod
     ) {}
 
     revokeSession = async (userContext?: any) => {
