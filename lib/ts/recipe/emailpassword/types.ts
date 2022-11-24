@@ -190,7 +190,7 @@ export type APIInterface = {
                     status: "OK";
                 }
               | {
-                    status: "PASSWORD_RESET_NOT_ALLOWED_CONTACT_SUPPORT";
+                    {status: "PASSWORD_RESET_NOT_ALLOWED", reason: string};
                 }
               | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
               | GeneralErrorResponse
