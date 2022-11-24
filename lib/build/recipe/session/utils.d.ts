@@ -7,6 +7,7 @@ import {
     SessionClaimValidator,
     SessionContainerInterface,
     VerifySessionOptions,
+    TokenTransferMethod,
 } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
@@ -46,10 +47,9 @@ export declare function validateAndNormaliseUserInput(
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
 export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse,
-    userContext: any
+    transferMethod: TokenTransferMethod
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,

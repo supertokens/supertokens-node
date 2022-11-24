@@ -13,10 +13,10 @@
  * under the License.
  */
 import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
-import { getPayloadWithoutVerifiying } from "./jwt";
+import { ParsedJWTInfo } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { isAnIpAddress, maxVersion } from "../../utils";
@@ -84,7 +84,7 @@ export async function createNewSession(
  */
 export async function getSession(
     helpers: Helpers,
-    accessToken: string,
+    parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     containsCustomHeader: boolean
@@ -111,7 +111,7 @@ export async function getSession(
              * get access token info using existing signingKey
              */
             accessTokenInfo = await getInfoFromAccessToken(
-                accessToken,
+                parsedAccessToken,
                 key.publicKey,
                 handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
             );
@@ -142,15 +142,7 @@ export async function getSession(
              * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
              * the loop we just return TRY_REFRESH_TOKEN
              */
-            let payload;
-            try {
-                payload = getPayloadWithoutVerifiying(accessToken);
-            } catch (_) {
-                throw err;
-            }
-            if (payload === undefined) {
-                throw err;
-            }
+            let payload = parsedAccessToken.payload;
 
             const timeCreated = sanitizeNumberInput(payload.timeCreated);
             const expiryTime = sanitizeNumberInput(payload.expiryTime);
@@ -244,7 +236,7 @@ export async function getSession(
         doAntiCsrfCheck: boolean;
         enableAntiCsrf?: boolean;
     } = {
-        accessToken,
+        accessToken: parsedAccessToken.rawTokenString,
         antiCsrfToken,
         doAntiCsrfCheck,
         enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
@@ -283,7 +275,7 @@ export async function getSession(
             // we force update the signing keys...
             await helpers.getHandshakeInfo(true);
         }
-        logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because of core response");
+        logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because of core response.");
         throw new STError({
             message: response.message,
             type: STError.TRY_REFRESH_TOKEN,
@@ -332,8 +324,7 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     containsCustomHeader: boolean,
-    inputTransferMethod: "header" | "cookie",
-    outputTransferMethod: "header" | "cookie"
+    transferMethod: TokenTransferMethod
 ): Promise<CreateOrRefreshAPIResponse> {
     let handShakeInfo = await helpers.getHandshakeInfo();
 
@@ -344,10 +335,10 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
-        enableAntiCsrf: outputTransferMethod === "cookie" && handShakeInfo.antiCsrf === "VIA_TOKEN",
+        enableAntiCsrf: transferMethod === "cookie" && handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
-    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && inputTransferMethod === "cookie") {
+    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && transferMethod === "cookie") {
         if (!containsCustomHeader) {
             logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new STError({
