@@ -62,7 +62,7 @@ export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpi
 }
 
 export function getCORSAllowedHeaders(): string[] {
-    return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, refreshTokenHeaderKey, authModeHeaderKey];
+    return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, authModeHeaderKey];
 }
 
 function getCookieNameFromTokenType(tokenType: TokenType) {
@@ -125,11 +125,7 @@ export function setToken(
 }
 
 export function setHeader(res: BaseResponse, name: string, value: string, expires: number) {
-    if (value === "remove") {
-        res.setHeader(name, value, false);
-    } else {
-        res.setHeader(name, `${value};${expires}`, false);
-    }
+    res.setHeader(name, `${value};${expires}`, false);
     res.setHeader("Access-Control-Expose-Headers", name, true);
 }
 
