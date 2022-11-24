@@ -262,7 +262,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    postSignInAccountLinkingPOST:
+    linkNewAccountToExistingAccountPOST:
         | undefined
         | ((input: {
               formFields: {
