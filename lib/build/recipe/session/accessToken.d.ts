@@ -14,5 +14,5 @@ export declare function getInfoFromAccessToken(
     expiryTime: number;
     timeCreated: number;
 }>;
-export declare function validateAccessTokenPayload(payload: { [key: string]: any }): void;
+export declare function validateAccessTokenStructure(payload: any): void;
 export declare function sanitizeNumberInput(field: any): number | undefined;

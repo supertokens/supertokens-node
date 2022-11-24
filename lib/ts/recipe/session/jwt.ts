@@ -38,7 +38,7 @@ export type ParsedJWTInfo = {
     signature: string;
 };
 
-export function parseJWT(jwt: string): ParsedJWTInfo {
+export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo {
     const splittedInput = jwt.split(".");
     if (splittedInput.length !== 3) {
         throw new Error("Invalid JWT");

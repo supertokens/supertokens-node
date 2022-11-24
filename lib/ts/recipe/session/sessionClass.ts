@@ -42,7 +42,7 @@ export default class Session implements SessionContainerInterface {
         // If we instead clear the cookies only when revokeSession
         // returns true, it can cause this kind of a bug:
         // https://github.com/supertokens/supertokens-node/issues/343
-        clearSession(this.helpers.config, this.req, this.res, this.transferMethod);
+        clearSession(this.helpers.config, this.res, this.transferMethod);
     };
 
     getSessionData = async (userContext?: any): Promise<any> => {
@@ -51,7 +51,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, this.transferMethod);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -68,7 +68,7 @@ export default class Session implements SessionContainerInterface {
                 userContext: userContext === undefined ? {} : userContext,
             }))
         ) {
-            clearSession(this.helpers.config, this.req, this.res, this.transferMethod);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -109,7 +109,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, this.transferMethod);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -124,7 +124,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, this.transferMethod);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -183,7 +183,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (response === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, this.transferMethod);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,

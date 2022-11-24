@@ -31,23 +31,13 @@ const authModeHeaderKey = "st-auth-mode";
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSession(
-    config: TypeNormalisedInput,
-    req: BaseRequest,
-    res: BaseResponse,
-    transferMethod: TokenTransferMethod
-) {
+export function clearSession(config: TypeNormalisedInput, res: BaseResponse, transferMethod: TokenTransferMethod) {
     // If we can tell it's a cookie based session we are not clearing using headers
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
         setToken(config, res, token, "", 0, transferMethod);
-
-        // This is to ensure we clear the cookies as well if the user has migrated to headers,
-        // because this can't be done on the client side
-        if (transferMethod === "header" && isTokenInCookies(req, token)) {
-            setToken(config, res, token, "", 0, "cookie");
-        }
     }
+
     res.setHeader(frontTokenHeaderKey, "remove", false);
     res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
@@ -95,10 +85,6 @@ function getResponseHeaderNameForTokenType(tokenType: TokenType) {
         default:
             throw new Error("Unknown token type, should never happen.");
     }
-}
-
-export function isTokenInCookies(req: BaseRequest, tokenType: TokenType) {
-    return req.getCookieValue(getCookieNameFromTokenType(tokenType)) !== undefined;
 }
 
 export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod: TokenTransferMethod) {
@@ -181,5 +167,5 @@ export function setCookie(
 }
 
 export function getAuthModeFromHeader(req: BaseRequest): string | undefined {
-    return req.getHeaderValue(authModeHeaderKey);
+    return req.getHeaderValue(authModeHeaderKey)?.toLowerCase();
 }

@@ -6,7 +6,6 @@ import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
  */
 export declare function clearSession(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
     transferMethod: TokenTransferMethod
 ): void;
@@ -19,7 +18,6 @@ export declare function setFrontTokenInHeaders(
     accessTokenPayload: any
 ): void;
 export declare function getCORSAllowedHeaders(): string[];
-export declare function isTokenInCookies(req: BaseRequest, tokenType: TokenType): boolean;
 export declare function getToken(
     req: BaseRequest,
     tokenType: TokenType,

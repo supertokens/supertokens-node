@@ -31,8 +31,8 @@ import { logDebugMessage } from "../../logger";
 import { BaseResponse } from "../../framework/response";
 import { BaseRequest } from "../../framework/request";
 import { availableTokenTransferMethods } from "./constants";
-import { ParsedJWTInfo, parseJWT } from "./jwt";
-import { validateAccessTokenPayload } from "./accessToken";
+import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
+import { validateAccessTokenStructure } from "./accessToken";
 
 export class HandshakeInfo {
     constructor(
@@ -149,8 +149,8 @@ export default function getRecipeInterface(
             );
 
             for (const transferMethod of availableTokenTransferMethods) {
-                if (transferMethod !== outputTransferMethod) {
-                    clearSession(config, req, res, transferMethod);
+                if (transferMethod !== outputTransferMethod && getToken(req, "access", transferMethod) !== undefined) {
+                    clearSession(config, res, transferMethod);
                 }
             }
 
@@ -210,8 +210,8 @@ export default function getRecipeInterface(
                 const tokenString = getToken(req, "access", transferMethod);
                 if (tokenString !== undefined) {
                     try {
-                        const info = parseJWT(tokenString);
-                        validateAccessTokenPayload(info.payload);
+                        const info = parseJWTWithoutSignatureVerification(tokenString);
+                        validateAccessTokenStructure(info.payload);
                         logDebugMessage("getSession: got access token from " + transferMethod);
                         accessTokens[transferMethod] = info;
                     } catch {
@@ -322,8 +322,10 @@ export default function getRecipeInterface(
                 return session;
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
-                    logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response from getSession");
-                    clearSession(config, req, res, requestTransferMethod);
+                    logDebugMessage(
+                        `getSession: Clearing ${requestTransferMethod} because of UNAUTHORISED response from getSession`
+                    );
+                    clearSession(config, res, requestTransferMethod);
                 }
                 throw err;
             }
@@ -419,7 +421,7 @@ export default function getRecipeInterface(
          */
         refreshSession: async function (
             this: RecipeInterface,
-            { req, res }: { req: BaseRequest; res: BaseResponse }
+            { req, res, userContext }: { req: BaseRequest; res: BaseResponse; userContext: any }
         ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
 
@@ -433,7 +435,7 @@ export default function getRecipeInterface(
             } = {};
 
             // We check all token transfer methods for available refresh tokens
-            // We do this so that we can later clear all we are not overwrite
+            // We do this so that we can later clear all we are not overwriting
             for (const transferMethod of availableTokenTransferMethods) {
                 refreshTokens[transferMethod] = getToken(req, "refresh", transferMethod);
                 if (refreshTokens[transferMethod] !== undefined) {
@@ -441,13 +443,29 @@ export default function getRecipeInterface(
                 }
             }
 
+            const allowedTransferMethod = config.getTokenTransferMethod({
+                req,
+                forCreateNewSession: false,
+                userContext,
+            });
+
             let requestTransferMethod: TokenTransferMethod;
-            if (refreshTokens["header"] !== undefined) {
+            let refreshToken: string | undefined;
+
+            if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "header") &&
+                refreshTokens["header"] !== undefined
+            ) {
                 logDebugMessage("refreshSession: using header transfer method");
                 requestTransferMethod = "header";
-            } else if (refreshTokens["cookie"]) {
+                refreshToken = refreshTokens["header"];
+            } else if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+                refreshTokens["cookie"]
+            ) {
                 logDebugMessage("refreshSession: using header transfer method");
                 requestTransferMethod = "cookie";
+                refreshToken = refreshTokens["cookie"];
             } else {
                 logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
                 throw new STError({
@@ -460,7 +478,7 @@ export default function getRecipeInterface(
                 let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
                 let response = await SessionFunctions.refreshSession(
                     helpers,
-                    requestTransferMethod,
+                    refreshToken,
                     antiCsrfToken,
                     getRidFromHeader(req) !== undefined,
                     requestTransferMethod
@@ -470,7 +488,7 @@ export default function getRecipeInterface(
                 // We clear the tokens in all token transfer methods we are not going to overwrite
                 for (const transferMethod of availableTokenTransferMethods) {
                     if (transferMethod !== requestTransferMethod && refreshTokens[transferMethod] !== undefined) {
-                        clearSession(config, req, res, transferMethod);
+                        clearSession(config, res, transferMethod);
                     }
                 }
 
@@ -495,7 +513,7 @@ export default function getRecipeInterface(
                     logDebugMessage(
                         "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
                     );
-                    clearSession(config, req, res, requestTransferMethod);
+                    clearSession(config, res, requestTransferMethod);
                 }
                 throw err;
             }

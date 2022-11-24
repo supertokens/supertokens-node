@@ -34,7 +34,7 @@ export async function getInfoFromAccessToken(
         let payload = verifyJWT(jwtInfo, jwtSigningPublicKey);
 
         // This should be called before this function, but the check is very quick, so we can also do them here
-        validateAccessTokenPayload(payload);
+        validateAccessTokenStructure(payload);
 
         // We can mark these as defined (the ! after the calls), since validateAccessTokenPayload checks this
         let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
@@ -71,7 +71,7 @@ export async function getInfoFromAccessToken(
     }
 }
 
-export function validateAccessTokenPayload(payload: { [key: string]: any }) {
+export function validateAccessTokenStructure(payload: any) {
     if (
         typeof payload.sessionHandle !== "string" ||
         typeof payload.userId !== "string" ||
