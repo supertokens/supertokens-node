@@ -100,7 +100,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             | {
                   status: "OK";
                   userId: string;
-                  recipeUserId?: string;
+                  email: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {

@@ -52,9 +52,10 @@ export default class Wrapper {
         });
     }
 
-    static createResetPasswordToken(userId: string, userContext?: any) {
+    static createResetPasswordToken(userId: string, email: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
+            email,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

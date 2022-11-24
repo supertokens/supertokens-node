@@ -117,12 +117,9 @@ export type RecipeInterface = {
 
     createResetPasswordToken(input: {
         userId: string; // the id can be either recipeUserId or primaryUserId
+        email: string;
         userContext: any;
-    }): Promise<
-        | { status: "OK"; token: string }
-        | { status: "UNKNOWN_USER_ID_ERROR" }
-        | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
-    >;
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     resetPasswordUsingToken(input: {
         token: string;
@@ -131,6 +128,7 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
+              email: string;
               userId: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
@@ -142,11 +140,7 @@ export type RecipeInterface = {
         password?: string;
         userContext: any;
     }): Promise<{
-        status:
-            | "OK"
-            | "UNKNOWN_USER_ID_ERROR"
-            | "EMAIL_ALREADY_EXISTS_ERROR"
-            | "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
     }>;
 };
 
@@ -190,9 +184,9 @@ export type APIInterface = {
                     status: "OK";
                 }
               | {
-                    {status: "PASSWORD_RESET_NOT_ALLOWED", reason: string};
+                    status: "PASSWORD_RESET_NOT_ALLOWED";
+                    reason: string;
                 }
-              | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
               | GeneralErrorResponse
           >);
 
@@ -209,6 +203,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
+                    email: string;
                     userId: string;
                 }
               | {
@@ -251,13 +246,16 @@ export type APIInterface = {
               | {
                     status: "OK";
                     user: User;
+                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
               | {
-                    status: "SIGNUP_NOT_ALLOWED", reason: string;
+                    status: "SIGNUP_NOT_ALLOWED";
+                    reason: string;
                 }
               | GeneralErrorResponse
           >);
@@ -276,13 +274,28 @@ export type APIInterface = {
               | {
                     status: "OK";
                     user: User;
+                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                 }
               | {
-                    status: "ACCOUNT_LINK_FAILURE";
-                    reason: string;
-                    contactSupport: boolean;
-                    recipeUserCreated: boolean;
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                }
+              | {
+                    status: "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                }
+              | {
+                    status: "CANNOT_CREATE_PRIMARY_USER_FOR_EXISTING_ACCOUNT_ERROR";
+                }
+              | {
+                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
                 }
               | GeneralErrorResponse
           >);

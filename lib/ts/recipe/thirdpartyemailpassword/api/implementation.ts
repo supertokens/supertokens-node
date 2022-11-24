@@ -15,7 +15,7 @@ export default function getAPIImplementation(): APIInterface {
         generatePasswordResetTokenPOST: emailPasswordImplementation.generatePasswordResetTokenPOST?.bind(
             DerivedEP(this)
         ),
-        emailPasswordPostSignInAccountLinkingPOST: emailPasswordImplementation.postSignInAccountLinkingPOST?.bind(
+        emailPasswordLinkNewAccountToExistingAccountPOST: emailPasswordImplementation.linkNewAccountToExistingAccountPOST?.bind(
             DerivedEP(this)
         ),
         passwordResetPOST: emailPasswordImplementation.passwordResetPOST?.bind(DerivedEP(this)),

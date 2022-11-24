@@ -56,7 +56,7 @@ export default class BackwardCompatibilityService
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
         let user = await this.recipeInterfaceImpl.getUserById({
-            userId: input.user.id,
+            userId: input.user.recipeUserId,
             userContext: input.userContext,
         });
         if (user === undefined) {

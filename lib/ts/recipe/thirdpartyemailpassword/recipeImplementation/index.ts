@@ -90,14 +90,9 @@ export default function getRecipeInterface(
 
         createResetPasswordToken: async function (input: {
             userId: string;
+            email: string;
             userContext: any;
-        }): Promise<
-            | { status: "OK"; token: string }
-            | { status: "UNKNOWN_USER_ID_ERROR" }
-            | {
-                  status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
-              }
-        > {
+        }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return originalEmailPasswordImplementation.createResetPasswordToken.bind(DerivedEP(this))(input);
         },
 
@@ -114,11 +109,7 @@ export default function getRecipeInterface(
                 userContext: any;
             }
         ): Promise<{
-            status:
-                | "OK"
-                | "UNKNOWN_USER_ID_ERROR"
-                | "EMAIL_ALREADY_EXISTS_ERROR"
-                | "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
+            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
         }> {
             let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {

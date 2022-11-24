@@ -21,6 +21,7 @@ type Response =
 export const userPasswordPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
+    const email = requestBody.email;
     const newPassword = requestBody.newPassword;
 
     if (userId === undefined || typeof userId !== "string") {
@@ -70,15 +71,11 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
             };
         }
 
-        const passwordResetToken = await EmailPassword.createResetPasswordToken(userId);
+        const passwordResetToken = await EmailPassword.createResetPasswordToken(userId, email);
 
         if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
             // Techincally it can but its an edge case so we assume that it wont
             throw new Error("Should never come here");
-        }
-
-        if (passwordResetToken.status === "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR") {
-            return passwordResetToken;
         }
 
         const passwordResetResponse = await EmailPassword.resetPasswordUsingToken(
@@ -108,15 +105,11 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         };
     }
 
-    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(userId);
+    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(userId, email);
 
     if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
         // Techincally it can but its an edge case so we assume that it wont
         throw new Error("Should never come here");
-    }
-
-    if (passwordResetToken.status === "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR") {
-        return passwordResetToken;
     }
 
     const passwordResetResponse = await ThirdPartyEmailPassword.resetPasswordUsingToken(

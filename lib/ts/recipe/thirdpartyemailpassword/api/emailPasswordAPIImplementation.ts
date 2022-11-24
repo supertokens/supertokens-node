@@ -8,7 +8,7 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
         passwordResetPOST: apiImplmentation.passwordResetPOST?.bind(apiImplmentation),
         signInPOST: apiImplmentation.emailPasswordSignInPOST?.bind(apiImplmentation),
         signUpPOST: apiImplmentation.emailPasswordSignUpPOST?.bind(apiImplmentation),
-        postSignInAccountLinkingPOST: apiImplmentation.emailPasswordPostSignInAccountLinkingPOST?.bind(
+        linkNewAccountToExistingAccountPOST: apiImplmentation.emailPasswordLinkNewAccountToExistingAccountPOST?.bind(
             apiImplmentation
         ),
     };

@@ -6,7 +6,7 @@ import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        postSignInAccountLinkingPOST: async function (_input: {
+        linkNewAccountToExistingAccountPOST: async function (_input: {
             formFields: {
                 id: string;
                 value: string;
@@ -17,22 +17,34 @@ export default function getAPIImplementation(): APIInterface {
         }): Promise<
             | {
                   status: "OK";
-                  session: SessionContainerInterface;
                   user: User;
+                  createdNewRecipeUser: boolean;
+                  session: SessionContainerInterface;
               }
             | {
-                  status: "ACCOUNT_LINK_FAILURE";
-                  reason: string;
-                  contactSupport: boolean;
-                  recipeUserCreated: boolean;
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+              }
+            | {
+                  status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+              }
+            | {
+                  status: "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              }
+            | {
+                  status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+              }
+            | {
+                  status: "CANNOT_CREATE_PRIMARY_USER_FOR_EXISTING_ACCOUNT_ERROR";
+              }
+            | {
+                  status: "ACCOUNT_NOT_VERIFIED_ERROR";
               }
             | GeneralErrorResponse
         > {
             return {
-                status: "ACCOUNT_LINK_FAILURE",
-                reason: "",
-                contactSupport: false,
-                recipeUserCreated: false,
+                status: "ACCOUNT_NOT_VERIFIED_ERROR",
             };
         },
         emailExistsGET: async function ({
@@ -72,8 +84,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
               }
-            | { status: "PASSWORD_RESET_NOT_ALLOWED_CONTACT_SUPPORT" }
-            | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
+            | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -86,7 +97,8 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let response = await options.recipeImplementation.createResetPasswordToken({
-                userId: user.id,
+                userId: user.recipeUserId,
+                email: user.email,
                 userContext,
             });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
@@ -94,10 +106,6 @@ export default function getAPIImplementation(): APIInterface {
                 return {
                     status: "OK",
                 };
-            }
-
-            if (response.status === "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR") {
-                return response;
             }
 
             let passwordResetLink =
@@ -137,6 +145,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
                   userId: string;
+                  email: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
             | GeneralErrorResponse
@@ -205,12 +214,15 @@ export default function getAPIImplementation(): APIInterface {
                   status: "OK";
                   session: SessionContainerInterface;
                   user: User;
+                  createdNewUser: boolean;
+                  createdNewRecipeUser: boolean;
               }
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
             | {
                   status: "SIGNUP_NOT_ALLOWED";
+                  reason: string;
               }
             | GeneralErrorResponse
         > {
@@ -228,6 +240,8 @@ export default function getAPIImplementation(): APIInterface {
                 status: "OK",
                 session,
                 user,
+                createdNewUser: true, // TODO
+                createdNewRecipeUser: true, // TODO
             };
         },
     };
