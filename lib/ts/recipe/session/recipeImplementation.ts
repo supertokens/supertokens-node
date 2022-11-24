@@ -18,7 +18,6 @@ import {
     getToken,
     setToken,
     setCookie,
-    availableTokenTransferMethods,
 } from "./cookieAndHeaders";
 import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
@@ -31,6 +30,9 @@ import { JSONObject, NormalisedAppinfo } from "../../types";
 import { logDebugMessage } from "../../logger";
 import { BaseResponse } from "../../framework/response";
 import { BaseRequest } from "../../framework/request";
+import { availableTokenTransferMethods } from "./constants";
+import { ParsedJWTInfo, parseJWT } from "./jwt";
+import { validateAccessTokenPayload } from "./accessToken";
 
 export class HandshakeInfo {
     constructor(
@@ -131,9 +133,8 @@ export default function getRecipeInterface(
             userContext: any;
         }): Promise<Session> {
             logDebugMessage("createNewSession: Started");
-            let outputTransferMethod = config.getTokenTransferMethod({ req, userContext });
-            logDebugMessage("createNewSession: got transfer method " + outputTransferMethod);
-            if (outputTransferMethod === "missing_auth_header") {
+            let outputTransferMethod = config.getTokenTransferMethod({ req, forCreateNewSession: true, userContext });
+            if (outputTransferMethod === "any") {
                 outputTransferMethod = "header";
             }
             logDebugMessage("createNewSession: using transfer method " + outputTransferMethod);
@@ -149,7 +150,7 @@ export default function getRecipeInterface(
 
             for (const transferMethod of availableTokenTransferMethods) {
                 if (transferMethod !== outputTransferMethod) {
-                    clearSession(config, req, res, userContext, transferMethod);
+                    clearSession(config, req, res, transferMethod);
                 }
             }
 
@@ -200,38 +201,52 @@ export default function getRecipeInterface(
             const sessionOptional = options?.sessionRequired === false;
             logDebugMessage("getSession: optional validation: " + sessionOptional);
 
-            const preferredTransferMethod = config.getTokenTransferMethod({ req, userContext });
+            const accessTokens: {
+                [key in TokenTransferMethod]?: ParsedJWTInfo;
+            } = {};
 
-            let transferMethod = preferredTransferMethod === "missing_auth_header" ? "header" : preferredTransferMethod;
-
-            let accessToken = getToken(req, "access", transferMethod);
-            if (accessToken === undefined) {
-                const fallbackMethod = transferMethod === "cookie" ? "header" : "cookie";
-                // We are checking if we could go ahead with validation if the transferMethod was different
-                // However, we don't want to allow fallback here if there is an up-to-date frontend SDK that sends the auth-mode header.
-                accessToken = getToken(req, "access", fallbackMethod);
-                if (accessToken !== undefined) {
-                    if (preferredTransferMethod === "missing_auth_header") {
-                        transferMethod = fallbackMethod;
+            // We check all token transfer methods for available access tokens
+            for (const transferMethod of availableTokenTransferMethods) {
+                const tokenString = getToken(req, "access", transferMethod);
+                if (tokenString !== undefined) {
+                    try {
+                        const info = parseJWT(tokenString);
+                        validateAccessTokenPayload(info.payload);
+                        logDebugMessage("getSession: got access token from " + transferMethod);
+                        accessTokens[transferMethod] = info;
+                    } catch {
                         logDebugMessage(
-                            `getSession: falling back to use ${fallbackMethod} as an authentication-method`
+                            `getSession: ignoring token in ${transferMethod}, because it doesn't match our access token structure`
                         );
-                    } else {
-                        logDebugMessage(
-                            `getSession: returning TRY_REFRESH_TOKEN because preferred auth-mode doesn't allow fallback and access token was sent with the wrong method`
-                        );
-                        throw new STError({
-                            message: "access token sent with the wrong method. Please call the refresh API",
-                            type: STError.TRY_REFRESH_TOKEN,
-                        });
                     }
                 }
             }
 
-            if (accessToken === undefined) {
+            const allowedTransferMethod = config.getTokenTransferMethod({
+                req,
+                forCreateNewSession: false,
+                userContext,
+            });
+            let requestTransferMethod: TokenTransferMethod;
+            let accessToken: ParsedJWTInfo | undefined;
+
+            if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "header") &&
+                accessTokens["header"] !== undefined
+            ) {
+                logDebugMessage("getSession: using header transfer method");
+                requestTransferMethod = "header";
+                accessToken = accessTokens["header"];
+            } else if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+                accessTokens["cookie"] !== undefined
+            ) {
+                logDebugMessage("getSession: using header transfer method");
+                requestTransferMethod = "cookie";
+                accessToken = accessTokens["cookie"];
+            } else {
                 // we do not clear cookies here because of a
                 // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
-
                 if (sessionOptional) {
                     logDebugMessage(
                         "getSession: returning undefined because accessToken is undefined and sessionRequired is false"
@@ -243,7 +258,8 @@ export default function getRecipeInterface(
 
                 logDebugMessage("getSession: UNAUTHORISED because accessToken in request is undefined");
                 throw new STError({
-                    message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
+                    message:
+                        "Session does not exist. Are you sending the session tokens in the request as with the appropriate token transfer method?",
                     type: STError.UNAUTHORISED,
                 });
             }
@@ -256,7 +272,7 @@ export default function getRecipeInterface(
                     doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
                 }
 
-                if (transferMethod === "header") {
+                if (requestTransferMethod === "header") {
                     doAntiCsrfCheck = false;
                 }
 
@@ -269,6 +285,7 @@ export default function getRecipeInterface(
                     doAntiCsrfCheck,
                     getRidFromHeader(req) !== undefined
                 );
+                let accessTokenString = accessToken.rawTokenString;
                 if (response.accessToken !== undefined) {
                     setFrontTokenInHeaders(
                         res,
@@ -286,27 +303,27 @@ export default function getRecipeInterface(
                         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
                         // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
                         Date.now() + 3153600000000,
-                        transferMethod
+                        requestTransferMethod
                     );
-                    accessToken = response.accessToken.token;
+                    accessTokenString = response.accessToken.token;
                 }
                 logDebugMessage("getSession: Success!");
                 const session = new Session(
                     helpers,
-                    accessToken,
+                    accessTokenString,
                     response.session.handle,
                     response.session.userId,
                     response.session.userDataInJWT,
                     res,
                     req,
-                    transferMethod
+                    requestTransferMethod
                 );
 
                 return session;
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
-                    logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
-                    clearSession(config, req, res, userContext);
+                    logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response from getSession");
+                    clearSession(config, req, res, requestTransferMethod);
                 }
                 throw err;
             }
@@ -402,7 +419,7 @@ export default function getRecipeInterface(
          */
         refreshSession: async function (
             this: RecipeInterface,
-            { req, res, userContext }: { req: BaseRequest; res: BaseResponse; userContext: any }
+            { req, res }: { req: BaseRequest; res: BaseResponse }
         ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
 
@@ -453,7 +470,7 @@ export default function getRecipeInterface(
                 // We clear the tokens in all token transfer methods we are not going to overwrite
                 for (const transferMethod of availableTokenTransferMethods) {
                     if (transferMethod !== requestTransferMethod && refreshTokens[transferMethod] !== undefined) {
-                        clearSession(config, req, res, userContext, transferMethod);
+                        clearSession(config, req, res, transferMethod);
                     }
                 }
 
@@ -478,7 +495,7 @@ export default function getRecipeInterface(
                     logDebugMessage(
                         "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
                     );
-                    clearSession(config, req, res, userContext, requestTransferMethod);
+                    clearSession(config, req, res, requestTransferMethod);
                 }
                 throw err;
             }

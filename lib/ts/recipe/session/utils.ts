@@ -325,13 +325,25 @@ export async function validateClaimsInPayload(
     return validationErrors;
 }
 
-function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): TokenTransferMethod | "missing_auth_header" {
+function defaultGetTokenTransferMethod({
+    req,
+    forCreateNewSession,
+}: {
+    req: BaseRequest;
+    forCreateNewSession: boolean;
+}): TokenTransferMethod | "any" {
+    // We allow fallback (checking headers then cookies) by default when validating
+    if (!forCreateNewSession) {
+        return "any";
+    }
+
+    // In create new session we respect the frontend preference by default
     switch (getAuthModeFromHeader(req)) {
         case "header":
             return "header";
         case "cookie":
             return "cookie";
         default:
-            return "missing_auth_header";
+            return "any";
     }
 }

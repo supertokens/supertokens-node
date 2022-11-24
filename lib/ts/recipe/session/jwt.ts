@@ -31,7 +31,14 @@ const HEADERS = new Set([
     ).toString("base64"),
 ]);
 
-export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string): { [key: string]: any } {
+export type ParsedJWTInfo = {
+    rawTokenString: string;
+    header: string;
+    payload: any;
+    signature: string;
+};
+
+export function parseJWT(jwt: string): ParsedJWTInfo {
     const splittedInput = jwt.split(".");
     if (splittedInput.length !== 3) {
         throw new Error("Invalid JWT");
@@ -42,33 +49,33 @@ export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string)
         throw new Error("JWT header mismatch");
     }
 
-    let payload = splittedInput[1];
+    return {
+        rawTokenString: jwt,
+        header: splittedInput[0],
+        // Ideally we would only parse this after the signature verification is done.
+        // We do this at the start, since we want to check if a token can be a supertokens access token or not
+        payload: JSON.parse(Buffer.from(splittedInput[1], "base64").toString()),
+        signature: splittedInput[2],
+    };
+}
 
+export function verifyJWT(
+    { header, payload, signature }: ParsedJWTInfo,
+    jwtSigningPublicKey: string
+): { [key: string]: any } {
     let verifier = crypto.createVerify("sha256");
     // convert the jwtSigningPublicKey into .pem format
 
-    verifier.update(splittedInput[0] + "." + payload);
+    verifier.update(header + "." + payload);
     if (
         !verifier.verify(
             "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----",
-            splittedInput[2],
+            signature,
             "base64"
         )
     ) {
         throw new Error("JWT verification failed");
     }
-    // sending payload
-    payload = Buffer.from(payload, "base64").toString();
-    return JSON.parse(payload);
-}
 
-export function getPayloadWithoutVerifiying(jwt: string): { [key: string]: any } {
-    const splittedInput = jwt.split(".");
-    if (splittedInput.length !== 3) {
-        throw new Error("Invalid JWT");
-    }
-
-    let payload = splittedInput[1];
-    payload = Buffer.from(payload, "base64").toString();
     return JSON.parse(payload);
 }

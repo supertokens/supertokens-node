@@ -71,7 +71,8 @@ export interface ErrorHandlers {
 }
 
 export type TokenType = "access" | "refresh";
-// When adding a new token transfer method, it's also necessary to update the related constant in cookieAndHeaders
+
+// When adding a new token transfer method, it's also necessary to update the related constant (availableTokenTransferMethods)
 export type TokenTransferMethod = "header" | "cookie";
 
 export type TypeInput = {
@@ -82,7 +83,11 @@ export type TypeInput = {
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
 
-    getTokenTransferMethod?: (input: { req: BaseRequest; userContext: any }) => TokenTransferMethod;
+    getTokenTransferMethod?: (input: {
+        req: BaseRequest;
+        forCreateNewSession: boolean;
+        userContext: any;
+    }) => TokenTransferMethod | "any";
 
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
@@ -133,8 +138,9 @@ export type TypeNormalisedInput = {
 
     getTokenTransferMethod: (input: {
         req: BaseRequest;
+        forCreateNewSession: boolean;
         userContext: any;
-    }) => TokenTransferMethod | "missing_auth_header";
+    }) => TokenTransferMethod | "any";
 
     invalidClaimStatusCode: number;
     jwt: {

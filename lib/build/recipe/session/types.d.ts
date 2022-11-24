@@ -58,7 +58,11 @@ export declare type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
-    getTokenTransferMethod?: (input: { req: BaseRequest; userContext: any }) => TokenTransferMethod;
+    getTokenTransferMethod?: (input: {
+        req: BaseRequest;
+        forCreateNewSession: boolean;
+        userContext: any;
+    }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     jwt?:
@@ -108,8 +112,9 @@ export declare type TypeNormalisedInput = {
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     getTokenTransferMethod: (input: {
         req: BaseRequest;
+        forCreateNewSession: boolean;
         userContext: any;
-    }) => TokenTransferMethod | "missing_auth_header";
+    }) => TokenTransferMethod | "any";
     invalidClaimStatusCode: number;
     jwt: {
         enable: boolean;

@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { ParsedJWTInfo } from "./jwt";
 import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
@@ -16,7 +17,7 @@ export declare function createNewSession(
  */
 export declare function getSession(
     helpers: Helpers,
-    accessToken: string,
+    parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     containsCustomHeader: boolean

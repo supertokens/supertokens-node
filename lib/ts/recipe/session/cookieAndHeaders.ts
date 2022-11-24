@@ -28,8 +28,6 @@ const frontTokenHeaderKey = "front-token";
 
 const authModeHeaderKey = "st-auth-mode";
 
-export const availableTokenTransferMethods: TokenTransferMethod[] = ["cookie", "header"];
-
 /**
  * @description clears all the auth cookies from the response
  */
@@ -37,23 +35,16 @@ export function clearSession(
     config: TypeNormalisedInput,
     req: BaseRequest,
     res: BaseResponse,
-    userContext: any,
-    transferMethod?: TokenTransferMethod | "missing_auth_header"
+    transferMethod: TokenTransferMethod
 ) {
     // If we can tell it's a cookie based session we are not clearing using headers
-    let outputTransferMethod = transferMethod || config.getTokenTransferMethod({ req, userContext });
-
-    if (outputTransferMethod === "missing_auth_header") {
-        outputTransferMethod = "header";
-    }
-
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        setToken(config, res, token, "", 0, outputTransferMethod);
+        setToken(config, res, token, "", 0, transferMethod);
 
         // This is to ensure we clear the cookies as well if the user has migrated to headers,
         // because this can't be done on the client side
-        if (outputTransferMethod === "header" && isTokenInCookies(req, token)) {
+        if (transferMethod === "header" && isTokenInCookies(req, token)) {
             setToken(config, res, token, "", 0, "cookie");
         }
     }
@@ -98,8 +89,6 @@ function getCookieNameFromTokenType(tokenType: TokenType) {
 function getResponseHeaderNameForTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
-            // We are getting the access token from the authorization header during verification.
-            // This case is handled in the getToken fn below.
             return accessTokenHeaderKey;
         case "refresh":
             return refreshTokenHeaderKey;
