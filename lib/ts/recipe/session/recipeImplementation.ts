@@ -452,6 +452,7 @@ export default function getRecipeInterface(
                 forCreateNewSession: false,
                 userContext,
             });
+            logDebugMessage("refreshSession: getTokenTransferMethod returned " + allowedTransferMethod);
 
             let requestTransferMethod: TokenTransferMethod;
             let refreshToken: string | undefined;

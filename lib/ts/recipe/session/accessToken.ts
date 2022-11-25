@@ -31,7 +31,8 @@ export async function getInfoFromAccessToken(
     timeCreated: number;
 }> {
     try {
-        let payload = verifyJWT(jwtInfo, jwtSigningPublicKey);
+        verifyJWT(jwtInfo, jwtSigningPublicKey);
+        const payload = jwtInfo.payload;
 
         // This should be called before this function, but the check is very quick, so we can also do them here
         validateAccessTokenStructure(payload);
