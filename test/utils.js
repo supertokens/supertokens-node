@@ -159,6 +159,8 @@ module.exports.extractInfoFromResponse = function (res) {
         };
     }
     return {
+        status: res.status,
+        body: res.body,
         antiCsrf,
         accessToken,
         refreshToken,
