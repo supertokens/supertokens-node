@@ -66,8 +66,12 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
     }
 
-    static createResetPasswordToken(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId, userContext });
+    static createResetPasswordToken(userId: string, email: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
+            userId,
+            email,
+            userContext,
+        });
     }
 
     static resetPasswordUsingToken(token: string, newPassword: string, userContext: any = {}) {

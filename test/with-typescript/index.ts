@@ -1281,6 +1281,7 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
+        recipeUserId: "",
     },
 });
 ThirdPartyEmailPassword.sendEmail({
@@ -1289,6 +1290,7 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
+        recipeUserId: "",
     },
     userContext: {},
 });

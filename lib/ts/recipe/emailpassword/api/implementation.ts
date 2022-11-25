@@ -6,6 +6,49 @@ import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
+        linkAccountToExistingAccountPOST: async function (_input: {
+            formFields: {
+                id: string;
+                value: string;
+            }[];
+            session: SessionContainerInterface;
+            options: APIOptions;
+            userContext: any;
+        }): Promise<
+            | {
+                  status: "OK";
+                  user: User;
+                  createdNewRecipeUser: boolean;
+                  session: SessionContainerInterface;
+                  wereAccountsAlreadyLinked: boolean;
+              }
+            | {
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
+            | {
+                  status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
+            | {
+                  status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                  description: string;
+              }
+            | {
+                  status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                  isNotVerifiedAccountFromInputSession: boolean;
+                  description: string;
+              }
+            | GeneralErrorResponse
+        > {
+            return {
+                status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                isNotVerifiedAccountFromInputSession: false,
+                description: "",
+            };
+        },
         emailExistsGET: async function ({
             email,
             options,
@@ -43,6 +86,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
               }
+            | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -55,7 +99,8 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let response = await options.recipeImplementation.createResetPasswordToken({
-                userId: user.id,
+                userId: user.recipeUserId,
+                email: user.email,
                 userContext,
             });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
@@ -101,11 +146,8 @@ export default function getAPIImplementation(): APIInterface {
         }): Promise<
             | {
                   status: "OK";
-                  /**
-                   * The id of the user whose password was reset.
-                   * Defined for Core versions 3.9 or later
-                   */
-                  userId?: string;
+                  userId: string;
+                  email: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
             | GeneralErrorResponse
@@ -174,9 +216,15 @@ export default function getAPIImplementation(): APIInterface {
                   status: "OK";
                   session: SessionContainerInterface;
                   user: User;
+                  createdNewUser: boolean;
+                  createdNewRecipeUser: boolean;
               }
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+            | {
+                  status: "SIGNUP_NOT_ALLOWED";
+                  reason: string;
               }
             | GeneralErrorResponse
         > {
@@ -194,6 +242,8 @@ export default function getAPIImplementation(): APIInterface {
                 status: "OK",
                 session,
                 user,
+                createdNewUser: true, // TODO
+                createdNewRecipeUser: true, // TODO
             };
         },
     };

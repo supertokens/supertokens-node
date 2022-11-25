@@ -52,6 +52,7 @@ export default class Wrapper {
     static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
     static createResetPasswordToken(
         userId: string,
+        email: string,
         userContext?: any
     ): Promise<
         | {
@@ -69,7 +70,8 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              userId?: string | undefined;
+              email: string;
+              userId: string;
           }
         | {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";

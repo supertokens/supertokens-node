@@ -126,6 +126,7 @@ export type RecipeInterface = {
 
     createResetPasswordToken(input: {
         userId: string;
+        email: string;
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
@@ -136,11 +137,8 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
+              email: string;
+              userId: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
@@ -150,7 +148,9 @@ export type RecipeInterface = {
         email?: string;
         password?: string;
         userContext: any;
-    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
 };
 
 export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
@@ -198,6 +198,10 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
 
@@ -214,7 +218,8 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    userId?: string;
+                    email: string;
+                    userId: string;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -246,6 +251,45 @@ export type APIInterface = {
                 }
           >);
 
+    linkEmailPasswordAccountToExistingAccountPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              session: SessionContainerInterface;
+              options: EmailPasswordAPIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    createdNewRecipeUser: boolean;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                }
+              | {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                    isNotVerifiedAccountFromInputSession: boolean;
+                    description: string;
+                }
+              | GeneralErrorResponse
+          >);
     emailPasswordSignInPOST:
         | undefined
         | ((input: {
@@ -280,10 +324,15 @@ export type APIInterface = {
               | {
                     status: "OK";
                     user: User;
+                    createdNewUser: boolean;
                     session: SessionContainerInterface;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
+                    reason: string;
                 }
               | GeneralErrorResponse
           >);

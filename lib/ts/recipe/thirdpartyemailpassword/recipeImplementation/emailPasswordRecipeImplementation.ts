@@ -40,6 +40,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
 
         createResetPasswordToken: async function (input: {
             userId: string;
+            email: string;
             userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return recipeInterface.createResetPasswordToken(input);

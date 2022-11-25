@@ -104,8 +104,20 @@ export declare type RecipeInterface = {
     >;
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
     getUserByEmail(input: { email: string; userContext: any }): Promise<User | undefined>;
+    /**
+     * We do not make email optional here cause we want to
+     * allow passing in primaryUserId. If we make email optional,
+     * and if the user provides a primaryUserId, then it may result in two problems:
+     *  - there is no recipeUserId = input primaryUserId, in this case,
+     *    this function will throw an error
+     *  - There is a recipe userId = input primaryUserId, but that recipe has no email,
+     *    or has wrong email compared to what the user wanted to generate a reset token for.
+     *
+     * And we want to allow primaryUserId being passed in.
+     */
     createResetPasswordToken(input: {
         userId: string;
+        email: string;
         userContext: any;
     }): Promise<
         | {
@@ -123,11 +135,8 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
+              email: string;
+              userId: string;
           }
         | {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -179,6 +188,10 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                 }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
     passwordResetPOST:
@@ -194,7 +207,8 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    userId?: string;
+                    email: string;
+                    userId: string;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -234,10 +248,54 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     user: User;
+                    createdNewUser: boolean;
                     session: SessionContainerInterface;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | GeneralErrorResponse
+          >);
+    linkAccountToExistingAccountPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    createdNewRecipeUser: boolean;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                }
+              | {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                    isNotVerifiedAccountFromInputSession: boolean;
+                    description: string;
                 }
               | GeneralErrorResponse
           >);
@@ -246,6 +304,7 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
+        recipeUserId: string;
         email: string;
     };
     passwordResetLink: string;

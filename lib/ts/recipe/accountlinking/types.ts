@@ -81,9 +81,10 @@ export type RecipeInterface = {
           }
         | {
               status:
-                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_RECIPE_USER_ID_ERROR"
-                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR";
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
+              description: string;
           }
     >;
     createPrimaryUser: (input: {
@@ -96,9 +97,10 @@ export type RecipeInterface = {
           }
         | {
               status:
-                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_RECIPE_USER_ID_ERROR"
-                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR";
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
+              description: string;
           }
     >;
     canLinkAccounts: (input: {
@@ -111,14 +113,17 @@ export type RecipeInterface = {
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              description: string;
               primaryUserId: string;
           }
         | {
               status: "ACCOUNTS_ALREADY_LINKED_ERROR";
+              description: string;
           }
         | {
               status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
+              description: string;
           }
     >;
     linkAccounts: (input: {
@@ -132,13 +137,16 @@ export type RecipeInterface = {
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
+              description: string;
           }
         | {
               status: "ACCOUNTS_ALREADY_LINKED_ERROR";
+              description: string;
           }
         | {
               status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
+              description: string;
           }
     >;
     unlinkAccounts: (input: {

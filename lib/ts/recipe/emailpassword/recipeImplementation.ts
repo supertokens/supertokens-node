@@ -99,11 +99,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         }): Promise<
             | {
                   status: "OK";
-                  /**
-                   * The id of the user whose password was reset.
-                   * Defined for Core versions 3.9 or later
-                   */
-                  userId?: string;
+                  userId: string;
+                  email: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
