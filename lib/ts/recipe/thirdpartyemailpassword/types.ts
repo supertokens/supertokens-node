@@ -251,7 +251,7 @@ export type APIInterface = {
                 }
           >);
 
-    emailPasswordLinkAccountToExistingAccountPOST:
+    linkEmailPasswordAccountToExistingAccountPOST:
         | undefined
         | ((input: {
               formFields: {
