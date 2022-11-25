@@ -244,7 +244,7 @@ export declare type APIInterface = {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
           >);
-    emailPasswordLinkAccountToExistingAccountPOST:
+    linkEmailPasswordAccountToExistingAccountPOST:
         | undefined
         | ((input: {
               formFields: {
@@ -260,6 +260,7 @@ export declare type APIInterface = {
                     user: User;
                     createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
                 }
               | {
                     status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -278,6 +279,7 @@ export declare type APIInterface = {
               | {
                     status: "ACCOUNT_NOT_VERIFIED_ERROR";
                     isNotVerifiedAccountFromInputSession: boolean;
+                    description: string;
                 }
               | GeneralErrorResponse
           >);
