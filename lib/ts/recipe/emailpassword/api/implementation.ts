@@ -33,7 +33,7 @@ export default function getAPIImplementation(): APIInterface {
                   status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
               }
             | {
-                  status: "CANNOT_CREATE_PRIMARY_USER_FOR_EXISTING_ACCOUNT_ERROR";
+                  status: "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR";
               }
             | {
                   status: "ACCOUNT_NOT_VERIFIED_ERROR";
