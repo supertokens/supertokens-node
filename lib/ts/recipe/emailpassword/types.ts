@@ -275,6 +275,7 @@ export type APIInterface = {
                     user: User;
                     createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean
                 }
               | {
                     status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
