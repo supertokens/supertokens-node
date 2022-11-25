@@ -3,6 +3,8 @@ import { logDebugMessage } from "../../../logger";
 import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
+import SessionError from "../../session/error";
+import { getEmailVerifyLink } from "../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -17,7 +19,18 @@ export default function getAPIInterface(): APIInterface {
             const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
             if (res.status === "OK" && session !== undefined) {
-                await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                try {
+                    await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                } catch (err) {
+                    // This should never happen, since we've just set the status above.
+                    if ((err as Error).message === "UNKNOWN_USER_ID") {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Unknown User ID provided",
+                        });
+                    }
+                    throw err;
+                }
             }
             return res;
         },
@@ -36,7 +49,17 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+            try {
+                await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+            } catch (err) {
+                if ((err as Error).message === "UNKNOWN_USER_ID") {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Unknown User ID provided",
+                    });
+                }
+                throw err;
+            }
             const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
 
             if (isVerified === undefined) {
@@ -80,20 +103,30 @@ export default function getAPIInterface(): APIInterface {
                 });
 
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                    if ((await session.getClaimValue(EmailVerificationClaim)) !== true) {
+                        // this can happen if the email was verified in another browser
+                        // and this session is still outdated - and the user has not
+                        // called the get email verification API yet.
+                        await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                    }
                     logDebugMessage(
                         `Email verification email not sent to ${emailInfo.email} because it is already verified.`
                     );
                     return response;
                 }
 
-                let emailVerifyLink =
-                    options.appInfo.websiteDomain.getAsStringDangerous() +
-                    options.appInfo.websiteBasePath.getAsStringDangerous() +
-                    "/verify-email" +
-                    "?token=" +
-                    response.token +
-                    "&rid=" +
-                    options.recipeId;
+                if ((await session.getClaimValue(EmailVerificationClaim)) !== false) {
+                    // this can happen if the email was unverified in another browser
+                    // and this session is still outdated - and the user has not
+                    // called the get email verification API yet.
+                    await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                }
+
+                let emailVerifyLink = getEmailVerifyLink({
+                    appInfo: options.appInfo,
+                    token: response.token,
+                    recipeId: options.recipeId,
+                });
 
                 logDebugMessage(`Sending email verification email to ${emailInfo}`);
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
@@ -110,7 +143,7 @@ export default function getAPIInterface(): APIInterface {
                     status: "OK",
                 };
             } else {
-                throw new Error("Should never come here: UNKNOWN_USER_ID or invalid result from getEmailForUserId");
+                throw new SessionError({ type: SessionError.UNAUTHORISED, message: "Unknown User ID provided" });
             }
         },
     };

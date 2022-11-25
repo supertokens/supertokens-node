@@ -14,6 +14,7 @@
  */
 import { HEADER_RID } from "../../constants";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { availableTokenTransferMethods } from "./constants";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 
 const authorizationHeaderKey = "authorization";
@@ -28,8 +29,20 @@ const frontTokenHeaderKey = "front-token";
 
 const authModeHeaderKey = "st-auth-mode";
 
+export function clearSessionFromAllTokenTransferMethods(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    res: BaseResponse
+) {
+    for (const transferMethod of availableTokenTransferMethods) {
+        if (getToken(req, "access", transferMethod) !== undefined) {
+            clearSession(config, res, transferMethod);
+        }
+    }
+}
+
 /**
- * @description clears all the auth cookies from the response
+ * @description clears
  */
 export function clearSession(config: TypeNormalisedInput, res: BaseResponse, transferMethod: TokenTransferMethod) {
     // If we can tell it's a cookie based session we are not clearing using headers

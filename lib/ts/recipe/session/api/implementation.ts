@@ -82,6 +82,7 @@ export default function getAPIInterface(): APIInterface {
             if (session !== undefined) {
                 await session.revokeSession(userContext);
             }
+
             return {
                 status: "OK",
             };

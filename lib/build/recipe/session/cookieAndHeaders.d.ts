@@ -1,8 +1,13 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
+export declare function clearSessionFromAllTokenTransferMethods(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    res: BaseResponse
+): void;
 /**
- * @description clears all the auth cookies from the response
+ * @description clears
  */
 export declare function clearSession(
     config: TypeNormalisedInput,

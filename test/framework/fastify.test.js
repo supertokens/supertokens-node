@@ -165,6 +165,13 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             },
             recipeList: [
                 Session.init({
+                    errorHandlers: {
+                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                            response.sendJSONResponse({
+                                success: true,
+                            });
+                        },
+                    },
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         apis: (oI) => {
@@ -178,6 +185,8 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             ],
         });
 
+        this.server.setErrorHandler(FastifyFramework.errorHandler());
+
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(req, res, "", {}, {});
             return res.send("").code(200);
@@ -189,16 +198,8 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/auth/session/refresh", async (req, res) => {
-            try {
-                await Session.refreshSession(req, res);
-                return res.send({ success: false }).code(200);
-            } catch (err) {
-                return res
-                    .send({
-                        success: err.type === Session.Error.TOKEN_THEFT_DETECTED,
-                    })
-                    .code(200);
-            }
+            await Session.refreshSession(req, res);
+            return res.send({ success: false }).code(200);
         });
 
         await this.server.register(FastifyFramework.plugin);

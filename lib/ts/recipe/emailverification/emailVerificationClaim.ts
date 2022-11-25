@@ -19,15 +19,16 @@ export class EmailVerificationClaimClass extends BooleanClaim {
                     // We consider people without email addresses as validated
                     return true;
                 } else {
-                    throw new Error("Should never come here: UNKNOWN_USER_ID or invalid result from getEmailForUserId");
+                    throw new Error("UNKNOWN_USER_ID");
                 }
             },
+            defaultMaxAgeInSeconds: 300,
         });
 
         this.validators = {
             ...this.validators,
             isVerified: (refetchTimeOnFalseInSeconds: number = 10, maxAgeInSeconds: number = 300) => ({
-                ...this.validators.hasValue(true),
+                ...this.validators.hasValue(true, maxAgeInSeconds),
                 shouldRefetch: (payload, userContext) => {
                     const value = this.getValueFromPayload(payload, userContext);
                     return (

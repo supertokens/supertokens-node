@@ -38,4 +38,26 @@ export declare type APIOptions = {
 export declare type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
 };
-export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<boolean>;
+export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
+export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
+declare type CommonUserInformation = {
+    id: string;
+    timeJoined: number;
+    firstName: string;
+    lastName: string;
+};
+export declare type EmailPasswordUser = CommonUserInformation & {
+    email: string;
+};
+export declare type ThirdPartyUser = CommonUserInformation & {
+    email: string;
+    thirdParty: {
+        id: string;
+        userId: string;
+    };
+};
+export declare type PasswordlessUser = CommonUserInformation & {
+    email?: string;
+    phone?: string;
+};
+export {};

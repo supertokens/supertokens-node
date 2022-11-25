@@ -20,7 +20,18 @@ import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, Type
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
-import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
+import {
+    DASHBOARD_API,
+    USERS_COUNT_API,
+    USERS_LIST_GET_API,
+    USER_API,
+    USER_EMAIL_VERIFY_API,
+    USER_EMAIL_VERIFY_TOKEN_API,
+    USER_METADATA_API,
+    USER_PASSWORD_API,
+    USER_SESSIONS_API,
+    VALIDATE_KEY_API,
+} from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import dashboard from "./api/dashboard";
@@ -29,6 +40,17 @@ import validateKey from "./api/validateKey";
 import apiKeyProtector from "./api/apiKeyProtector";
 import usersGet from "./api/usersGet";
 import usersCountGet from "./api/usersCountGet";
+import { userGet } from "./api/userdetails/userGet";
+import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
+import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
+import { userSessionsGet } from "./api/userdetails/userSessionsGet";
+import { userDelete } from "./api/userdetails/userDelete";
+import { userEmailVerifyPut } from "./api/userdetails/userEmailVerifyPut";
+import { userMetadataPut } from "./api/userdetails/userMetadataPut";
+import { userPasswordPut } from "./api/userdetails/userPasswordPut";
+import { userPut } from "./api/userdetails/userPut";
+import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyTokenPost";
+import { userSessionsPost } from "./api/userdetails/userSessionsPost";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -132,6 +154,46 @@ export default class Recipe extends RecipeModule {
             apiFunction = usersGet;
         } else if (id === USERS_COUNT_API) {
             apiFunction = usersCountGet;
+        } else if (id === USER_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userGet;
+            }
+
+            if (req.getMethod() === "delete") {
+                apiFunction = userDelete;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction = userPut;
+            }
+        } else if (id === USER_EMAIL_VERIFY_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userEmailverifyGet;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction = userEmailVerifyPut;
+            }
+        } else if (id === USER_METADATA_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userMetaDataGet;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction = userMetadataPut;
+            }
+        } else if (id === USER_SESSIONS_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userSessionsGet;
+            }
+
+            if (req.getMethod() === "post") {
+                apiFunction = userSessionsPost;
+            }
+        } else if (id === USER_PASSWORD_API) {
+            apiFunction = userPasswordPut;
+        } else if (id === USER_EMAIL_VERIFY_TOKEN_API) {
+            apiFunction = userEmailVerifyTokenPost;
         }
 
         // If the id doesnt match any APIs return false

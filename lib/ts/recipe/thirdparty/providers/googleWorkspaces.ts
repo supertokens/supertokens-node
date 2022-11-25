@@ -32,7 +32,7 @@ export default function GW(config: TypeThirdPartyProviderGoogleWorkspacesConfig)
     let domain: string = config.domain === undefined ? "*" : config.domain;
 
     function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://accounts.google.com/o/oauth2/token";
+        let accessTokenAPIURL = "https://oauth2.googleapis.com/token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: config.clientSecret,

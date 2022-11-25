@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [12.1.0] - 2022-11-17
+
+### Added:
+
+-   Adds APIs for user details to the dashboard recipe
+
+### Changed:
+
+-   Updates dashboard version to 0.2
+
+## [12.0.6] - 2022-11-09
+
+### Fixes
+
+-   Adds updating of session claims in email verification token generation API in case the session claims are outdated.
+-   Fixed mergeIntoAccessTokenPayload not updating the JWT payload
+
+## [12.0.5] - 2022-10-17
+
+-   Updated google token endpoint.
+
+## [12.0.4] - 2022-10-14
+
+### Changed:
+
+-   Removed default defaultMaxAge from session claim base classes
+-   Added a 5 minute defaultMaxAge to UserRoleClaim, PermissionClaim and EmailVerificationClaim
+
+## [12.0.3] - 2022-09-29
+
+### Refactor:
+
+-   clear cookies logic refactored for unauthorised error response
+
+## [12.0.2] - 2022-09-22
+
+### Bug fix:
+
+-   Properly rethrowing generic errors in email verification endpoints.
+
+## [12.0.1] - 2022-09-22
+
+### Changed
+
+-   Email verification endpoints will now clear the session if called by a deleted/unknown user
+
 ## [12.0.0] - 2022-09-14
 
 ### Bug fix:

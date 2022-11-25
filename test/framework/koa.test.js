@@ -184,7 +184,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     //- check for token theft detection
-    it("express token theft detection", async function () {
+    it("koa token theft detection", async function () {
         await startST();
         SuperTokens.init({
             framework: "koa",
@@ -198,6 +198,13 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    errorHandlers: {
+                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                            response.sendJSONResponse({
+                                success: true,
+                            });
+                        },
+                    },
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         apis: (oI) => {
@@ -225,14 +232,8 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         });
 
         router.post("/auth/session/refresh", async (ctx, next) => {
-            try {
-                await Session.refreshSession(ctx, ctx);
-                ctx.body = { success: false };
-            } catch (err) {
-                ctx.body = {
-                    success: err.type === Session.Error.TOKEN_THEFT_DETECTED,
-                };
-            }
+            await Session.refreshSession(ctx, ctx);
+            ctx.body = { success: false };
         });
 
         app.use(router.routes());
@@ -314,7 +315,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     //- check for token theft detection
-    it("express token theft detection with auto refresh middleware", async function () {
+    it("koa token theft detection with auto refresh middleware", async function () {
         await startST();
         SuperTokens.init({
             framework: "koa",

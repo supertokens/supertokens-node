@@ -15,11 +15,39 @@
 import { APIInterface, APIOptions } from "../types";
 import STError from "../../../error";
 import SuperTokens from "../../../supertokens";
-import { send200Response } from "../../../utils";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
 
-export default async function usersGet(_: APIInterface, options: APIOptions): Promise<boolean> {
+export type Response = {
+    status: "OK";
+    nextPaginationToken?: string;
+    users: {
+        recipeId: string;
+        user: {
+            id: string;
+            timeJoined: number;
+            firstName?: string;
+            lastName?: string;
+        } & (
+            | {
+                  email: string;
+              }
+            | {
+                  email: string;
+                  thirdParty: {
+                      id: string;
+                      userId: string;
+                  };
+              }
+            | {
+                  email?: string;
+                  phoneNumber?: string;
+              }
+        );
+    }[];
+};
+
+export default async function usersGet(_: APIInterface, options: APIOptions): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");
 
@@ -56,12 +84,11 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
         UserMetaDataRecipe.getInstanceOrThrowError();
     } catch (e) {
         // Recipe has not been initialised, return without first name and last name
-        send200Response(options.res, {
+        return {
             status: "OK",
             users: usersResponse.users,
             nextPaginationToken: usersResponse.nextPaginationToken,
-        });
-        return true;
+        };
     }
 
     let updatedUsersArray: {
@@ -134,11 +161,9 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
         users: updatedUsersArray,
     };
 
-    send200Response(options.res, {
+    return {
         status: "OK",
         users: usersResponse.users,
         nextPaginationToken: usersResponse.nextPaginationToken,
-    });
-
-    return true;
+    };
 }

@@ -245,8 +245,6 @@ export default function getRecipeInterface(
                 requestTransferMethod = "cookie";
                 accessToken = accessTokens["cookie"];
             } else {
-                // we do not clear cookies here because of a
-                // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
                 if (sessionOptional) {
                     logDebugMessage(
                         "getSession: returning undefined because accessToken is undefined and sessionRequired is false"
@@ -261,6 +259,11 @@ export default function getRecipeInterface(
                     message:
                         "Session does not exist. Are you sending the session tokens in the request as with the appropriate token transfer method?",
                     type: STError.UNAUTHORISED,
+                    payload: {
+                        // we do not clear the session here because of a
+                        // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+                        clearTokens: false,
+                    },
                 });
             }
 
@@ -321,6 +324,7 @@ export default function getRecipeInterface(
 
                 return session;
             } catch (err) {
+                // We can clear the session from all transfer methods here, since we received a valid, non-expired token in the current method
                 if (err.type === STError.UNAUTHORISED) {
                     logDebugMessage(
                         `getSession: Clearing ${requestTransferMethod} because of UNAUTHORISED response from getSession`
@@ -470,6 +474,9 @@ export default function getRecipeInterface(
                 logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
                 throw new STError({
                     message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+                    payload: {
+                        clearTokens: false,
+                    },
                     type: STError.UNAUTHORISED,
                 });
             }
@@ -511,7 +518,7 @@ export default function getRecipeInterface(
                     err.type === STError.TOKEN_THEFT_DETECTED
                 ) {
                     logDebugMessage(
-                        "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
+                        "refreshSession: Clearing tokens because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
                     );
                     clearSession(config, res, requestTransferMethod);
                 }

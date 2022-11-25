@@ -327,7 +327,7 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
                 });
             });
 
-            it("should not validate values older than default defaultMaxAge", async () => {
+            it("should validate old values with default defaultMaxAge", async () => {
                 const now = Date.now();
                 const clock = sinon.useFakeTimers(now);
 
@@ -338,12 +338,7 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
 
                 const res = await claim.validators.includes(includedItem).validate(payload, {});
                 assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        ageInSeconds: 604800,
-                        maxAgeInSeconds: 300,
-                        message: "expired",
-                    },
+                    isValid: true,
                 });
             });
 
@@ -543,7 +538,7 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
                 });
             });
 
-            it("should not validate values older than default defaultMaxAge", async () => {
+            it("should validate old values with default defaultMaxAge", async () => {
                 const now = Date.now();
                 const clock = sinon.useFakeTimers(now);
 
@@ -552,14 +547,9 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
                 // advance clock by one week
                 clock.tick(6.048e8);
 
-                const res = await claim.validators.excludes(includedItem).validate(payload, {});
+                const res = await claim.validators.excludes(notIncludedItem).validate(payload, {});
                 assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        ageInSeconds: 604800,
-                        maxAgeInSeconds: 300,
-                        message: "expired",
-                    },
+                    isValid: true,
                 });
             });
 
@@ -765,7 +755,7 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
                 });
             });
 
-            it("should refetch if value is older than default defaultMaxAge", async () => {
+            it("should not refetch old values with default defaultMaxAge", async () => {
                 const now = Date.now();
                 const clock = sinon.useFakeTimers(now);
 
@@ -774,7 +764,7 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
                 // advance clock by one week
                 clock.tick(6.048e8);
 
-                assert.equal(claim.validators.includesAll([notIncludedItem]).shouldRefetch(payload), true);
+                assert.equal(claim.validators.includesAll([notIncludedItem]).shouldRefetch(payload), false);
             });
 
             it("should not refetch if maxAge is overrides to infinite", async () => {
@@ -969,7 +959,7 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
                 });
             });
 
-            it("should not validate values older than default defaultMaxAge", async () => {
+            it("should validate old values with default defaultMaxAge", async () => {
                 const now = Date.now();
                 const clock = sinon.useFakeTimers(now);
 
@@ -978,14 +968,9 @@ describe(`sessionClaims/primitiveArrayClaim: ${printPath(
                 // advance clock by one week
                 clock.tick(6.048e8);
 
-                const res = await claim.validators.excludesAll([includedItem]).validate(payload, {});
+                const res = await claim.validators.excludesAll([notIncludedItem]).validate(payload, {});
                 assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        ageInSeconds: 604800,
-                        maxAgeInSeconds: 300,
-                        message: "expired",
-                    },
+                    isValid: true,
                 });
             });
 

@@ -30,7 +30,10 @@ import handleRefreshAPI from "./api/refresh";
 import signOutAPI from "./api/signout";
 import { REFRESH_API_PATH, SIGNOUT_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "./cookieAndHeaders";
+import {
+    clearSessionFromAllTokenTransferMethods,
+    getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
+} from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
 import RecipeImplementationWithJWT from "./with-jwt";
 import { Querier } from "../../querier";
@@ -217,12 +220,22 @@ export default class SessionRecipe extends RecipeModule {
         if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
             if (err.type === STError.UNAUTHORISED) {
                 logDebugMessage("errorHandler: returning UNAUTHORISED");
+                if (
+                    err.payload === undefined ||
+                    err.payload.clearTokens === undefined ||
+                    err.payload.clearTokens === true
+                ) {
+                    logDebugMessage("errorHandler: Clearing tokens because of UNAUTHORISED response");
+                    clearSessionFromAllTokenTransferMethods(this.config, request, response);
+                }
                 return await this.config.errorHandlers.onUnauthorised(err.message, request, response);
             } else if (err.type === STError.TRY_REFRESH_TOKEN) {
                 logDebugMessage("errorHandler: returning TRY_REFRESH_TOKEN");
                 return await this.config.errorHandlers.onTryRefreshToken(err.message, request, response);
             } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
                 logDebugMessage("errorHandler: returning TOKEN_THEFT_DETECTED");
+                logDebugMessage("errorHandler: Clearing tokens because of TOKEN_THEFT_DETECTED response");
+                clearSessionFromAllTokenTransferMethods(this.config, request, response);
                 return await this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,

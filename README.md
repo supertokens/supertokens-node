@@ -26,3 +26,5 @@ For any queries, or support requests, please email us at team@supertokens.com, o
 ## Authors
 
 Created with :heart: by the folks at supertokens.com.
+
+[![Featured on Openbase](https://badges.openbase.com/js/featured/supertokens-node.svg?style=openbase&token=ficVFymu0SAHNI+0JUEDA2pHn93FLoj8k0VayFpvZ3Y=)](https://openbase.com/js/supertokens-node?utm_source=embedded&utm_medium=badge&utm_campaign=rate-badge)
