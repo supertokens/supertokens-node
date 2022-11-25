@@ -6,7 +6,7 @@ import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        linkNewAccountToExistingAccountPOST: async function (_input: {
+        linkAccountToExistingAccountPOST: async function (_input: {
             formFields: {
                 id: string;
                 value: string;
