@@ -30,9 +30,6 @@ export default function getAPIImplementation(): APIInterface {
                   primaryUserId: string;
               }
             | {
-                  status: "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-              }
-            | {
                   status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
               }
             | {
