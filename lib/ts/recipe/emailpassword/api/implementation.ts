@@ -29,6 +29,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
+                  description: string
               }
             | {
                   status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
