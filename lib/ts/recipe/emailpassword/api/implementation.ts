@@ -24,27 +24,26 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
-                  description: string
+                  description: string;
               }
             | {
                   status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
-                  description: string
+                  description: string;
               }
             | {
                   status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                  description: string
-              }
-            | {
-                  status: "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR";
+                  description: string;
               }
             | {
                   status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                  isNotVerifiedAccountFromInputSession: boolean;
               }
             | GeneralErrorResponse
         > {
             return {
                 status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                isNotVerifiedAccountFromInputSession: false,
             };
         },
         emailExistsGET: async function ({

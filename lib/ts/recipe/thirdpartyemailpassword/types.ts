@@ -251,7 +251,7 @@ export type APIInterface = {
                 }
           >);
 
-    emailPasswordLinkNewAccountToExistingAccountPOST:
+    emailPasswordLinkAccountToExistingAccountPOST:
         | undefined
         | ((input: {
               formFields: {
@@ -271,22 +271,20 @@ export type APIInterface = {
               | {
                     status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                     primaryUserId: string;
+                    description: string;
                 }
               | {
                     status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                     primaryUserId: string;
-                }
-              | {
-                    status: "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                    description: string;
                 }
               | {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                }
-              | {
-                    status: "CANNOT_CREATE_PRIMARY_USER_FOR_EXISTING_ACCOUNT_ERROR";
+                    description: string;
                 }
               | {
                     status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                    isNotVerifiedAccountFromInputSession: boolean;
                 }
               | GeneralErrorResponse
           >);
@@ -325,7 +323,6 @@ export type APIInterface = {
                     status: "OK";
                     user: User;
                     createdNewUser: boolean;
-                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                 }
               | {
