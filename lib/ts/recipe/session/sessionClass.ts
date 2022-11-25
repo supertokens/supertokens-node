@@ -15,35 +15,20 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
 
 export default class Session implements SessionContainerInterface {
-    protected sessionHandle: string;
-    protected userId: string;
-    protected userDataInAccessToken: any;
-    protected readonly req: BaseRequest;
-    protected res: BaseResponse;
-    protected accessToken: string;
-    protected helpers: Helpers;
-
     constructor(
-        helpers: Helpers,
-        accessToken: string,
-        sessionHandle: string,
-        userId: string,
-        userDataInAccessToken: any,
-        res: BaseResponse,
-        req: BaseRequest
-    ) {
-        this.sessionHandle = sessionHandle;
-        this.userId = userId;
-        this.userDataInAccessToken = userDataInAccessToken;
-        this.req = req;
-        this.res = res;
-        this.accessToken = accessToken;
-        this.helpers = helpers;
-    }
+        protected helpers: Helpers,
+        protected accessToken: string,
+        protected sessionHandle: string,
+        protected userId: string,
+        protected userDataInAccessToken: any,
+        protected res: BaseResponse,
+        protected readonly req: BaseRequest,
+        protected readonly transferMethod: TokenTransferMethod
+    ) {}
 
     revokeSession = async (userContext?: any) => {
         await this.helpers.getRecipeImpl().revokeSession({
@@ -57,7 +42,7 @@ export default class Session implements SessionContainerInterface {
         // If we instead clear the cookies only when revokeSession
         // returns true, it can cause this kind of a bug:
         // https://github.com/supertokens/supertokens-node/issues/343
-        clearSession(this.helpers.config, this.req, this.res, userContext);
+        clearSession(this.helpers.config, this.res, this.transferMethod);
     };
 
     getSessionData = async (userContext?: any): Promise<any> => {
@@ -66,7 +51,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, userContext);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -83,7 +68,7 @@ export default class Session implements SessionContainerInterface {
                 userContext: userContext === undefined ? {} : userContext,
             }))
         ) {
-            clearSession(this.helpers.config, this.req, this.res, userContext);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -124,7 +109,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, userContext);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -139,7 +124,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, userContext);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -198,7 +183,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (response === undefined) {
-            clearSession(this.helpers.config, this.req, this.res, userContext);
+            clearSession(this.helpers.config, this.res, this.transferMethod);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -215,12 +200,15 @@ export default class Session implements SessionContainerInterface {
             );
             setToken(
                 this.helpers.config,
-                this.req,
                 this.res,
                 "access",
                 response.accessToken.token,
-                response.accessToken.expiry,
-                userContext
+                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+                Date.now() + 3153600000000,
+                this.transferMethod
             );
         }
     };

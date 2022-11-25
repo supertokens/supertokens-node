@@ -5,7 +5,7 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
-import { HEADER_AUTH_MODE, HEADER_RID } from "./constants";
+import { HEADER_RID } from "./constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -107,10 +107,6 @@ export function isAnIpAddress(ipaddress: string) {
     return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
         ipaddress
     );
-}
-
-export function getAuthModeFromHeader(req: BaseRequest): string | undefined {
-    return req.getHeaderValue(HEADER_AUTH_MODE);
 }
 
 export function getRidFromHeader(req: BaseRequest): string | undefined {

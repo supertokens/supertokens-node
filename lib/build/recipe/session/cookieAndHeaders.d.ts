@@ -1,14 +1,13 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
-import { TokenType, TypeNormalisedInput } from "./types";
+import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 /**
  * @description clears all the auth cookies from the response
  */
 export declare function clearSession(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
-    userContext: any
+    transferMethod: TokenTransferMethod
 ): void;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;
@@ -19,23 +18,18 @@ export declare function setFrontTokenInHeaders(
     accessTokenPayload: any
 ): void;
 export declare function getCORSAllowedHeaders(): string[];
-export declare function isTokenInCookies(req: BaseRequest, tokenType: TokenType): boolean;
 export declare function getToken(
-    config: TypeNormalisedInput,
     req: BaseRequest,
     tokenType: TokenType,
-    userContext: any,
-    transferMethod?: "cookie" | "header"
+    transferMethod: TokenTransferMethod
 ): string | undefined;
 export declare function setToken(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
     tokenType: TokenType,
     value: string,
     expires: number,
-    userContext: any,
-    transferMethod?: "cookie" | "header"
+    transferMethod: TokenTransferMethod
 ): void;
 export declare function setHeader(res: BaseResponse, name: string, value: string, expires: number): void;
 /**
@@ -57,3 +51,4 @@ export declare function setCookie(
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
 ): void;
+export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;

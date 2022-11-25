@@ -43,11 +43,6 @@ export declare type CreateOrRefreshAPIResponse = {
         expiry: number;
         createdTime: number;
     };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
     antiCsrfToken: string | undefined;
 };
 export interface ErrorHandlers {
@@ -55,14 +50,19 @@ export interface ErrorHandlers {
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
     onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
 }
-export declare type TokenType = "access" | "refresh" | "idRefresh";
+export declare type TokenType = "access" | "refresh";
+export declare type TokenTransferMethod = "header" | "cookie";
 export declare type TypeInput = {
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
-    getTokenTransferMethod?: (input: { req: BaseRequest; userContext: any }) => "cookie" | "header";
+    getTokenTransferMethod?: (input: {
+        req: BaseRequest;
+        forCreateNewSession: boolean;
+        userContext: any;
+    }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     jwt?:
@@ -110,7 +110,11 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    getTokenTransferMethod: (input: { req: BaseRequest; userContext: any }) => "cookie" | "header";
+    getTokenTransferMethod: (input: {
+        req: BaseRequest;
+        forCreateNewSession: boolean;
+        userContext: any;
+    }) => TokenTransferMethod | "any";
     invalidClaimStatusCode: number;
     jwt: {
         enable: boolean;
