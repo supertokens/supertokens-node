@@ -56,11 +56,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                         appName: "SuperTokens",
                         websiteDomain: "supertokens.io",
                     },
-                    recipeList: [
-                        Session.init({
-                            antiCsrf: "VIA_TOKEN",
-                        }),
-                    ],
+                    recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
                 });
 
                 const app = getTestApp();
@@ -82,6 +78,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
@@ -115,6 +112,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
@@ -162,6 +160,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
@@ -199,6 +198,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
@@ -238,6 +238,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
@@ -297,6 +298,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -350,6 +352,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -385,6 +388,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -423,6 +427,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -461,6 +466,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -507,6 +513,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -555,6 +562,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -602,6 +610,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     },
                     recipeList: [
                         Session.init({
+                            getTokenTransferMethod: () => "cookie",
                             antiCsrf: "VIA_TOKEN",
                             override: {
                                 functions: (oI) => ({
@@ -638,7 +647,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
 function validateErrorResp(resp, errors) {
     assert.ok(resp.body);
     assert.strictEqual(resp.body.message, "invalid claim");
-    assert.deepEqual(resp.body.claimValidationErrors, errors);
+    assert.deepStrictEqual(resp.body.claimValidationErrors, errors);
 }
 
 async function createSession(app, body) {
@@ -663,7 +672,7 @@ function testGet(app, info, url, expectedStatus) {
     return new Promise((resolve, reject) =>
         request(app)
             .get(url)
-            .set("Cookie", ["sAccessToken=" + info.accessToken + ";sIdRefreshToken=" + info.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + info.accessToken])
             .set("anti-csrf", info.antiCsrf)
             .expect(expectedStatus)
             .end((err, res) => {

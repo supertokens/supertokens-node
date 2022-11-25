@@ -35,7 +35,7 @@ const { default: next } = require("next");
 let { middleware, errorHandler } = require("../framework/express");
 let STExpress = require("../");
 
-describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
+describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -112,6 +112,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     },
                 }),
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         functions: (oI) => {
                             return {
@@ -227,6 +228,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     },
                 }),
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         functions: (oI) => {
                             return {

@@ -48,6 +48,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 recipeList: [
                     EmailPassword.init(),
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => {
                                 return {
@@ -448,6 +449,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                         ],
                     }),
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => {
                                 return {
@@ -561,6 +563,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 recipeList: [
                     EmailPassword.init(),
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => {
                                 return {
@@ -633,9 +636,6 @@ function getSessionCookiesFromResponse(response) {
         ),
         sRefreshToken: decodeURIComponent(
             response._getHeaders()["set-cookie"][1].split("sRefreshToken=")[1].split(";")[0]
-        ),
-        sIdRefreshToken: decodeURIComponent(
-            response._getHeaders()["set-cookie"][2].split("sIdRefreshToken=")[1].split(";")[0]
         ),
     };
 }

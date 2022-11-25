@@ -20,6 +20,7 @@ const {
     cleanST,
     extractInfoFromResponse,
     setKeyValueInConfig,
+    delay,
 } = require("./utils");
 let assert = require("assert");
 const express = require("express");
@@ -59,6 +60,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -83,6 +85,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
+                    .set("st-auth-mode", "cookie")
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -97,7 +100,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -124,6 +127,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -148,6 +152,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
+                    .set("st-auth-mode", "cookie")
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -188,6 +193,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     errorHandlers: {
                         onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
                             response.sendJSONResponse({
@@ -241,10 +247,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -259,9 +262,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res2.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     resolve();
@@ -271,7 +272,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res3 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -281,20 +282,16 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res3.body.success, true);
+        assert.strictEqual(res3.body.success, true);
 
         let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(cookies.antiCsrf, undefined);
+        assert.strictEqual(cookies.accessToken, "");
+        assert.strictEqual(cookies.refreshToken, "");
+        assert.strictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
-        assert(cookies.idRefreshTokenDomain === undefined);
     });
 
     //- check for token theft detection
@@ -309,11 +306,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -350,10 +343,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -368,9 +358,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res2.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     resolve();
@@ -380,7 +368,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res3 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -391,17 +379,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         assert(res3.status === 401);
-        assert.deepEqual(res3.text, '{"message":"token theft detected"}');
+        assert.deepStrictEqual(res3.text, '{"message":"token theft detected"}');
 
         let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(cookies.antiCsrf, undefined);
+        assert.strictEqual(cookies.accessToken, "");
+        assert.strictEqual(cookies.refreshToken, "");
+        assert.strictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
     //check basic usage of session
@@ -416,11 +401,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -461,14 +442,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -486,10 +465,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -503,17 +479,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res2.accessToken !== undefined);
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -533,9 +505,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -551,9 +521,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -567,11 +535,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("test basic usage of express sessions with headers", async function () {
@@ -638,14 +603,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.ok(res.refreshTokenFromHeader);
         assert.strictEqual(res.refreshToken, undefined);
 
-        assert.strictEqual(res.idRefreshTokenFromCookie, undefined);
-        assert.ok(res.idRefreshTokenFromHeader);
-
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
                 .set("Authorization", `Bearer ${res.accessTokenFromHeader.value}`)
-                .set("st-id-refresh-token", res.idRefreshTokenFromHeader)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -662,8 +623,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("st-refresh-token", res.refreshTokenFromHeader.value)
-                    .set("st-id-refresh-token", res.idRefreshTokenFromHeader)
+                    .set("Authorization", `Bearer ${res.refreshTokenFromHeader.value}`)
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -681,15 +641,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.ok(res2.refreshTokenFromHeader);
         assert.strictEqual(res2.refreshToken, undefined);
 
-        assert.strictEqual(res2.idRefreshTokenFromCookie, undefined);
-        assert.ok(res2.idRefreshTokenFromHeader);
-
         let res3 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
                     .set("Authorization", `Bearer ${res2.accessTokenFromHeader.value}`)
-                    .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -709,7 +665,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/session/verify")
                 .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
-                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -725,7 +681,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/session/revoke")
                 .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
-                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
@@ -740,184 +696,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.expiry, 0);
         assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.value, "");
         assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.expiry, 0);
-        assert.strictEqual(sessionRevokedResponseExtracted.idRefreshTokenFromHeader, "remove");
-    });
-
-    it("test cookie -> header upgrade flow", async function () {
-        await startST();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
-        });
-
-        const app = express();
-
-        app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", verifySession(), async (req, res) => {
-            res.status(200).send("");
-        });
-        app.post("/auth/session/refresh", async (req, res) => {
-            await Session.refreshSession(req, res);
-            res.status(200).send("");
-        });
-        app.post("/session/revoke", async (req, res) => {
-            let session = await Session.getSession(req, res);
-            await session.revokeSession();
-            res.status(200).send("");
-        });
-
-        app.use(errorHandler());
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res);
-                        }
-                    })
-            )
-        );
-
-        assert.notStrictEqual(res.accessToken, undefined);
-        assert.notStrictEqual(res.antiCsrf, undefined);
-        assert.notStrictEqual(res.idRefreshTokenFromCookie, undefined);
-        assert.notStrictEqual(res.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(res.refreshToken, undefined);
-
-        const verifyRes1 = await new Promise((resolve, reject) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("anti-csrf", res.antiCsrf)
-                .set("rid", "anti-csrf;header")
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-                .expect(401)
-        );
-        assert.ok(verifyRes1);
-        assert.strictEqual(verifyRes1.status, 401);
-        assert.strictEqual(verifyRes1.text, '{"message":"try refresh token"}');
-
-        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
-        assert(verifyState3 === undefined);
-
-        let res2 = extractInfoFromResponse(
-            await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
-                    .set("anti-csrf", res.antiCsrf)
-                    .set("rid", "anti-csrf;header")
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res);
-                        }
-                    })
-            )
-        );
-
-        assert(res2.antiCsrf === undefined);
-        assert.ok(res2.accessTokenFromHeader);
-        assert.strictEqual(res2.accessToken, undefined);
-
-        assert.ok(res2.refreshTokenFromHeader);
-        assert.strictEqual(res2.refreshToken, undefined);
-
-        assert.strictEqual(res2.idRefreshTokenFromCookie, undefined);
-        assert.ok(res2.idRefreshTokenFromHeader);
-
-        let res3 = extractInfoFromResponse(
-            await new Promise((resolve, reject) =>
-                request(app)
-                    .post("/session/verify")
-                    .set("Authorization", `Bearer ${res2.accessTokenFromHeader.value}`)
-                    .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
-                    .set("rid", "anti-csrf;header")
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(res);
-                        }
-                    })
-            )
-        );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessTokenFromHeader !== undefined);
-
-        ProcessState.getInstance().reset();
-
-        await new Promise((resolve, reject) =>
-            request(app)
-                .post("/session/verify")
-                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
-                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
-                .set("rid", "anti-csrf;header")
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
-        assert(verifyState2 === undefined);
-
-        let sessionRevokedResponse = await new Promise((resolve, reject) =>
-            request(app)
-                .post("/session/revoke")
-                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
-                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
-                .set("rid", "anti-csrf;header")
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
-        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.value, "");
-        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.expiry, 0);
-        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.value, "");
-        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.expiry, 0);
-        assert.strictEqual(sessionRevokedResponseExtracted.idRefreshTokenFromHeader, "remove");
     });
 
     it("test signout API works", async function () {
@@ -931,11 +709,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         const app = express();
         app.use(middleware());
@@ -963,7 +737,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -977,11 +751,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("test signout API works if even session is deleted on the backend after creation", async function () {
@@ -995,11 +766,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         const app = express();
         app.use(middleware());
@@ -1032,7 +799,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -1046,11 +813,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     //check basic usage of session
@@ -1067,11 +831,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 websiteDomain: "supertokens.io",
                 apiBasePath: "/",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -1112,14 +872,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -1137,10 +895,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -1154,17 +909,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res2.accessToken !== undefined);
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -1184,9 +935,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -1202,9 +951,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1218,11 +965,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     //check session verify for with / without anti-csrf present
@@ -1237,11 +981,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -1278,7 +1018,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -1288,12 +1028,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res2.body.userId, "id1");
+        assert.strictEqual(res2.body.userId, "id1");
 
         let res3 = await new Promise((resolve) =>
             request(app)
                 .post("/session/verifyAntiCsrfFalse")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -1303,7 +1043,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res3.body.userId, "id1");
+        assert.strictEqual(res3.body.userId, "id1");
     });
 
     // check session verify for with / without anti-csrf present
@@ -1318,11 +1058,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -1366,7 +1102,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let response2 = await new Promise((resolve) =>
             request(app)
                 .post("/session/verifyAntiCsrfFalse")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1375,12 +1111,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(response2.body.userId, "id1");
+        assert.strictEqual(response2.body.userId, "id1");
 
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1389,7 +1125,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(response.body.success, true);
+        assert.strictEqual(response.body.success, true);
     });
 
     //check revoking session(s)**
@@ -1404,11 +1140,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         const app = express();
         app.post("/create", async (req, res) => {
@@ -1454,9 +1186,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", [
-                    "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + response.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1470,11 +1200,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
 
         await new Promise((resolve) =>
             request(app)
@@ -1506,12 +1233,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/revokeUserid")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                        userCreateResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        userCreateResponse.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + userCreateResponse.accessToken])
                 .set("anti-csrf", userCreateResponse.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1549,11 +1271,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -1602,9 +1320,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/updateSessionData")
-                .set("Cookie", [
-                    "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + response.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1620,9 +1336,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let response2 = await new Promise((resolve) =>
             request(app)
                 .post("/getSessionData")
-                .set("Cookie", [
-                    "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + response.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1635,15 +1349,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check that the session data returned is valid
-        assert.deepEqual(response2.body.key, "value");
+        assert.strictEqual(response2.body.key, "value");
 
         // change the value of the inserted session data
         await new Promise((resolve) =>
             request(app)
                 .post("/updateSessionData2")
-                .set("Cookie", [
-                    "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + response.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1658,9 +1370,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         response2 = await new Promise((resolve) =>
             request(app)
                 .post("/getSessionData")
-                .set("Cookie", [
-                    "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + response.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1679,9 +1389,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let invalidSessionResponse = await new Promise((resolve) =>
             request(app)
                 .post("/updateSessionDataInvalidSessionHandle")
-                .set("Cookie", [
-                    "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + response.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1692,7 +1400,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(invalidSessionResponse.body.success, true);
+        assert.strictEqual(invalidSessionResponse.body.success, true);
     });
 
     //check manipulating jwt payload
@@ -1707,11 +1415,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         const app = express();
         app.post("/create", async (req, res) => {
@@ -1766,19 +1470,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, {});
+        assert.deepStrictEqual(frontendInfo.up, {});
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/updateAccessTokenPayload")
-                    .set("Cookie", [
-                        "sAccessToken=" +
-                            response.accessToken +
-                            ";sIdRefreshToken=" +
-                            response.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + response.accessToken])
                     .set("anti-csrf", response.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1793,18 +1492,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, { key: "value" });
+        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
             request(app)
                 .post("/getAccessTokenPayload")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                        updatedResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + updatedResponse.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1816,19 +1510,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         //check that the jwt payload returned is valid
-        assert.deepEqual(response2.body.key, "value");
+        assert.strictEqual(response2.body.key, "value");
 
         // refresh session
         response2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" +
-                            response.refreshToken +
-                            ";sIdRefreshToken=" +
-                            response.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + response.refreshToken])
                     .set("anti-csrf", response.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1843,19 +1532,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, { key: "value" });
+        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/updateAccessTokenPayload2")
-                    .set("Cookie", [
-                        "sAccessToken=" +
-                            response2.accessToken +
-                            ";sIdRefreshToken=" +
-                            response2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + response2.accessToken])
                     .set("anti-csrf", response2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1876,12 +1560,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         response2 = await new Promise((resolve) =>
             request(app)
                 .post("/getAccessTokenPayload")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                        updatedResponse2.accessToken +
-                        ";sIdRefreshToken=" +
-                        response2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + updatedResponse2.accessToken])
                 .set("anti-csrf", response2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1899,12 +1578,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let invalidSessionResponse = await new Promise((resolve) =>
             request(app)
                 .post("/updateAccessTokenPayloadInvalidSessionHandle")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                        updatedResponse2.accessToken +
-                        ";sIdRefreshToken=" +
-                        response.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + updatedResponse2.accessToken])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1915,7 +1589,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(invalidSessionResponse.body.success, true);
+        assert.strictEqual(invalidSessionResponse.body.success, true);
     });
 
     // test with existing header params being there and that the lib appends to those and not overrides those
@@ -1930,11 +1604,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         const app = express();
         app.post("/create", async (req, res) => {
@@ -1958,18 +1628,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(response.headers.testheader, "testValue");
-        assert.deepEqual(
-            response.headers["access-control-expose-headers"],
-            "customValue, front-token, st-id-refresh-token, anti-csrf"
-        );
+        assert.strictEqual(response.headers.testheader, "testValue");
+        assert.deepEqual(response.headers["access-control-expose-headers"], "customValue, front-token, anti-csrf");
 
         //normal session headers
         let extractInfo = extractInfoFromResponse(response);
         assert(extractInfo.accessToken !== undefined);
         assert(extractInfo.refreshToken != undefined);
-        assert(extractInfo.idRefreshTokenFromCookie !== undefined);
-        assert(extractInfo.idRefreshTokenFromHeader !== undefined);
         assert(extractInfo.antiCsrf !== undefined);
     });
 
@@ -1985,11 +1650,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "NONE",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE" })],
         });
 
         const app = express();
@@ -2025,7 +1686,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -2034,12 +1695,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res2.body.userId, "id1");
+        assert.strictEqual(res2.body.userId, "id1");
 
         let res3 = await new Promise((resolve) =>
             request(app)
                 .post("/session/verifyAntiCsrfFalse")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -2048,7 +1709,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res3.body.userId, "id1");
+        assert.strictEqual(res3.body.userId, "id1");
     });
 
     it("test that getSession does not clear cookies if a session does not exist in the first place", async function () {
@@ -2062,11 +1723,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -2095,17 +1752,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
-        assert.deepEqual(res.body.success, true);
+        assert.strictEqual(res.body.success, true);
 
         let cookies = extractInfoFromResponse(res);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, undefined);
-        assert.deepEqual(cookies.refreshToken, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, undefined);
-        assert.deepEqual(cookies.accessTokenExpiry, undefined);
-        assert.deepEqual(cookies.idRefreshTokenExpiry, undefined);
-        assert.deepEqual(cookies.refreshTokenExpiry, undefined);
+        assert.strictEqual(cookies.antiCsrf, undefined);
+        assert.strictEqual(cookies.accessToken, undefined);
+        assert.strictEqual(cookies.refreshToken, undefined);
+        assert.strictEqual(cookies.accessTokenExpiry, undefined);
+        assert.strictEqual(cookies.refreshTokenExpiry, undefined);
     });
 
     it("test that refreshSession does not clear cookies if a session does not exist in the first place", async function () {
@@ -2119,11 +1773,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -2152,17 +1802,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
-        assert.deepEqual(res.body.success, true);
+        assert.strictEqual(res.body.success, true);
 
         let cookies = extractInfoFromResponse(res);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, undefined);
-        assert.deepEqual(cookies.refreshToken, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, undefined);
-        assert.deepEqual(cookies.accessTokenExpiry, undefined);
-        assert.deepEqual(cookies.idRefreshTokenExpiry, undefined);
-        assert.deepEqual(cookies.refreshTokenExpiry, undefined);
+        assert.strictEqual(cookies.antiCsrf, undefined);
+        assert.strictEqual(cookies.accessToken, undefined);
+        assert.strictEqual(cookies.refreshToken, undefined);
+        assert.strictEqual(cookies.accessTokenExpiry, undefined);
+        assert.strictEqual(cookies.refreshTokenExpiry, undefined);
     });
 
     it("test that when anti-csrf is enabled with custom header, and we don't provide that in verifySession, we get try refresh token", async function () {
@@ -2176,11 +1823,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_CUSTOM_HEADER",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
         });
 
         const app = express();
@@ -2219,9 +1862,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res2 = await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -2236,9 +1877,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res3 = await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
                     .set("rid", "session")
                     .end((err, res) => {
                         if (err) {
@@ -2255,9 +1894,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res2 = await new Promise((resolve) =>
                 request(app)
                     .post("/session/verifyAntiCsrfFalse")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -2271,9 +1908,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res3 = await new Promise((resolve) =>
                 request(app)
                     .post("/session/verifyAntiCsrfFalse")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
                     .set("rid", "session")
                     .end((err, res) => {
                         if (err) {
@@ -2298,11 +1933,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_CUSTOM_HEADER",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
         });
         const app = express();
         app.use(middleware());
@@ -2333,10 +1964,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res2 = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -2354,10 +1982,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res2 = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("rid", "session")
                     .end((err, res) => {
                         if (err) {
@@ -2404,11 +2029,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_CUSTOM_HEADER",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
         });
 
         let res = extractInfoFromResponse(
@@ -2430,9 +2051,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res2 = await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -2447,9 +2066,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res3 = await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
                     .set("rid", "session")
                     .end((err, res) => {
                         if (err) {
@@ -2482,6 +2099,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         functions: (oI) => {
@@ -2553,15 +2171,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.accessToken !== undefined);
         assert.strictEqual(session.getAccessToken(), decodeURIComponent(res.accessToken));
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
         session = undefined;
 
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -2579,10 +2195,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -2599,8 +2212,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.accessToken !== undefined);
         assert.strictEqual(session.getAccessToken(), decodeURIComponent(res2.accessToken));
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
         session = undefined;
 
@@ -2608,9 +2219,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -2633,9 +2242,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -2651,9 +2258,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -2667,11 +2272,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("test overriding of sessions apis", async function () {
@@ -2690,6 +2292,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         apis: (oI) => {
@@ -2739,14 +2342,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -2761,11 +2362,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(signoutCalled, true);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("test overriding of sessions functions, error thrown", async function () {
@@ -2785,6 +2383,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         functions: (oI) => {
@@ -2861,6 +2460,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         apis: (oI) => {
@@ -2919,14 +2519,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -2952,11 +2550,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_CUSTOM_HEADER",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_CUSTOM_HEADER" })],
         });
         const app = express();
         app.use(middleware());
@@ -2987,10 +2581,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res2 = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -3003,7 +2594,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res2.status, 401);
             assert.deepStrictEqual(res2.text, '{"message":"unauthorised"}');
             let sessionRevokedResponseExtracted = extractInfoFromResponse(res2);
-            assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader !== "remove");
         }
     });
 
@@ -3018,11 +2608,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         const app = express();
         app.use(middleware());
@@ -3053,10 +2639,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let res2 = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -3068,167 +2651,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
             assert.deepStrictEqual(res2.status, 401);
             assert.deepStrictEqual(res2.text, '{"message":"unauthorised"}');
-            let sessionRevokedResponseExtracted = extractInfoFromResponse(res2);
-            assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
         }
-    });
-
-    // check session verify for with session optional and no rid pass
-    it("check session verify for with session optional and no rid pass", async function () {
-        await startST();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
-        });
-
-        const app = express();
-
-        app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post(
-            "/session/verify",
-            verifySession({
-                sessionRequired: false,
-                antiCsrfCheck: false,
-            }),
-            async (req, res) => {
-                res.status(200).json({ success: true, session: req.session !== undefined });
-            }
-        );
-
-        app.get(
-            "/session/verify",
-            verifySession({
-                sessionRequired: false,
-                antiCsrfCheck: false,
-            }),
-            async (req, res) => {
-                res.status(200).json({ success: true, session: req.session !== undefined });
-            }
-        );
-
-        app.use(errorHandler());
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res);
-                        }
-                    })
-            )
-        );
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.body.success, true);
-        assert.strictEqual(response.body.session, true);
-
-        response = await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("rid", "session")
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.body.message, "try refresh token");
-        assert.strictEqual(response.status, 401);
-
-        response = await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.body.success, true);
-        assert.strictEqual(response.body.session, false);
-
-        response = await new Promise((resolve) =>
-            request(app)
-                .get("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.body.success, true);
-        assert.strictEqual(response.body.session, true);
-
-        response = await new Promise((resolve) =>
-            request(app)
-                .get("/session/verify")
-                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("rid", "session")
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.body.message, "try refresh token");
-        assert.strictEqual(response.status, 401);
-
-        response = await new Promise((resolve) =>
-            request(app)
-                .get("/session/verify")
-                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response.body.message, "try refresh token");
-        assert.strictEqual(response.status, 401);
     });
 
     it("test session error handler overriding", async function () {
@@ -3245,6 +2668,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     errorHandlers: {
                         onUnauthorised: async (message, request, response) => {
@@ -3333,7 +2757,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -3343,6 +2767,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
+                    .set("st-auth-mode", "cookie")
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -3354,16 +2779,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        assert(res.accessToken !== undefined);
-        assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
-        assert(res.refreshToken !== undefined);
+        assert.notStrictEqual(res.accessToken, undefined);
+        assert.notStrictEqual(res.antiCsrf, undefined);
+        assert.notStrictEqual(res.refreshToken, undefined);
 
         let resp = await new Promise((resolve) =>
             request(app)
                 .post("/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -3381,14 +2804,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.antiCsrf.length > 1);
         assert.deepEqual(res2.accessToken, "");
         assert.deepEqual(res2.refreshToken, "");
-        assert.deepEqual(res2.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res2.idRefreshTokenFromCookie, "");
         assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(res2.accessTokenDomain === undefined);
         assert(res2.refreshTokenDomain === undefined);
-        assert(res2.idRefreshTokenDomain === undefined);
         assert(res2.frontToken.length > 1);
     });
 
@@ -3430,7 +2849,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -3440,6 +2859,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
+                    .set("st-auth-mode", "cookie")
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -3453,14 +2873,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let resp = await new Promise((resolve) =>
             request(app)
                 .post("/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -3478,14 +2896,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.antiCsrf.length > 1);
         assert.deepEqual(res2.accessToken, "");
         assert.deepEqual(res2.refreshToken, "");
-        assert.deepEqual(res2.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res2.idRefreshTokenFromCookie, "");
         assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(res2.accessTokenDomain === undefined);
         assert(res2.refreshTokenDomain === undefined);
-        assert(res2.idRefreshTokenDomain === undefined);
         assert(res2.frontToken.length > 1);
     });
 
@@ -3510,10 +2924,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                             return {
                                 ...oI,
                                 refreshPOST: async function (input) {
+                                    console.log("a");
                                     let session = await oI.refreshPOST(input);
+                                    console.log("b");
                                     throw new Session.Error({
                                         message: "unauthorised",
                                         type: Session.Error.UNAUTHORISED,
+                                        clearTokens: true,
                                     });
                                 },
                             };
@@ -3528,7 +2945,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -3538,6 +2955,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
+                    .set("st-auth-mode", "cookie")
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -3551,14 +2969,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let resp = await new Promise((resolve) =>
             request(app)
                 .post("/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -3572,18 +2988,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(resp.status === 401);
 
         let res2 = extractInfoFromResponse(resp);
-
+        console.log(res2);
         assert(res2.antiCsrf.length > 1);
-        assert.deepEqual(res2.accessToken, "");
-        assert.deepEqual(res2.refreshToken, "");
-        assert.deepEqual(res2.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res2.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(res2.accessTokenDomain === undefined);
-        assert(res2.refreshTokenDomain === undefined);
-        assert(res2.idRefreshTokenDomain === undefined);
+        assert.strictEqual(res2.accessToken, "");
+        assert.strictEqual(res2.refreshToken, "");
+        assert.strictEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res2.accessTokenDomain, undefined);
+        assert.strictEqual(res2.refreshTokenDomain, undefined);
         assert(res2.frontToken.length > 1);
     });
 
@@ -3624,7 +3036,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -3634,6 +3046,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
+                    .set("st-auth-mode", "cookie")
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -3647,14 +3060,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let resp = await new Promise((resolve) =>
             request(app)
                 .post("/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -3671,8 +3082,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert(res2.accessToken.length > 1);
         assert(res2.antiCsrf.length > 1);
-        assert(res2.idRefreshTokenFromCookie.length > 1);
-        assert(res2.idRefreshTokenFromHeader !== "remove");
         assert(res2.refreshToken.length > 1);
     });
 });

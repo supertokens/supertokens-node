@@ -31,7 +31,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -62,7 +62,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                         skipAddingPermissionsToAccessToken: true,
                         skipAddingRolesToAccessToken: true,
                     }),
-                    Session.init(),
+                    Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
 
@@ -89,7 +89,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -119,7 +119,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -167,7 +167,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     UserRoles.init({
                         skipAddingRolesToAccessToken: true,
                     }),
-                    Session.init(),
+                    Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
 
@@ -195,7 +195,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -243,7 +243,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     UserRoles.init({
                         skipAddingPermissionsToAccessToken: true,
                     }),
-                    Session.init(),
+                    Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
 

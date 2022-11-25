@@ -78,9 +78,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
@@ -98,13 +96,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 
         assert(JSON.parse(response.text).status === "OK");
         assert(Object.keys(JSON.parse(response.text)).length === 1);
@@ -124,9 +116,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
@@ -147,13 +137,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
         await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 
         assert(JSON.parse(response.text).status === "EMAIL_ALREADY_VERIFIED_ERROR");
         assert(response.status === 200);
@@ -174,9 +158,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
@@ -220,9 +202,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
@@ -245,7 +225,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let response2 = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
             infoFromResponse.antiCsrf,
             userId
         );
@@ -259,10 +238,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + infoFromResponse.refreshToken,
-                        "sIdRefreshToken=" + infoFromResponse.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + infoFromResponse.refreshToken])
                     .set("anti-csrf", infoFromResponse.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -278,7 +254,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let response3 = (response = await emailVerifyTokenRequest(
             app,
             refreshedResponse.accessToken,
-            refreshedResponse.idRefreshTokenFromCookie,
             refreshedResponse.antiCsrf,
             userId
         ));
@@ -313,9 +288,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -335,7 +308,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let response2 = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
             infoFromResponse.antiCsrf,
             userId
         );
@@ -383,9 +355,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init({}),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -402,13 +372,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(JSON.parse(response.text).status === "OK");
         assert(Object.keys(JSON.parse(response.text)).length === 1);
 
@@ -451,9 +415,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     mode: "OPTIONAL",
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -501,9 +463,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     mode: "OPTIONAL",
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -571,9 +531,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -590,13 +548,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(JSON.parse(response.text).status === "OK");
 
         let response2 = await new Promise((resolve) =>
@@ -649,9 +601,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -668,13 +618,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(JSON.parse(response.text).status === "OK");
 
         let response2 = await new Promise((resolve) =>
@@ -699,12 +643,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let response3 = await new Promise((resolve) =>
             request(app)
                 .get("/auth/user/email/verify")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                        infoFromResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        infoFromResponse.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + infoFromResponse.accessToken])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -738,9 +677,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     mode: "OPTIONAL",
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -791,9 +728,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -810,13 +745,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(JSON.parse(response.text).status === "OK");
 
         let response2 = await new Promise((resolve) =>
@@ -843,12 +772,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let response3 = await new Promise((resolve) =>
             request(app)
                 .get("/auth/user/email/verify")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                        infoFromResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        infoFromResponse.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + infoFromResponse.accessToken])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -867,10 +791,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + infoFromResponse.refreshToken,
-                        "sIdRefreshToken=" + infoFromResponse.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + infoFromResponse.refreshToken])
                     .set("anti-csrf", infoFromResponse.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -886,12 +807,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let response4 = await new Promise((resolve) =>
             request(app)
                 .get("/auth/user/email/verify")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                        refreshedResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        refreshedResponse.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + refreshedResponse.accessToken])
                 .set("anti-csrf", refreshedResponse.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -941,9 +857,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -960,13 +874,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = response.body.user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(response.body.status === "OK");
         assert(Object.keys(response.body).length === 1);
 
@@ -1027,9 +935,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -1046,13 +952,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = response.body.user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(response.body.status === "OK");
         assert(Object.keys(response.body).length === 1);
 
@@ -1115,9 +1015,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -1141,13 +1039,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = response.body.user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(response.body.status === "OK");
         assert(Object.keys(response.body).length === 1);
 
@@ -1209,9 +1101,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                         },
                     },
                 }),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -1235,13 +1125,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = response.body.user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert(response.body.status === "OK");
         assert(Object.keys(response.body).length === 1);
 
@@ -1280,9 +1164,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
@@ -1328,9 +1210,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
@@ -1410,13 +1290,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = response.body.user.id;
         let infoFromResponse = extractInfoFromResponse(response);
         await STExpress.deleteUser(userId);
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
         assert.strictEqual(response.statusCode, 401);
         assert.deepStrictEqual(response.body, { message: "unauthorised" });
     });
@@ -1439,7 +1313,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                             ? { status: "EMAIL_DOES_NOT_EXIST_ERROR" }
                             : { status: "UNKNOWN_USER_ID_ERROR" },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -1501,13 +1375,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let antiCsrfToken = infoFromResponse.antiCsrf;
         let token = await EmailVerification.createEmailVerificationToken(userId);
         await EmailVerification.verifyEmailUsingToken(token.token);
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            antiCsrfToken,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);
         assert.deepStrictEqual(response.body.status, "EMAIL_ALREADY_VERIFIED_ERROR");
@@ -1515,13 +1383,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(frontendInfo.up["st-ev"].v, true);
 
         // calling the API again should not modify the access token again
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            antiCsrfToken,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         let infoFromResponse2 = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);
         assert.deepStrictEqual(response.body.status, "EMAIL_ALREADY_VERIFIED_ERROR");
@@ -1529,13 +1391,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         // now we mark the email as unverified and try again
         await EmailVerification.unverifyEmail(userId);
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            antiCsrfToken,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);
         assert.deepStrictEqual(response.body.status, "OK");
@@ -1543,13 +1399,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(frontendInfo.up["st-ev"].v, false);
 
         // calling the API again should not modify the access token again
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            antiCsrfToken,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse2 = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);
         assert.deepStrictEqual(response.body.status, "OK");

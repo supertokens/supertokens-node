@@ -32,7 +32,7 @@ const express = require("express");
 const request = require("supertest");
 const sinon = require("sinon");
 
-describe.only(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
+describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

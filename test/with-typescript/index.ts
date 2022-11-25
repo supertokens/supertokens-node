@@ -1015,10 +1015,7 @@ Supertokens.init({
         websiteDomain: "",
     },
     recipeList: [
-        Session.init({
-            antiCsrf: "NONE",
-            cookieDomain: "",
-        }),
+        Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE", cookieDomain: "" }),
         EmailPassword.init({
             override: {},
         }),
@@ -1036,6 +1033,7 @@ Supertokens.init({
     },
     recipeList: [
         Session.init({
+            getTokenTransferMethod: () => "cookie",
             override: {
                 functions: (originalImplementation) => {
                     return {
@@ -1124,6 +1122,7 @@ Supertokens.init({
 });
 
 Session.init({
+    getTokenTransferMethod: () => "cookie",
     jwt: {
         enable: true,
         propertyNameInAccessTokenPayload: "someKey",
@@ -1221,6 +1220,7 @@ EmailPassword.init({
 });
 
 Session.init({
+    getTokenTransferMethod: () => "cookie",
     override: {
         functions: (originalImplementation) => {
             return {

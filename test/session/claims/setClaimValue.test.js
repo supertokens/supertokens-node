@@ -69,6 +69,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -117,6 +118,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -163,7 +165,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init()],
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             const res = await Session.setClaimValue("asfd", TrueClaim, false);

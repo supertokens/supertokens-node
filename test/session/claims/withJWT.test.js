@@ -52,6 +52,7 @@ describe(`sessionClaims/withJWT: ${printPath("[test/session/claims/withJWT.test.
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,

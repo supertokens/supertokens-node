@@ -67,6 +67,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     jwt: { enable: true },
                     override: {
@@ -146,15 +147,13 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         assert(res.accessToken !== undefined);
         assert.strictEqual(session.getAccessToken(), decodeURIComponent(res.accessToken));
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
         session = undefined;
 
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -172,10 +171,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -192,8 +188,6 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         assert(res2.accessToken !== undefined);
         assert.strictEqual(session.getAccessToken(), decodeURIComponent(res2.accessToken));
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
         session = undefined;
 
@@ -201,9 +195,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -226,9 +218,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -244,9 +234,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/session/revoke")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -260,11 +248,8 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("test overriding of sessions functions, error thrown", async function () {
@@ -284,6 +269,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     jwt: { enable: true },
                     override: {
@@ -368,6 +354,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     jwt: { enable: true },
                     override: {
@@ -425,14 +412,12 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -447,11 +432,8 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         assert.strictEqual(signoutCalled, true);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("test overriding of sessions apis, error thrown", async function () {
@@ -470,6 +452,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     jwt: { enable: true },
                     override: {
@@ -536,14 +519,12 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -571,6 +552,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         apis: function (oI) {
@@ -618,7 +600,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -645,6 +627,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         apis: function (oI) {

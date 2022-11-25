@@ -70,6 +70,7 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: process.env.TRANSFER_METHOD ? () => process.env.TRANSFER_METHOD : undefined,
                     jwt: {
                         enable: true,
                         propertyNameInAccessTokenPayload: jwtPropertyName,
@@ -130,6 +131,7 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
         },
         recipeList: [
             Session.init({
+                getTokenTransferMethod: process.env.TRANSFER_METHOD ? () => process.env.TRANSFER_METHOD : undefined,
                 errorHandlers: {
                     onUnauthorised: (err, req, res) => {
                         res.setStatusCode(401);

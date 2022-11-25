@@ -75,7 +75,7 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init()],
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             const response = mockResponse();
