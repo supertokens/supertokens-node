@@ -416,11 +416,11 @@ export type APIInterface = {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                     description: string;
                 }
-              //   | {
-              //         status: "ACCOUNT_NOT_VERIFIED_ERROR"; This error is not possible
-              //         isNotVerifiedAccountFromInputSession: boolean;
-              //         description: string;
-              //     }
+              | {
+                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                    isNotVerifiedAccountFromInputSession: boolean;
+                    description: string;
+                }
               | GeneralErrorResponse
           >);
 
