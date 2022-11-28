@@ -32,6 +32,9 @@ const express = require("express");
 const request = require("supertest");
 const sinon = require("sinon");
 
+const exampleJWT =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
 describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -221,6 +224,46 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     assert(resp.accessTokenFromHeader.expiry >= resp.refreshTokenFromHeader.expiry);
                 });
 
+                it("should use clear cookies (if present) if getTokenTransferMethod returns header", async function () {
+                    await startST();
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI: "http://localhost:8080",
+                        },
+                        appInfo: {
+                            apiDomain: "api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "supertokens.io",
+                        },
+                        recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "header" })],
+                    });
+
+                    const app = getTestApp();
+
+                    const resp = extractInfoFromResponse(
+                        await new Promise((resolve, reject) => {
+                            const req = request(app).post("/create");
+                            req.set("st-auth-mode", "header");
+                            return req
+                                .set("Cookie", ["sAccessToken=" + exampleJWT])
+                                .send(undefined)
+                                .expect(200)
+                                .end((err, res) => {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        resolve(res);
+                                    }
+                                });
+                        })
+                    );
+                    assert.strictEqual(resp.accessToken, "");
+                    assert.strictEqual(resp.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                    assert.strictEqual(resp.refreshToken, "");
+                    assert.strictEqual(resp.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                    assert.strictEqual(resp.antiCsrf, undefined);
+                });
+
                 it("should use cookies if getTokenTransferMethod returns cookie", async function () {
                     await startST();
                     SuperTokens.init({
@@ -247,6 +290,45 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     // We check that we will have access token at least as long as we have a refresh token
                     // so verify session can return TRY_REFRESH_TOKEN
                     assert(Date.parse(resp.accessTokenExpiry) >= Date.parse(resp.refreshTokenExpiry));
+                });
+
+                it("should clear headers (if present) if getTokenTransferMethod returns cookie", async function () {
+                    await startST();
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI: "http://localhost:8080",
+                        },
+                        appInfo: {
+                            apiDomain: "api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "supertokens.io",
+                        },
+                        recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "cookie" })],
+                    });
+
+                    const app = getTestApp();
+
+                    const resp = extractInfoFromResponse(
+                        await new Promise((resolve, reject) => {
+                            const req = request(app).post("/create");
+                            req.set("st-auth-mode", "header");
+                            return req
+                                .set("Authorization", `Bearer ${exampleJWT}`)
+                                .send(undefined)
+                                .expect(200)
+                                .end((err, res) => {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        resolve(res);
+                                    }
+                                });
+                        })
+                    );
+                    assert.strictEqual(resp.accessTokenFromHeader.expiry, 0);
+                    assert.strictEqual(resp.accessTokenFromHeader.value, "");
+                    assert.strictEqual(resp.refreshTokenFromHeader.expiry, 0);
+                    assert.strictEqual(resp.refreshTokenFromHeader.value, "");
                 });
             });
         });
@@ -576,6 +658,133 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 assert.strictEqual(res.status, 401);
                 assert.deepStrictEqual(res.body, { message: "try refresh token" });
             });
+
+            describe("with non ST in Authorize header", () => {
+                it("should use the value from cookies if present and getTokenTransferMethod returns any", async () => {
+                    await startST();
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI: "http://localhost:8080",
+                        },
+                        appInfo: {
+                            apiDomain: "api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "supertokens.io",
+                        },
+                        recipeList: [
+                            Session.init({
+                                getTokenTransferMethod: () => "any",
+                                antiCsrf: "VIA_TOKEN",
+                            }),
+                        ],
+                    });
+
+                    const app = getTestApp();
+
+                    const createInfoCookie = await createSession(app, "header");
+
+                    const resp = await new Promise((resolve, reject) => {
+                        const req = request(app).get("/verify");
+
+                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader.value]);
+                        if (createInfoCookie.antiCsrf) {
+                            req.set("anti-csrf", info.antiCsrf);
+                        }
+                        req.set("Authorization", `Bearer ${exampleJWT}`);
+                        req.expect(200).end((err, res) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(res);
+                            }
+                        });
+                    });
+
+                    assert.strictEqual(resp.body.sessionHandle, createInfoCookie.body.sessionHandle);
+                });
+
+                it("should reject with UNAUTHORISED if getTokenTransferMethod returns header", async () => {
+                    await startST();
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI: "http://localhost:8080",
+                        },
+                        appInfo: {
+                            apiDomain: "api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "supertokens.io",
+                        },
+                        recipeList: [
+                            Session.init({
+                                getTokenTransferMethod: ({ forCreateNewSession }) =>
+                                    forCreateNewSession ? "any" : "header",
+                                antiCsrf: "VIA_TOKEN",
+                            }),
+                        ],
+                    });
+
+                    const app = getTestApp();
+
+                    const createInfoCookie = await createSession(app, "header");
+
+                    const resp = await new Promise((resolve, reject) => {
+                        const req = request(app).get("/verify");
+
+                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader.value]);
+                        if (createInfoCookie.antiCsrf) {
+                            req.set("anti-csrf", info.antiCsrf);
+                        }
+                        req.set("Authorization", `Bearer ${exampleJWT}`);
+                        req.end((err, res) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(res);
+                            }
+                        });
+                    });
+                    assert.strictEqual(resp.status, 401);
+                    assert.deepStrictEqual(resp.body, { message: "unauthorised" });
+                });
+
+                it("should reject with UNAUTHORISED if cookies are not present", async () => {
+                    await startST();
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI: "http://localhost:8080",
+                        },
+                        appInfo: {
+                            apiDomain: "api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "supertokens.io",
+                        },
+                        recipeList: [
+                            Session.init({
+                                getTokenTransferMethod: ({}) => "any",
+                                antiCsrf: "VIA_TOKEN",
+                            }),
+                        ],
+                    });
+
+                    const app = getTestApp();
+
+                    const resp = await new Promise((resolve, reject) => {
+                        const req = request(app).get("/verify");
+
+                        req.set("Authorization", `Bearer ${exampleJWT}`);
+                        req.end((err, res) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(res);
+                            }
+                        });
+                    });
+
+                    assert.strictEqual(resp.status, 401);
+                    assert.deepStrictEqual(resp.body, { message: "unauthorised" });
+                });
+            });
         });
 
         describe("mergeIntoAccessTokenPayload", () => {
@@ -831,7 +1040,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
 async function createSession(app, authModeHeader, body) {
     return extractInfoFromResponse(
         await new Promise((resolve, reject) => {
-            const req = request(app).post(body !== undefined ? "create-with-claim" : "/create");
+            const req = request(app).post("/create");
             if (authModeHeader) {
                 req.set("st-auth-mode", authModeHeader);
             }

@@ -226,8 +226,9 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         let responseInfo = extractInfoFromResponse(createJWTResponse);
 
         let accessTokenExpiryInSeconds =
-            JSON.parse(Buffer.from(responseInfo.accessToken.split(".")[1], "base64").toString("utf-8")).expiryTime /
-            1000;
+            JSON.parse(
+                Buffer.from(decodeURIComponent(responseInfo.accessToken).split(".")[1], "base64").toString("utf-8")
+            ).expiryTime / 1000;
         let sessionHandle = createJWTResponse.body.sessionHandle;
         let sessionInformation = await Session.getSessionInformation(sessionHandle);
 

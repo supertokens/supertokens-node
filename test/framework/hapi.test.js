@@ -416,6 +416,18 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
+        await this.server.inject({
+            method: "post",
+            url: "/session/verify",
+            headers: {
+                Cookie: `sAccessToken=${res.accessToken}`,
+                "anti-csrf": res.antiCsrf,
+            },
+        });
+
+        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
+        assert(verifyState3 === undefined);
+
         let res2 = extractInfoFromResponse(
             await this.server.inject({
                 method: "post",
@@ -444,6 +456,19 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
         assert(verifyState !== undefined);
         assert(res3.accessToken !== undefined);
+
+        ProcessState.getInstance().reset();
+
+        await this.server.inject({
+            method: "post",
+            url: "/session/verify",
+            headers: {
+                Cookie: `sAccessToken=${res3.accessToken}`,
+                "anti-csrf": res2.antiCsrf,
+            },
+        });
+        let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
+        assert(verifyState2 === undefined);
 
         let sessionRevokedResponse = await this.server.inject({
             method: "post",

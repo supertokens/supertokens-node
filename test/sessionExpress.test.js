@@ -2924,9 +2924,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                             return {
                                 ...oI,
                                 refreshPOST: async function (input) {
-                                    console.log("a");
-                                    let session = await oI.refreshPOST(input);
-                                    console.log("b");
+                                    await oI.refreshPOST(input);
                                     throw new Session.Error({
                                         message: "unauthorised",
                                         type: Session.Error.UNAUTHORISED,
@@ -2988,7 +2986,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(resp.status === 401);
 
         let res2 = extractInfoFromResponse(resp);
-        console.log(res2);
+
         assert(res2.antiCsrf.length > 1);
         assert.strictEqual(res2.accessToken, "");
         assert.strictEqual(res2.refreshToken, "");
