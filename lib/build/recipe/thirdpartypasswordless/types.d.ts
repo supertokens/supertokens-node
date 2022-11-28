@@ -426,6 +426,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                 }
@@ -437,6 +438,10 @@ export declare type APIInterface = {
               | GeneralErrorResponse
               | {
                     status: "RESTART_FLOW_ERROR";
+                }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
+                    reason: string;
                 }
           >);
     passwordlessUserEmailExistsGET:
@@ -462,6 +467,53 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
+    linkPasswordlessAccountToExistingAccountPOST:
+        | undefined
+        | ((
+              input: (
+                  | {
+                        userInputCode: string;
+                        deviceId: string;
+                        preAuthSessionId: string;
+                    }
+                  | {
+                        linkCode: string;
+                        preAuthSessionId: string;
+                    }
+              ) & {
+                  session: SessionContainerInterface;
+                  options: PasswordlessAPIOptions;
+                  userContext: any;
+              }
+          ) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    createdNewRecipeUser: boolean;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                }
+              | {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                    isNotVerifiedAccountFromInputSession: boolean;
+                    description: string;
                 }
               | GeneralErrorResponse
           >);
