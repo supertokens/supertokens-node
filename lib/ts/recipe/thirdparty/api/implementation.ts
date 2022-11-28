@@ -145,7 +145,7 @@ export default function getAPIInterface(): APIInterface {
                   reason: string;
               }
             | {
-                  status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  status: "SIGNIN_NOT_ALLOWED";
                   primaryUserId: string;
                   description: string;
               }
