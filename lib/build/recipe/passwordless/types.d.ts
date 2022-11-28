@@ -311,6 +311,7 @@ export declare type APIInterface = {
         | {
               status: "OK";
               createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
               session: SessionContainerInterface;
           }
@@ -323,7 +324,53 @@ export declare type APIInterface = {
         | {
               status: "RESTART_FLOW_ERROR";
           }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
+          }
     >;
+    linkAccountToExistingAccountPOST:
+        | undefined
+        | ((
+              input: (
+                  | {
+                        userInputCode: string;
+                        deviceId: string;
+                        preAuthSessionId: string;
+                    }
+                  | {
+                        linkCode: string;
+                        preAuthSessionId: string;
+                    }
+              ) & {
+                  session: SessionContainerInterface;
+                  options: APIOptions;
+                  userContext: any;
+              }
+          ) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    createdNewRecipeUser: boolean;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                }
+              | {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | GeneralErrorResponse
+          >);
     emailExistsGET?: (input: {
         email: string;
         options: APIOptions;

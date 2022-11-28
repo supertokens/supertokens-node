@@ -249,7 +249,7 @@ export type RecipeInterface = {
     getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
 
     updateUser: (input: {
-        userId: string;
+        userId: string; // the id can be either recipeUserId or primaryUserId
         email?: string | null;
         phoneNumber?: string | null;
         userContext: any;
@@ -359,6 +359,7 @@ export type APIInterface = {
         | {
               status: "OK";
               createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
               session: SessionContainerInterface;
           }
@@ -369,7 +370,59 @@ export type APIInterface = {
           }
         | GeneralErrorResponse
         | { status: "RESTART_FLOW_ERROR" }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
+          }
     >;
+
+    linkAccountToExistingAccountPOST:
+        | undefined
+        | ((
+              input: (
+                  | {
+                        userInputCode: string;
+                        deviceId: string;
+                        preAuthSessionId: string;
+                    }
+                  | {
+                        linkCode: string;
+                        preAuthSessionId: string;
+                    }
+              ) & {
+                  session: SessionContainerInterface;
+                  options: APIOptions;
+                  userContext: any;
+              }
+          ) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    createdNewRecipeUser: boolean;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                }
+              | {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              //   | {
+              //         status: "ACCOUNT_NOT_VERIFIED_ERROR"; This error is not possible
+              //         isNotVerifiedAccountFromInputSession: boolean;
+              //         description: string;
+              //     }
+              | GeneralErrorResponse
+          >);
 
     emailExistsGET?: (input: {
         email: string;

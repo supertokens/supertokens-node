@@ -32,7 +32,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            userId: user.id,
+                            userId: user.recipeUserId,
                             email: user.email,
                             userContext: input.userContext,
                         }
@@ -59,6 +59,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
+                createdNewRecipeUser: false, // TODO
                 user: response.user,
                 session,
             };
@@ -263,6 +264,12 @@ export default function getAPIImplementation(): APIInterface {
                     status: response.status,
                 };
             }
+        },
+        linkAccountToExistingAccountPOST: async function (_input) {
+            return {
+                status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
+                description: "",
+            };
         },
     };
 }
