@@ -9,6 +9,51 @@ import EmailVerification from "../../emailverification/recipe";
 
 export default function getAPIInterface(): APIInterface {
     return {
+        linkAccountToExistingAccountPOST: async function (_input: {
+            provider: TypeProvider;
+            code: string;
+            redirectURI: string;
+            authCodeResponse?: any;
+            clientId?: string;
+            session: SessionContainerInterface;
+            options: APIOptions;
+            userContext: any;
+        }): Promise<
+            | {
+                  status: "OK";
+                  user: User;
+                  createdNewRecipeUser: boolean;
+                  session: SessionContainerInterface;
+                  wereAccountsAlreadyLinked: boolean;
+                  authCodeResponse: any;
+              }
+            | {
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
+            | {
+                  status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
+            | {
+                  status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                  description: string;
+              }
+            | {
+                  status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                  isNotVerifiedAccountFromInputSession: boolean;
+                  description: string;
+              }
+            | GeneralErrorResponse
+        > {
+            return {
+                status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                isNotVerifiedAccountFromInputSession: false,
+                description: "",
+            };
+        },
         authorisationUrlGET: async function ({
             provider,
             options,
@@ -94,6 +139,15 @@ export default function getAPIInterface(): APIInterface {
                   authCodeResponse: any;
               }
             | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+            | {
+                  status: "SIGNUP_NOT_ALLOWED";
+                  reason: string;
+              }
+            | {
+                  status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
             | GeneralErrorResponse
         > {
             let userInfo;

@@ -289,6 +289,47 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
+    linkThirdPartyAccountToExistingAccountPOST:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              authCodeResponse?: any;
+              clientId?: string;
+              session: SessionContainerInterface;
+              options: ThirdPartyAPIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    createdNewRecipeUser: boolean;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                    authCodeResponse: any;
+                }
+              | {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                    isNotVerifiedAccountFromInputSession: boolean;
+                    description: string;
+                }
+              | GeneralErrorResponse
+          >);
     thirdPartySignInUpPOST:
         | undefined
         | ((input: {
@@ -310,6 +351,15 @@ export declare type APIInterface = {
               | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+                }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
                 }
           >);
     appleRedirectHandlerPOST:
