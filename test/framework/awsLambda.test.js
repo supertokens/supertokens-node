@@ -56,11 +56,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 websiteDomain: "supertokens.io",
                 apiGatewayPath: "/dev",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let createSession = async (awsEvent, _) => {
@@ -101,8 +97,6 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let verifySessionEvent = mockLambdaProxyEvent("/session/verify", "POST", null, null, proxy);
@@ -113,7 +107,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             "/session/verify",
             "POST",
             {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
             },
             null,
             proxy
@@ -125,7 +119,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             "/session/verify",
             "POST",
             {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
             null,
@@ -138,7 +132,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             "/session/verify",
             "POST",
             {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
             },
             null,
             proxy
@@ -156,7 +150,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             "/auth/session/refresh",
             "POST",
             {
-                Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sRefreshToken=${res.refreshToken}`,
                 "anti-csrf": res.antiCsrf,
             },
             null,
@@ -172,15 +166,13 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
 
         assert(res2.accessToken !== undefined);
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
 
         verifySessionEvent = mockLambdaProxyEvent(
             "/session/verify",
             "POST",
             {
-                Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res2.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
             null,
@@ -199,7 +191,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             "/session/revoke",
             "POST",
             {
-                Cookie: `sAccessToken=${res3.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res3.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
             null,
@@ -214,11 +206,8 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         let sessionRevokedResponseExtracted = extractInfoFromResponse(result);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     //check basic usage of session
@@ -235,11 +224,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 websiteDomain: "supertokens.io",
                 apiGatewayPath: "/dev",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let createSession = async (awsEvent, _) => {
@@ -280,8 +265,6 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         let verifySessionEvent = mockLambdaProxyEventV2("/session/verify", "POST", null, null, proxy);
@@ -290,7 +273,6 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
 
         verifySessionEvent = mockLambdaProxyEventV2("/session/verify", "POST", null, null, proxy, [
             `sAccessToken=${res.accessToken}`,
-            `sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
         ]);
         result = await verifySession(verifyLambdaSession)(verifySessionEvent, undefined);
         assert.deepStrictEqual(JSON.parse(result.body), { message: "try refresh token" });
@@ -303,14 +285,13 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             },
             null,
             proxy,
-            [`sAccessToken=${res.accessToken}`, `sIdRefreshToken=${res.idRefreshTokenFromCookie}`]
+            [`sAccessToken=${res.accessToken}`]
         );
         result = await verifySession(verifyLambdaSession)(verifySessionEvent, undefined);
         assert.deepStrictEqual(JSON.parse(result.body), { user: "userId" });
 
         verifySessionEvent = mockLambdaProxyEventV2("/session/verify", "POST", null, null, proxy, [
             `sAccessToken=${res.accessToken}`,
-            `sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
         ]);
         result = await verifySession(verifyLambdaSession, {
             antiCsrfCheck: false,
@@ -329,7 +310,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             },
             null,
             proxy,
-            [`sRefreshToken=${res.refreshToken}`, `sIdRefreshToken=${res.idRefreshTokenFromCookie}`]
+            [`sRefreshToken=${res.refreshToken}`]
         );
         result = await middleware()(refreshSessionEvent, undefined);
         result.headers = {
@@ -341,8 +322,6 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
 
         assert(res2.accessToken !== undefined);
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
 
         verifySessionEvent = mockLambdaProxyEventV2(
@@ -353,7 +332,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             },
             null,
             proxy,
-            [`sAccessToken=${res2.accessToken}`, `sIdRefreshToken=${res2.idRefreshTokenFromCookie}`]
+            [`sAccessToken=${res2.accessToken}`]
         );
         result = await verifySession(verifyLambdaSession)(verifySessionEvent, undefined);
         assert.deepStrictEqual(JSON.parse(result.body), { user: "userId" });
@@ -372,7 +351,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             },
             null,
             proxy,
-            [`sAccessToken=${res3.accessToken}`, `sIdRefreshToken=${res2.idRefreshTokenFromCookie}`]
+            [`sAccessToken=${res3.accessToken}`]
         );
         result = await verifySession(revokeSession)(revokeSessionEvent, undefined);
         result.headers = {
@@ -383,11 +362,8 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         let sessionRevokedResponseExtracted = extractInfoFromResponse(result);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("sending custom response awslambda", async function () {
@@ -420,7 +396,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

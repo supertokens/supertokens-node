@@ -56,6 +56,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.tes
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         openIdFeature: {
@@ -160,6 +161,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.tes
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         openIdFeature: {

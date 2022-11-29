@@ -33,6 +33,7 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
+let { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { maxVersion } = require("../lib/build/utils");
 const { fail } = require("assert");
@@ -43,7 +44,6 @@ let { middleware, errorHandler } = require("../framework/express");
 - calling createNewSession twice, should overwrite the first call (in terms of cookies)
 - calling createNewSession in the case of unauthorised error, should create a proper session
 - revoking old session after create new session, should not remove new session's cookies.
-- check that if idRefreshToken is not passed to express, verify throws UNAUTHORISED
 - check that Access-Control-Expose-Headers header is being set properly during create, use and destroy session**** only for express
 */
 
@@ -71,11 +71,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -101,21 +97,17 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                     }
                 })
         );
-        assert(res.header["access-control-expose-headers"] === "front-token, st-id-refresh-token, anti-csrf");
+        assert(res.header["access-control-expose-headers"] === "front-token, anti-csrf");
 
         let cookies = extractInfoFromResponse(res);
         assert(cookies.accessToken !== undefined);
         assert(cookies.refreshToken !== undefined);
         assert(cookies.antiCsrf !== undefined);
-        assert(cookies.idRefreshTokenFromHeader !== undefined);
-        assert(cookies.idRefreshTokenFromCookie !== undefined);
         assert(cookies.accessTokenExpiry !== undefined);
         assert(cookies.refreshTokenExpiry !== undefined);
-        assert(cookies.idRefreshTokenExpiry !== undefined);
         assert(cookies.refreshToken !== undefined);
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
-        assert(cookies.idRefreshTokenDomain === undefined);
         assert(cookies.frontToken !== undefined);
     });
 
@@ -131,11 +123,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -166,7 +154,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -176,21 +164,17 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                     }
                 })
         );
-        assert(res2.header["access-control-expose-headers"] === "front-token, st-id-refresh-token, anti-csrf");
+        assert(res2.header["access-control-expose-headers"] === "front-token, anti-csrf");
 
         let cookies = extractInfoFromResponse(res2);
         assert(cookies.accessToken !== undefined);
         assert(cookies.refreshToken !== undefined);
         assert(cookies.antiCsrf !== undefined);
-        assert(cookies.idRefreshTokenFromHeader !== undefined);
-        assert(cookies.idRefreshTokenFromCookie !== undefined);
         assert(cookies.accessTokenExpiry !== undefined);
         assert(cookies.refreshTokenExpiry !== undefined);
-        assert(cookies.idRefreshTokenExpiry !== undefined);
         assert(cookies.refreshToken !== undefined);
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
-        assert(cookies.idRefreshTokenDomain === undefined);
         assert(cookies.frontToken !== undefined);
     });
 
@@ -207,11 +191,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -265,11 +245,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const app = express();
@@ -298,7 +274,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -323,11 +299,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let response = await SessionFunctions.createNewSession(
@@ -343,16 +315,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             response.refreshToken.token,
             response.antiCsrfToken,
             true,
-            "cookie",
             "cookie"
         );
 
         await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-            response2.accessToken.token,
+            parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
-            true,
-            response2.idRefreshToken.token
+            true
         );
 
         try {
@@ -385,11 +355,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let response = await SessionFunctions.createNewSession(
@@ -411,10 +377,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-            response2.accessToken.token,
+            parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
-            true,
-            response2.idRefreshToken.token
+            true
         );
 
         try {
@@ -446,11 +411,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         try {
@@ -478,11 +439,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -491,16 +448,15 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response.session !== undefined);
         assert(response.accessToken !== undefined);
         assert(response.refreshToken !== undefined);
-        assert(response.idRefreshToken !== undefined);
         assert(response.antiCsrfToken !== undefined);
         assert(Object.keys(response).length === 5);
 
         await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
-            response.accessToken.token,
+            parseJWTWithoutSignatureVerification(response.accessToken.token),
             response.antiCsrfToken,
             true,
-            response.idRefreshToken.token
+            true
         );
         let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
         assert(verifyState3 === undefined);
@@ -516,16 +472,15 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response2.session !== undefined);
         assert(response2.accessToken !== undefined);
         assert(response2.refreshToken !== undefined);
-        assert(response2.idRefreshToken !== undefined);
         assert(response2.antiCsrfToken !== undefined);
         assert(Object.keys(response2).length === 5);
 
         let response3 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
-            response2.accessToken.token,
+            parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
             true,
-            response.idRefreshToken.token
+            true
         );
         let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
         assert(verifyState !== undefined);
@@ -537,10 +492,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let response4 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
-            response3.accessToken.token,
+            parseJWTWithoutSignatureVerification(response3.accessToken.token),
             response2.antiCsrfToken,
             true,
-            response.idRefreshToken.token
+            true
         );
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
@@ -564,11 +519,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -577,20 +528,20 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let response2 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
-            response.accessToken.token,
+            parseJWTWithoutSignatureVerification(response.accessToken.token),
             response.antiCsrfToken,
             true,
-            response.idRefreshToken.token
+            true
         );
         assert(response2.session != undefined);
         assert(Object.keys(response2.session).length === 3);
 
         let response3 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
-            response.accessToken.token,
+            parseJWTWithoutSignatureVerification(response.accessToken.token),
             response.antiCsrfToken,
             false,
-            response.idRefreshToken.token
+            true
         );
         assert(response3.session != undefined);
         assert(Object.keys(response3.session).length === 3);
@@ -608,11 +559,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -622,10 +569,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
-            response.accessToken.token,
+            parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             false,
-            response.idRefreshToken
+            true
         );
         assert(response2.session != undefined);
         assert(Object.keys(response2.session).length === 3);
@@ -634,10 +581,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         try {
             await SessionFunctions.getSession(
                 s.recipeInterfaceImpl.helpers,
-                response.accessToken.token,
+                parseJWTWithoutSignatureVerification(response.accessToken.token),
                 undefined,
                 true,
-                response.idRefreshToken
+                true
             );
             throw new Error("should not have come here");
         } catch (err) {
@@ -659,11 +606,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
@@ -709,11 +652,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
@@ -722,13 +661,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
-        assert.deepEqual(res2, { key: "value" });
+        assert.deepStrictEqual(res2, { key: "value" });
 
         //changing the value of session data with the same key
         await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
-        assert.deepEqual(res3, { key: "value 2" });
+        assert.deepStrictEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating session data
         assert(!(await SessionFunctions.updateSessionData(s.helpers, "random", { key2: "value2" })));
@@ -745,11 +684,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -766,13 +701,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepEqual(res2.sessionData, { key: "value" });
+        assert.deepStrictEqual(res2.sessionData, { key: "value" });
 
         //changing the value of session data with the same key
         await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepEqual(res3.sessionData, { key: "value 2" });
+        assert.deepStrictEqual(res3.sessionData, { key: "value 2" });
 
         //passing invalid session handle when updating session data
         assert(!(await SessionFunctions.updateSessionData(s.helpers, "random", { key2: "value2" })));
@@ -789,11 +724,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
@@ -835,11 +766,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -890,11 +817,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
@@ -904,13 +827,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
-        assert.deepEqual(res2, { key: "value" });
+        assert.deepStrictEqual(res2, { key: "value" });
 
         //changing the value of jwt payload with the same key
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
-        assert.deepEqual(res3, { key: "value 2" });
+        assert.deepStrictEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
         assert(!(await SessionFunctions.updateAccessTokenPayload(s.helpers, "random", { key2: "value2" })));
@@ -927,11 +850,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -949,13 +868,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepEqual(res2.accessTokenPayload, { key: "value" });
+        assert.deepStrictEqual(res2.accessTokenPayload, { key: "value" });
 
         //changing the value of jwt payload with the same key
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepEqual(res3.accessTokenPayload, { key: "value 2" });
+        assert.deepStrictEqual(res3.accessTokenPayload, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
         assert(!(await SessionFunctions.updateAccessTokenPayload(s.helpers, "random", { key2: "value2" })));
@@ -972,11 +891,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
@@ -1019,11 +934,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -1074,11 +985,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "NONE",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE" })],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
@@ -1087,10 +994,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
             s,
-            response.accessToken.token,
+            parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             false,
-            response.idRefreshToken
+            true
         );
         assert(response2.session != undefined);
         assert(Object.keys(response2.session).length === 3);
@@ -1098,10 +1005,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //passing anti-csrf token as undefined and anti-csrf check as true
         let response3 = await SessionFunctions.getSession(
             s,
-            response.accessToken.token,
+            parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             true,
-            response.idRefreshToken
+            true
         );
         assert(response3.session != undefined);
         assert(Object.keys(response3.session).length === 3);
@@ -1120,10 +1027,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    cookieSameSite: "none",
-                    antiCsrf: "NONE",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "none", antiCsrf: "NONE" }),
             ],
         });
     });
@@ -1140,10 +1044,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    cookieSameSite: "lax",
-                    antiCsrf: "NONE",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "lax", antiCsrf: "NONE" }),
             ],
         });
 
@@ -1163,10 +1064,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    cookieSameSite: "strict",
-                    antiCsrf: "NONE",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "strict", antiCsrf: "NONE" }),
             ],
         });
 
@@ -1185,11 +1083,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -1220,11 +1114,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -1260,11 +1150,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -1298,6 +1184,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         functions: (oI) => ({

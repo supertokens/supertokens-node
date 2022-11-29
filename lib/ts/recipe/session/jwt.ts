@@ -33,6 +33,7 @@ const HEADERS = new Set([
 
 export type ParsedJWTInfo = {
     rawTokenString: string;
+    rawPayload: string;
     header: string;
     payload: any;
     signature: string;
@@ -51,6 +52,7 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
 
     return {
         rawTokenString: jwt,
+        rawPayload: splittedInput[1],
         header: splittedInput[0],
         // Ideally we would only parse this after the signature verification is done.
         // We do this at the start, since we want to check if a token can be a supertokens access token or not
@@ -59,14 +61,11 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
     };
 }
 
-export function verifyJWT(
-    { header, payload, signature }: ParsedJWTInfo,
-    jwtSigningPublicKey: string
-): { [key: string]: any } {
+export function verifyJWT({ header, rawPayload, signature }: ParsedJWTInfo, jwtSigningPublicKey: string): void {
     let verifier = crypto.createVerify("sha256");
     // convert the jwtSigningPublicKey into .pem format
 
-    verifier.update(header + "." + payload);
+    verifier.update(header + "." + rawPayload);
     if (
         !verifier.verify(
             "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----",
@@ -76,6 +75,4 @@ export function verifyJWT(
     ) {
         throw new Error("JWT verification failed");
     }
-
-    return JSON.parse(payload);
 }

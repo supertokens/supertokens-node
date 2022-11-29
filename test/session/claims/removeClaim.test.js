@@ -62,6 +62,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -107,6 +108,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -153,6 +155,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,

@@ -49,7 +49,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             telemetry: false,
         });
 
@@ -105,7 +105,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             telemetry: false,
         });
 
@@ -175,7 +175,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -229,7 +229,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -296,7 +296,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -354,7 +354,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -458,7 +458,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -501,7 +501,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                ThirdPartyEmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
             telemetry: false,
         });
 
@@ -535,7 +539,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -556,7 +560,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                ThirdPartyEmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
             telemetry: false,
         });
 
@@ -590,7 +598,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         let result = await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -625,7 +633,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                     },
                 }),
                 ThirdPartyEmailPassword.init(),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -645,7 +653,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
         await delay(2);
         assert.strictEqual(idInCallback, user.user.id);
@@ -680,7 +688,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                     // We need to add something to the providers array to make the thirdparty recipe initialize
                     providers: [/** @type {any} */ {}],
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -704,7 +712,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
         await delay(2);
         assert.strictEqual(idInCallback, user.user.id);
@@ -744,7 +752,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                     },
                 }),
                 ThirdPartyEmailPassword.init(),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -773,7 +781,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -849,7 +857,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                     },
                 }),
                 ThirdPartyEmailPassword.init(),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -869,7 +877,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         await delay(2);

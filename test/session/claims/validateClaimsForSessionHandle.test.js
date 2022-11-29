@@ -53,6 +53,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -106,7 +107,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init()],
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             assert.deepStrictEqual(await Session.validateClaimsForSessionHandle("asfd"), {

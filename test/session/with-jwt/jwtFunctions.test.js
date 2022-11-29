@@ -44,6 +44,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         functions: function (oi) {
                             return {
@@ -121,6 +122,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {

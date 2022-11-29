@@ -1015,10 +1015,7 @@ Supertokens.init({
         websiteDomain: "",
     },
     recipeList: [
-        Session.init({
-            antiCsrf: "NONE",
-            cookieDomain: "",
-        }),
+        Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE", cookieDomain: "" }),
         EmailPassword.init({
             override: {},
         }),

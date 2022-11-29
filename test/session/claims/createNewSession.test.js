@@ -48,6 +48,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -93,6 +94,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -145,6 +147,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,

@@ -51,6 +51,7 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -88,6 +89,7 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -126,7 +128,7 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init()],
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             assert.deepStrictEqual(await Session.getClaimValue("asfd", TrueClaim), {

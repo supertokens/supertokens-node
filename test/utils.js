@@ -126,19 +126,6 @@ module.exports.extractInfoFromResponse = function (res) {
                 refreshTokenDomain = i.split(";")[1].split("=").slice(1).join("=");
             }
             refreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
-        } else {
-            idRefreshTokenFromCookie = i.split(";")[0].split("=")[1];
-            if (i.split(";")[2].includes("Expires=")) {
-                idRefreshTokenExpiry = i.split(";")[2].split("=")[1];
-            } else if (i.split(";")[2].includes("expires=")) {
-                idRefreshTokenExpiry = i.split(";")[2].split("=")[1];
-            } else {
-                idRefreshTokenExpiry = i.split(";")[3].split("=")[1];
-            }
-            if (i.split(";")[1].includes("Domain=")) {
-                idRefreshTokenDomain = i.split(";")[1].split("=")[1];
-            }
-            idRefreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
         }
     });
 
@@ -159,6 +146,8 @@ module.exports.extractInfoFromResponse = function (res) {
         };
     }
     return {
+        status: res.status,
+        body: res.body,
         antiCsrf,
         accessToken,
         refreshToken,
@@ -383,6 +372,7 @@ module.exports.signUPRequest = async function (app, email, password) {
     return new Promise(function (resolve) {
         request(app)
             .post("/auth/signup")
+            .set("st-auth-mode", "cookie")
             .send({
                 formFields: [
                     {
@@ -457,11 +447,11 @@ module.exports.signInUPCustomRequest = async function (app, email, id) {
     });
 };
 
-module.exports.emailVerifyTokenRequest = async function (app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId) {
+module.exports.emailVerifyTokenRequest = async function (app, accessToken, antiCsrf, userId) {
     let result = await new Promise(function (resolve) {
         request(app)
             .post("/auth/user/email/verify/token")
-            .set("Cookie", ["sAccessToken=" + accessToken + ";sIdRefreshToken=" + idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + accessToken])
             .set("anti-csrf", antiCsrf)
             .send({
                 userId,

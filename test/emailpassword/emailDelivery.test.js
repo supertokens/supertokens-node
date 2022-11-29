@@ -49,7 +49,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             telemetry: false,
         });
 
@@ -105,7 +105,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             telemetry: false,
         });
 
@@ -175,7 +175,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -225,7 +225,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -299,7 +299,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -403,7 +403,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -446,7 +446,11 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                EmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
             telemetry: false,
         });
 
@@ -480,7 +484,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -501,7 +505,11 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
+                EmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
             telemetry: false,
         });
 
@@ -535,7 +543,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         let result = await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -569,7 +577,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                     },
                 }),
                 EmailPassword.init(),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -589,7 +597,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
         await delay(2);
         assert.strictEqual(email, "test@example.com");
@@ -629,7 +637,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                     },
                 }),
                 EmailPassword.init(),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -658,7 +666,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -734,7 +742,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                     },
                 }),
                 EmailPassword.init(),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -754,7 +762,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         await delay(2);
