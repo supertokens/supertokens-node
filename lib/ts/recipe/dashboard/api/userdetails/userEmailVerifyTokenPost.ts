@@ -12,8 +12,16 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const recipeUserId = requestBody.recipeUserId || userId;
+    const email = requestBody.email;
 
-    if (recipeUserId === undefined || typeof recipeUserId !== "string") {
+    if (userId === undefined || typeof userId !== "string") {
+        throw new STError({
+            message: "Required parameter 'userId' is missing or has an invalid type",
+            type: STError.BAD_INPUT_ERROR,
+        });
+    }
+
+    if (email === undefined || typeof email !== "string") {
         throw new STError({
             message: "Required parameter 'userId' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
@@ -26,7 +34,7 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         throw new Error("Should never come here");
     }
 
-    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(recipeUserId);
+    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(recipeUserId, email);
 
     if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
         return {

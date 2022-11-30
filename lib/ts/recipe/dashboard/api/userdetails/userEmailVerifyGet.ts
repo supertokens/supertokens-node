@@ -15,11 +15,18 @@ type Response =
 export const userEmailverifyGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const req = options.req;
     const userId = req.getKeyValueFromQuery("userId");
-    const recipeUserId = req.getKeyValueFromQuery("recipeUserId") || userId;
+    const email = req.getKeyValueFromQuery("email");
 
-    if (recipeUserId === undefined) {
+    if (userId === undefined) {
         throw new STError({
             message: "Missing required parameter 'userId'",
+            type: STError.BAD_INPUT_ERROR,
+        });
+    }
+
+    if (email === undefined) {
+        throw new STError({
+            message: "Missing required parameter 'email'",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -32,7 +39,7 @@ export const userEmailverifyGet: APIFunction = async (_: APIInterface, options: 
         };
     }
 
-    const response = await EmailVerification.isEmailVerified(recipeUserId);
+    const response = await EmailVerification.isEmailVerified(userId, email);
     return {
         status: "OK",
         isVerified: response,
