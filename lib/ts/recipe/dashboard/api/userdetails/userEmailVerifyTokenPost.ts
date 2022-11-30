@@ -43,6 +43,7 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         type: "EMAIL_VERIFICATION",
         user: {
             id: userId,
+            recipeUserId: requestBody.recipeUserId || userId,
             email: emailResponse.email,
         },
         emailVerifyLink,

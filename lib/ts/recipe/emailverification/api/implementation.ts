@@ -82,9 +82,10 @@ export default function getAPIInterface(): APIInterface {
             }
 
             const userId = session.getUserId();
+            const recipeUserId = session.getRecipeUserId();
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
-                userId,
+                recipeUserId,
                 userContext
             );
 
@@ -97,7 +98,7 @@ export default function getAPIInterface(): APIInterface {
                 };
             } else if (emailInfo.status === "OK") {
                 let response = await options.recipeImplementation.createEmailVerificationToken({
-                    userId,
+                    userId: recipeUserId,
                     email: emailInfo.email,
                     userContext,
                 });
@@ -133,6 +134,7 @@ export default function getAPIInterface(): APIInterface {
                     type: "EMAIL_VERIFICATION",
                     user: {
                         id: userId,
+                        recipeUserId,
                         email: emailInfo.email,
                     },
                     emailVerifyLink,

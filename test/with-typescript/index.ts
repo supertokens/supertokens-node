@@ -1271,6 +1271,7 @@ EmailVerification.sendEmail({
     type: "EMAIL_VERIFICATION",
     user: {
         email: "",
+        recipeUserId: "",
         id: "",
     },
 });

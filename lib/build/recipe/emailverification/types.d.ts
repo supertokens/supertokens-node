@@ -62,6 +62,7 @@ export declare type TypeNormalisedInput = {
 };
 export declare type User = {
     id: string;
+    recipeUserId: string;
     email: string;
 };
 export declare type RecipeInterface = {
@@ -164,6 +165,7 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: {
         id: string;
+        recipeUserId: string;
         email: string;
     };
     emailVerifyLink: string;

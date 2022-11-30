@@ -47,6 +47,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     status: "OK",
                     user: {
                         id: response.userId,
+                        recipeUserId: response.recipeUserId,
                         email: response.email,
                     },
                 };
