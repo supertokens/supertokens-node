@@ -216,7 +216,7 @@ export default function getAPIInterface(): APIInterface {
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            userId: response.user.id,
+                            userId: response.user.recipeUserId,
                             email: response.user.email,
                             userContext,
                         }
