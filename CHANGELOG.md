@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [12.1.2] - 2022-12-06
+
+-   Fixes issue where if sendEmail is overridden with a different email, it will reset that email.
+
 ## [12.1.1] - 2022-11-25
 
 -   Fixed an issue with importing the wrong recipe in the dashboard APIs
