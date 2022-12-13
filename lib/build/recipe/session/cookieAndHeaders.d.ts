@@ -6,9 +6,6 @@ export declare function clearSessionFromAllTokenTransferMethods(
     req: BaseRequest,
     res: BaseResponse
 ): void;
-/**
- * @description clears
- */
 export declare function clearSession(
     config: TypeNormalisedInput,
     res: BaseResponse,

@@ -41,9 +41,6 @@ export function clearSessionFromAllTokenTransferMethods(
     }
 }
 
-/**
- * @description clears
- */
 export function clearSession(config: TypeNormalisedInput, res: BaseResponse, transferMethod: TokenTransferMethod) {
     // If we can tell it's a cookie based session we are not clearing using headers
     const tokenTypes: TokenType[] = ["access", "refresh"];

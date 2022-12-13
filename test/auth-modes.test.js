@@ -871,14 +871,14 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     { getTokenTransferMethodRes: "header", authHeader: false, authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" },
                     { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" },
                     { getTokenTransferMethodRes: "any",    authHeader: false, authCookie: true,  output: "validatecookie",   setTokens: "cookies", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: true,  output: "unauthorised",     setTokens: "none",    clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: true,  output: "unauthorised",     setTokens: "none",    clearedTokens: "none" }, // 5
                     { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: true,  output: "validatecookie",   setTokens: "cookies", clearedTokens: "none" },
                     { getTokenTransferMethodRes: "any",    authHeader: true,  authCookie: false, output: "validateheader",   setTokens: "headers", clearedTokens: "none" },
                     { getTokenTransferMethodRes: "header", authHeader: true,  authCookie: false, output: "validateheader",   setTokens: "headers", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "cookie", authHeader: true,  authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "cookie", authHeader: true,  authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" }, // 9
                     { getTokenTransferMethodRes: "any",    authHeader: true,  authCookie: true,  output: "validateheader",   setTokens: "headers", clearedTokens: "cookies" },
                     { getTokenTransferMethodRes: "header", authHeader: true,  authCookie: true,  output: "validateheader",   setTokens: "headers", clearedTokens: "cookies" },
-                    { getTokenTransferMethodRes: "cookie", authHeader: true,  authCookie: true,  output: "validatecookie",   setTokens: "cookies", clearedTokens: "headers" },
+                    { getTokenTransferMethodRes: "cookie", authHeader: true,  authCookie: true,  output: "validatecookie",   setTokens: "cookies", clearedTokens: "headers" }, // 12
                 ];
 
                 for (let i = 0; i < behaviourTable.length; ++i) {
@@ -958,17 +958,20 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                                 assert.notStrictEqual(refreshRes.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
                                 break;
                             case "none":
-                                if (conf.clearedTokens !== "cookies") {
-                                    assert.strictEqual(refreshRes.accessToken, undefined);
-                                    assert.strictEqual(refreshRes.accessTokenExpiry, undefined);
-                                    assert.strictEqual(refreshRes.refreshToken, undefined);
-                                    assert.strictEqual(refreshRes.refreshTokenExpiry, undefined);
-                                }
-                                if (conf.clearedTokens !== "header") {
-                                    assert.strictEqual(refreshRes.accessTokenFromHeader, undefined);
-                                    assert.strictEqual(refreshRes.refreshTokenFromHeader, undefined);
+                                if (conf.clearedTokens === "none") {
+                                    assert.strictEqual(refreshRes.frontToken, undefined);
                                 }
                                 break;
+                        }
+                        if (conf.setTokens !== "cookies" && conf.clearedTokens !== "cookies") {
+                            assert.strictEqual(refreshRes.accessToken, undefined);
+                            assert.strictEqual(refreshRes.accessTokenExpiry, undefined);
+                            assert.strictEqual(refreshRes.refreshToken, undefined);
+                            assert.strictEqual(refreshRes.refreshTokenExpiry, undefined);
+                        }
+                        if (conf.setTokens !== "headers" && conf.clearedTokens !== "headers") {
+                            assert.strictEqual(refreshRes.accessTokenFromHeader, undefined);
+                            assert.strictEqual(refreshRes.refreshTokenFromHeader, undefined);
                         }
                     });
                 }
@@ -1065,10 +1068,12 @@ async function refreshSession(app, authModeHeader, authMode, info) {
             if (authModeHeader) {
                 req.set("st-auth-mode", authModeHeader);
             }
+
+            const accessToken = info.accessToken || info.accessTokenFromHeader?.value;
             const refreshToken = info.refreshToken || info.refreshTokenFromHeader?.value;
 
             if (authMode === "both" || authMode === "cookie") {
-                req.set("Cookie", ["sRefreshToken=" + refreshToken]);
+                req.set("Cookie", ["sAccessToken=" + accessToken, "sRefreshToken=" + refreshToken]);
                 if (info.antiCsrf) {
                     req.set("anti-csrf", info.antiCsrf);
                 }
