@@ -106,7 +106,7 @@ export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod:
             return undefined;
         }
 
-        return value.replace(/^Bearer /, "");
+        return value.replace(/^Bearer /, "").trim();
     } else {
         throw new Error("Should never happen: Unknown transferMethod: " + transferMethod);
     }
@@ -130,12 +130,12 @@ export function setToken(
             tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath"
         );
     } else if (transferMethod === "header") {
-        setHeader(res, getResponseHeaderNameForTokenType(tokenType), value, expires);
+        setHeader(res, getResponseHeaderNameForTokenType(tokenType), value);
     }
 }
 
-export function setHeader(res: BaseResponse, name: string, value: string, expires: number) {
-    res.setHeader(name, `${value};${expires}`, false);
+export function setHeader(res: BaseResponse, name: string, value: string) {
+    res.setHeader(name, value, false);
     res.setHeader("Access-Control-Expose-Headers", name, true);
 }
 
