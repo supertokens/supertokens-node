@@ -72,6 +72,30 @@ export type TypeNormalisedInput = {
 export type APIInterface = {};
 
 export type RecipeInterface = {
+    getRecipeUserIdsForPrimaryUserIds: (input: {
+        primaryUserIds: string[];
+    }) => Promise<{
+        [primaryUserId: string]: string[]; // recipeUserIds
+    }>;
+    getPrimaryUserIdsforRecipeUserIds: (input: {
+        recipeUserIds: string[];
+    }) => Promise<{
+        [recipeUserId: string]: string | null;
+    }>;
+    addNewRecipeUserIdWithoutPrimaryUserId: (input: {
+        recipeUserId: string;
+        recipeId: string;
+        timeJoined: number;
+    }) => Promise<void>;
+    getUsers: (input: {
+        timeJoinedOrder: "ASC" | "DESC";
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+    }) => Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
     canCreatePrimaryUserId: (input: {
         recipeUserId: string;
         userContext: any;
