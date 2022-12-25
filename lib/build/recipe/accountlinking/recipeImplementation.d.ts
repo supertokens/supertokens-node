@@ -1,4 +1,4 @@
 // @ts-nocheck
-import { RecipeInterface } from "./types";
+import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
-export default function getRecipeImplementation(querier: Querier): RecipeInterface;
+export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface;

@@ -13,13 +13,15 @@
  * under the License.
  */
 
-import { RecipeInterface } from "./types";
+import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { maxVersion } from "../../utils";
+import { getUser, listUsersByAccountInfo, deleteUser } from "../../";
+import Session from "../session";
 
-export default function getRecipeImplementation(querier: Querier): RecipeInterface {
+export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
         getRecipeUserIdsForPrimaryUserIds: async function ({
             primaryUserIds,
@@ -94,9 +96,10 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 nextPaginationToken: response.nextPaginationToken,
             };
         },
-        canCreatePrimaryUserId: async function (_input: {
+        canCreatePrimaryUserId: async function ({
+            recipeUserId,
+        }: {
             recipeUserId: string;
-            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -109,13 +112,91 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                   description: string;
               }
         > {
+            let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsforRecipeUserIds({
+                recipeUserIds: [recipeUserId],
+            });
+
+            if (
+                recipeUserIdToPrimaryUserIdMapping[recipeUserId] !== undefined &&
+                recipeUserIdToPrimaryUserIdMapping[recipeUserId] !== null
+            ) {
+                return {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: recipeUserIdToPrimaryUserIdMapping[recipeUserId],
+                    description: "Recipe user is already linked with another primary user id",
+                };
+            }
+
+            let user = await getUser({
+                userId: recipeUserId,
+            });
+
+            if (user === undefined) {
+                // QUESTION: should we throw an error here instead?
+                return {
+                    status: "OK",
+                };
+            }
+
+            let usersForAccountInfo = [];
+
+            let promises = [];
+
+            for (let i = 0; i < user.emails.length; i++) {
+                promises.push(
+                    listUsersByAccountInfo({
+                        info: {
+                            email: user.emails[i],
+                        },
+                    })
+                );
+            }
+
+            for (let i = 0; i < user.thirdpartyInfo.length; i++) {
+                promises.push(
+                    listUsersByAccountInfo({
+                        info: {
+                            ...user.thirdpartyInfo[i],
+                        },
+                    })
+                );
+            }
+
+            for (let i = 0; i < user.phoneNumbers.length; i++) {
+                promises.push(
+                    listUsersByAccountInfo({
+                        info: {
+                            phoneNumber: user.phoneNumbers[i],
+                        },
+                    })
+                );
+            }
+
+            for (let i = 0; i < promises.length; i++) {
+                let result = await promises[i];
+                if (result !== undefined) {
+                    usersForAccountInfo.push(...result);
+                }
+            }
+
+            let primaryUser = usersForAccountInfo.find((u) => u.isPrimaryUser);
+
+            if (primaryUser !== undefined) {
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: primaryUser.id,
+                    description: "Account info related to recipe user is already linked with another primary user id",
+                };
+            }
+
             return {
                 status: "OK",
             };
         },
-        createPrimaryUser: async function (_input: {
+        createPrimaryUser: async function ({
+            recipeUserId,
+        }: {
             recipeUserId: string;
-            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -129,16 +210,38 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                   description: string;
               }
         > {
-            return {
-                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                primaryUserId: "",
-                description: "",
-            };
+            let canCreatePrimaryUser:
+                | {
+                      status: "OK";
+                  }
+                | {
+                      status:
+                          | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                          | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                      primaryUserId: string;
+                      description: string;
+                  } = await this.canCreatePrimaryUserId({
+                recipeUserId,
+            });
+            if (canCreatePrimaryUser.status !== "OK") {
+                return canCreatePrimaryUser;
+            }
+
+            let primaryUser = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/accountlinking/user/primary"),
+                {
+                    recipeUserId,
+                }
+            );
+
+            return primaryUser;
         },
-        canLinkAccounts: async function (_input: {
+        canLinkAccounts: async function ({
+            recipeUserId,
+            primaryUserId,
+        }: {
             recipeUserId: string;
             primaryUserId: string;
-            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -158,11 +261,63 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                   description: string;
               }
         > {
+            let primaryUser = await getUser({
+                userId: primaryUserId,
+            });
+            if (primaryUser === undefined) {
+                throw Error("primary user not found");
+            }
+            let recipeUser = await getUser({
+                userId: recipeUserId,
+            });
+            if (recipeUser === undefined) {
+                throw Error("recipe user not found");
+            }
+            let canCreatePrimaryUser:
+                | {
+                      status: "OK";
+                  }
+                | {
+                      status:
+                          | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                          | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                      primaryUserId: string;
+                      description: string;
+                  } = await this.canCreatePrimaryUserId({
+                recipeUserId,
+            });
+            if (canCreatePrimaryUser.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                if (canCreatePrimaryUser.primaryUserId === primaryUserId) {
+                    return {
+                        status: "ACCOUNTS_ALREADY_LINKED_ERROR",
+                        description: "accounts are already linked",
+                    };
+                }
+                return canCreatePrimaryUser;
+            }
+            if (canCreatePrimaryUser.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                /**
+                 * if canCreatePrimaryUser.status is
+                 * ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR and
+                 * canCreatePrimaryUser.primaryUserId is equal to the input primaryUserId,
+                 * we don't return ACCOUNTS_ALREADY_LINKED_ERROR cause here the accounts
+                 * are not yet linked. It's just that the identifyingInfo associated with the
+                 * recipeUser is linked to the primaryUser. Input recipeUser still needs
+                 * to be linked with the input primaryUserId
+                 */
+                if (canCreatePrimaryUser.primaryUserId !== primaryUserId) {
+                    return canCreatePrimaryUser;
+                }
+            }
             return {
                 status: "OK",
             };
         },
-        linkAccounts: async function (_input: {
+        linkAccounts: async function ({
+            recipeUserId,
+            primaryUserId,
+            userContext,
+        }: {
             recipeUserId: string;
             primaryUserId: string;
             userContext: any;
@@ -185,17 +340,115 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                   description: string;
               }
         > {
-            return {
-                status: "OK",
-            };
+            let canLinkAccountsResult = await this.canLinkAccounts({
+                recipeUserId,
+                primaryUserId,
+            });
+            if (canLinkAccountsResult.status !== "OK") {
+                return canLinkAccountsResult;
+            }
+            let accountsLinkingResult = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/accountlinking/user/link"),
+                {
+                    recipeUserId,
+                    primaryUserId,
+                }
+            );
+            if (accountsLinkingResult.status === "OK") {
+                await Session.revokeAllSessionsForUser(recipeUserId, userContext);
+                let user = await getUser({
+                    userId: primaryUserId,
+                });
+                if (user === undefined) {
+                    throw Error("this error should never be thrown");
+                }
+                let recipeUser = user.linkedRecipes.find((u) => u.recipeUserId === recipeUserId);
+                if (recipeUser === undefined) {
+                    throw Error("this error should never be thrown");
+                }
+                let recipeUserInfo = await Querier.getNewInstanceOrThrowError(recipeUser.recipeId).sendGetRequest(
+                    new NormalisedURLPath("/recipe/user"),
+                    {
+                        userId: recipeUserId,
+                    }
+                );
+                await config.onAccountLinked(user, recipeUserInfo.user, userContext);
+            }
+            return accountsLinkingResult;
         },
-        unlinkAccounts: async function (_ipnut: {
+        unlinkAccounts: async function ({
+            recipeUserId,
+            userContext,
+        }: {
             recipeUserId: string;
             userContext: any;
         }): Promise<{
             status: "OK";
             wasRecipeUserDeleted: boolean;
         }> {
+            let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsforRecipeUserIds({
+                recipeUserIds: [recipeUserId],
+            });
+            if (
+                recipeUserIdToPrimaryUserIdMapping[recipeUserId] === undefined ||
+                recipeUserIdToPrimaryUserIdMapping[recipeUserId] === null
+            ) {
+                return {
+                    status: "OK",
+                    wasRecipeUserDeleted: false,
+                };
+            }
+            let primaryUserId = recipeUserIdToPrimaryUserIdMapping[recipeUserId];
+            let user = await getUser({
+                userId: primaryUserId,
+            });
+            if (user === undefined) {
+                throw Error("this error should never be thrown");
+            }
+            let recipeUser = user.linkedRecipes.find((u) => u.recipeUserId === recipeUserId);
+            if (recipeUser === undefined) {
+                throw Error("this error should never be thrown");
+            }
+            let recipeUserInfo = await Querier.getNewInstanceOrThrowError(recipeUser.recipeId).sendGetRequest(
+                new NormalisedURLPath("/recipe/user"),
+                {
+                    userId: recipeUserId,
+                }
+            );
+            /**
+             * primaryUserId === recipeUserId
+             */
+            if (primaryUserId === recipeUserId) {
+                let user = await getUser({
+                    userId: primaryUserId,
+                });
+
+                if (user === undefined) {
+                    return {
+                        status: "OK",
+                        wasRecipeUserDeleted: false,
+                    };
+                }
+                if (user.linkedRecipes.length > 1) {
+                    await deleteUser(recipeUserId, false);
+                    return {
+                        status: "OK",
+                        wasRecipeUserDeleted: true,
+                    };
+                }
+            }
+            let accountsUnlinkingResult = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
+                {
+                    recipeUserId,
+                    primaryUserId,
+                }
+            );
+            if (accountsUnlinkingResult.status === "OK") {
+                await Session.revokeAllSessionsForUser(recipeUserId, userContext);
+            }
+
+            await config.onAccountUnlinked(user, recipeUserInfo.user, userContext);
             return {
                 status: "OK",
                 wasRecipeUserDeleted: false,

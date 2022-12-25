@@ -3,15 +3,9 @@ import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import type {
-    AccountInfoWithRecipeId,
-    APIHandled,
-    HTTPMethod,
-    NormalisedAppinfo,
-    RecipeListFunction,
-} from "../../types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import { SessionContainer } from "../session";
-import type { AccountInfoAndEmailWithRecipeId, TypeNormalisedInput, RecipeInterface, TypeInput } from "./types";
+import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoAndEmailWithRecipeId } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -39,22 +33,64 @@ export default class Recipe extends RecipeModule {
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    isSignUpAllowed: (input: { info: AccountInfoWithRecipeId }) => Promise<boolean>;
-    createPrimaryUserIdOrLinkAccountPostSignUp: (_input: {
-        identifyinInfo: AccountInfoAndEmailWithRecipeId;
-        shouldRequireVerification: boolean;
-    }) => Promise<void>;
-    accountLinkPostSignInViaSession: (_input: {
+    getIdentitiesForPrimaryUserId: (
+        primaryUserId: string
+    ) => Promise<{
+        verified: {
+            emails: string[];
+            phoneNumbers: string[];
+            thirdpartyInfo: {
+                thirdpartyId: string;
+                thirdpartyUserId: string;
+            }[];
+        };
+        unverified: {
+            emails: string[];
+            phoneNumbers: string[];
+            thirdpartyInfo: {
+                thirdpartyId: string;
+                thirdpartyUserId: string;
+            }[];
+        };
+    }>;
+    isSignUpAllowed: ({
+        info,
+        userContext,
+    }: {
+        info: AccountInfoAndEmailWithRecipeId;
+        userContext: any;
+    }) => Promise<boolean>;
+    createPrimaryUserIdOrLinkAccountPostSignUp: ({
+        info,
+        infoVerified,
+        recipeUserId,
+        userContext,
+    }: {
+        info: AccountInfoAndEmailWithRecipeId;
+        infoVerified: boolean;
+        recipeUserId: string;
+        userContext: any;
+    }) => Promise<string>;
+    accountLinkPostSignInViaSession: ({
+        session,
+        info,
+        infoVerified,
+        userContext,
+    }: {
         session: SessionContainer;
-        identifyinInfo: AccountInfoAndEmailWithRecipeId;
+        info: AccountInfoAndEmailWithRecipeId;
+        infoVerified: boolean;
+        userContext: any;
     }) => Promise<
         | {
               createRecipeUser: true;
+              updateVerificationClaim: boolean;
           }
         | ({
               createRecipeUser: false;
           } & {
               accountsLinked: true;
+              updateVerificationClaim: boolean;
           })
         | ({
               createRecipeUser: false;

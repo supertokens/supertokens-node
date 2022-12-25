@@ -75,7 +75,7 @@ export default class SuperTokensWrapper {
     }>;
     static getUser(input: { userId: string }): Promise<User | undefined>;
     static listUsersByAccountInfo(input: { info: AccountInfo }): Promise<User[] | undefined>;
-    static getUserByAccountInfo(input: { info: AccountInfoWithRecipeId }): Promise<User | undefined>;
+    static getUserByAccountInfoAndRecipeId(input: { info: AccountInfoWithRecipeId }): Promise<User | undefined>;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -89,5 +89,5 @@ export declare let deleteUserIdMapping: typeof SuperTokensWrapper.deleteUserIdMa
 export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
 export declare let getUser: typeof SuperTokensWrapper.getUser;
 export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
-export declare let getUserByAccountInfo: typeof SuperTokensWrapper.getUserByAccountInfo;
+export declare let getUserByAccountInfoAndRecipeId: typeof SuperTokensWrapper.getUserByAccountInfoAndRecipeId;
 export declare let Error: typeof SuperTokensError;

@@ -17,7 +17,7 @@ import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import SuperTokens from "../..";
+import SuperTokens, { getUser, getUserByAccountInfoAndRecipeId, listUsersByAccountInfo } from "../..";
 import SuperTokensModule from "../../supertokens";
 import type {
     AccountInfoWithRecipeId,
@@ -27,13 +27,13 @@ import type {
     RecipeListFunction,
 } from "../../types";
 import { SessionContainer } from "../session";
-import type { AccountInfoAndEmailWithRecipeId, TypeNormalisedInput, RecipeInterface, TypeInput } from "./types";
-import { User } from "../../types";
+import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoAndEmailWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -59,7 +59,9 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
+            );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
     }
@@ -123,41 +125,198 @@ export default class Recipe extends RecipeModule {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     }
 
-    isSignUpAllowed = async (input: { info: AccountInfoWithRecipeId }): Promise<boolean> => {
-        let user: User | undefined = await SuperTokens.getUserByAccountInfo(input);
-        if (user === undefined || !user.isPrimaryUser) {
+    getIdentitiesForPrimaryUserId = async (
+        primaryUserId: string
+    ): Promise<{
+        verified: {
+            emails: string[];
+            phoneNumbers: string[];
+            thirdpartyInfo: {
+                thirdpartyId: string;
+                thirdpartyUserId: string;
+            }[];
+        };
+        unverified: {
+            emails: string[];
+            phoneNumbers: string[];
+            thirdpartyInfo: {
+                thirdpartyId: string;
+                thirdpartyUserId: string;
+            }[];
+        };
+    }> => {
+        return await Querier.getNewInstanceOrThrowError(this.getRecipeId()).sendGetRequest(
+            new NormalisedURLPath("/recipe/accountlinking/user/identities"),
+            {
+                primaryUserId,
+            }
+        );
+    };
+
+    isSignUpAllowed = async ({
+        info,
+        userContext,
+    }: {
+        info: AccountInfoAndEmailWithRecipeId;
+        userContext: any;
+    }): Promise<boolean> => {
+        let identifier:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              };
+        if (info.email !== undefined) {
+            identifier = {
+                email: info.email,
+            };
+        } else if (info.phoneNumber !== undefined) {
+            identifier = {
+                phoneNumber: info.phoneNumber,
+            };
+        } else {
+            throw Error("this error should never be thrown");
+        }
+        let users = await SuperTokens.listUsersByAccountInfo({
+            info: identifier,
+        });
+        if (users === undefined || users.length === 0) {
             return true;
         }
-        let shouldRequireVerification = false; // TOOD: call shouldRequireVerification from config
+        let primaryUser = users.find((u) => u.isPrimaryUser);
+        if (primaryUser === undefined) {
+            return true;
+        }
+        let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+            info,
+            primaryUser,
+            undefined,
+            userContext
+        );
+        let shouldRequireVerification = shouldDoAccountLinking.shouldAutomaticallyLink
+            ? shouldDoAccountLinking.shouldRequireVerification
+            : false;
         if (!shouldRequireVerification) {
             return true;
         }
-        // /**
-        //  * for each linked recipes, get all the verified identifying info
-        //  *
-        //  * if the input identifyingInfo is found in the above generated list
-        //  * of verified identifyingInfos, return true else false.
-        //  */
-        return true;
+
+        /**
+         * DISCUSS: new API in core which returns all the verified identities for primaryUserId
+         */
+        let identitiesForPrimaryUser = await this.getIdentitiesForPrimaryUserId(primaryUser.id);
+
+        if (info.email !== undefined) {
+            return identitiesForPrimaryUser.verified.emails.includes(info.email);
+        }
+        if (info.phoneNumber !== undefined) {
+            return identitiesForPrimaryUser.verified.phoneNumbers.includes(info.phoneNumber);
+        }
+        throw Error("it should never reach here");
     };
-    createPrimaryUserIdOrLinkAccountPostSignUp = async (_input: {
-        identifyinInfo: AccountInfoAndEmailWithRecipeId;
-        shouldRequireVerification: boolean;
-    }) => {
-        // TODO
+    createPrimaryUserIdOrLinkAccountPostSignUp = async ({
+        info,
+        infoVerified,
+        recipeUserId,
+        userContext,
+    }: {
+        info: AccountInfoAndEmailWithRecipeId;
+        infoVerified: boolean;
+        recipeUserId: string;
+        userContext: any;
+    }): Promise<string> => {
+        let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+            info,
+            undefined,
+            undefined,
+            userContext
+        );
+        if (shouldDoAccountLinking.shouldAutomaticallyLink && shouldDoAccountLinking.shouldRequireVerification) {
+            if (!infoVerified) {
+                return recipeUserId;
+            }
+        }
+        let canCreatePrimaryUserId = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
+            recipeUserId,
+            userContext,
+        });
+        if (canCreatePrimaryUserId) {
+            let user = await this.recipeInterfaceImpl.createPrimaryUser({
+                recipeUserId,
+                userContext,
+            });
+            if (user.status !== "OK") {
+                throw Error(user.status);
+            }
+            return user.user.id;
+        }
+        let identifier:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              };
+        if (info.email !== undefined) {
+            identifier = {
+                email: info.email,
+            };
+        } else if (info.phoneNumber !== undefined) {
+            identifier = {
+                phoneNumber: info.phoneNumber,
+            };
+        } else {
+            throw Error("this error should never be thrown");
+        }
+        let users = await SuperTokens.listUsersByAccountInfo({
+            info: identifier,
+        });
+        if (users === undefined || users.length === 0) {
+            throw Error("this error should never be thrown");
+        }
+        let primaryUser = users.find((u) => u.isPrimaryUser);
+        if (primaryUser === undefined) {
+            throw Error("this error should never be thrown");
+        }
+        shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+            info,
+            primaryUser,
+            undefined,
+            userContext
+        );
+        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+            return recipeUserId;
+        }
+        await this.recipeInterfaceImpl.linkAccounts({
+            recipeUserId,
+            primaryUserId: primaryUser.id,
+            userContext,
+        });
+        return primaryUser.id;
     };
-    accountLinkPostSignInViaSession = async (_input: {
+
+    // TODO: account linking failures needs to be improved
+    accountLinkPostSignInViaSession = async ({
+        session,
+        info,
+        infoVerified,
+        userContext,
+    }: {
         session: SessionContainer;
-        identifyinInfo: AccountInfoAndEmailWithRecipeId;
+        info: AccountInfoAndEmailWithRecipeId;
+        infoVerified: boolean;
+        userContext: any;
     }): Promise<
         | {
               createRecipeUser: true;
+              updateVerificationClaim: boolean;
           }
         | ({
               createRecipeUser: false;
           } & (
               | {
                     accountsLinked: true;
+                    updateVerificationClaim: boolean;
                 }
               | {
                     accountsLinked: false;
@@ -165,9 +324,199 @@ export default class Recipe extends RecipeModule {
                 }
           ))
     > => {
-        // let userId = session.getUserId();
+        let userId = session.getUserId();
+        let user = await getUser({
+            userId,
+        });
+        if (user === undefined) {
+            throw Error("this should not be thrown");
+        }
+        if (!user.isPrimaryUser) {
+            let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                info,
+                undefined,
+                session,
+                userContext
+            );
+            if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                throw Error("Acount linking failure");
+            }
+
+            let recipeId = user.linkedRecipes[0].recipeId;
+            let querier = Querier.getNewInstanceOrThrowError(recipeId);
+            let recipeUser = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
+                userId: user.id,
+            });
+
+            shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                recipeUser.user,
+                undefined,
+                session,
+                userContext
+            );
+            if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                throw Error("Acount linking failure");
+            }
+            if (shouldDoAccountLinking.shouldRequireVerification) {
+                if (!infoVerified) {
+                    throw Error("Account link failure");
+                }
+            }
+            let canCreatePrimaryUser = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
+                recipeUserId: user.id,
+                userContext,
+            });
+            if (canCreatePrimaryUser.status !== "OK") {
+                throw canCreatePrimaryUser;
+            }
+            let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
+                recipeUserId: user.id,
+                userContext,
+            });
+            if (createPrimaryUserResult.status !== "OK") {
+                throw createPrimaryUserResult;
+            }
+            user = createPrimaryUserResult.user;
+        }
+        let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+            info,
+            user,
+            session,
+            userContext
+        );
+        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+            throw Error("account linking failure");
+        }
+        let recipeInfo: AccountInfoWithRecipeId;
+        if (info.recipeId === "emailpassword" && info.email !== undefined) {
+            recipeInfo = {
+                recipeId: "emailpassword",
+                email: info.email,
+            };
+        } else if (info.recipeId === "thirdparty" && info.thirdParty !== undefined) {
+            recipeInfo = {
+                recipeId: "thirdparty",
+                thirdpartyId: info.thirdParty.id,
+                thirdpartyUserId: info.thirdParty.userId,
+            };
+        } else if (info.recipeId === "passwordless" && info.email !== undefined) {
+            recipeInfo = {
+                recipeId: "passwordless",
+                email: info.email,
+            };
+        } else if (info.recipeId === "passwordless" && info.phoneNumber !== undefined) {
+            recipeInfo = {
+                recipeId: "passwordless",
+                phoneNumber: info.phoneNumber,
+            };
+        } else {
+            throw Error("this error should never be thrown");
+        }
+        let recipeUser = await getUserByAccountInfoAndRecipeId({
+            info: recipeInfo,
+        });
+        if (recipeUser === undefined) {
+            let identitiesForPrimaryUser = await this.getIdentitiesForPrimaryUserId(user.id);
+            if (info.email !== undefined) {
+                let result =
+                    identitiesForPrimaryUser.verified.emails.includes(info.email) ||
+                    identitiesForPrimaryUser.unverified.emails.includes(info.email);
+                if (result) {
+                    return {
+                        createRecipeUser: true,
+                        updateVerificationClaim: false,
+                    };
+                }
+            }
+            if (info.phoneNumber !== undefined) {
+                let result =
+                    identitiesForPrimaryUser.verified.phoneNumbers.includes(info.phoneNumber) ||
+                    identitiesForPrimaryUser.unverified.phoneNumbers.includes(info.phoneNumber);
+                if (result) {
+                    return {
+                        createRecipeUser: true,
+                        updateVerificationClaim: false,
+                    };
+                }
+            }
+
+            let existingRecipeUserForInputInfo = await listUsersByAccountInfo({
+                info: recipeInfo,
+            });
+            if (existingRecipeUserForInputInfo !== undefined) {
+                let doesPrimaryUserIdAlreadyExists =
+                    existingRecipeUserForInputInfo.find((u) => u.isPrimaryUser) !== undefined;
+                if (doesPrimaryUserIdAlreadyExists) {
+                    throw Error("account linking failure");
+                }
+            }
+            if (!infoVerified) {
+                if (shouldDoAccountLinking.shouldRequireVerification) {
+                    return {
+                        createRecipeUser: true,
+                        updateVerificationClaim: true,
+                    };
+                }
+            }
+            return {
+                createRecipeUser: true,
+                updateVerificationClaim: false,
+            };
+        }
+        let canLinkAccounts = await this.recipeInterfaceImpl.canLinkAccounts({
+            recipeUserId: recipeUser.id,
+            primaryUserId: user.id,
+            userContext,
+        });
+        if (canLinkAccounts.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
+            return {
+                createRecipeUser: false,
+                accountsLinked: true,
+                updateVerificationClaim: false,
+            };
+        }
+        if (canLinkAccounts.status !== "OK") {
+            return {
+                createRecipeUser: false,
+                accountsLinked: false,
+                reason: canLinkAccounts.status,
+            };
+        }
+
+        let identitiesForPrimaryUser = await this.getIdentitiesForPrimaryUserId(user.id);
+        let recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser = false;
+        if (info.email !== undefined) {
+            recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser =
+                identitiesForPrimaryUser.verified.emails.includes(info.email) ||
+                identitiesForPrimaryUser.unverified.emails.includes(info.email);
+        }
+        if (!recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser && info.phoneNumber !== undefined) {
+            recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser =
+                identitiesForPrimaryUser.verified.phoneNumbers.includes(info.phoneNumber) ||
+                identitiesForPrimaryUser.unverified.phoneNumbers.includes(info.phoneNumber);
+        }
+        if (recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser) {
+            /**
+             * TODO: let's Ly belongs to P1 such that Ly equal to Lx.
+             * if LY verified, mark Lx as verified. If Lx is verfied,
+             * then mark all Ly as verified
+             */
+        } else {
+            if (shouldDoAccountLinking.shouldRequireVerification) {
+                if (!infoVerified) {
+                    throw Error("account link failure");
+                }
+            }
+        }
+        await this.recipeInterfaceImpl.linkAccounts({
+            recipeUserId: recipeUser.id,
+            primaryUserId: user.id,
+            userContext,
+        });
         return {
-            createRecipeUser: true,
+            createRecipeUser: false,
+            accountsLinked: true,
+            updateVerificationClaim: true,
         };
     };
 }

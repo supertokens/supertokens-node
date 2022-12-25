@@ -103,7 +103,7 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().listUsersByAccountInfo(input);
     }
 
-    static getUserByAccountInfo(input: { info: AccountInfoWithRecipeId }) {
+    static getUserByAccountInfoAndRecipeId(input: { info: AccountInfoWithRecipeId }) {
         return SuperTokens.getInstanceOrThrowError().getUserByAccountInfoAndRecipeId(input);
     }
 }
@@ -132,6 +132,6 @@ export let getUser = SuperTokensWrapper.getUser;
 
 export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
 
-export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
+export let getUserByAccountInfoAndRecipeId = SuperTokensWrapper.getUserByAccountInfoAndRecipeId;
 
 export let Error = SuperTokensWrapper.Error;
