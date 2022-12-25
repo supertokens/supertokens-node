@@ -70,11 +70,13 @@ export type TypeNormalisedInput = {
 export type RecipeInterface = {
     getRecipeUserIdsForPrimaryUserIds: (input: {
         primaryUserIds: string[];
+        userContext: any;
     }) => Promise<{
         [primaryUserId: string]: string[]; // recipeUserIds
     }>;
     getPrimaryUserIdsforRecipeUserIds: (input: {
         recipeUserIds: string[];
+        userContext: any;
     }) => Promise<{
         [recipeUserId: string]: string | null;
     }>;
@@ -82,12 +84,14 @@ export type RecipeInterface = {
         recipeUserId: string;
         recipeId: string;
         timeJoined: number;
+        userContext: any;
     }) => Promise<void>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        userContext: any;
     }) => Promise<{
         users: User[];
         nextPaginationToken?: string;
