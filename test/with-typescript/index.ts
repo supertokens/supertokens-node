@@ -26,6 +26,7 @@ import UserMetadata from "../../recipe/usermetadata";
 import { BooleanClaim, PrimitiveClaim, SessionClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
+import JWT from "../../recipe/jwt";
 
 UserRoles.init({
     override: {
@@ -1370,4 +1371,30 @@ Supertokens.init({
 
 Dashboard.init({
     apiKey: "",
+});
+
+Supertokens.init({
+    appInfo: {
+        apiDomain: "..",
+        appName: "..",
+        websiteDomain: "..",
+    },
+    recipeList: [JWT.init()],
+});
+
+app.post("/create-anonymous-session", async (req, res) => {
+    let token = await JWT.createJWT(
+        {
+            sub: "<Generate random ID>",
+            isAnonymous: true,
+            // other info...
+        },
+        3153600000
+    ); // 100 years validity.
+    if (token.status !== "OK") {
+        throw new Error("Should never come here");
+    }
+    res.json({
+        token: token.jwt,
+    });
 });
