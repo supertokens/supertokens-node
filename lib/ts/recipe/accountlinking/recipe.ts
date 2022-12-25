@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2023, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -18,17 +18,89 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import SuperTokens from "../..";
-import { AccountInfoWithRecipeId, APIHandled, HTTPMethod } from "../../types";
+import SuperTokensModule from "../../supertokens";
+import type {
+    AccountInfoWithRecipeId,
+    APIHandled,
+    HTTPMethod,
+    NormalisedAppinfo,
+    RecipeListFunction,
+} from "../../types";
 import { SessionContainer } from "../session";
-import { AccountInfoAndEmailWithRecipeId } from "./types";
+import type { AccountInfoAndEmailWithRecipeId, TypeNormalisedInput, RecipeInterface, TypeInput } from "./types";
 import { User } from "../../types";
+import { validateAndNormaliseUserInput } from "./utils";
+import OverrideableBuilder from "supertokens-js-override";
+import RecipeImplementation from "./recipeImplementation";
+import { Querier } from "../../querier";
+import SuperTokensError from "../../error";
 
-export default class AccountLinkingRecipe extends RecipeModule {
-    // recipeInterfaceImpl: RecipeInterface; TODO
+export default class Recipe extends RecipeModule {
+    private static instance: Recipe | undefined = undefined;
+
+    static RECIPE_ID = "accountlinking";
+
+    config: TypeNormalisedInput;
+
+    recipeInterfaceImpl: RecipeInterface;
+
+    isInServerlessEnv: boolean;
+
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        _recipes: {},
+        _ingredients: {}
+    ) {
+        super(recipeId, appInfo);
+        this.config = validateAndNormaliseUserInput(appInfo, config);
+        this.isInServerlessEnv = isInServerlessEnv;
+
+        {
+            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+        }
+    }
+
+    static init(config: TypeInput): RecipeListFunction {
+        return (appInfo, isInServerlessEnv) => {
+            if (Recipe.instance === undefined) {
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    config,
+                    {},
+                    {
+                        emailDelivery: undefined,
+                    }
+                );
+                return Recipe.instance;
+            } else {
+                throw new Error("AccountLinking recipe has already been initialised. Please check your code for bugs.");
+            }
+        };
+    }
+
+    static getInstanceOrThrowError(): Recipe {
+        if (Recipe.instance === undefined) {
+            Recipe.init({})(
+                SuperTokensModule.getInstanceOrThrowError().appInfo,
+                SuperTokensModule.getInstanceOrThrowError().isInServerlessEnv
+            );
+        }
+        if (Recipe.instance !== undefined) {
+            return Recipe.instance;
+        }
+        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+    }
 
     getAPIsHandled(): APIHandled[] {
-        throw new Error("Method not implemented.");
+        return [];
     }
+
     handleAPIRequest(
         _id: string,
         _req: BaseRequest,
@@ -36,18 +108,21 @@ export default class AccountLinkingRecipe extends RecipeModule {
         _path: normalisedURLPath,
         _method: HTTPMethod
     ): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        throw new Error("Should never come here");
     }
-    handleError(_error: error, _request: BaseRequest, _response: BaseResponse): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void> {
+        throw error;
     }
 
     getAllCORSHeaders(): string[] {
-        throw new Error("Method not implemented.");
+        return [];
     }
-    isErrorFromThisRecipe(_err: any): _err is error {
-        throw new Error("Method not implemented.");
+
+    isErrorFromThisRecipe(err: any): err is error {
+        return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     }
+
     isSignUpAllowed = async (input: { info: AccountInfoWithRecipeId }): Promise<boolean> => {
         let user: User | undefined = await SuperTokens.getUserByAccountInfo(input);
         if (user === undefined || !user.isPrimaryUser) {

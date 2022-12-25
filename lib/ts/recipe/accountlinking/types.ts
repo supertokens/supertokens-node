@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2023, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -14,7 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { User } from "../../types";
+import type { User } from "../../types";
 import { SessionContainer } from "../session";
 
 export type TypeInput = {
@@ -39,7 +39,6 @@ export type TypeInput = {
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -65,11 +64,8 @@ export type TypeNormalisedInput = {
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-
-export type APIInterface = {};
 
 export type RecipeInterface = {
     getRecipeUserIdsForPrimaryUserIds: (input: {
@@ -182,7 +178,7 @@ export type RecipeInterface = {
     }>;
 };
 
-type RecipeLevelUser = {
+export type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
     id: string; // can be recipeUserId or primaryUserId
     timeJoined: number;
