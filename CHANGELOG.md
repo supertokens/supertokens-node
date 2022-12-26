@@ -7,10 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [12.1.4] - 2022-12-12
+## [12.1.4] - 2022-12-26
 
 -   Updates dashboard version
--   Updates user GET API for the dashboard
+-   Updates user GET API for the dashboard recipe
 
 ## [12.1.3] - 2022-12-12
 
