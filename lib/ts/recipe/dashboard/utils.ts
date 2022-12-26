@@ -288,3 +288,30 @@ export async function getUserForRecipeId(
         recipe,
     };
 }
+
+export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
+    if (recipeId === "emailpassword") {
+        try {
+            EmailPasswordRecipe.getInstanceOrThrowError();
+            return true;
+        } catch (_) {
+            return false;
+        }
+    } else if (recipeId === "passwordless") {
+        try {
+            PasswordlessRecipe.getInstanceOrThrowError();
+            return true;
+        } catch (_) {
+            return false;
+        }
+    } else if (recipeId === "thirdparty") {
+        try {
+            ThirdPartyRecipe.getInstanceOrThrowError();
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    return false;
+}
