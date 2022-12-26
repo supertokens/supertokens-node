@@ -330,6 +330,13 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
                 isRecipeInitialised = true;
             } catch (_) {}
         }
+
+        if (!isRecipeInitialised) {
+            try {
+                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+                isRecipeInitialised = true;
+            } catch (_) {}
+        }
     }
 
     return isRecipeInitialised;
