@@ -28,3 +28,4 @@ export declare function getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 }>;
+export declare function isRecipeInitialised(recipeId: RecipeIdForUser): boolean;
