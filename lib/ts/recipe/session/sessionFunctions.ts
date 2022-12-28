@@ -19,7 +19,7 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
-import { isAnIpAddress, maxVersion } from "../../utils";
+import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 
 /**
@@ -34,23 +34,6 @@ export async function createNewSession(
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
-
-    if (
-        !disableAntiCsrf &&
-        helpers.config.cookieSameSite === "none" &&
-        !helpers.config.cookieSecure &&
-        !(
-            (helpers.appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(helpers.appInfo.topLevelAPIDomain)) &&
-            (helpers.appInfo.topLevelWebsiteDomain === "localhost" ||
-                isAnIpAddress(helpers.appInfo.topLevelWebsiteDomain))
-        )
-    ) {
-        // We can allow insecure cookie when both website & API domain are localhost or an IP
-        // When either of them is a different domain, API domain needs to have https and a secure cookie to work
-        throw new Error(
-            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
-        );
-    }
 
     let requestBody: {
         userId: string;

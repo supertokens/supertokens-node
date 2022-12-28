@@ -6,9 +6,6 @@ export declare function clearSessionFromAllTokenTransferMethods(
     req: BaseRequest,
     res: BaseResponse
 ): void;
-/**
- * @description clears
- */
 export declare function clearSession(
     config: TypeNormalisedInput,
     res: BaseResponse,
@@ -36,7 +33,7 @@ export declare function setToken(
     expires: number,
     transferMethod: TokenTransferMethod
 ): void;
-export declare function setHeader(res: BaseResponse, name: string, value: string, expires: number): void;
+export declare function setHeader(res: BaseResponse, name: string, value: string): void;
 /**
  *
  * @param res
