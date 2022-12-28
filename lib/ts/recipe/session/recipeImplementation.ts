@@ -531,7 +531,7 @@ export default function getRecipeInterface(
                     requestTransferMethod
                 );
             } catch (err) {
-                if (err.type === STError.TRY_REFRESH_TOKEN || err.payload.clearTokens) {
+                if (err.type === STError.TOKEN_THEFT_DETECTED || err.payload.clearTokens) {
                     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
                         logDebugMessage(
