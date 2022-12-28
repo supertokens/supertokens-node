@@ -260,7 +260,7 @@ export default function getRecipeInterface(
                 (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
                 accessTokens["cookie"] !== undefined
             ) {
-                logDebugMessage("getSession: using header transfer method");
+                logDebugMessage("getSession: using cookie transfer method");
                 requestTransferMethod = "cookie";
                 accessToken = accessTokens["cookie"];
             } else {
@@ -276,7 +276,7 @@ export default function getRecipeInterface(
                 logDebugMessage("getSession: UNAUTHORISED because accessToken in request is undefined");
                 throw new STError({
                     message:
-                        "Session does not exist. Are you sending the session tokens in the request as with the appropriate token transfer method?",
+                        "Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?",
                     type: STError.UNAUTHORISED,
                     payload: {
                         // we do not clear the session here because of a
@@ -471,7 +471,7 @@ export default function getRecipeInterface(
                 (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
                 refreshTokens["cookie"]
             ) {
-                logDebugMessage("refreshSession: using header transfer method");
+                logDebugMessage("refreshSession: using cookie transfer method");
                 requestTransferMethod = "cookie";
                 refreshToken = refreshTokens["cookie"];
             } else {
@@ -485,7 +485,7 @@ export default function getRecipeInterface(
 
                 logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
                 throw new STError({
-                    message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+                    message: "Refresh token not found. Are you sending the refresh token in the request?",
                     payload: {
                         clearTokens: false,
                     },
@@ -516,7 +516,7 @@ export default function getRecipeInterface(
                 logDebugMessage("refreshSession: Success!");
                 // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                 if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
-                    logDebugMessage("refreshSession: cleared legacy id refresh token after successfull refresh");
+                    logDebugMessage("refreshSession: cleared legacy id refresh token after successful refresh");
                     setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
                 }
 
@@ -531,7 +531,7 @@ export default function getRecipeInterface(
                     requestTransferMethod
                 );
             } catch (err) {
-                if (err.type !== STError.UNAUTHORISED || err.payload.clearTokens) {
+                if (err.type === STError.TRY_REFRESH_TOKEN || err.payload.clearTokens) {
                     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
                         logDebugMessage(
