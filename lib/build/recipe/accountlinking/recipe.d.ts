@@ -96,7 +96,12 @@ export default class Recipe extends RecipeModule {
               createRecipeUser: false;
           } & {
               accountsLinked: false;
-              reason: string;
+              reason:
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR"
+                  | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
+                  | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
           })
     >;
 }

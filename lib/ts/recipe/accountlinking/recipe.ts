@@ -320,7 +320,12 @@ export default class Recipe extends RecipeModule {
                 }
               | {
                     accountsLinked: false;
-                    reason: string; // TODO
+                    reason:
+                        | "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR"
+                        | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
+                        | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                 }
           ))
     > => {
@@ -339,7 +344,11 @@ export default class Recipe extends RecipeModule {
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-                throw Error("Acount linking failure");
+                return {
+                    createRecipeUser: false,
+                    accountsLinked: false,
+                    reason: "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR",
+                };
             }
 
             let recipeId = user.linkedRecipes[0].recipeId;
@@ -355,11 +364,26 @@ export default class Recipe extends RecipeModule {
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-                throw Error("Acount linking failure");
+                return {
+                    createRecipeUser: false,
+                    accountsLinked: false,
+                    reason: "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR",
+                };
             }
             if (shouldDoAccountLinking.shouldRequireVerification) {
-                if (!infoVerified) {
-                    throw Error("Account link failure");
+                if (recipeId === "emailpassword" || recipeId === "thirdparty") {
+                    let querier2 = Querier.getNewInstanceOrThrowError("emailverification");
+                    let response = await querier2.sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
+                        userId: recipeUser.user.id,
+                        email: recipeUser.user.email,
+                    });
+                    if (!response.isVerified) {
+                        return {
+                            createRecipeUser: false,
+                            accountsLinked: false,
+                            reason: "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                        };
+                    }
                 }
             }
             let canCreatePrimaryUser = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
@@ -367,14 +391,22 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
             if (canCreatePrimaryUser.status !== "OK") {
-                throw canCreatePrimaryUser;
+                return {
+                    createRecipeUser: false,
+                    accountsLinked: false,
+                    reason: canCreatePrimaryUser.status,
+                };
             }
             let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
                 recipeUserId: user.id,
                 userContext,
             });
             if (createPrimaryUserResult.status !== "OK") {
-                throw createPrimaryUserResult;
+                return {
+                    createRecipeUser: false,
+                    accountsLinked: false,
+                    reason: createPrimaryUserResult.status,
+                };
             }
             user = createPrimaryUserResult.user;
         }
@@ -385,7 +417,11 @@ export default class Recipe extends RecipeModule {
             userContext
         );
         if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-            throw Error("account linking failure");
+            return {
+                createRecipeUser: false,
+                accountsLinked: false,
+                reason: "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR",
+            };
         }
         let recipeInfo: AccountInfoWithRecipeId;
         if (info.recipeId === "emailpassword" && info.email !== undefined) {
