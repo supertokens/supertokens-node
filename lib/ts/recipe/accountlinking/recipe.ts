@@ -295,7 +295,6 @@ export default class Recipe extends RecipeModule {
         return primaryUser.id;
     };
 
-    // TODO: account linking failures needs to be improved
     accountLinkPostSignInViaSession = async ({
         session,
         info,
@@ -483,7 +482,11 @@ export default class Recipe extends RecipeModule {
                 let doesPrimaryUserIdAlreadyExists =
                     existingRecipeUserForInputInfo.find((u) => u.isPrimaryUser) !== undefined;
                 if (doesPrimaryUserIdAlreadyExists) {
-                    throw Error("account linking failure");
+                    return {
+                        createRecipeUser: false,
+                        accountsLinked: false,
+                        reason: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    };
                 }
             }
             if (!infoVerified) {
@@ -540,7 +543,11 @@ export default class Recipe extends RecipeModule {
         } else {
             if (shouldDoAccountLinking.shouldRequireVerification) {
                 if (!infoVerified) {
-                    throw Error("account link failure");
+                    return {
+                        createRecipeUser: false,
+                        accountsLinked: false,
+                        reason: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                    };
                 }
             }
         }

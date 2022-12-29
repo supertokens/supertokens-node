@@ -14,9 +14,94 @@
  */
 
 import Recipe from "./recipe";
-// import { RecipeInterface } from "./types";
-// import { User } from "../../types";
+import { RecipeInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
+
+    static async getRecipeUserIdsForPrimaryUserIds(primaryUserIds: string[], userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRecipeUserIdsForPrimaryUserIds({
+            primaryUserIds,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async getPrimaryUserIdsforRecipeUserIds(recipeUserIds: string[], userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdsforRecipeUserIds({
+            recipeUserIds,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async addNewRecipeUserIdWithoutPrimaryUserId(
+        recipeUserId: string,
+        recipeId: string,
+        timeJoined: number,
+        userContext: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addNewRecipeUserIdWithoutPrimaryUserId({
+            recipeUserId,
+            recipeId,
+            timeJoined,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async getUsers(
+        timeJoinedOrder: "ASC" | "DESC",
+        limit: number | undefined,
+        paginationToken: string | undefined,
+        includeRecipeIds: string[] | undefined,
+        userContext: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
+            timeJoinedOrder,
+            limit,
+            paginationToken,
+            includeRecipeIds,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async canCreatePrimaryUserId(recipeUserId: string, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canCreatePrimaryUserId({
+            recipeUserId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async createPrimaryUser(recipeUserId: string, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
+            recipeUserId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async canLinkAccounts(recipeUserId: string, primaryUserId: string, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canLinkAccounts({
+            recipeUserId,
+            primaryUserId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async linkAccounts(recipeUserId: string, primaryUserId: string, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
+            recipeUserId,
+            primaryUserId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async unlinkAccounts(recipeUserId: string, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unlinkAccounts({
+            recipeUserId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
 }
+
+export const init = Wrapper.init;
+export const getRecipeUserIdsForPrimaryUserIds = Wrapper.getRecipeUserIdsForPrimaryUserIds;
+export const getPrimaryUserIdsforRecipeUserIds = Wrapper.getPrimaryUserIdsforRecipeUserIds;
+export const addNewRecipeUserIdWithoutPrimaryUserId = Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
+export const getUsers = Wrapper.getUsers;
+export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
+export const createPrimaryUser = Wrapper.createPrimaryUser;
+export const canLinkAccounts = Wrapper.canLinkAccounts;
+export const linkAccounts = Wrapper.linkAccounts;
+export const unlinkAccounts = Wrapper.unlinkAccounts;
+
+export type { RecipeInterface };
