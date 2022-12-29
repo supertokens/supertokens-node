@@ -72,7 +72,7 @@ export type RecipeInterface = {
         primaryUserIds: string[];
         userContext: any;
     }) => Promise<{
-        [primaryUserId: string]: string[]; // recipeUserIds
+        [primaryUserId: string]: string[]; // recipeUserIds. If input primary user ID doesn't exists, those ids will not be part of the output set.
     }>;
     getPrimaryUserIdsforRecipeUserIds: (input: {
         recipeUserIds: string[];
