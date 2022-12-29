@@ -53,7 +53,15 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             recipeUserId: string;
             recipeId: string;
             timeJoined: number;
-        }): Promise<void> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  createdNewEntry: boolean;
+              }
+            | {
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              }
+        > {
             return querier.sendPutRequest(new NormalisedURLPath("/recipe/accountlinking/user"), {
                 recipeUserId,
                 recipeId,

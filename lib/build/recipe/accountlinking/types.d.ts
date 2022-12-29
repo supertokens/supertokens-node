@@ -68,7 +68,15 @@ export declare type RecipeInterface = {
         recipeId: string;
         timeJoined: number;
         userContext: any;
-    }) => Promise<void>;
+    }) => Promise<
+        | {
+              status: "OK";
+              createdNewEntry: boolean;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
