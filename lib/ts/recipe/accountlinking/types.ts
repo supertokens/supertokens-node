@@ -72,20 +72,25 @@ export type RecipeInterface = {
         primaryUserIds: string[];
         userContext: any;
     }) => Promise<{
-        [primaryUserId: string]: string[]; // recipeUserIds
+        [primaryUserId: string]: string[]; // recipeUserIds. If input primary user ID doesn't exists, those ids will not be part of the output set.
     }>;
     getPrimaryUserIdsforRecipeUserIds: (input: {
         recipeUserIds: string[];
         userContext: any;
     }) => Promise<{
-        [recipeUserId: string]: string | null;
+        [recipeUserId: string]: string | null; // if recipeUserId doesn't have a primaryUserId, then it will be mapped to `null`. If the input recipeUserId doesn't exist, then it won't be a part of the map
     }>;
     addNewRecipeUserIdWithoutPrimaryUserId: (input: {
         recipeUserId: string;
         recipeId: string;
         timeJoined: number;
         userContext: any;
-    }) => Promise<void>;
+    }) => Promise<{
+       status: "OK",
+       createdNewEntry: boolean
+    } | {
+       status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
