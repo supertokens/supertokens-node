@@ -76,10 +76,6 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     assert.strictEqual(resp.antiCsrf, undefined);
                     assert.notStrictEqual(resp.accessTokenFromHeader, undefined);
                     assert.notStrictEqual(resp.refreshTokenFromHeader, undefined);
-
-                    // We check that we will have access token at least as long as we have a refresh token
-                    // so verify session can return TRY_REFRESH_TOKEN
-                    assert(resp.accessTokenFromHeader.expiry >= resp.refreshTokenFromHeader.expiry);
                 });
 
                 it("should default to header based session w/ bad auth-mode header", async function () {
@@ -104,10 +100,6 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     assert.strictEqual(resp.antiCsrf, undefined);
                     assert.notStrictEqual(resp.accessTokenFromHeader, undefined);
                     assert.notStrictEqual(resp.refreshTokenFromHeader, undefined);
-
-                    // We check that we will have access token at least as long as we have a refresh token
-                    // so verify session can return TRY_REFRESH_TOKEN
-                    assert(resp.accessTokenFromHeader.expiry >= resp.refreshTokenFromHeader.expiry);
                 });
 
                 it("should use headers if auth-mode specifies it", async function () {
@@ -132,10 +124,6 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     assert.strictEqual(resp.antiCsrf, undefined);
                     assert.notStrictEqual(resp.accessTokenFromHeader, undefined);
                     assert.notStrictEqual(resp.refreshTokenFromHeader, undefined);
-
-                    // We check that we will have access token at least as long as we have a refresh token
-                    // so verify session can return TRY_REFRESH_TOKEN
-                    assert(resp.accessTokenFromHeader.expiry >= resp.refreshTokenFromHeader.expiry);
                 });
 
                 it("should use cookies if auth-mode specifies it", async function () {
@@ -190,10 +178,6 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     assert.strictEqual(resp.antiCsrf, undefined);
                     assert.notStrictEqual(resp.accessTokenFromHeader, undefined);
                     assert.notStrictEqual(resp.refreshTokenFromHeader, undefined);
-
-                    // We check that we will have access token at least as long as we have a refresh token
-                    // so verify session can return TRY_REFRESH_TOKEN
-                    assert(resp.accessTokenFromHeader.expiry >= resp.refreshTokenFromHeader.expiry);
                 });
 
                 it("should use headers if getTokenTransferMethod returns header", async function () {
@@ -218,10 +202,6 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     assert.strictEqual(resp.antiCsrf, undefined);
                     assert.notStrictEqual(resp.accessTokenFromHeader, undefined);
                     assert.notStrictEqual(resp.refreshTokenFromHeader, undefined);
-
-                    // We check that we will have access token at least as long as we have a refresh token
-                    // so verify session can return TRY_REFRESH_TOKEN
-                    assert(resp.accessTokenFromHeader.expiry >= resp.refreshTokenFromHeader.expiry);
                 });
 
                 it("should use clear cookies (if present) if getTokenTransferMethod returns header", async function () {
@@ -325,10 +305,9 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                                 });
                         })
                     );
-                    assert.strictEqual(resp.accessTokenFromHeader.expiry, 0);
-                    assert.strictEqual(resp.accessTokenFromHeader.value, "");
-                    assert.strictEqual(resp.refreshTokenFromHeader.expiry, 0);
-                    assert.strictEqual(resp.refreshTokenFromHeader.value, "");
+
+                    assert.strictEqual(resp.accessTokenFromHeader, "");
+                    assert.strictEqual(resp.refreshTokenFromHeader, "");
                 });
             });
         });
@@ -500,13 +479,13 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     const resp = await new Promise((resolve, reject) => {
                         const req = request(app).get("/verify");
 
-                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader.value]);
+                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader]);
                         if (createInfoCookie.antiCsrf) {
                             req.set("anti-csrf", info.antiCsrf);
                         }
                         req.set(
                             "Authorization",
-                            `Bearer ${decodeURIComponent(createInfoHeader.accessTokenFromHeader.value)}`
+                            `Bearer ${decodeURIComponent(createInfoHeader.accessTokenFromHeader)}`
                         );
                         req.expect(200).end((err, res) => {
                             if (err) {
@@ -548,13 +527,13 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     const resp = await new Promise((resolve, reject) => {
                         const req = request(app).get("/verify");
 
-                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader.value]);
+                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader]);
                         if (createInfoCookie.antiCsrf) {
                             req.set("anti-csrf", info.antiCsrf);
                         }
                         req.set(
                             "Authorization",
-                            `Bearer ${decodeURIComponent(createInfoHeader.accessTokenFromHeader.value)}`
+                            `Bearer ${decodeURIComponent(createInfoHeader.accessTokenFromHeader)}`
                         );
                         req.expect(200).end((err, res) => {
                             if (err) {
@@ -596,13 +575,13 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     const resp = await new Promise((resolve, reject) => {
                         const req = request(app).get("/verify");
 
-                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader.value]);
+                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader]);
                         if (createInfoCookie.antiCsrf) {
                             req.set("anti-csrf", info.antiCsrf);
                         }
                         req.set(
                             "Authorization",
-                            `Bearer ${decodeURIComponent(createInfoHeader.accessTokenFromHeader.value)}`
+                            `Bearer ${decodeURIComponent(createInfoHeader.accessTokenFromHeader)}`
                         );
                         req.expect(200).end((err, res) => {
                             if (err) {
@@ -686,7 +665,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     const resp = await new Promise((resolve, reject) => {
                         const req = request(app).get("/verify");
 
-                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader.value]);
+                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader]);
                         if (createInfoCookie.antiCsrf) {
                             req.set("anti-csrf", info.antiCsrf);
                         }
@@ -730,7 +709,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     const resp = await new Promise((resolve, reject) => {
                         const req = request(app).get("/verify");
 
-                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader.value]);
+                        req.set("Cookie", ["sAccessToken=" + createInfoCookie.accessTokenFromHeader]);
                         if (createInfoCookie.antiCsrf) {
                             req.set("anti-csrf", info.antiCsrf);
                         }
@@ -818,7 +797,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
 
                 // Updated access token
                 assert.notStrictEqual(updateInfo.accessToken, undefined);
-                assert.notStrictEqual(updateInfo.accessToken, createInfo.accessTokenFromHeader.value);
+                assert.notStrictEqual(updateInfo.accessToken, createInfo.accessTokenFromHeader);
 
                 // Updated front token
                 assert.notStrictEqual(updateInfo.frontToken, undefined);
@@ -855,7 +834,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
 
                 // Updated access token
                 assert.notStrictEqual(updateInfo.accessTokenFromHeader, undefined);
-                assert.notStrictEqual(updateInfo.accessTokenFromHeader.value, createInfo.accessToken);
+                assert.notStrictEqual(updateInfo.accessTokenFromHeader, createInfo.accessToken);
 
                 // Updated front token
                 assert.notStrictEqual(updateInfo.frontToken, undefined);
@@ -931,10 +910,8 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         }
 
                         if (conf.clearedTokens === "headers") {
-                            assert.strictEqual(refreshRes.accessTokenFromHeader.expiry, 0);
-                            assert.strictEqual(refreshRes.accessTokenFromHeader.value, "");
-                            assert.strictEqual(refreshRes.refreshTokenFromHeader.expiry, 0);
-                            assert.strictEqual(refreshRes.refreshTokenFromHeader.value, "");
+                            assert.strictEqual(refreshRes.accessTokenFromHeader, "");
+                            assert.strictEqual(refreshRes.refreshTokenFromHeader, "");
                         } else if (conf.clearedTokens === "cookies") {
                             assert.strictEqual(refreshRes.accessToken, "");
                             assert.strictEqual(refreshRes.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
@@ -945,11 +922,9 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         switch (conf.setTokens) {
                             case "headers":
                                 assert.ok(refreshRes.accessTokenFromHeader);
-                                assert.notStrictEqual(refreshRes.accessTokenFromHeader.expiry, 0);
-                                assert.notStrictEqual(refreshRes.accessTokenFromHeader.value, "");
+                                assert.notStrictEqual(refreshRes.accessTokenFromHeader, "");
                                 assert.ok(refreshRes.refreshTokenFromHeader);
-                                assert.notStrictEqual(refreshRes.refreshTokenFromHeader.expiry, 0);
-                                assert.notStrictEqual(refreshRes.refreshTokenFromHeader.value, "");
+                                assert.notStrictEqual(refreshRes.refreshTokenFromHeader, "");
                                 break;
                             case "cookies":
                                 assert.notStrictEqual(refreshRes.accessToken, "");
@@ -1023,10 +998,8 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         assert.strictEqual(refreshRes.status, 401);
                         assert.deepStrictEqual(refreshRes.body, { message: "unauthorised" });
                         if (conf.output === "validateheader") {
-                            assert.strictEqual(refreshRes.accessTokenFromHeader.expiry, 0);
-                            assert.strictEqual(refreshRes.accessTokenFromHeader.value, "");
-                            assert.strictEqual(refreshRes.refreshTokenFromHeader.expiry, 0);
-                            assert.strictEqual(refreshRes.refreshTokenFromHeader.value, "");
+                            assert.strictEqual(refreshRes.accessTokenFromHeader, "");
+                            assert.strictEqual(refreshRes.refreshTokenFromHeader, "");
                         } else if (conf.output === "validatecookie") {
                             assert.strictEqual(refreshRes.accessToken, "");
                             assert.strictEqual(refreshRes.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
@@ -1069,8 +1042,8 @@ async function refreshSession(app, authModeHeader, authMode, info) {
                 req.set("st-auth-mode", authModeHeader);
             }
 
-            const accessToken = info.accessToken || info.accessTokenFromHeader?.value;
-            const refreshToken = info.refreshToken || info.refreshTokenFromHeader?.value;
+            const accessToken = info.accessToken || info.accessTokenFromHeader;
+            const refreshToken = info.refreshToken || info.refreshTokenFromHeader;
 
             if (authMode === "both" || authMode === "cookie") {
                 req.set("Cookie", ["sAccessToken=" + accessToken, "sRefreshToken=" + refreshToken]);
@@ -1095,7 +1068,7 @@ async function refreshSession(app, authModeHeader, authMode, info) {
 function testGet(app, info, url, expectedStatus, authMode, authModeHeader) {
     return new Promise((resolve, reject) => {
         const req = request(app).get(url);
-        const accessToken = info.accessToken || info.accessTokenFromHeader?.value;
+        const accessToken = info.accessToken || info.accessTokenFromHeader;
 
         if (authModeHeader) {
             req.set("st-auth-mode", authModeHeader);

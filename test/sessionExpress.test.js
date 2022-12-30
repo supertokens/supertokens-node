@@ -606,7 +606,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Authorization", `Bearer ${res.accessTokenFromHeader.value}`)
+                .set("Authorization", `Bearer ${res.accessTokenFromHeader}`)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -623,7 +623,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Authorization", `Bearer ${res.refreshTokenFromHeader.value}`)
+                    .set("Authorization", `Bearer ${res.refreshTokenFromHeader}`)
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -645,7 +645,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/verify")
-                    .set("Authorization", `Bearer ${res2.accessTokenFromHeader.value}`)
+                    .set("Authorization", `Bearer ${res2.accessTokenFromHeader}`)
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -664,7 +664,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
-                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
+                .set("Authorization", `Bearer ${res3.accessTokenFromHeader}`)
 
                 .end((err, res) => {
                     if (err) {
@@ -680,7 +680,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/session/revoke")
-                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
+                .set("Authorization", `Bearer ${res3.accessTokenFromHeader}`)
 
                 .expect(200)
                 .end((err, res) => {
@@ -692,10 +692,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
-        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.value, "");
-        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.expiry, 0);
-        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.value, "");
-        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.expiry, 0);
+
+        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader, "");
+        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader, "");
     });
 
     it("test signout API works", async function () {

@@ -129,22 +129,9 @@ module.exports.extractInfoFromResponse = function (res) {
         }
     });
 
-    let refreshTokenFromHeader = undefined;
-    if (res.headers["st-refresh-token"]) {
-        const [value, expiry] = res.headers["st-refresh-token"].split(";");
-        refreshTokenFromHeader = {
-            value,
-            expiry: Number.parseInt(expiry),
-        };
-    }
-    let accessTokenFromHeader = undefined;
-    if (res.headers["st-access-token"]) {
-        const [value, expiry] = res.headers["st-access-token"].split(";");
-        accessTokenFromHeader = {
-            value,
-            expiry: Number.parseInt(expiry),
-        };
-    }
+    const refreshTokenFromHeader = res.headers["st-refresh-token"];
+    const accessTokenFromHeader = res.headers["st-access-token"];
+
     return {
         status: res.status,
         body: res.body,
