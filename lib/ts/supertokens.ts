@@ -447,7 +447,46 @@ export default class SuperTokens {
     };
 
     listUsersByAccountInfo = async (_input: { info: AccountInfo }): Promise<User[] | undefined> => {
-        // TODO
+        /**
+         * if input is only email:
+         * let emailPasswordUser = emailpassword.getUserByEmail(email);
+         *
+         * let thirdpartyUsers = thirdparty.getUsersByEmail(email);
+         *
+         * let passwordlessUser = passwordless.getUserByEmail(email);
+         *
+         * let recipeUsers = [];
+         *
+         * if (emailPasswordUser !== undefined) {
+         *      recipeUsers.push(emailPasswordUser);
+         * }
+         *
+         * recipeUsers.push(...thirdpartyUsers);
+         *
+         * if (passwordlessUser !== undefined) {
+         *      recipeUsers.push(passwordlessUser);
+         * }
+         *
+         * let recipeUserIds = recipeUsers.map(r => r.id);
+         *
+         * let primaryUserIdMapping: {recipeUserId: primaryUserId} = getPrimaryUserIdsforRecipeUserIds(recipeUserIds);
+         *
+         * let result: {id: User | User[]} = {};
+         *
+         * for (let i = 0; i < recipeUsers.length; i++) {
+         *      if (primaryUserIdMapping[recipeUsers[i].id] === undefined) {
+         *          result[recipeUsers[i].id] = recipeUsers[i];
+         *      } else {
+         *          let pUserId = primaryUserIdMapping[recipeUsers[i].id];
+         *          if (result[pUserId] === undefined) {
+         *              result[pUserId] = [];
+         *          }
+         *          result[pUserId].push(recipeUsers[i]);
+         *      }
+         * }
+         *
+         *
+         */
         return;
     };
 

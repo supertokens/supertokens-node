@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2023, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -14,7 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
-import { User } from "../../types";
+import type { User } from "../../types";
 import { SessionContainer } from "../session";
 
 export type TypeInput = {
@@ -39,7 +39,6 @@ export type TypeInput = {
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -65,13 +64,43 @@ export type TypeNormalisedInput = {
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
-export type APIInterface = {};
-
 export type RecipeInterface = {
+    getRecipeUserIdsForPrimaryUserIds: (input: {
+        primaryUserIds: string[];
+        userContext: any;
+    }) => Promise<{
+        [primaryUserId: string]: string[]; // recipeUserIds. If input primary user ID doesn't exists, those ids will not be part of the output set.
+    }>;
+    getPrimaryUserIdsforRecipeUserIds: (input: {
+        recipeUserIds: string[];
+        userContext: any;
+    }) => Promise<{
+        [recipeUserId: string]: string | null; // if recipeUserId doesn't have a primaryUserId, then it will be mapped to `null`. If the input recipeUserId doesn't exist, then it won't be a part of the map
+    }>;
+    addNewRecipeUserIdWithoutPrimaryUserId: (input: {
+        recipeUserId: string;
+        recipeId: string;
+        timeJoined: number;
+        userContext: any;
+    }) => Promise<{
+       status: "OK",
+       createdNewEntry: boolean
+    } | {
+       status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+    }>;
+    getUsers: (input: {
+        timeJoinedOrder: "ASC" | "DESC";
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+        userContext: any;
+    }) => Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
     canCreatePrimaryUserId: (input: {
         recipeUserId: string;
         userContext: any;
@@ -158,7 +187,7 @@ export type RecipeInterface = {
     }>;
 };
 
-type RecipeLevelUser = {
+export type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
     id: string; // can be recipeUserId or primaryUserId
     timeJoined: number;
