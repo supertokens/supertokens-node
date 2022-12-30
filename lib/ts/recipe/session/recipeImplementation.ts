@@ -19,7 +19,7 @@ import {
     setToken,
     setCookie,
 } from "./cookieAndHeaders";
-import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
+import { attachTokensToResponse, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, getRidFromHeader, isAnIpAddress } from "../../utils";
@@ -173,7 +173,7 @@ export default function getRecipeInterface(
                 }
             }
 
-            attachCreateOrRefreshSessionResponseToExpressRes(config, res, response, outputTransferMethod);
+            attachTokensToResponse(config, res, response, outputTransferMethod);
             return new Session(
                 helpers,
                 response.accessToken.token,
@@ -511,7 +511,7 @@ export default function getRecipeInterface(
                     }
                 }
 
-                attachCreateOrRefreshSessionResponseToExpressRes(config, res, response, requestTransferMethod);
+                attachTokensToResponse(config, res, response, requestTransferMethod);
 
                 logDebugMessage("refreshSession: Success!");
                 // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code

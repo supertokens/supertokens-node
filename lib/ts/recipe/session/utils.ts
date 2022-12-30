@@ -258,7 +258,7 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
     return sameSite;
 }
 
-export function attachCreateOrRefreshSessionResponseToExpressRes(
+export function attachTokensToResponse(
     config: TypeNormalisedInput,
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse,

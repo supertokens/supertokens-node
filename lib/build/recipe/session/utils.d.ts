@@ -45,7 +45,7 @@ export declare function validateAndNormaliseUserInput(
     config?: TypeInput
 ): TypeNormalisedInput;
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
-export declare function attachCreateOrRefreshSessionResponseToExpressRes(
+export declare function attachTokensToResponse(
     config: TypeNormalisedInput,
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse,
