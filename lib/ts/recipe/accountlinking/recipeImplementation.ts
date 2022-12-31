@@ -84,11 +84,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         }> {
             let querier = Querier.getNewInstanceOrThrowError(undefined);
             let apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.7") === "2.7") {
-                throw new Error(
-                    "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUsersOldestFirst() or <YourRecipe>.getUsersNewestFirst() instead (for example, EmailPassword.getUsersOldestFirst())"
-                );
-            }
             let includeRecipeIdsStr = undefined;
             if (includeRecipeIds !== undefined) {
                 includeRecipeIdsStr = includeRecipeIds.join(",");
