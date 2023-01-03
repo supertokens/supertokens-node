@@ -72,33 +72,6 @@ export type GeneralErrorResponse = {
     message: string;
 };
 
-export type AccountInfo =
-    | {
-          email: string;
-      }
-    | {
-          thirdpartyId: string;
-          thirdpartyUserId: string;
-      }
-    | {
-          phoneNumber: string;
-      };
-
-export type AccountInfoWithRecipeId =
-    | {
-          recipeId: "emailpassword" | "passwordless";
-          email: string;
-      }
-    | {
-          recipeId: "thirdparty";
-          thirdpartyId: string;
-          thirdpartyUserId: string;
-      }
-    | {
-          recipeId: "passwordless";
-          phoneNumber: string;
-      };
-
 export type User = {
     id: string;
     isPrimaryUser: boolean;
@@ -109,6 +82,7 @@ export type User = {
         thirdpartyUserId: string;
     }[];
     linkedRecipes: {
+        // this will always have one item in the array regardless of whether it's a primaryUser or a recipeUser
         recipeId: string;
         recipeUserId: string;
     }[];

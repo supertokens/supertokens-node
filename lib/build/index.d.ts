@@ -1,7 +1,7 @@
 // @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
+import { User } from "./types";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
@@ -73,9 +73,6 @@ export default class SuperTokensWrapper {
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    static getUser(input: { userId: string }): Promise<User | undefined>;
-    static listUsersByAccountInfo(input: { info: AccountInfo }): Promise<User[] | undefined>;
-    static getUserByAccountInfoAndRecipeId(input: { info: AccountInfoWithRecipeId }): Promise<User | undefined>;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -87,7 +84,4 @@ export declare let createUserIdMapping: typeof SuperTokensWrapper.createUserIdMa
 export declare let getUserIdMapping: typeof SuperTokensWrapper.getUserIdMapping;
 export declare let deleteUserIdMapping: typeof SuperTokensWrapper.deleteUserIdMapping;
 export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
-export declare let getUser: typeof SuperTokensWrapper.getUser;
-export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
-export declare let getUserByAccountInfoAndRecipeId: typeof SuperTokensWrapper.getUserByAccountInfoAndRecipeId;
 export declare let Error: typeof SuperTokensError;

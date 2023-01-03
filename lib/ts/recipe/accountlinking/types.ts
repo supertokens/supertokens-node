@@ -19,7 +19,6 @@ import { SessionContainer } from "../session";
 
 export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
-    onAccountUnlinked?: (user: User, unlinkedAccount: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoAndEmailWithRecipeId,
         user: User | undefined,
@@ -44,7 +43,6 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
-    onAccountUnlinked: (user: User, unlinkedAccount: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoAndEmailWithRecipeId,
         user: User | undefined,
@@ -184,10 +182,23 @@ export type RecipeInterface = {
     unlinkAccounts: (input: {
         recipeUserId: string;
         userContext: any;
-    }) => Promise<{
-        status: "OK";
-        wasRecipeUserDeleted: boolean;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              wasRecipeUserDeleted: boolean;
+          }
+        | {
+              status: "NO_PRIMARY_USER_FOUND";
+          }
+    >;
+    getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
+    listUsersByAccountInfo: (input: { info: AccountInfo; userContext: any }) => Promise<User[] | undefined>;
+    getUserByAccountInfo: (input: { info: AccountInfoWithRecipeId; userContext: any }) => Promise<User | undefined>;
+    deleteUser: (input: {
+        userId: string;
+        removeAllLinkedAccounts: boolean;
+        userContext: any;
+    }) => Promise<{ status: "OK" }>;
 };
 
 export type RecipeLevelUser = {
@@ -212,3 +223,30 @@ export type AccountInfoAndEmailWithRecipeId = {
         userId: string;
     };
 };
+
+export type AccountInfo =
+    | {
+          email: string;
+      }
+    | {
+          thirdpartyId: string;
+          thirdpartyUserId: string;
+      }
+    | {
+          phoneNumber: string;
+      };
+
+export type AccountInfoWithRecipeId =
+    | {
+          recipeId: "emailpassword" | "passwordless";
+          email: string;
+      }
+    | {
+          recipeId: "thirdparty";
+          thirdpartyId: string;
+          thirdpartyUserId: string;
+      }
+    | {
+          recipeId: "passwordless";
+          phoneNumber: string;
+      };

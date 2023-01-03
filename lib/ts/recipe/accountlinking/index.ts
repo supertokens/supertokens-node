@@ -14,7 +14,7 @@
  */
 
 import Recipe from "./recipe";
-import { RecipeInterface } from "./types";
+import type { AccountInfo, AccountInfoWithRecipeId, RecipeInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -91,6 +91,31 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+    static async getUser(userId: string, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+            userId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async listUsersByAccountInfo(info: AccountInfo, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+            info,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async getUserByAccountInfo(info: AccountInfoWithRecipeId, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByAccountInfo({
+            info,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
+            userId,
+            removeAllLinkedAccounts,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
 }
 
 export const init = Wrapper.init;
@@ -103,5 +128,9 @@ export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccounts = Wrapper.unlinkAccounts;
+export const getUser = Wrapper.getUser;
+export const listUsersByAccountInfo = Wrapper.listUsersByAccountInfo;
+export const getUserByAccountInfo = Wrapper.getUserByAccountInfo;
+export const deleteUser = Wrapper.deleteUser;
 
 export type { RecipeInterface };

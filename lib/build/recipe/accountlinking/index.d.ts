@@ -1,6 +1,6 @@
 // @ts-nocheck
 import Recipe from "./recipe";
-import { RecipeInterface } from "./types";
+import type { AccountInfo, AccountInfoWithRecipeId, RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static getRecipeUserIdsForPrimaryUserIds(
@@ -119,9 +119,30 @@ export default class Wrapper {
     static unlinkAccounts(
         recipeUserId: string,
         userContext: any
+    ): Promise<
+        | {
+              status: "OK";
+              wasRecipeUserDeleted: boolean;
+          }
+        | {
+              status: "NO_PRIMARY_USER_FOUND";
+          }
+    >;
+    static getUser(userId: string, userContext: any): Promise<import("../../types").User | undefined>;
+    static listUsersByAccountInfo(
+        info: AccountInfo,
+        userContext: any
+    ): Promise<import("../../types").User[] | undefined>;
+    static getUserByAccountInfo(
+        info: AccountInfoWithRecipeId,
+        userContext: any
+    ): Promise<import("../../types").User | undefined>;
+    static deleteUser(
+        userId: string,
+        removeAllLinkedAccounts: boolean,
+        userContext: any
     ): Promise<{
         status: "OK";
-        wasRecipeUserDeleted: boolean;
     }>;
 }
 export declare const init: typeof Recipe.init;
@@ -134,4 +155,8 @@ export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
 export declare const unlinkAccounts: typeof Wrapper.unlinkAccounts;
+export declare const getUser: typeof Wrapper.getUser;
+export declare const listUsersByAccountInfo: typeof Wrapper.listUsersByAccountInfo;
+export declare const getUserByAccountInfo: typeof Wrapper.getUserByAccountInfo;
+export declare const deleteUser: typeof Wrapper.deleteUser;
 export type { RecipeInterface };

@@ -17,17 +17,16 @@ import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import SuperTokens, { getUser, getUserByAccountInfoAndRecipeId, listUsersByAccountInfo } from "../..";
 import SuperTokensModule from "../../supertokens";
-import type {
-    AccountInfoWithRecipeId,
-    APIHandled,
-    HTTPMethod,
-    NormalisedAppinfo,
-    RecipeListFunction,
-} from "../../types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import { SessionContainer } from "../session";
-import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoAndEmailWithRecipeId } from "./types";
+import type {
+    TypeNormalisedInput,
+    RecipeInterface,
+    TypeInput,
+    AccountInfoAndEmailWithRecipeId,
+    AccountInfoWithRecipeId,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
@@ -178,8 +177,9 @@ export default class Recipe extends RecipeModule {
         } else {
             throw Error("this error should never be thrown");
         }
-        let users = await SuperTokens.listUsersByAccountInfo({
+        let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             info: identifier,
+            userContext,
         });
         if (users === undefined || users.length === 0) {
             return true;
@@ -268,8 +268,9 @@ export default class Recipe extends RecipeModule {
         } else {
             throw Error("this error should never be thrown");
         }
-        let users = await SuperTokens.listUsersByAccountInfo({
+        let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             info: identifier,
+            userContext,
         });
         if (users === undefined || users.length === 0) {
             throw Error("this error should never be thrown");
@@ -329,8 +330,9 @@ export default class Recipe extends RecipeModule {
           ))
     > => {
         let userId = session.getUserId();
-        let user = await getUser({
+        let user = await this.recipeInterfaceImpl.getUser({
             userId,
+            userContext,
         });
         if (user === undefined) {
             throw Error("this should not be thrown");
@@ -447,8 +449,9 @@ export default class Recipe extends RecipeModule {
         } else {
             throw Error("this error should never be thrown");
         }
-        let recipeUser = await getUserByAccountInfoAndRecipeId({
+        let recipeUser = await this.recipeInterfaceImpl.getUserByAccountInfo({
             info: recipeInfo,
+            userContext,
         });
         if (recipeUser === undefined) {
             let identitiesForPrimaryUser = await this.getIdentitiesForPrimaryUserId(user.id);
@@ -475,8 +478,9 @@ export default class Recipe extends RecipeModule {
                 }
             }
 
-            let existingRecipeUserForInputInfo = await listUsersByAccountInfo({
+            let existingRecipeUserForInputInfo = await this.recipeInterfaceImpl.listUsersByAccountInfo({
                 info: recipeInfo,
+                userContext,
             });
             if (existingRecipeUserForInputInfo !== undefined) {
                 let doesPrimaryUserIdAlreadyExists =
