@@ -214,7 +214,7 @@ export default class Recipe extends RecipeModule {
         }
         throw Error("it should never reach here");
     };
-    createPrimaryUserIdOrLinkAccountPostSignUp = async ({
+    doPostSignUpAccountLinkingOperations = async ({
         info,
         infoVerified,
         recipeUserId,
