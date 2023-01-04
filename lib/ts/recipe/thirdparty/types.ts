@@ -19,30 +19,72 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse } from "../../types";
 
-export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
+export type UserInfo = {
+    thirdPartyUserId: string;
+    email?: { id: string; isVerified: boolean };
+    rawUserInfoFromProvider?: { fromIdTokenPayload: any; fromUserInfoAPI: any };
+};
 
-export type TypeProviderGetResponse = {
-    accessTokenAPI: {
-        url: string;
-        params: { [key: string]: string }; // Will be merged with our object
+export type UserInfoMap = {
+    fromIdTokenPayload?: {
+        userId?: string;
+        email?: string;
+        emailVerified?: string;
     };
-    authorisationRedirect: {
-        url: string;
-        params: { [key: string]: string | ((request: any) => string) };
+    fromUserInfoAPI?: {
+        userId?: string;
+        email?: string;
+        emailVerified?: string;
     };
-    getProfileInfo: (authCodeResponse: any, userContext: any) => Promise<UserInfo>;
-    getClientId: (userContext: any) => string;
-    getRedirectURI?: (userContext: any) => string; // if undefined, the redirect_uri is set on the frontend.
+};
+
+export type ProviderConfigForClientType = {
+    clientID: string;
+    clientSecret?: string;
+    scope: string[];
+    forcePKCE?: boolean;
+    additionalConfig?: any;
+
+    authorizationEndpoint?: string;
+    authorizationEndpointQueryParams?: any;
+    tokenEndpoint?: string;
+    tokenEndpointBodyParams?: any;
+    userInfoEndpoint?: string;
+    userInfoEndpointQueryParams?: any;
+    userInfoEndpointHeaders?: any;
+    jwksURI?: string;
+    oidcDiscoveryEndpoint?: string;
+    userInfoMap?: UserInfoMap;
+    validateIdTokenPayload?: (input: {
+        idTokenPayload: any;
+        clientConfig: ProviderConfigForClientType;
+    }) => Promise<void>;
+    tenantId?: string;
 };
 
 export type TypeProvider = {
     id: string;
-    get: (
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined,
-        userContext: any
-    ) => TypeProviderGetResponse;
-    isDefault?: boolean; // if not present, we treat it as false
+
+    getConfigForClientType: (input: { clientType?: string; userContext?: any }) => Promise<ProviderConfigForClientType>;
+    getAuthorisationRedirectURL: (input: {
+        config: ProviderConfigForClientType;
+        redirectURIOnProviderDashboard: string;
+        userContext: any;
+    }) => Promise<{ urlWithQueryParams: string; pkceCodeVerifier?: string }>;
+    exchangeAuthCodeForOAuthTokens: (input: {
+        config: ProviderConfigForClientType;
+        redirectURIInfo: {
+            redirectURIOnProviderDashboard: string;
+            redirectURIQueryParams: any;
+            pkceCodeVerifier?: string;
+        };
+        userContext: any;
+    }) => Promise<any>;
+    getUserInfo: (input: {
+        config: ProviderConfigForClientType;
+        oAuthTokens: any;
+        userContext: any;
+    }) => Promise<UserInfo>;
 };
 
 export type User = {
@@ -56,12 +98,49 @@ export type User = {
     };
 };
 
+export type ProviderClientConfig = {
+    clientType?: string;
+    clientID: string;
+    clientSecret?: string;
+    scope?: string[];
+    forcePKCE?: boolean;
+    additionalConfig?: any;
+};
+
+export type ProviderConfig = {
+    tenantId?: string;
+    thirdPartyId: string;
+    name?: string;
+
+    clients: ProviderClientConfig[];
+    authorizationEndpoint?: string;
+    authorizationEndpointQueryParams?: any;
+    tokenEndpoint?: string;
+    tokenEndpointBodyParams?: any;
+    userInfoEndpoint?: string;
+    userInfoEndpointQueryParams?: any;
+    userInfoEndpointHeaders?: any;
+    jwksURI?: string;
+    oidcDiscoveryEndpoint?: string;
+    userInfoMap?: UserInfoMap;
+
+    validateIdTokenPayload?: (input: {
+        idTokenPayload: any;
+        clientConfig: ProviderConfigForClientType;
+    }) => Promise<void>;
+};
+
+export type ProviderInput = {
+    config: ProviderConfig;
+    override?: (originalImplementation: TypeProvider) => TypeProvider;
+};
+
 export type TypeInputSignInAndUp = {
-    providers: TypeProvider[];
+    providers: ProviderInput[];
 };
 
 export type TypeNormalisedInputSignInAndUp = {
-    providers: TypeProvider[];
+    providers: ProviderInput[];
 };
 
 export type TypeInput = {
@@ -94,13 +173,30 @@ export type RecipeInterface = {
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
+        tenantId?: string;
         userContext: any;
     }): Promise<User | undefined>;
+
+    getProvider(input: {
+        thirdPartyId: string;
+        tenantId?: string;
+        userContext: any;
+    }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
 
     signInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        oAuthTokens: any;
+        rawUserInfoFromProvider?: { fromIdTokenPayload: any; fromUserInfoAPI: any };
+        userContext: any;
+    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+
+    manuallyCreateOrUpdateUser(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: string;
+        tenantId?: string;
         userContext: any;
     }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 };
@@ -121,12 +217,15 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
+              config: ProviderConfigForClientType;
+              redirectURIOnProviderDashboard: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
               | {
                     status: "OK";
-                    url: string;
+                    urlWithQueryParams: string;
+                    pkceCodeVerifier?: string;
                 }
               | GeneralErrorResponse
           >);
@@ -135,10 +234,15 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
+              config: ProviderConfigForClientType;
+
+              // one of either redirectURIInfo or oAuthTokens
+              redirectURIInfo?: {
+                  redirectURIOnProviderDashboard: string;
+                  redirectURIQueryParams: any;
+                  pkceCodeVerifier?: string;
+              };
+              oAuthTokens?: any;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -147,7 +251,8 @@ export type APIInterface = {
                     createdNewUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
-                    authCodeResponse: any;
+                    oAuthTokens: any;
+                    rawUserInfoFromProvider?: { fromIdTokenPayload: any; fromUserInfoAPI: any };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | GeneralErrorResponse
@@ -155,5 +260,5 @@ export type APIInterface = {
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
+        | ((input: { formPostInfoFromProvider: any; options: APIOptions; userContext: any }) => Promise<void>);
 };

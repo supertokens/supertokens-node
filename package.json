@@ -43,6 +43,7 @@
         "jwks-rsa": "^2.0.5",
         "libphonenumber-js": "^1.9.44",
         "nodemailer": "^6.7.2",
+        "pkce-challenge": "^3.0.0",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
         "twilio": "^3.76.0",

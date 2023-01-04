@@ -26,13 +26,9 @@ export default async function appleRedirectHandler(
 
     let body = await options.req.getFormData();
 
-    let state = body.state;
-    let code = body.code;
-
     // this will redirect the user...
     await apiImplementation.appleRedirectHandlerPOST({
-        code,
-        state,
+        formPostInfoFromProvider: body,
         options,
         userContext: makeDefaultUserContextFromAPI(options.req),
     });

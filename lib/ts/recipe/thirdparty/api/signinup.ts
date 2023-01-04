@@ -16,7 +16,6 @@
 import STError from "../error";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import { findRightProvider } from "../utils";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
@@ -24,12 +23,10 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         return false;
     }
 
-    let bodyParams = await options.req.getJSONBody();
-    let thirdPartyId = bodyParams.thirdPartyId;
-    let code = bodyParams.code === undefined ? "" : bodyParams.code;
-    let redirectURI = bodyParams.redirectURI;
-    let authCodeResponse = bodyParams.authCodeResponse;
-    let clientId = bodyParams.clientId;
+    const bodyParams = await options.req.getJSONBody();
+    const thirdPartyId = bodyParams.thirdPartyId;
+    const clientType = bodyParams.clientType;
+    let tenantId = bodyParams.tenantId;
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -38,60 +35,51 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    if (typeof code !== "string") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please make sure that the code in the request body is a string",
-        });
-    }
+    let redirectURIInfo: undefined | {
+        redirectURIOnProviderDashboard: string;
+        redirectURIQueryParams: any;
+        pkceCodeVerifier?: string;
+    };
+    let oAuthTokens: any;
 
-    if (code === "" && authCodeResponse === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide one of code or authCodeResponse in the request body",
-        });
-    }
-
-    if (authCodeResponse !== undefined && authCodeResponse.access_token === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the access_token inside the authCodeResponse request param",
-        });
-    }
-
-    if (redirectURI === undefined || typeof redirectURI !== "string") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the redirectURI in request body",
-        });
-    }
-
-    let provider = findRightProvider(options.providers, thirdPartyId, clientId);
-    if (provider === undefined) {
-        if (clientId === undefined) {
+    if (bodyParams.redirectURIInfo !== undefined) {
+        if (bodyParams.redirectURIInfo.redirectURIOnProviderDashboard === undefined) {
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,
-                message: "The third party provider " + thirdPartyId + ` seems to be missing from the backend configs.`,
-            });
-        } else {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
-                message:
-                    "The third party provider " +
-                    thirdPartyId +
-                    ` seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend.`,
+                message: "Please provide the redirectURIOnProviderDashboard in request body",
             });
         }
+        redirectURIInfo = bodyParams.redirectURIInfo;
+    } else if (bodyParams.oAuthTokens !== undefined) {
+        oAuthTokens = bodyParams.oAuthTokens;
+    } else {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide one of redirectURIInfo or oAuthTokens in the request body",
+        });
     }
+
+    const userContext = makeDefaultUserContextFromAPI(options.req);
+
+    // TODO
+    tenantId = multitenancyRecipe.getTenantId(tenantId, userContext);
+
+    const providerResponse = await options.recipeImplementation.getProvider({ thirdPartyId, tenantId, userContext });
+
+    if (!providerResponse.thirdPartyEnabled) {
+        // TODO throw multitenancy.recipenotenabled error
+    }
+
+    const provider = providerResponse.provider;
+    const config = await provider.getConfigForClientType({ clientType, userContext });
 
     let result = await apiImplementation.signInUpPOST({
         provider,
-        code,
-        clientId,
-        redirectURI,
+        config,
+        redirectURIInfo,
+        oAuthTokens,
         options,
-        authCodeResponse,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     if (result.status === "OK") {

@@ -16,7 +16,6 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import { findRightProvider } from "../utils";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function authorisationUrlAPI(
@@ -27,7 +26,10 @@ export default async function authorisationUrlAPI(
         return false;
     }
 
-    let thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
+    const thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
+    const redirectURIOnProviderDashboard = options.req.getKeyValueFromQuery("redirectURIOnProviderDashboard");
+    const clientType = options.req.getKeyValueFromQuery("clientType");
+    let tenantId = options.req.getKeyValueFromQuery("tenantId");
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -36,18 +38,32 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    let provider = findRightProvider(options.providers, thirdPartyId, undefined);
-    if (provider === undefined) {
+    if (redirectURIOnProviderDashboard === undefined || typeof redirectURIOnProviderDashboard !== "string") {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "The third party provider " + thirdPartyId + ` seems to be missing from the backend configs.`,
+            message: "Please provide the redirectURIOnProviderDashboard as a GET param",
         });
     }
 
+    const userContext = makeDefaultUserContextFromAPI(options.req);
+
+    // TODO
+    tenantId = multitenancyRecipe.getTenantId(tenantId, userContext);
+
+    const providerResponse = await options.recipeImplementation.getProvider({ thirdPartyId, tenantId, userContext });
+
+    if (!providerResponse.thirdPartyEnabled) {
+        // TODO throw multitenancy.recipenotenabled error
+    }
+
+    const provider = providerResponse.provider;
+    const config = await provider.getConfigForClientType({ clientType, userContext });
     let result = await apiImplementation.authorisationUrlGET({
         provider,
+        config,
+        redirectURIOnProviderDashboard,
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     send200Response(options.res, result);
