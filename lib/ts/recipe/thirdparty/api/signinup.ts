@@ -61,13 +61,12 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
 
     const userContext = makeDefaultUserContextFromAPI(options.req);
 
-    // TODO
-    tenantId = multitenancyRecipe.getTenantId(tenantId, userContext);
+    // TODO tp-rework tenantId = multitenancyRecipe.getTenantId(tenantId, userContext);
 
     const providerResponse = await options.recipeImplementation.getProvider({ thirdPartyId, tenantId, userContext });
 
     if (!providerResponse.thirdPartyEnabled) {
-        // TODO throw multitenancy.recipenotenabled error
+        // TODO tp-rework throw multitenancy.recipenotenabled error
     }
 
     const provider = providerResponse.provider;

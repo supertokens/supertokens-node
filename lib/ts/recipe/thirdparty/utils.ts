@@ -60,7 +60,7 @@ function validateAndNormaliseSignInAndUpConfig(
         thirdPartyIdSet[provider.config.thirdPartyId] = true;
     }
 
-    // TODO normalise provider names
+    // TODO tp-rework normalise provider inputs
 
     return {
         providers,
