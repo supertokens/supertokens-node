@@ -173,7 +173,6 @@ export type RecipeInterface = {
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
-        tenantId?: string;
         userContext: any;
     }): Promise<User | undefined>;
 
