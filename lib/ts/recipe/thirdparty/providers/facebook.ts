@@ -12,93 +12,23 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import { ProviderInput, TypeProvider } from "../types";
 
-type TypeThirdPartyProviderFacebookConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    isDefault?: boolean;
-};
-
-export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): TypeProvider {
-    const id = "facebook";
-
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://graph.facebook.com/v9.0/oauth/access_token";
-        let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
-        };
-        if (authCodeFromRequest !== undefined) {
-            accessTokenAPIParams.code = authCodeFromRequest;
-        }
-        if (redirectURI !== undefined) {
-            accessTokenAPIParams.redirect_uri = redirectURI;
-        }
-        let authorisationRedirectURL = "https://www.facebook.com/v9.0/dialog/oauth";
-        let scopes = ["email"];
-        if (config.scope !== undefined) {
-            scopes = config.scope;
-            scopes = Array.from(new Set(scopes));
-        }
-        let authorizationRedirectParams: { [key: string]: string } = {
-            scope: scopes.join(" "),
-            response_type: "code",
-            client_id: config.clientId,
-        };
-
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let response = await axios({
-                method: "get",
-                url: "https://graph.facebook.com/me",
-                params: {
-                    access_token: accessToken,
-                    fields: "id,email",
-                    format: "json",
-                },
-            });
-            let userInfo = response.data;
-            let id = userInfo.id;
-            let email = userInfo.email;
-            if (email === undefined || email === null) {
-                return {
-                    id,
-                };
-            }
-            return {
-                id,
-                email: {
-                    id: email,
-                    isVerified: true,
-                },
-            };
-        }
-        return {
-            accessTokenAPI: {
-                url: accessTokenAPIURL,
-                params: accessTokenAPIParams,
-            },
-            authorisationRedirect: {
-                url: authorisationRedirectURL,
-                params: authorizationRedirectParams,
-            },
-            getProfileInfo,
-            getClientId: () => {
-                return config.clientId;
-            },
-        };
-    }
-
+export default function Facebook(input: ProviderInput): TypeProvider {
+    // TODO
     return {
-        id,
-        get,
-        isDefault: config.isDefault,
+        id: input.config.thirdPartyId,
+        getConfigForClientType: async () => {
+            throw new Error("Not implemented");
+        },
+        getAuthorisationRedirectURL: async () => {
+            throw new Error("Not implemented");
+        },
+        exchangeAuthCodeForOAuthTokens: async () => {
+            throw new Error("Not implemented");
+        },
+        getUserInfo: async () => {
+            throw new Error("Not implemented");
+        },
     };
 }

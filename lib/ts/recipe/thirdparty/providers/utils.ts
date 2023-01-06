@@ -1,6 +1,9 @@
 import * as jwt from "jsonwebtoken";
 import * as jwksClient from "jwks-rsa";
 import { ProviderConfig, ProviderClientConfig, ProviderConfigForClientType } from "../types";
+import axios from "axios";
+import NormalisedURLDomain from "../../../normalisedURLDomain";
+import NormalisedURLPath from "../../../normalisedURLPath";
 
 export async function verifyIdTokenFromJWKSEndpoint(
     idToken: string,
@@ -30,28 +33,51 @@ export async function verifyIdTokenFromJWKSEndpoint(
     return payload;
 }
 
-export function getProviderConfigForClient(
-    providerConfig: ProviderConfig,
-    clientConfig: ProviderClientConfig
-): ProviderConfigForClientType {
-    return {
-        clientID: clientConfig.clientID,
-        clientSecret: clientConfig.clientSecret,
-        scope: clientConfig.scope || [],
-        forcePKCE: clientConfig.forcePKCE,
-        additionalConfig: clientConfig.additionalConfig,
+// OIDC utils
+var oidcInfoMap: { [key: string]: any } = {};
 
-        authorizationEndpoint: providerConfig.authorizationEndpoint,
-        authorizationEndpointQueryParams: providerConfig.authorizationEndpointQueryParams,
-        tokenEndpoint: providerConfig.tokenEndpoint,
-        tokenEndpointBodyParams: providerConfig.tokenEndpointBodyParams,
-        userInfoEndpoint: providerConfig.userInfoEndpoint,
-        userInfoEndpointQueryParams: providerConfig.userInfoEndpointQueryParams,
-        userInfoEndpointHeaders: providerConfig.userInfoEndpointHeaders,
-        jwksURI: providerConfig.jwksURI,
-        oidcDiscoveryEndpoint: providerConfig.oidcDiscoveryEndpoint,
-        userInfoMap: providerConfig.userInfoMap,
+async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
+    const normalizedDomain = new NormalisedURLDomain(issuer);
+    let normalizedPath = new NormalisedURLPath(issuer);
+    const openIdConfigPath = new NormalisedURLPath("/.well-known/openid-configuration");
 
-        validateIdTokenPayload: providerConfig.validateIdTokenPayload,
-    };
+    normalizedPath = normalizedPath.appendPath(openIdConfigPath);
+
+    if (oidcInfoMap[issuer] !== undefined) {
+        return oidcInfoMap[issuer];
+    }
+
+    const oidcInfo = (await axios.get(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()))
+        .data;
+
+    if (oidcInfoMap[issuer] !== undefined) {
+        return oidcInfoMap[issuer];
+    }
+
+    oidcInfoMap[issuer] = oidcInfo;
+    return oidcInfo;
+}
+
+export async function discoverOIDCEndpoints(config: ProviderConfigForClientType): Promise<ProviderConfigForClientType> {
+    if (config.oidcDiscoveryEndpoint !== undefined) {
+        const oidcInfo = await getOIDCDiscoveryInfo(config.oidcDiscoveryEndpoint);
+
+        if (oidcInfo.authorisation_endpoint) {
+            config.authorizationEndpoint = oidcInfo.authorisation_endpoint;
+        }
+
+        if (oidcInfo.token_endpoint) {
+            config.tokenEndpoint = oidcInfo.token_endpoint;
+        }
+
+        if (oidcInfo.userinfo_endpoint) {
+            config.userInfoEndpoint = oidcInfo.userinfo_endpoint;
+        }
+
+        if (oidcInfo.jwks_uri) {
+            config.jwksURI = oidcInfo.jwks_uri;
+        }
+    }
+
+    return config;
 }

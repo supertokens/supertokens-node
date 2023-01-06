@@ -39,6 +39,8 @@ export type UserInfoMap = {
 };
 
 export type ProviderConfigForClientType = {
+    name: string;
+
     clientID: string;
     clientSecret?: string;
     scope: string[];
@@ -64,15 +66,14 @@ export type ProviderConfigForClientType = {
 
 export type TypeProvider = {
     id: string;
+    config?: ProviderConfigForClientType;
 
     getConfigForClientType: (input: { clientType?: string; userContext?: any }) => Promise<ProviderConfigForClientType>;
     getAuthorisationRedirectURL: (input: {
-        config: ProviderConfigForClientType;
         redirectURIOnProviderDashboard: string;
         userContext: any;
     }) => Promise<{ urlWithQueryParams: string; pkceCodeVerifier?: string }>;
     exchangeAuthCodeForOAuthTokens: (input: {
-        config: ProviderConfigForClientType;
         redirectURIInfo: {
             redirectURIOnProviderDashboard: string;
             redirectURIQueryParams: any;
@@ -80,11 +81,7 @@ export type TypeProvider = {
         };
         userContext: any;
     }) => Promise<any>;
-    getUserInfo: (input: {
-        config: ProviderConfigForClientType;
-        oAuthTokens: any;
-        userContext: any;
-    }) => Promise<UserInfo>;
+    getUserInfo: (input: { oAuthTokens: any; userContext: any }) => Promise<UserInfo>;
 };
 
 export type User = {
@@ -179,6 +176,7 @@ export type RecipeInterface = {
     getProvider(input: {
         thirdPartyId: string;
         tenantId?: string;
+        clientType?: string;
         userContext: any;
     }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
 
@@ -205,7 +203,7 @@ export type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    providers: TypeProvider[];
+    providers: ProviderInput[];
     req: BaseRequest;
     res: BaseResponse;
     appInfo: NormalisedAppinfo;
@@ -216,7 +214,6 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
-              config: ProviderConfigForClientType;
               redirectURIOnProviderDashboard: string;
               options: APIOptions;
               userContext: any;
@@ -233,9 +230,8 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
-              config: ProviderConfigForClientType;
 
-              // one of either redirectURIInfo or oAuthTokens
+              // one of either redirectURIInfo or oAuthTokens must be provided
               redirectURIInfo?: {
                   redirectURIOnProviderDashboard: string;
                   redirectURIQueryParams: any;

@@ -15,7 +15,7 @@
 
 import { ProviderInput, TypeProvider } from "../types";
 
-export default function Apple(input: ProviderInput): TypeProvider {
+export default function BoxySAML(input: ProviderInput): TypeProvider {
     // TODO
     return {
         id: input.config.thirdPartyId,

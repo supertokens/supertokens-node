@@ -56,10 +56,8 @@ export default async function authorisationUrlAPI(
     }
 
     const provider = providerResponse.provider;
-    const config = await provider.getConfigForClientType({ clientType, userContext });
     let result = await apiImplementation.authorisationUrlGET({
         provider,
-        config,
         redirectURIOnProviderDashboard,
         options,
         userContext,

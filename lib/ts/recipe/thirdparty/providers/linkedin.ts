@@ -12,10 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
 import { ProviderInput, TypeProvider } from "../types";
 
-export default function Apple(input: ProviderInput): TypeProvider {
+export default function Linkedin(input: ProviderInput): TypeProvider {
     // TODO
     return {
         id: input.config.thirdPartyId,

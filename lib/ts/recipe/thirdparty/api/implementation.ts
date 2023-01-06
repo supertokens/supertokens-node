@@ -5,9 +5,8 @@ import EmailVerification from "../../emailverification/recipe";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        authorisationUrlGET: async function ({ provider, config, redirectURIOnProviderDashboard, userContext }) {
+        authorisationUrlGET: async function ({ provider, redirectURIOnProviderDashboard, userContext }) {
             const authUrl = await provider.getAuthorisationRedirectURL({
-                config,
                 redirectURIOnProviderDashboard,
                 userContext,
             });
@@ -17,12 +16,11 @@ export default function getAPIInterface(): APIInterface {
             };
         },
 
-        signInUpPOST: async function ({ provider, config, redirectURIInfo, oAuthTokens, options, userContext }) {
+        signInUpPOST: async function ({ provider, redirectURIInfo, oAuthTokens, options, userContext }) {
             let oAuthTokensToUse: any = {};
 
             if (redirectURIInfo !== undefined) {
                 oAuthTokensToUse = await provider.exchangeAuthCodeForOAuthTokens({
-                    config,
                     redirectURIInfo,
                     userContext,
                 });
@@ -30,7 +28,7 @@ export default function getAPIInterface(): APIInterface {
                 oAuthTokensToUse = oAuthTokens;
             }
 
-            const userInfo = await provider.getUserInfo({ config, oAuthTokens: oAuthTokensToUse, userContext });
+            const userInfo = await provider.getUserInfo({ oAuthTokens: oAuthTokensToUse, userContext });
 
             let emailInfo = userInfo.email;
             if (emailInfo === undefined) {

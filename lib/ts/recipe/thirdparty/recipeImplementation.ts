@@ -1,7 +1,7 @@
-import { RecipeInterface, User, ProviderInput } from "./types";
+import { RecipeInterface, User, ProviderInput, ProviderConfig } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { findAndCreateProviderInstance, mergeConfig } from "./utils";
+import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
@@ -88,32 +88,35 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             }
         },
 
-        getProvider: async function ({ thirdPartyId, tenantId, userContext }) {
-            const tenantConfig = await multitenancy.getTenantConfig({ tenantId, userContext }); // FIXME
+        getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {
+            // TODO
+            // const tenantConfig = await multitenancy.getTenantConfig({ tenantId, userContext }); // FIXME
+            const tenantConfig: {
+                status: "OK";
+                thirdParty: {
+                    enabled: boolean;
+                    providers: ProviderConfig[];
+                };
+            } = {
+                status: "OK",
+                thirdParty: {
+                    enabled: true,
+                    providers: [],
+                },
+            };
 
-            let mergedProviders: ProviderInput[] = [];
+            const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
+                tenantId,
+                tenantConfig.thirdParty.providers,
+                providers
+            );
 
-            if (tenantConfig.providers) {
-                mergedProviders = tenantConfig.providers;
-            } else {
-                for (const providerConfigFromCore of tenantConfig.thirdParty.providers) {
-                    let mergedProviderInput: ProviderInput = {
-                        config: providerConfigFromCore,
-                    };
-
-                    for (const providerInputFromStatic of providers) {
-                        if (providerInputFromStatic.config.thirdPartyId === providerConfigFromCore.thirdPartyId) {
-                            mergedProviderInput.config = mergeConfig(
-                                providerInputFromStatic.config,
-                                providerConfigFromCore
-                            );
-                        }
-                    }
-                    mergedProviders.push(mergedProviderInput);
-                }
-            }
-
-            const provider = findAndCreateProviderInstance(mergedProviders, thirdPartyId);
+            const provider = await findAndCreateProviderInstance(
+                mergedProviders,
+                thirdPartyId,
+                clientType,
+                userContext
+            );
             return {
                 status: "OK",
                 provider,

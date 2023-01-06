@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import STError from "./error";
@@ -39,7 +39,7 @@ export default class Recipe extends RecipeModule {
 
     config: TypeNormalisedInput;
 
-    providers: TypeProvider[];
+    providers: ProviderInput[];
 
     recipeInterfaceImpl: RecipeInterface;
 
@@ -62,7 +62,9 @@ export default class Recipe extends RecipeModule {
         this.providers = this.config.signInAndUpFeature.providers;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.providers)
+            );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {

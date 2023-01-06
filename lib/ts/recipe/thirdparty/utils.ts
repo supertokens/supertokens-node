@@ -14,21 +14,8 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { RecipeInterface, APIInterface, TypeProvider, ProviderInput, ProviderConfig } from "./types";
+import { RecipeInterface, APIInterface } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
-import {
-    ActiveDirectory,
-    Apple,
-    Discord,
-    Facebook,
-    Github,
-    Google,
-    GoogleWorkspaces,
-    Okta,
-    Linkedin,
-    BoxySaml,
-    NewProvider,
-} from "./providers";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
@@ -60,77 +47,7 @@ function validateAndNormaliseSignInAndUpConfig(
         thirdPartyIdSet[provider.config.thirdPartyId] = true;
     }
 
-    // TODO tp-rework normalise provider inputs
-
     return {
         providers,
     };
-}
-
-function createProvider(input: ProviderInput): TypeProvider {
-    switch (input.config.thirdPartyId) {
-        case "active-directory":
-            return ActiveDirectory(input);
-        case "apple":
-            return Apple(input);
-        case "discord":
-            return Discord(input);
-        case "facebook":
-            return Facebook(input);
-        case "github":
-            return Github(input);
-        case "google":
-            return Google(input);
-        case "google-workspaces":
-            return GoogleWorkspaces(input);
-        case "okta":
-            return Okta(input);
-        case "linkedin":
-            return Linkedin(input);
-        case "boxy-saml":
-            return BoxySaml(input);
-    }
-
-    return NewProvider(input);
-}
-
-export function findAndCreateProviderInstance(providers: ProviderInput[], thirdPartyId: string): TypeProvider {
-    for (const providerInput of providers) {
-        if (providerInput.config.thirdPartyId === thirdPartyId) {
-            return createProvider(providerInput);
-        }
-    }
-    throw new Error(`the provider {thirdPartyId} could not be found in the configuration`);
-}
-
-export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderConfig): ProviderConfig {
-    const result = {
-        ...staticConfig,
-        ...coreConfig,
-        userInfoMap: {
-            fromIdTokenPayload: {
-                ...staticConfig.userInfoMap?.fromIdTokenPayload,
-                ...coreConfig.userInfoMap?.fromIdTokenPayload,
-            },
-            fromUserInfoAPI: {
-                ...staticConfig.userInfoMap?.fromUserInfoAPI,
-                ...coreConfig.userInfoMap?.fromUserInfoAPI,
-            },
-        },
-    };
-
-    const mergedClients = [...staticConfig.clients];
-    for (const client of coreConfig.clients) {
-        const index = mergedClients.findIndex((c) => c.clientType === client.clientType);
-        if (index === -1) {
-            mergedClients.push(client);
-        } else {
-            mergedClients[index] = {
-                ...client,
-            };
-        }
-    }
-    result.clients = mergedClients;
-
-    return result;
 }

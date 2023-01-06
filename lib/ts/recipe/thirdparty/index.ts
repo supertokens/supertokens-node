@@ -15,7 +15,6 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import * as thirdPartyProviders from "./providers";
 import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
 
 export default class Wrapper {
@@ -23,8 +22,27 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static async signInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+    static async getProvider(
+        thirdPartyId: string,
+        tenantId: string | undefined,
+        clientType: string | undefined,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getProvider({
+            thirdPartyId,
+            tenantId,
+            clientType,
+            userContext,
+        });
+    }
+
+    static async manuallyCreateOrUpdateUser(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
             thirdPartyId,
             thirdPartyUserId,
             email,
@@ -47,50 +65,20 @@ export default class Wrapper {
             userContext,
         });
     }
-
-    static Google = thirdPartyProviders.Google;
-
-    static Github = thirdPartyProviders.Github;
-
-    static Facebook = thirdPartyProviders.Facebook;
-
-    static Apple = thirdPartyProviders.Apple;
-
-    static Discord = thirdPartyProviders.Discord;
-
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
-
-    // static Okta = thirdPartyProviders.Okta;
-
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 }
 
 export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
 
-export let signInUp = Wrapper.signInUp;
+export let getProvider = Wrapper.getProvider;
+
+export let manuallyCreateOrUpdateUser = Wrapper.manuallyCreateOrUpdateUser;
 
 export let getUserById = Wrapper.getUserById;
 
 export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
-
-export let Google = Wrapper.Google;
-
-export let Github = Wrapper.Github;
-
-export let Facebook = Wrapper.Facebook;
-
-export let Apple = Wrapper.Apple;
-
-export let Discord = Wrapper.Discord;
-
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
-
-// export let Okta = Wrapper.Okta;
-
-// export let ActiveDirectory = Wrapper.ActiveDirectory;
 
 export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };

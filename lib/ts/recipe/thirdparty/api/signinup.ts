@@ -35,11 +35,13 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    let redirectURIInfo: undefined | {
-        redirectURIOnProviderDashboard: string;
-        redirectURIQueryParams: any;
-        pkceCodeVerifier?: string;
-    };
+    let redirectURIInfo:
+        | undefined
+        | {
+              redirectURIOnProviderDashboard: string;
+              redirectURIQueryParams: any;
+              pkceCodeVerifier?: string;
+          };
     let oAuthTokens: any;
 
     if (bodyParams.redirectURIInfo !== undefined) {
@@ -70,11 +72,9 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
     }
 
     const provider = providerResponse.provider;
-    const config = await provider.getConfigForClientType({ clientType, userContext });
 
     let result = await apiImplementation.signInUpPOST({
         provider,
-        config,
         redirectURIInfo,
         oAuthTokens,
         options,
