@@ -1,6 +1,6 @@
 import * as jwt from "jsonwebtoken";
 import * as jwksClient from "jwks-rsa";
-import { ProviderConfig, ProviderClientConfig, ProviderConfigForClientType } from "../types";
+import { ProviderConfigForClientType } from "../types";
 import axios from "axios";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
