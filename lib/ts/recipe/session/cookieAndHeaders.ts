@@ -34,20 +34,23 @@ export function clearSessionFromAllTokenTransferMethods(
     req: BaseRequest,
     res: BaseResponse
 ) {
+    const tokenTypes: TokenType[] = ["access", "refresh"];
+
+    removeTokenUpdatesFromResponse(res);
     for (const transferMethod of availableTokenTransferMethods) {
-        if (getToken(req, "access", transferMethod) !== undefined) {
+        if (tokenTypes.some((type) => getToken(req, type, transferMethod) !== undefined)) {
             clearSession(config, res, transferMethod);
         }
     }
 }
 
 export function clearSession(config: TypeNormalisedInput, res: BaseResponse, transferMethod: TokenTransferMethod) {
-    // If we can tell it's a cookie based session we are not clearing using headers
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
         setToken(config, res, token, "", 0, transferMethod);
     }
 
+    res.removeHeader(antiCsrfHeaderKey);
     res.setHeader(frontTokenHeaderKey, "remove", false);
     res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
@@ -132,6 +135,17 @@ export function setToken(
     } else if (transferMethod === "header") {
         setHeader(res, getResponseHeaderNameForTokenType(tokenType), value);
     }
+}
+
+function removeTokenUpdatesFromResponse(res: BaseResponse) {
+    res.removeHeader(antiCsrfHeaderKey);
+    res.removeHeader(frontTokenHeaderKey);
+
+    res.removeHeader(getResponseHeaderNameForTokenType("access"));
+    res.removeHeader(getResponseHeaderNameForTokenType("refresh"));
+
+    res.clearCookie(getCookieNameFromTokenType("access"));
+    res.clearCookie(getCookieNameFromTokenType("refresh"));
 }
 
 export function setHeader(res: BaseResponse, name: string, value: string) {

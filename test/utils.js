@@ -76,10 +76,8 @@ module.exports.setKeyValueInConfig = async function (key, value) {
 
 module.exports.extractInfoFromResponse = function (res) {
     let antiCsrf = res.headers["anti-csrf"];
-    let idRefreshTokenFromHeader = res.headers["st-id-refresh-token"];
     let accessToken = undefined;
     let refreshToken = undefined;
-    let idRefreshTokenFromCookie = undefined;
     let accessTokenExpiry = undefined;
     let refreshTokenExpiry = undefined;
     let idRefreshTokenExpiry = undefined;
@@ -132,16 +130,19 @@ module.exports.extractInfoFromResponse = function (res) {
     const refreshTokenFromHeader = res.headers["st-refresh-token"];
     const accessTokenFromHeader = res.headers["st-access-token"];
 
+    const accessTokenFromAny = accessToken || accessTokenFromHeader;
+    const refreshTokenFromAny = refreshToken || refreshTokenFromHeader;
+
     return {
-        status: res.status,
+        status: res.status || res.statusCode,
         body: res.body,
         antiCsrf,
         accessToken,
         refreshToken,
         accessTokenFromHeader,
         refreshTokenFromHeader,
-        idRefreshTokenFromHeader,
-        idRefreshTokenFromCookie,
+        accessTokenFromAny,
+        refreshTokenFromAny,
         accessTokenExpiry,
         refreshTokenExpiry,
         idRefreshTokenExpiry,

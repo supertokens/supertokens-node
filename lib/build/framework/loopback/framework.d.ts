@@ -24,6 +24,7 @@ export declare class LoopbackResponse extends BaseResponse {
     constructor(ctx: MiddlewareContext);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
+    removeHeader: (key: string) => void;
     setCookie: (
         key: string,
         value: string,
@@ -34,6 +35,7 @@ export declare class LoopbackResponse extends BaseResponse {
         path: string,
         sameSite: "strict" | "lax" | "none"
     ) => void;
+    clearCookie: (key: string) => void;
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
 }

@@ -23,6 +23,7 @@ import { json, form } from "co-body";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
+import { COOKIE_HEADER } from "../constants";
 
 export class KoaRequest extends BaseRequest {
     private ctx: Context;
@@ -130,6 +131,10 @@ export class KoaResponse extends BaseResponse {
         }
     };
 
+    removeHeader = (key: string) => {
+        this.ctx.remove(key);
+    };
+
     setCookie = (
         key: string,
         value: string,
@@ -148,6 +153,24 @@ export class KoaResponse extends BaseResponse {
             domain,
             path,
         });
+    };
+
+    clearCookie = (key: string) => {
+        let setCookies: string | string[] = this.ctx.response.get(COOKIE_HEADER);
+        if (setCookies === undefined || setCookies === "") {
+            return;
+        }
+        this.ctx.remove(COOKIE_HEADER);
+        const prefix = key + "=";
+        // Typescript is weird about instanceof
+        if (!((setCookies as any) instanceof Array)) {
+            setCookies = [setCookies];
+        }
+        for (const cookie of setCookies) {
+            if (!cookie.startsWith(prefix)) {
+                this.ctx.set(COOKIE_HEADER, cookie);
+            }
+        }
     };
 
     /**

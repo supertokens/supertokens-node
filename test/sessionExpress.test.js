@@ -2800,14 +2800,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let res2 = extractInfoFromResponse(resp);
 
-        assert(res2.antiCsrf.length > 1);
         assert.deepEqual(res2.accessToken, "");
         assert.deepEqual(res2.refreshToken, "");
         assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(res2.accessTokenDomain === undefined);
         assert(res2.refreshTokenDomain === undefined);
-        assert(res2.frontToken.length > 1);
+        assert.strictEqual(res2.frontToken, "remove");
+        assert.strictEqual(res2.antiCsrf, undefined);
     });
 
     it("test revoking a session during refresh with revokeSession function and sending 401", async function () {
@@ -2892,14 +2892,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let res2 = extractInfoFromResponse(resp);
 
-        assert(res2.antiCsrf.length > 1);
         assert.deepEqual(res2.accessToken, "");
         assert.deepEqual(res2.refreshToken, "");
         assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(res2.accessTokenDomain === undefined);
         assert(res2.refreshTokenDomain === undefined);
-        assert(res2.frontToken.length > 1);
+        assert.strictEqual(res2.frontToken, "remove");
+        assert.strictEqual(res2.antiCsrf, undefined);
     });
 
     it("test revoking a session during refresh with throwing unauthorised error", async function () {
@@ -2986,14 +2986,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let res2 = extractInfoFromResponse(resp);
 
-        assert(res2.antiCsrf.length > 1);
         assert.strictEqual(res2.accessToken, "");
         assert.strictEqual(res2.refreshToken, "");
         assert.strictEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(res2.accessTokenDomain, undefined);
         assert.strictEqual(res2.refreshTokenDomain, undefined);
-        assert(res2.frontToken.length > 1);
+        assert.strictEqual(res2.frontToken, "remove");
+        assert.strictEqual(res2.antiCsrf, undefined);
     });
 
     it("test revoking a session during refresh fails if just sending 401", async function () {

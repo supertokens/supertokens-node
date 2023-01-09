@@ -408,4 +408,165 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         assert(result.statusCode === 203);
         assert(JSON.parse(result.body).custom);
     });
+
+    for (const tokenTransferMethod of ["header", "cookie"]) {
+        describe(`Throwing UNATHORISED w/ auth-mode=${tokenTransferMethod}`, () => {
+            it("should clear all response cookies during refresh", async () => {
+                await startST();
+                SuperTokens.init({
+                    framework: "awsLambda",
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "http://api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "http://supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init({
+                            antiCsrf: "VIA_TOKEN",
+                            override: {
+                                apis: (oI) => {
+                                    return {
+                                        ...oI,
+                                        refreshPOST: async function (input) {
+                                            await oI.refreshPOST(input);
+                                            throw new Session.Error({
+                                                message: "unauthorised",
+                                                type: Session.Error.UNAUTHORISED,
+                                                clearTokens: true,
+                                            });
+                                        },
+                                    };
+                                },
+                            },
+                        }),
+                    ],
+                });
+
+                let createSession = async (awsEvent, _) => {
+                    await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
+                    return {
+                        body: JSON.stringify(""),
+                        statusCode: 200,
+                    };
+                };
+
+                let proxy = "/dev";
+                let createAccountEvent = mockLambdaProxyEventV2(
+                    "/create",
+                    "POST",
+                    { "st-auth-mode": tokenTransferMethod },
+                    null,
+                    proxy
+                );
+                let result = await middleware(createSession)(createAccountEvent, undefined);
+                result.headers = {
+                    ...result.headers,
+                    "set-cookie": result.cookies,
+                };
+
+                let res = extractInfoFromResponse(result);
+
+                assert.notStrictEqual(res.accessTokenFromAny, undefined);
+                assert.notStrictEqual(res.refreshTokenFromAny, undefined);
+
+                const refreshHeaders =
+                    tokenTransferMethod === "header"
+                        ? { authorization: `Bearer ${res.refreshTokenFromAny}` }
+                        : {
+                              cookie: `sRefreshToken=${encodeURIComponent(
+                                  res.refreshTokenFromAny
+                              )}; sIdRefreshToken=asdf`,
+                          };
+                if (res.antiCsrf) {
+                    refreshHeaders.antiCsrf = res.antiCsrf;
+                }
+
+                refreshSessionEvent = mockLambdaProxyEventV2(
+                    "/auth/session/refresh",
+                    "POST",
+                    refreshHeaders,
+                    null,
+                    proxy,
+                    null
+                );
+                result = await middleware()(refreshSessionEvent, undefined);
+                result.headers = {
+                    ...result.headers,
+                    "set-cookie": result.cookies,
+                };
+
+                let res2 = extractInfoFromResponse(result);
+
+                assert.strictEqual(res2.status, 401);
+                if (tokenTransferMethod === "cookie") {
+                    assert.strictEqual(res2.accessToken, "");
+                    assert.strictEqual(res2.refreshToken, "");
+                    assert.strictEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                    assert.strictEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                    assert.strictEqual(res2.accessTokenDomain, undefined);
+                    assert.strictEqual(res2.refreshTokenDomain, undefined);
+                } else {
+                    assert.strictEqual(res2.accessTokenFromHeader, "");
+                    assert.strictEqual(res2.refreshTokenFromHeader, "");
+                }
+                assert.strictEqual(res2.frontToken, "remove");
+                assert.strictEqual(res2.antiCsrf, undefined);
+            });
+
+            it("test revoking a session after createNewSession with throwing unauthorised error", async function () {
+                await startST();
+                SuperTokens.init({
+                    framework: "awsLambda",
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "http://api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "http://supertokens.io",
+                        apiBasePath: "/",
+                    },
+                    recipeList: [
+                        Session.init({
+                            antiCsrf: "VIA_TOKEN",
+                        }),
+                    ],
+                });
+
+                let createSession = async (awsEvent, _) => {
+                    await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
+                    throw new Session.Error({
+                        message: "unauthorised",
+                        type: Session.Error.UNAUTHORISED,
+                        clearTokens: true,
+                    });
+                };
+
+                let proxy = "/dev";
+                let createAccountEvent = mockLambdaProxyEventV2(
+                    "/create",
+                    "POST",
+                    { "st-auth-mode": tokenTransferMethod },
+                    null,
+                    proxy
+                );
+                let result = await middleware(createSession)(createAccountEvent, undefined);
+                result.headers = {
+                    ...result.headers,
+                    "set-cookie": result.cookies,
+                };
+
+                let res = extractInfoFromResponse(result);
+
+                assert.strictEqual(res.status, 401);
+                assert.strictEqual(res.accessTokenFromAny, undefined);
+                assert.strictEqual(res.refreshTokenFromAny, undefined);
+                assert.strictEqual(res.frontToken, undefined);
+                assert.strictEqual(res.antiCsrf, undefined);
+            });
+        });
+    }
 });

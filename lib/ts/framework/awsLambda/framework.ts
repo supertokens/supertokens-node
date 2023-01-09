@@ -189,6 +189,12 @@ export class AWSResponse extends BaseResponse {
         });
     };
 
+    removeHeader = (key: string) => {
+        this.event.supertokens.response.headers = this.event.supertokens.response.headers.filter(
+            (header) => header.key.toLowerCase() !== key.toLowerCase()
+        );
+    };
+
     setCookie = (
         key: string,
         value: string,
@@ -201,6 +207,13 @@ export class AWSResponse extends BaseResponse {
     ) => {
         let serialisedCookie = serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite);
         this.event.supertokens.response.cookies.push(serialisedCookie);
+    };
+
+    clearCookie = (key: string) => {
+        const prefix = key + "=";
+        this.event.supertokens.response.cookies = this.event.supertokens.response.cookies.filter(
+            (v) => !v.startsWith(prefix)
+        );
     };
 
     /**

@@ -110,6 +110,10 @@ export class FastifyResponse extends BaseResponse {
         }
     };
 
+    removeHeader = (key: string) => {
+        this.response.removeHeader(key);
+    };
+
     setCookie = (
         key: string,
         value: string,
@@ -158,6 +162,24 @@ export class FastifyResponse extends BaseResponse {
          * this.response.header(COOKIE_HEADER, cookieValueToSetInHeader);
          */
         this.response.header(COOKIE_HEADER, serialisedCookie);
+    };
+
+    clearCookie = (key: string) => {
+        let setCookies: string | string[] | undefined = this.response.getHeader(COOKIE_HEADER);
+        if (setCookies === undefined || setCookies === "") {
+            return;
+        }
+        this.response.removeHeader(COOKIE_HEADER);
+        const prefix = key + "=";
+        // Typescript is weird about instanceof
+        if (!((setCookies as any) instanceof Array)) {
+            setCookies = [setCookies];
+        }
+        for (const cookie of setCookies) {
+            if (!cookie.startsWith(prefix)) {
+                this.response.header(COOKIE_HEADER, cookie);
+            }
+        }
     };
 
     /**

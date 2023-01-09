@@ -41,6 +41,20 @@ let Create = class Create {
 };
 __decorate([rest_1.post("/create"), rest_1.response(200)], Create.prototype, "handler", null);
 Create = __decorate([__param(0, core_1.inject(rest_1.RestBindings.Http.CONTEXT))], Create);
+let CreateThrowing = class CreateThrowing {
+    constructor(ctx) {
+        this.ctx = ctx;
+    }
+    async handler() {
+        await session_1.default.createNewSession(this.ctx, this.ctx, "userId", {}, {});
+        throw new session_1.default.Error({
+            message: "unauthorised",
+            type: session_1.default.Error.UNAUTHORISED,
+        });
+    }
+};
+__decorate([rest_1.post("/create-throw"), rest_1.response(200)], CreateThrowing.prototype, "handler", null);
+CreateThrowing = __decorate([__param(0, core_1.inject(rest_1.RestBindings.Http.CONTEXT))], CreateThrowing);
 let Verify = class Verify {
     constructor(ctx) {
         this.ctx = ctx;
@@ -102,6 +116,7 @@ let app = new rest_1.RestApplication({
 });
 app.middleware(loopback_1.middleware);
 app.controller(Create);
+app.controller(CreateThrowing);
 app.controller(Verify);
 app.controller(Revoke);
 app.controller(VerifyOptionalCSRF);

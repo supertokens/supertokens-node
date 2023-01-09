@@ -25,6 +25,7 @@ export declare class KoaResponse extends BaseResponse {
     constructor(ctx: Context);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
+    removeHeader: (key: string) => void;
     setCookie: (
         key: string,
         value: string,
@@ -35,6 +36,7 @@ export declare class KoaResponse extends BaseResponse {
         path: string,
         sameSite: "strict" | "lax" | "none"
     ) => void;
+    clearCookie: (key: string) => void;
     /**
      * @param {number} statusCode
      */

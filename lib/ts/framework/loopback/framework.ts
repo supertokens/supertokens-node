@@ -30,6 +30,7 @@ import {
 } from "../utils";
 import SuperTokens from "../../supertokens";
 import type { Framework } from "../types";
+import { COOKIE_HEADER } from "../constants";
 
 export class LoopbackRequest extends BaseRequest {
     private request: Request;
@@ -110,6 +111,10 @@ export class LoopbackResponse extends BaseResponse {
         setHeaderForExpressLikeResponse(this.response, key, value, allowDuplicateKey);
     };
 
+    removeHeader = (key: string) => {
+        this.response.removeHeader(key);
+    };
+
     setCookie = (
         key: string,
         value: string,
@@ -121,6 +126,24 @@ export class LoopbackResponse extends BaseResponse {
         sameSite: "strict" | "lax" | "none"
     ) => {
         setCookieForServerResponse(this.response, key, value, domain, secure, httpOnly, expires, path, sameSite);
+    };
+
+    clearCookie = (key: string) => {
+        let setCookies: string | string[] = this.response.get(COOKIE_HEADER);
+        if (setCookies === undefined || setCookies === "") {
+            return;
+        }
+        this.response.removeHeader(COOKIE_HEADER);
+        const prefix = key + "=";
+        // Typescript is weird about instanceof
+        if (!((setCookies as any) instanceof Array)) {
+            setCookies = [setCookies];
+        }
+        for (const cookie of setCookies) {
+            if (!cookie.startsWith(prefix)) {
+                this.response.header(COOKIE_HEADER, cookie);
+            }
+        }
     };
 
     setStatusCode = (statusCode: number) => {
