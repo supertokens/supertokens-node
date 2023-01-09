@@ -30,6 +30,16 @@ export default function getAPIInterface(): APIInterface {
 
             const userInfo = await provider.getUserInfo({ oAuthTokens: oAuthTokensToUse, userContext });
 
+            if (userInfo.email === undefined && provider.config!.requireEmail === false) {
+                userInfo.email = {
+                    id: provider.config!.generateFakeEmail!({
+                        thirdPartyUserId: userInfo.thirdPartyUserId,
+                        userContext,
+                    }),
+                    isVerified: true,
+                };
+            }
+
             let emailInfo = userInfo.email;
             if (emailInfo === undefined) {
                 return {

@@ -136,6 +136,22 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
         },
     };
 
+    input.config.userInfoMap = {
+        fromIdTokenPayload: {
+            userId: "sub",
+            email: "email",
+            emailVerified: "email_verified",
+            ...input.config.userInfoMap?.fromIdTokenPayload,
+        }
+    }
+
+    if (input.config.generateFakeEmail === undefined) {
+        input.config.generateFakeEmail = function ({ thirdPartyUserId }) {
+            thirdPartyUserId = thirdPartyUserId.replace("|", ".");
+            return `${thirdPartyUserId}@${input.config.thirdPartyId}.fakeemail.com`;
+        };
+    }
+
     impl.getConfigForClientType = async function ({ clientType }) {
         if (clientType === undefined) {
             if (input.config.clients === undefined || input.config.clients.length !== 1) {

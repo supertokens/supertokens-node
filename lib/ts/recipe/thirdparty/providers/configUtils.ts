@@ -45,6 +45,8 @@ export function getProviderConfigForClient(
         userInfoMap: providerConfig.userInfoMap,
 
         validateIdTokenPayload: providerConfig.validateIdTokenPayload,
+        requireEmail: providerConfig.requireEmail,
+        generateFakeEmail: providerConfig.generateFakeEmail,
     };
 }
 

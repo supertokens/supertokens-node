@@ -61,6 +61,8 @@ export type ProviderConfigForClientType = {
         idTokenPayload: any;
         clientConfig: ProviderConfigForClientType;
     }) => Promise<void>;
+    requireEmail?: boolean;
+    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext: any }) => string;
     tenantId?: string;
 };
 
@@ -120,6 +122,9 @@ export type ProviderConfig = {
     jwksURI?: string;
     oidcDiscoveryEndpoint?: string;
     userInfoMap?: UserInfoMap;
+
+    requireEmail?: boolean;
+    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext: any }) => string;
 
     validateIdTokenPayload?: (input: {
         idTokenPayload: any;
