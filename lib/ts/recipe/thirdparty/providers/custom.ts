@@ -1,6 +1,6 @@
 import { DEFAULT_TENANT_ID } from "../constants";
 import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
-import { verifyIdTokenFromJWKSEndpoint } from "./utils";
+import { verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
 import axios from "axios";
 import * as qs from "querystring";
 import pkceChallenge from "pkce-challenge";
@@ -110,7 +110,9 @@ function getSupertokensUserInfoResultFromRawUserInfo(
                 rawUserInfoResponse.fromUserInfoAPI,
                 config.userInfoMap!.fromUserInfoAPI!.emailVerified!
             );
-            result.email.isVerified = emailVerifiedVal === true || emailVerifiedVal === "true";
+            result.email.isVerified =
+                emailVerifiedVal === true ||
+                (typeof emailVerifiedVal === "string" && emailVerifiedVal.toLowerCase() === "true");
         }
 
         if (config.userInfoMap?.fromIdTokenPayload?.emailVerified !== undefined) {
@@ -267,7 +269,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             };
 
             if (idToken && impl.config.jwksURI !== undefined) {
-                rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpoint(
+                rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpointAndGetPayload(
                     idToken,
                     impl.config.jwksURI!,
                     {

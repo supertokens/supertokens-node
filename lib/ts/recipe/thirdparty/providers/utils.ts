@@ -5,11 +5,11 @@ import axios from "axios";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 
-export async function verifyIdTokenFromJWKSEndpoint(
+export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
     jwksUri: string,
     otherOptions: jwt.VerifyOptions
-): Promise<any> {
+): Promise<{ [key: string]: any }> {
     const client = jwksClient({
         jwksUri,
     });
