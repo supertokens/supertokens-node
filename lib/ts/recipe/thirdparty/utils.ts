@@ -14,7 +14,7 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { RecipeInterface, APIInterface } from "./types";
+import { RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
@@ -34,9 +34,9 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
 
 function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
-    config: TypeInputSignInAndUp
+    config: TypeInputSignInAndUp | undefined
 ): TypeNormalisedInputSignInAndUp {
-    let providers = config.providers;
+    let providers: ProviderInput[] = config?.providers || [];
 
     const thirdPartyIdSet = new Set<string>();
 

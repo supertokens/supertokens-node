@@ -50,10 +50,6 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     const oidcInfo = (await axios.get(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()))
         .data;
 
-    if (oidcInfoMap[issuer] !== undefined) {
-        return oidcInfoMap[issuer];
-    }
-
     oidcInfoMap[issuer] = oidcInfo;
     return oidcInfo;
 }
@@ -62,19 +58,19 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
     if (config.oidcDiscoveryEndpoint !== undefined) {
         const oidcInfo = await getOIDCDiscoveryInfo(config.oidcDiscoveryEndpoint);
 
-        if (oidcInfo.authorisation_endpoint) {
+        if (oidcInfo.authorisation_endpoint && config.authorizationEndpoint === undefined) {
             config.authorizationEndpoint = oidcInfo.authorisation_endpoint;
         }
 
-        if (oidcInfo.token_endpoint) {
+        if (oidcInfo.token_endpoint && config.tokenEndpoint === undefined) {
             config.tokenEndpoint = oidcInfo.token_endpoint;
         }
 
-        if (oidcInfo.userinfo_endpoint) {
+        if (oidcInfo.userinfo_endpoint && config.userInfoEndpoint === undefined) {
             config.userInfoEndpoint = oidcInfo.userinfo_endpoint;
         }
 
-        if (oidcInfo.jwks_uri) {
+        if (oidcInfo.jwks_uri && config.jwksURI === undefined) {
             config.jwksURI = oidcInfo.jwks_uri;
         }
     }

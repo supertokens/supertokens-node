@@ -16,23 +16,24 @@ export default function getAPIInterface(): APIInterface {
             };
         },
 
-        signInUpPOST: async function ({ provider, redirectURIInfo, oAuthTokens, options, userContext }) {
+        signInUpPOST: async function (input) {
+            const { provider, options, userContext } = input;
             let oAuthTokensToUse: any = {};
 
-            if (redirectURIInfo !== undefined) {
+            if ("redirectURIInfo" in input) {
                 oAuthTokensToUse = await provider.exchangeAuthCodeForOAuthTokens({
-                    redirectURIInfo,
+                    redirectURIInfo: input.redirectURIInfo,
                     userContext,
                 });
             } else {
-                oAuthTokensToUse = oAuthTokens;
+                oAuthTokensToUse = input.oAuthTokens;
             }
 
             const userInfo = await provider.getUserInfo({ oAuthTokens: oAuthTokensToUse, userContext });
 
-            if (userInfo.email === undefined && provider.config!.requireEmail === false) {
+            if (userInfo.email === undefined && provider.config.requireEmail === false) {
                 userInfo.email = {
-                    id: provider.config!.generateFakeEmail!({
+                    id: await provider.config.generateFakeEmail!({
                         thirdPartyUserId: userInfo.thirdPartyUserId,
                         userContext,
                     }),
@@ -91,7 +92,8 @@ export default function getAPIInterface(): APIInterface {
 
         appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options }): Promise<void> {
             const queryString = qs.stringify(formPostInfoFromProvider);
-            const state = formPostInfoFromProvider.state;
+            const stateInBase64 = formPostInfoFromProvider.state;
+            const state = Buffer.from(stateInBase64, "base64").toString();
             const stateObj = JSON.parse(state);
             const redirectURI = stateObj.redirectURI;
             const redirectURL = `${redirectURI}?${queryString}`;

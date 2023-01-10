@@ -25,28 +25,8 @@ export function getProviderConfigForClient(
     clientConfig: ProviderClientConfig
 ): ProviderConfigForClientType {
     return {
-        name: providerConfig.name!,
-
-        clientID: clientConfig.clientID,
-        clientSecret: clientConfig.clientSecret,
-        scope: clientConfig.scope || [],
-        forcePKCE: clientConfig.forcePKCE,
-        additionalConfig: clientConfig.additionalConfig,
-
-        authorizationEndpoint: providerConfig.authorizationEndpoint,
-        authorizationEndpointQueryParams: providerConfig.authorizationEndpointQueryParams,
-        tokenEndpoint: providerConfig.tokenEndpoint,
-        tokenEndpointBodyParams: providerConfig.tokenEndpointBodyParams,
-        userInfoEndpoint: providerConfig.userInfoEndpoint,
-        userInfoEndpointQueryParams: providerConfig.userInfoEndpointQueryParams,
-        userInfoEndpointHeaders: providerConfig.userInfoEndpointHeaders,
-        jwksURI: providerConfig.jwksURI,
-        oidcDiscoveryEndpoint: providerConfig.oidcDiscoveryEndpoint,
-        userInfoMap: providerConfig.userInfoMap,
-
-        validateIdTokenPayload: providerConfig.validateIdTokenPayload,
-        requireEmail: providerConfig.requireEmail,
-        generateFakeEmail: providerConfig.generateFakeEmail,
+        ...providerConfig,
+        ...clientConfig,
     };
 }
 

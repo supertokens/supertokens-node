@@ -45,8 +45,11 @@ function accessField(obj: any, key: string): any {
 
 function getSupertokensUserInfoResultFromRawUserInfo(
     config: ProviderConfigForClientType,
-    rawUserInfoResponse: { fromIdTokenPayload: any; fromUserInfoAPI: any }
-): UserInfo {
+    rawUserInfoResponse: { fromIdTokenPayload: { [key: string]: any }; fromUserInfoAPI: { [key: string]: any } }
+): {
+    thirdPartyUserId: string;
+    email?: { id: string; isVerified: boolean };
+} {
     let thirdPartyUserId = "";
 
     if (config.userInfoMap?.fromUserInfoAPI?.userId !== undefined) {
@@ -70,7 +73,10 @@ function getSupertokensUserInfoResultFromRawUserInfo(
         throw new Error("third party user id is missing");
     }
 
-    const result: UserInfo = {
+    const result: {
+        thirdPartyUserId: string;
+        email?: { id: string; isVerified: boolean };
+    } = {
         thirdPartyUserId,
     };
 
@@ -120,22 +126,6 @@ function getSupertokensUserInfoResultFromRawUserInfo(
 }
 
 export default function NewProvider(input: ProviderInput): TypeProvider {
-    let impl: TypeProvider = {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
-        },
-    };
-
     input.config.userInfoMap = {
         fromIdTokenPayload: {
             userId: "sub",
@@ -146,182 +136,197 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
     };
 
     if (input.config.generateFakeEmail === undefined) {
-        input.config.generateFakeEmail = function ({ thirdPartyUserId }) {
+        input.config.generateFakeEmail = async function ({ thirdPartyUserId }) {
             thirdPartyUserId = thirdPartyUserId.replace("|", ".");
             return `${thirdPartyUserId}@${input.config.thirdPartyId}.fakeemail.com`;
         };
     }
 
-    impl.getConfigForClientType = async function ({ clientType }) {
-        if (clientType === undefined) {
-            if (input.config.clients === undefined || input.config.clients.length !== 1) {
-                throw new Error("please provide exactly one client config or pass clientType or tenantId");
-            }
+    let impl: TypeProvider = {
+        id: input.config.thirdPartyId,
+        config: {
+            // temporarily
+            ...input.config,
+            ...input.config.clients![0],
+        },
 
-            return getProviderConfigForClient(input.config, input.config.clients[0]);
-        }
-
-        for (const client of input.config.clients) {
-            if (client.clientType === clientType) {
-                return getProviderConfigForClient(input.config, client);
-            }
-        }
-
-        throw new Error(`Could not find client config for clientType: ${clientType}`);
-    };
-
-    impl.getAuthorisationRedirectURL = async function ({ redirectURIOnProviderDashboard }) {
-        const queryParams: { [key: string]: string } = {
-            scope: impl.config!.scope.join(" "),
-            client_id: impl.config!.clientID,
-            redirect_uri: redirectURIOnProviderDashboard,
-            response_type: "code",
-        };
-        let pkceCodeVerifier: string | undefined = undefined;
-
-        if (impl.config!.clientSecret === undefined || impl.config!.forcePKCE) {
-            const { code_challenge, code_verifier } = pkceChallenge(64);
-            queryParams["code_challenge"] = code_challenge;
-            queryParams["code_challenge_method"] = "S256";
-            pkceCodeVerifier = code_verifier;
-        }
-
-        for (const key in impl.config!.authorizationEndpointQueryParams || {}) {
-            if (impl.config!.authorizationEndpointQueryParams[key] === null) {
-                delete queryParams[key];
-            } else {
-                queryParams[key] = impl.config!.authorizationEndpointQueryParams[key];
-            }
-        }
-
-        let url = impl.config!.authorizationEndpoint!;
-
-        /* Transformation needed for dev keys BEGIN */
-        if (isUsingDevelopmentClientId(impl.config!.clientID)) {
-            queryParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config!.clientID);
-            queryParams["actual_redirect_uri"] = url;
-            url = DEV_OAUTH_AUTHORIZATION_URL;
-        }
-        /* Transformation needed for dev keys END */
-
-        const queryParamsStr = new URLSearchParams(queryParams).toString();
-
-        return {
-            urlWithQueryParams: url + "?" + queryParamsStr,
-            pkceCodeVerifier: pkceCodeVerifier,
-        };
-    };
-
-    impl.exchangeAuthCodeForOAuthTokens = async function ({ redirectURIInfo }) {
-        const tokenAPIURL = impl.config!.tokenEndpoint;
-        const accessTokenAPIParams: { [key: string]: string } = {
-            client_id: impl.config!.clientID,
-            redirect_uri: redirectURIInfo.redirectURIOnProviderDashboard,
-            code: redirectURIInfo.redirectURIQueryParams["code"],
-            grant_type: "authorization_code",
-        };
-        if (impl.config!.clientSecret !== undefined) {
-            accessTokenAPIParams["client_secret"] = impl.config!.clientSecret;
-        }
-        if (redirectURIInfo.pkceCodeVerifier !== undefined) {
-            accessTokenAPIParams["code_verifier"] = redirectURIInfo.pkceCodeVerifier;
-        }
-
-        for (const key in impl.config!.tokenEndpointBodyParams || {}) {
-            if (impl.config!.tokenEndpointBodyParams[key] === null) {
-                delete accessTokenAPIParams[key];
-            } else {
-                accessTokenAPIParams[key] = impl.config!.tokenEndpointBodyParams[key];
-            }
-        }
-
-        /* Transformation needed for dev keys BEGIN */
-        if (isUsingDevelopmentClientId(impl.config!.clientID)) {
-            accessTokenAPIParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config!.clientID);
-            accessTokenAPIParams["redirect_uri"] = DEV_OAUTH_REDIRECT_URL;
-        }
-        /* Transformation needed for dev keys END */
-
-        return (
-            await axios.post(tokenAPIURL!, qs.stringify(accessTokenAPIParams), {
-                headers: {
-                    "content-type": "application/x-www-form-urlencoded",
-                    accept: "application/json", // few providers like github don't send back json response by default
-                },
-            })
-        ).data;
-    };
-
-    impl.getUserInfo = async function ({ oAuthTokens }): Promise<UserInfo> {
-        const accessToken = oAuthTokens["access_token"];
-        const idToken = oAuthTokens["id_token"];
-
-        let rawUserInfoFromProvider: {
-            fromUserInfoAPI: any;
-            fromIdTokenPayload: any;
-        } = {
-            fromUserInfoAPI: {},
-            fromIdTokenPayload: {},
-        };
-
-        if (idToken && impl.config!.jwksURI !== undefined) {
-            rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpoint(
-                idToken,
-                impl.config!.jwksURI!,
-                {
-                    audience: getActualClientIdFromDevelopmentClientId(impl.config!.clientID),
+        getConfigForClientType: async function ({ clientType }) {
+            if (clientType === undefined) {
+                if (input.config.clients === undefined || input.config.clients.length !== 1) {
+                    throw new Error("please provide exactly one client config or pass clientType or tenantId");
                 }
-            );
 
-            if (impl.config!.validateIdTokenPayload !== undefined) {
-                await impl.config!.validateIdTokenPayload({
-                    idTokenPayload: rawUserInfoFromProvider.fromIdTokenPayload,
-                    clientConfig: impl.config!,
-                });
+                return getProviderConfigForClient(input.config, input.config.clients[0]);
             }
-        }
 
-        if (accessToken && impl.config!.userInfoEndpoint !== undefined) {
-            const headers: { [key: string]: string } = {
-                Authorization: "Bearer " + accessToken,
+            for (const client of input.config.clients || []) {
+                if (client.clientType === clientType) {
+                    return getProviderConfigForClient(input.config, client);
+                }
+            }
+
+            throw new Error(`Could not find client config for clientType: ${clientType}`);
+        },
+
+        getAuthorisationRedirectURL: async function ({ redirectURIOnProviderDashboard }) {
+            const queryParams: { [key: string]: string } = {
+                client_id: impl.config.clientID,
+                redirect_uri: redirectURIOnProviderDashboard,
+                response_type: "code",
             };
-            const queryParams: { [key: string]: string } = {};
 
-            for (const key in impl.config!.userInfoEndpointHeaders || {}) {
-                if (impl.config!.userInfoEndpointHeaders[key] === null) {
-                    delete headers[key];
-                } else {
-                    headers[key] = impl.config!.userInfoEndpointHeaders[key].toString();
-                }
+            if (impl.config.scope !== undefined) {
+                queryParams.scope = impl.config.scope.join(" ");
             }
 
-            for (const key in impl.config!.userInfoEndpointQueryParams) {
-                if (impl.config!.userInfoEndpointQueryParams[key] === null) {
+            let pkceCodeVerifier: string | undefined = undefined;
+
+            if (impl.config.clientSecret === undefined || impl.config.forcePKCE) {
+                const { code_challenge, code_verifier } = pkceChallenge(64);
+                queryParams["code_challenge"] = code_challenge;
+                queryParams["code_challenge_method"] = "S256";
+                pkceCodeVerifier = code_verifier;
+            }
+
+            for (const key in impl.config.authorizationEndpointQueryParams) {
+                if (impl.config.authorizationEndpointQueryParams[key] === null) {
                     delete queryParams[key];
                 } else {
-                    queryParams[key] = impl.config!.userInfoEndpointQueryParams[key];
+                    queryParams[key] = impl.config.authorizationEndpointQueryParams![key];
                 }
             }
 
-            const userInfoFromAccessToken = (
-                await axios.get(impl.config!.userInfoEndpoint, { headers, params: queryParams })
+            let url = impl.config.authorizationEndpoint!;
+
+            /* Transformation needed for dev keys BEGIN */
+            if (isUsingDevelopmentClientId(impl.config.clientID)) {
+                queryParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config.clientID);
+                queryParams["actual_redirect_uri"] = url;
+                url = DEV_OAUTH_AUTHORIZATION_URL;
+            }
+            /* Transformation needed for dev keys END */
+
+            const queryParamsStr = new URLSearchParams(queryParams).toString();
+
+            return {
+                urlWithQueryParams: url + "?" + queryParamsStr,
+                pkceCodeVerifier: pkceCodeVerifier,
+            };
+        },
+
+        exchangeAuthCodeForOAuthTokens: async function ({ redirectURIInfo }) {
+            const tokenAPIURL = impl.config.tokenEndpoint;
+            const accessTokenAPIParams: { [key: string]: string } = {
+                client_id: impl.config.clientID,
+                redirect_uri: redirectURIInfo.redirectURIOnProviderDashboard,
+                code: redirectURIInfo.redirectURIQueryParams["code"],
+                grant_type: "authorization_code",
+            };
+            if (impl.config.clientSecret !== undefined) {
+                accessTokenAPIParams["client_secret"] = impl.config.clientSecret;
+            }
+            if (redirectURIInfo.pkceCodeVerifier !== undefined) {
+                accessTokenAPIParams["code_verifier"] = redirectURIInfo.pkceCodeVerifier;
+            }
+
+            for (const key in impl.config.tokenEndpointBodyParams) {
+                if (impl.config.tokenEndpointBodyParams[key] === null) {
+                    delete accessTokenAPIParams[key];
+                } else {
+                    accessTokenAPIParams[key] = impl.config.tokenEndpointBodyParams[key];
+                }
+            }
+
+            /* Transformation needed for dev keys BEGIN */
+            if (isUsingDevelopmentClientId(impl.config.clientID)) {
+                accessTokenAPIParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config.clientID);
+                accessTokenAPIParams["redirect_uri"] = DEV_OAUTH_REDIRECT_URL;
+            }
+            /* Transformation needed for dev keys END */
+
+            return (
+                await axios.post(tokenAPIURL!, qs.stringify(accessTokenAPIParams), {
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded",
+                        accept: "application/json", // few providers like github don't send back json response by default
+                    },
+                })
             ).data;
-            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
-        }
+        },
 
-        const userInfoResult = getSupertokensUserInfoResultFromRawUserInfo(impl.config!, rawUserInfoFromProvider);
+        getUserInfo: async function ({ oAuthTokens }): Promise<UserInfo> {
+            const accessToken = oAuthTokens["access_token"];
+            const idToken = oAuthTokens["id_token"];
 
-        if (impl.config!.tenantId !== undefined && impl.config!.tenantId !== DEFAULT_TENANT_ID) {
-            userInfoResult.thirdPartyUserId += "|" + impl.config!.tenantId;
-        }
+            let rawUserInfoFromProvider: {
+                fromUserInfoAPI: any;
+                fromIdTokenPayload: any;
+            } = {
+                fromUserInfoAPI: {},
+                fromIdTokenPayload: {},
+            };
 
-        return {
-            thirdPartyUserId: userInfoResult.thirdPartyUserId,
-            email: userInfoResult.email,
-            rawUserInfoFromProvider: rawUserInfoFromProvider,
-        };
+            if (idToken && impl.config.jwksURI !== undefined) {
+                rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpoint(
+                    idToken,
+                    impl.config.jwksURI!,
+                    {
+                        audience: getActualClientIdFromDevelopmentClientId(impl.config.clientID),
+                    }
+                );
+
+                if (impl.config.validateIdTokenPayload !== undefined) {
+                    await impl.config.validateIdTokenPayload({
+                        idTokenPayload: rawUserInfoFromProvider.fromIdTokenPayload,
+                        clientConfig: impl.config,
+                    });
+                }
+            }
+
+            if (accessToken && impl.config.userInfoEndpoint !== undefined) {
+                const headers: { [key: string]: string } = {
+                    Authorization: "Bearer " + accessToken,
+                };
+                const queryParams: { [key: string]: string } = {};
+
+                for (const key in impl.config.userInfoEndpointHeaders) {
+                    if (impl.config.userInfoEndpointHeaders[key] === null) {
+                        delete headers[key];
+                    } else {
+                        headers[key] = impl.config.userInfoEndpointHeaders![key].toString();
+                    }
+                }
+
+                for (const key in impl.config.userInfoEndpointQueryParams) {
+                    if (impl.config.userInfoEndpointQueryParams[key] === null) {
+                        delete queryParams[key];
+                    } else {
+                        queryParams[key] = impl.config.userInfoEndpointQueryParams[key];
+                    }
+                }
+
+                const userInfoFromAccessToken = (
+                    await axios.get(impl.config.userInfoEndpoint, { headers, params: queryParams })
+                ).data;
+                rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+            }
+
+            const userInfoResult = getSupertokensUserInfoResultFromRawUserInfo(impl.config, rawUserInfoFromProvider);
+
+            if (impl.config.tenantId !== undefined && impl.config.tenantId !== DEFAULT_TENANT_ID) {
+                userInfoResult.thirdPartyUserId += "|" + impl.config.tenantId;
+            }
+
+            return {
+                thirdPartyUserId: userInfoResult.thirdPartyUserId,
+                email: userInfoResult.email,
+                rawUserInfoFromProvider: rawUserInfoFromProvider,
+            };
+        },
     };
 
+    // No need to use an overrideable builder here because the functions in the `TypeProvider`
+    // are independent of each other and they have no need to call each other from within.
     if (input.override !== undefined) {
         impl = input.override(impl);
     }
