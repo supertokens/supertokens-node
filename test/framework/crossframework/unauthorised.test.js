@@ -148,9 +148,18 @@ addCrossFrameworkTests(
                 );
 
                 assert.strictEqual(res.status, 401);
-                assert.strictEqual(res.accessTokenFromAny, undefined);
-                assert.strictEqual(res.refreshTokenFromAny, undefined);
-                assert.strictEqual(res.frontToken, undefined);
+                if (tokenTransferMethod === "cookie") {
+                    assert.strictEqual(res.accessToken, "");
+                    assert.strictEqual(res.refreshToken, "");
+                    assert.strictEqual(res.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                    assert.strictEqual(res.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+                    assert.strictEqual(res.accessTokenDomain, undefined);
+                    assert.strictEqual(res.refreshTokenDomain, undefined);
+                } else {
+                    assert.strictEqual(res.accessTokenFromHeader, "");
+                    assert.strictEqual(res.refreshTokenFromHeader, "");
+                }
+                assert.strictEqual(res.frontToken, "remove");
                 assert.strictEqual(res.antiCsrf, undefined);
             });
         });

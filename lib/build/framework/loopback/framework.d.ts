@@ -35,7 +35,6 @@ export declare class LoopbackResponse extends BaseResponse {
         path: string,
         sameSite: "strict" | "lax" | "none"
     ) => void;
-    clearCookie: (key: string) => void;
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
 }

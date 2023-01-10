@@ -130,8 +130,8 @@ module.exports.extractInfoFromResponse = function (res) {
     const refreshTokenFromHeader = res.headers["st-refresh-token"];
     const accessTokenFromHeader = res.headers["st-access-token"];
 
-    const accessTokenFromAny = accessToken || accessTokenFromHeader;
-    const refreshTokenFromAny = refreshToken || refreshTokenFromHeader;
+    const accessTokenFromAny = accessToken === undefined ? accessTokenFromHeader : accessToken;
+    const refreshTokenFromAny = refreshToken === undefined ? refreshTokenFromHeader : refreshToken;
 
     return {
         status: res.status || res.statusCode,

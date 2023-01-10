@@ -15,7 +15,6 @@ export declare abstract class BaseResponse {
         path: string,
         sameSite: "strict" | "lax" | "none"
     ) => void;
-    abstract clearCookie: (key: string) => void;
     abstract setStatusCode: (statusCode: number) => void;
     abstract sendJSONResponse: (content: any) => void;
     abstract sendHTMLResponse: (html: string) => void;

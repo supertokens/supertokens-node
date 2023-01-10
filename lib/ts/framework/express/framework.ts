@@ -29,7 +29,6 @@ import {
 import type { Framework } from "../types";
 import SuperTokens from "../../supertokens";
 import type { SessionContainerInterface } from "../../recipe/session/types";
-import { COOKIE_HEADER } from "../constants";
 
 export class ExpressRequest extends BaseRequest {
     private request: Request;
@@ -132,24 +131,6 @@ export class ExpressResponse extends BaseResponse {
         sameSite: "strict" | "lax" | "none"
     ) => {
         setCookieForServerResponse(this.response, key, value, domain, secure, httpOnly, expires, path, sameSite);
-    };
-
-    clearCookie = (key: string) => {
-        let setCookies: string | string[] = this.response.get(COOKIE_HEADER);
-        if (setCookies === undefined || setCookies === "") {
-            return;
-        }
-        this.response.removeHeader(COOKIE_HEADER);
-        const prefix = key + "=";
-        // Typescript is weird about instanceof
-        if (!((setCookies as any) instanceof Array)) {
-            setCookies = [setCookies];
-        }
-        for (const cookie of setCookies) {
-            if (!cookie.startsWith(prefix)) {
-                this.response.header(COOKIE_HEADER, cookie);
-            }
-        }
     };
 
     /**

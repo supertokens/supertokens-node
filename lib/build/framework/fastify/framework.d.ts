@@ -34,7 +34,6 @@ export declare class FastifyResponse extends BaseResponse {
         path: string,
         sameSite: "strict" | "lax" | "none"
     ) => void;
-    clearCookie: (key: string) => void;
     /**
      * @param {number} statusCode
      */

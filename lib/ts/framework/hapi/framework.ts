@@ -140,10 +140,6 @@ export class HapiResponse extends BaseResponse {
         }
     };
 
-    clearCookie = (key: string) => {
-        this.response.unstate(key);
-    };
-
     /**
      * @param {number} statusCode
      */

@@ -209,13 +209,6 @@ export class AWSResponse extends BaseResponse {
         this.event.supertokens.response.cookies.push(serialisedCookie);
     };
 
-    clearCookie = (key: string) => {
-        const prefix = key + "=";
-        this.event.supertokens.response.cookies = this.event.supertokens.response.cookies.filter(
-            (v) => !v.startsWith(prefix)
-        );
-    };
-
     /**
      * @param {number} statusCode
      */
