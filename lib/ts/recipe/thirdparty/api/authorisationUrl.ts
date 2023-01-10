@@ -49,7 +49,7 @@ export default async function authorisationUrlAPI(
 
     // TODO tp-rework tenantId = multitenancyRecipe.getTenantId(tenantId, userContext);
 
-    const providerResponse = await options.recipeImplementation.getProvider({ thirdPartyId, tenantId, userContext });
+    const providerResponse = await options.recipeImplementation.getProvider({ thirdPartyId, tenantId, clientType, userContext });
 
     if (!providerResponse.thirdPartyEnabled) {
         // TODO tp-rework throw multitenancy.recipenotenabled error

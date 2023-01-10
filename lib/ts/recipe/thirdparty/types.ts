@@ -22,7 +22,7 @@ import { GeneralErrorResponse } from "../../types";
 export type UserInfo = {
     thirdPartyUserId: string;
     email?: { id: string; isVerified: boolean };
-    rawUserInfoFromProvider?: { fromIdTokenPayload: any; fromUserInfoAPI: any };
+    rawUserInfoFromProvider?: { fromIdTokenPayload?: any; fromUserInfoAPI?: any };
 };
 
 export type UserInfoMap = {
@@ -190,7 +190,7 @@ export type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         oAuthTokens: any;
-        rawUserInfoFromProvider?: { fromIdTokenPayload: any; fromUserInfoAPI: any };
+        rawUserInfoFromProvider?: { fromIdTokenPayload?: any; fromUserInfoAPI?: any };
         userContext: any;
     }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 
@@ -252,7 +252,7 @@ export type APIInterface = {
                     user: User;
                     session: SessionContainerInterface;
                     oAuthTokens: any;
-                    rawUserInfoFromProvider?: { fromIdTokenPayload: any; fromUserInfoAPI: any };
+                    rawUserInfoFromProvider?: { fromIdTokenPayload?: any; fromUserInfoAPI?: any };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | GeneralErrorResponse

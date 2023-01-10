@@ -14,22 +14,48 @@
  */
 
 import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
 export default function ActiveDirectory(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
+    if (input.config.name === undefined) {
+        input.config.name = "Active Directory";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "sub",
+            email: "email",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
+            const config = await oGetConfig({ clientType, userContext });
+
+            if (config.oidcDiscoveryEndpoint === undefined) {
+                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/`;
+            }
+
+            if (config.scope.length === 0) {
+                config.scope = ["openid", "email"];
+            }
+
+            // TODO client assertion stuff
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }

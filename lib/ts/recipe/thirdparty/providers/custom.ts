@@ -20,7 +20,7 @@ function isUsingDevelopmentClientId(client_id: string): boolean {
     return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);
 }
 
-function getActualClientIdFromDevelopmentClientId(client_id: string): string {
+export function getActualClientIdFromDevelopmentClientId(client_id: string): string {
     if (client_id.startsWith(DEV_KEY_IDENTIFIER)) {
         return client_id.split(DEV_KEY_IDENTIFIER)[1];
     }
@@ -142,8 +142,8 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             email: "email",
             emailVerified: "email_verified",
             ...input.config.userInfoMap?.fromIdTokenPayload,
-        }
-    }
+        },
+    };
 
     if (input.config.generateFakeEmail === undefined) {
         input.config.generateFakeEmail = function ({ thirdPartyUserId }) {
