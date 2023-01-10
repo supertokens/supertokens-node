@@ -41,7 +41,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
     afterEach(async function () {
         try {
-            await this.sever.close();
+            await this.server.close();
         } catch (err) {}
     });
     after(async function () {
