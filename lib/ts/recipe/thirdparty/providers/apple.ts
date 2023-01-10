@@ -52,16 +52,16 @@ export default function Apple(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
             const config = await oGetConfig({ clientType, userContext });
 
-            if (config.scope.length === 0) {
+            if (config.scope === undefined) {
                 config.scope = ["openid", "email"];
             }
 
             if (config.clientSecret === undefined) {
                 config.clientSecret = getClientSecret(
                     config.clientID,
-                    config.additionalConfig.keyId,
-                    config.additionalConfig.teamId,
-                    config.additionalConfig.privateKey
+                    config.additionalConfig!.keyId,
+                    config.additionalConfig!.teamId,
+                    config.additionalConfig!.privateKey
                 );
             }
 

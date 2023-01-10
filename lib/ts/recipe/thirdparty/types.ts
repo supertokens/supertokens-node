@@ -44,13 +44,13 @@ export type ProviderClientConfig = {
     clientSecret?: string;
     scope?: string[];
     forcePKCE?: boolean;
-    additionalConfig?: any;
+    additionalConfig?: { [key: string]: any };
 };
 
 type CommonProviderConfig = {
     thirdPartyId: string;
     tenantId?: string;
-    name: string;
+    name?: string;
 
     authorizationEndpoint?: string;
     authorizationEndpointQueryParams?: { [key: string]: string };
@@ -63,7 +63,7 @@ type CommonProviderConfig = {
     oidcDiscoveryEndpoint?: string;
     userInfoMap?: UserInfoMap;
     validateIdTokenPayload?: (input: {
-        idTokenPayload: any;
+        idTokenPayload: { [key: string]: any };
         clientConfig: ProviderConfigForClientType;
         userContext?: any;
     }) => Promise<void>;

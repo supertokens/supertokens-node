@@ -38,10 +38,12 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
             const config = await oGetConfig({ clientType, userContext });
 
             if (config.oidcDiscoveryEndpoint === undefined) {
-                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/`;
+                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${
+                    config.additionalConfig!.directoryId
+                }/v2.0/`;
             }
 
-            if (config.scope.length === 0) {
+            if (config.scope === undefined) {
                 config.scope = ["openid", "email"];
             }
 
