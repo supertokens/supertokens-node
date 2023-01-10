@@ -14,22 +14,52 @@
  */
 
 import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
 export default function BoxySAML(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
+    if (input.config.name === undefined) {
+        input.config.name = "SAML";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "id",
+            email: "email",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
+            const config = await oGetConfig({ clientType, userContext });
+
+            const boxyURL = config.additionalConfig.boxyURL;
+
+            if (config.authorizationEndpoint === undefined) {
+                config.authorizationEndpoint = `${boxyURL}/api/oauth/authorize`;
+            }
+
+            if (config.tokenEndpoint === undefined) {
+                config.tokenEndpoint = `${boxyURL}/api/oauth/token`;
+            }
+
+            if (config.userInfoEndpoint === undefined) {
+                config.userInfoEndpoint = `${boxyURL}/api/oauth/userinfo`;
+            }
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }

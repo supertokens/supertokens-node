@@ -13,22 +13,55 @@
  * under the License.
  */
 import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
 export default function Discord(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
+    if (input.config.name === undefined) {
+        input.config.name = "Discord";
+    }
+
+    if (input.config.authorizationEndpoint === undefined) {
+        input.config.authorizationEndpoint = "https://discord.com/oauth2/authorize";
+    }
+
+    if (input.config.tokenEndpoint === undefined) {
+        input.config.tokenEndpoint = "https://discord.com/api/oauth2/token";
+    }
+
+    if (input.config.userInfoEndpoint === undefined) {
+        input.config.userInfoEndpoint = "https://discord.com/api/users/@me";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "id",
+            email: "email",
+            emailVerified: "verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
+            const config = await oGetConfig({ clientType, userContext });
+
+            if (config.scope.length === 0) {
+                config.scope = ["identify", "email"];
+            }
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }
