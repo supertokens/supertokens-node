@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [12.1.5] - 2022-12-10
+
+-   Fixes Content-type header in AWS lambda framework
+
 ## [12.1.4] - 2022-12-26
 
 -   Updates dashboard version
