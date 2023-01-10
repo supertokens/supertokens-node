@@ -49,14 +49,14 @@ function getSupertokensUserInfoResultFromRawUserInfo(
 ): UserInfo {
     let thirdPartyUserId = "";
 
-    if (config.userInfoMap!.fromUserInfoAPI!.userId !== undefined) {
+    if (config.userInfoMap?.fromUserInfoAPI?.userId !== undefined) {
         const userId = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap!.fromUserInfoAPI!.userId!);
         if (userId !== undefined) {
             thirdPartyUserId = userId;
         }
     }
 
-    if (config.userInfoMap!.fromIdTokenPayload!.userId !== undefined) {
+    if (config.userInfoMap?.fromIdTokenPayload?.userId !== undefined) {
         const userId = accessField(
             rawUserInfoResponse.fromIdTokenPayload,
             config.userInfoMap!.fromIdTokenPayload!.userId!
@@ -76,14 +76,14 @@ function getSupertokensUserInfoResultFromRawUserInfo(
 
     let email = "";
 
-    if (config.userInfoMap!.fromUserInfoAPI!.email !== undefined) {
+    if (config.userInfoMap?.fromUserInfoAPI?.email !== undefined) {
         const emailVal = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap!.fromUserInfoAPI!.email);
         if (emailVal !== undefined) {
             email = emailVal;
         }
     }
 
-    if (config.userInfoMap!.fromIdTokenPayload!.email !== undefined) {
+    if (config.userInfoMap?.fromIdTokenPayload?.email !== undefined) {
         const emailVal = accessField(
             rawUserInfoResponse.fromIdTokenPayload,
             config.userInfoMap!.fromIdTokenPayload!.email
@@ -99,7 +99,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
             isVerified: false,
         };
 
-        if (config.userInfoMap!.fromUserInfoAPI!.emailVerified !== undefined) {
+        if (config.userInfoMap?.fromUserInfoAPI?.emailVerified !== undefined) {
             const emailVerifiedVal = accessField(
                 rawUserInfoResponse.fromUserInfoAPI,
                 config.userInfoMap!.fromUserInfoAPI!.emailVerified!
@@ -107,7 +107,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
             result.email.isVerified = emailVerifiedVal === true || emailVerifiedVal === "true";
         }
 
-        if (config.userInfoMap!.fromIdTokenPayload!.emailVerified !== undefined) {
+        if (config.userInfoMap?.fromIdTokenPayload?.emailVerified !== undefined) {
             const emailVerifiedVal = accessField(
                 rawUserInfoResponse.fromIdTokenPayload,
                 config.userInfoMap!.fromIdTokenPayload!.emailVerified!

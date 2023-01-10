@@ -38,13 +38,13 @@ function validateAndNormaliseSignInAndUpConfig(
 ): TypeNormalisedInputSignInAndUp {
     let providers = config.providers;
 
-    const thirdPartyIdSet: { [key: string]: boolean } = {};
+    const thirdPartyIdSet = new Set<string>();
 
     for (const provider of providers) {
-        if (thirdPartyIdSet[provider.config.thirdPartyId] === true) {
+        if (thirdPartyIdSet.has(provider.config.thirdPartyId)) {
             throw new Error(`The providers array has multiple entries for the same third party provider.`);
         }
-        thirdPartyIdSet[provider.config.thirdPartyId] = true;
+        thirdPartyIdSet.add(provider.config.thirdPartyId);
     }
 
     return {
