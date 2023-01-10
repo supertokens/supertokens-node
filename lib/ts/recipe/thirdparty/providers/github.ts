@@ -84,9 +84,7 @@ export default function Github(input: ProviderInput): TypeProvider {
             const rawUserInfoFromProvider: { fromIdTokenPayload?: any; fromUserInfoAPI?: any } = {
                 fromUserInfoAPI: rawResponse,
             };
-            const userInfoResult = getSupertokensUserInfoFromRawUserInfoResponseForGithub(
-                rawUserInfoFromProvider
-            );
+            const userInfoResult = getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoFromProvider);
 
             return {
                 ...userInfoResult,
