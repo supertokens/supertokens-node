@@ -1,8 +1,6 @@
 import { DEFAULT_TENANT_ID } from "../constants";
 import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
-import { verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
-import axios from "axios";
-import * as qs from "querystring";
+import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
 
@@ -147,9 +145,10 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
     let impl: TypeProvider = {
         id: input.config.thirdPartyId,
         config: {
-            // temporarily
+            // setting this temporarily. it will be replaced with correct config
+            // by the `fetchAndSetConfig` function
             ...input.config,
-            ...input.config.clients![0],
+            clientID: "temp",
         },
 
         getConfigForClientType: async function ({ clientType }) {
@@ -208,16 +207,20 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             }
             /* Transformation needed for dev keys END */
 
-            const queryParamsStr = new URLSearchParams(queryParams).toString();
+            const urlObj = new URL(url);
+
+            for (const [key, value] of Object.entries(queryParams)) {
+                urlObj.searchParams.set(key, value);
+            }
 
             return {
-                urlWithQueryParams: url + "?" + queryParamsStr,
+                urlWithQueryParams: urlObj.toString(),
                 pkceCodeVerifier: pkceCodeVerifier,
             };
         },
 
         exchangeAuthCodeForOAuthTokens: async function ({ redirectURIInfo }) {
-            const tokenAPIURL = impl.config.tokenEndpoint;
+            const tokenAPIURL = impl.config.tokenEndpoint!;
             const accessTokenAPIParams: { [key: string]: string } = {
                 client_id: impl.config.clientID,
                 redirect_uri: redirectURIInfo.redirectURIOnProviderDashboard,
@@ -246,14 +249,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             }
             /* Transformation needed for dev keys END */
 
-            return (
-                await axios.post(tokenAPIURL!, qs.stringify(accessTokenAPIParams), {
-                    headers: {
-                        "content-type": "application/x-www-form-urlencoded",
-                        accept: "application/json", // few providers like github don't send back json response by default
-                    },
-                })
-            ).data;
+            return await doPostRequest(tokenAPIURL, accessTokenAPIParams);
         },
 
         getUserInfo: async function ({ oAuthTokens }): Promise<UserInfo> {
@@ -307,9 +303,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                     }
                 }
 
-                const userInfoFromAccessToken = (
-                    await axios.get(impl.config.userInfoEndpoint, { headers, params: queryParams })
-                ).data;
+                const userInfoFromAccessToken = await doGetRequest(impl.config.userInfoEndpoint, queryParams, headers);
                 rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
             }
 

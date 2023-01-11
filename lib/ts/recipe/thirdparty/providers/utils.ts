@@ -1,9 +1,73 @@
 import * as jwt from "jsonwebtoken";
 import * as jwksClient from "jwks-rsa";
+import * as qs from "querystring";
 import { ProviderConfigForClientType } from "../types";
 import axios from "axios";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import { logDebugMessage } from "../../../logger";
+
+export async function doGetRequest(
+    url: string,
+    queryParams?: { [key: string]: string },
+    headers?: { [key: string]: string }
+): Promise<any> {
+    logDebugMessage(
+        `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
+    );
+    try {
+        let response = await axios.get(url, {
+            params: queryParams,
+            headers: headers,
+        });
+
+        logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(response.data)}`);
+        return response.data;
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            const response: any = err.response;
+            logDebugMessage(
+                `Received response with status ${response.status} and body ${JSON.stringify(response.data)}`
+            );
+        }
+        throw err;
+    }
+}
+
+export async function doPostRequest(
+    url: string,
+    params: { [key: string]: any },
+    headers?: { [key: string]: string }
+): Promise<any> {
+    if (headers === undefined) {
+        headers = {};
+    }
+
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+    headers["Accept"] = "application/json"; // few providers like github don't send back json response by default
+
+    logDebugMessage(
+        `POST request to ${url}, with params ${JSON.stringify(params)} and headers ${JSON.stringify(headers)}`
+    );
+
+    try {
+        const body = qs.stringify(params);
+        let response = await axios.post(url, body, {
+            headers: headers,
+        });
+
+        logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(response.data)}`);
+        return response.data;
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            const response: any = err.response;
+            logDebugMessage(
+                `Received response with status ${response.status} and body ${JSON.stringify(response.data)}`
+            );
+        }
+        throw err;
+    }
+}
 
 export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
@@ -47,8 +111,9 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
         return oidcInfoMap[issuer];
     }
 
-    const oidcInfo = (await axios.get(normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()))
-        .data;
+    const oidcInfo = await doGetRequest(
+        normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()
+    );
 
     oidcInfoMap[issuer] = oidcInfo;
     return oidcInfo;

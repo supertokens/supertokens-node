@@ -97,8 +97,8 @@ export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderCo
         },
     };
 
-    const mergedClients = [...staticConfig.clients];
-    for (const client of coreConfig.clients) {
+    const mergedClients = [...(staticConfig.clients || [])];
+    for (const client of coreConfig.clients || []) {
         const index = mergedClients.findIndex((c) => c.clientType === client.clientType);
         if (index === -1) {
             mergedClients.push(client);
