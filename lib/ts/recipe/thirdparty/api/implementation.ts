@@ -91,14 +91,17 @@ export default function getAPIInterface(): APIInterface {
         },
 
         appleRedirectHandlerPOST: async function ({ formPostInfoFromProvider, options }): Promise<void> {
-            const queryString = qs.stringify(formPostInfoFromProvider);
             const stateInBase64 = formPostInfoFromProvider.state;
             const state = Buffer.from(stateInBase64, "base64").toString();
             const stateObj = JSON.parse(state);
             const redirectURI = stateObj.redirectURI;
-            const redirectURL = `${redirectURI}?${queryString}`;
 
-            options.res.setHeader("Location", redirectURL, false);
+            const urlObj = new URL(redirectURI);
+            for (const [key, value] of Object.entries(formPostInfoFromProvider)) {
+                urlObj.searchParams.set(key, `${value}`);
+            }
+
+            options.res.setHeader("Location", urlObj.toString(), false);
             options.res.setStatusCode(303);
             options.res.sendHTMLResponse("");
         },
