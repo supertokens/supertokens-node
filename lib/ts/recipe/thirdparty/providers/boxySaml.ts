@@ -37,7 +37,11 @@ export default function BoxySAML(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
             const config = await oGetConfig({ clientType, userContext });
 
-            const boxyURL = config.additionalConfig.boxyURL;
+            if (config.additionalConfig === undefined || config.additionalConfig.boxyURL === undefined) {
+                throw new Error("Please provide the boxyURL in the additionalConfig");
+            }
+
+            const boxyURL: string = config.additionalConfig.boxyURL;
 
             if (config.authorizationEndpoint === undefined) {
                 config.authorizationEndpoint = `${boxyURL}/api/oauth/authorize`;

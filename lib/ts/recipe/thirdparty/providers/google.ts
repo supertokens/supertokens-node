@@ -47,7 +47,7 @@ export default function Google(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function (input) {
             const config = await oGetConfig(input);
 
-            if (config.scope.length === 0) {
+            if (config.scope === undefined) {
                 config.scope = ["openid", "email"];
             }
 

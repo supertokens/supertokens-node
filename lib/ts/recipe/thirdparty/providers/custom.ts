@@ -191,11 +191,13 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 pkceCodeVerifier = code_verifier;
             }
 
-            for (const key in impl.config.authorizationEndpointQueryParams) {
-                if (impl.config.authorizationEndpointQueryParams[key] === null) {
-                    delete queryParams[key];
-                } else {
-                    queryParams[key] = impl.config.authorizationEndpointQueryParams[key];
+            if (impl.config.authorizationEndpointQueryParams !== undefined) {
+                for (const [key, value] of Object.entries(impl.config.authorizationEndpointQueryParams)) {
+                    if (value === null) {
+                        delete queryParams[key];
+                    } else {
+                        queryParams[key] = value;
+                    }
                 }
             }
 
@@ -297,19 +299,23 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 };
                 const queryParams: { [key: string]: string } = {};
 
-                for (const key in impl.config.userInfoEndpointHeaders) {
-                    if (impl.config.userInfoEndpointHeaders[key] === null) {
-                        delete headers[key];
-                    } else {
-                        headers[key] = impl.config.userInfoEndpointHeaders[key].toString();
+                if (impl.config.userInfoEndpointHeaders !== undefined) {
+                    for (const [key, value] of Object.entries(impl.config.userInfoEndpointHeaders)) {
+                        if (value === null) {
+                            delete headers[key];
+                        } else {
+                            headers[key] = value;
+                        }
                     }
                 }
 
-                for (const key in impl.config.userInfoEndpointQueryParams) {
-                    if (impl.config.userInfoEndpointQueryParams[key] === null) {
-                        delete queryParams[key];
-                    } else {
-                        queryParams[key] = impl.config.userInfoEndpointQueryParams[key];
+                if (impl.config.userInfoEndpointQueryParams !== undefined) {
+                    for (const [key, value] of Object.entries(impl.config.userInfoEndpointQueryParams)) {
+                        if (value === null) {
+                            delete queryParams[key];
+                        } else {
+                            queryParams[key] = value;
+                        }
                     }
                 }
 

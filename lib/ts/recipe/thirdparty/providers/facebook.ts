@@ -49,7 +49,7 @@ export default function Facebook(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function (input) {
             const config = await oGetConfig(input);
 
-            if (config.scope.length === 0) {
+            if (config.scope === undefined) {
                 config.scope = ["email"];
             }
 
@@ -58,15 +58,15 @@ export default function Facebook(input: ProviderInput): TypeProvider {
 
         const oGetUserInfo = originalImplementation.getUserInfo;
         originalImplementation.getUserInfo = async function (input) {
-            originalImplementation.config!.userInfoEndpointQueryParams = {
+            originalImplementation.config.userInfoEndpointQueryParams = {
                 access_token: input.oAuthTokens.access_token,
                 fields: "id,email",
                 format: "json",
-                ...originalImplementation.config!.userInfoEndpointQueryParams,
+                ...originalImplementation.config.userInfoEndpointQueryParams,
             };
 
-            originalImplementation.config!.userInfoEndpointHeaders = {
-                ...originalImplementation.config!.userInfoEndpointHeaders,
+            originalImplementation.config.userInfoEndpointHeaders = {
+                ...originalImplementation.config.userInfoEndpointHeaders,
                 Authorization: null,
             };
 

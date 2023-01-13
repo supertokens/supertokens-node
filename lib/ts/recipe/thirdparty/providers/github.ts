@@ -26,6 +26,10 @@ function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoRespo
 
     const result: UserInfo = {
         thirdPartyUserId: rawUserInfoResponse.fromUserInfoAPI.user.id,
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: {},
+            fromUserInfoAPI: {},
+        }
     };
 
     const emailsInfo: any[] = rawUserInfoResponse.fromUserInfoAPI.emails;
@@ -61,7 +65,7 @@ export default function Github(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function (input) {
             const config = await oGetConfig(input);
 
-            if (config.scope.length === 0) {
+            if (config.scope === undefined) {
                 config.scope = ["read:user", "user:email"];
             }
 
@@ -81,8 +85,9 @@ export default function Github(input: ProviderInput): TypeProvider {
             const userInfo = (await axios.get("https://api.github.com/user", { headers })).data;
             rawResponse.user = userInfo;
 
-            const rawUserInfoFromProvider: { fromIdTokenPayload?: any; fromUserInfoAPI?: any } = {
+            const rawUserInfoFromProvider = {
                 fromUserInfoAPI: rawResponse,
+                fromIdTokenPayload: {},
             };
             const userInfoResult = getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoFromProvider);
 

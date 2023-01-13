@@ -53,12 +53,12 @@ type CommonProviderConfig = {
     name?: string;
 
     authorizationEndpoint?: string;
-    authorizationEndpointQueryParams?: { [key: string]: string };
+    authorizationEndpointQueryParams?: { [key: string]: string | null };
     tokenEndpoint?: string;
     tokenEndpointBodyParams?: { [key: string]: string };
     userInfoEndpoint?: string;
-    userInfoEndpointQueryParams?: { [key: string]: string };
-    userInfoEndpointHeaders?: { [key: string]: string };
+    userInfoEndpointQueryParams?: { [key: string]: string | null };
+    userInfoEndpointHeaders?: { [key: string]: string | null };
     jwksURI?: string;
     oidcDiscoveryEndpoint?: string;
     userInfoMap?: UserInfoMap;

@@ -49,7 +49,7 @@ export default function Discord(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
             const config = await oGetConfig({ clientType, userContext });
 
-            if (config.scope.length === 0) {
+            if (config.scope === undefined) {
                 config.scope = ["identify", "email"];
             }
 
