@@ -276,7 +276,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             if (idToken && impl.config.jwksURI !== undefined) {
                 rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpointAndGetPayload(
                     idToken,
-                    impl.config.jwksURI!,
+                    impl.config.jwksURI,
                     {
                         audience: getActualClientIdFromDevelopmentClientId(impl.config.clientID),
                     }

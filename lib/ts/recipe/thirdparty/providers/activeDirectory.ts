@@ -38,9 +38,12 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
             const config = await oGetConfig({ clientType, userContext });
 
             if (config.oidcDiscoveryEndpoint === undefined) {
-                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${
-                    config.additionalConfig!.directoryId
-                }/v2.0/`;
+                if (config.additionalConfig == undefined || config.additionalConfig.directoryId == undefined) {
+                    throw new Error(
+                        "Please provide the directoryId in the additionalConfig of the Active Directory provider."
+                    );
+                }
+                config.oidcDiscoveryEndpoint = `https://login.microsoftonline.com/${config.additionalConfig.directoryId}/v2.0/`;
             }
 
             if (config.scope === undefined) {

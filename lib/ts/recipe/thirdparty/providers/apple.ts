@@ -57,11 +57,22 @@ export default function Apple(input: ProviderInput): TypeProvider {
             }
 
             if (config.clientSecret === undefined) {
+                if (
+                    config.additionalConfig === undefined ||
+                    config.additionalConfig.keyId === undefined ||
+                    config.additionalConfig.teamId === undefined ||
+                    config.additionalConfig.privateKey === undefined
+                ) {
+                    throw new Error(
+                        "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
+                    );
+                }
+
                 config.clientSecret = getClientSecret(
                     config.clientID,
-                    config.additionalConfig!.keyId,
-                    config.additionalConfig!.teamId,
-                    config.additionalConfig!.privateKey
+                    config.additionalConfig.keyId,
+                    config.additionalConfig.teamId,
+                    config.additionalConfig.privateKey
                 );
             }
 
