@@ -65,10 +65,10 @@ type CommonProviderConfig = {
     validateIdTokenPayload?: (input: {
         idTokenPayload: { [key: string]: any };
         clientConfig: ProviderConfigForClientType;
-        userContext?: any;
+        userContext: any;
     }) => Promise<void>;
     requireEmail?: boolean;
-    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext?: any }) => Promise<string>;
+    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext: any }) => Promise<string>;
 };
 
 export type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;

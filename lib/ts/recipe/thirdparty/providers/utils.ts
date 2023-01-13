@@ -123,19 +123,19 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
     if (config.oidcDiscoveryEndpoint !== undefined) {
         const oidcInfo = await getOIDCDiscoveryInfo(config.oidcDiscoveryEndpoint);
 
-        if (oidcInfo.authorisation_endpoint && config.authorizationEndpoint === undefined) {
+        if (oidcInfo.authorisation_endpoint !== undefined && config.authorizationEndpoint === undefined) {
             config.authorizationEndpoint = oidcInfo.authorisation_endpoint;
         }
 
-        if (oidcInfo.token_endpoint && config.tokenEndpoint === undefined) {
+        if (oidcInfo.token_endpoint !== undefined && config.tokenEndpoint === undefined) {
             config.tokenEndpoint = oidcInfo.token_endpoint;
         }
 
-        if (oidcInfo.userinfo_endpoint && config.userInfoEndpoint === undefined) {
+        if (oidcInfo.userinfo_endpoint !== undefined && config.userInfoEndpoint === undefined) {
             config.userInfoEndpoint = oidcInfo.userinfo_endpoint;
         }
 
-        if (oidcInfo.jwks_uri && config.jwksURI === undefined) {
+        if (oidcInfo.jwks_uri !== undefined && config.jwksURI === undefined) {
             config.jwksURI = oidcInfo.jwks_uri;
         }
     }

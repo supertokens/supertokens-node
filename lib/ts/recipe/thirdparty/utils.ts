@@ -36,11 +36,15 @@ function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
     config: TypeInputSignInAndUp | undefined
 ): TypeNormalisedInputSignInAndUp {
-    let providers: ProviderInput[] = config?.providers || [];
+    if (config === undefined || config.providers === undefined) {
+        return {
+            providers: [],
+        };
+    }
 
     const thirdPartyIdSet = new Set<string>();
 
-    for (const provider of providers) {
+    for (const provider of config.providers) {
         if (thirdPartyIdSet.has(provider.config.thirdPartyId)) {
             throw new Error(`The providers array has multiple entries for the same third party provider.`);
         }
@@ -48,6 +52,6 @@ function validateAndNormaliseSignInAndUpConfig(
     }
 
     return {
-        providers,
+        providers: config.providers,
     };
 }

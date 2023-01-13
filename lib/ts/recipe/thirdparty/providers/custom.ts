@@ -51,7 +51,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
     let thirdPartyUserId = "";
 
     if (config.userInfoMap?.fromUserInfoAPI?.userId !== undefined) {
-        const userId = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap!.fromUserInfoAPI!.userId!);
+        const userId = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap.fromUserInfoAPI.userId);
         if (userId !== undefined) {
             thirdPartyUserId = userId;
         }
@@ -60,7 +60,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
     if (config.userInfoMap?.fromIdTokenPayload?.userId !== undefined) {
         const userId = accessField(
             rawUserInfoResponse.fromIdTokenPayload,
-            config.userInfoMap!.fromIdTokenPayload!.userId!
+            config.userInfoMap.fromIdTokenPayload.userId
         );
         if (userId !== undefined) {
             thirdPartyUserId = userId;
@@ -81,7 +81,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
     let email = "";
 
     if (config.userInfoMap?.fromUserInfoAPI?.email !== undefined) {
-        const emailVal = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap!.fromUserInfoAPI!.email);
+        const emailVal = accessField(rawUserInfoResponse.fromUserInfoAPI, config.userInfoMap.fromUserInfoAPI.email);
         if (emailVal !== undefined) {
             email = emailVal;
         }
@@ -90,7 +90,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
     if (config.userInfoMap?.fromIdTokenPayload?.email !== undefined) {
         const emailVal = accessField(
             rawUserInfoResponse.fromIdTokenPayload,
-            config.userInfoMap!.fromIdTokenPayload!.email
+            config.userInfoMap.fromIdTokenPayload.email
         );
         if (emailVal !== undefined) {
             email = emailVal;
@@ -106,7 +106,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
         if (config.userInfoMap?.fromUserInfoAPI?.emailVerified !== undefined) {
             const emailVerifiedVal = accessField(
                 rawUserInfoResponse.fromUserInfoAPI,
-                config.userInfoMap!.fromUserInfoAPI!.emailVerified!
+                config.userInfoMap.fromUserInfoAPI.emailVerified!
             );
             result.email.isVerified =
                 emailVerifiedVal === true ||
@@ -116,7 +116,7 @@ function getSupertokensUserInfoResultFromRawUserInfo(
         if (config.userInfoMap?.fromIdTokenPayload?.emailVerified !== undefined) {
             const emailVerifiedVal = accessField(
                 rawUserInfoResponse.fromIdTokenPayload,
-                config.userInfoMap!.fromIdTokenPayload!.emailVerified!
+                config.userInfoMap.fromIdTokenPayload.emailVerified!
             );
             result.email.isVerified = emailVerifiedVal === true || emailVerifiedVal === "true";
         }
@@ -160,9 +160,11 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 return getProviderConfigForClient(input.config, input.config.clients[0]);
             }
 
-            for (const client of input.config.clients || []) {
-                if (client.clientType === clientType) {
-                    return getProviderConfigForClient(input.config, client);
+            if (input.config.clients !== undefined) {
+                for (const client of input.config.clients) {
+                    if (client.clientType === clientType) {
+                        return getProviderConfigForClient(input.config, client);
+                    }
                 }
             }
 
@@ -183,7 +185,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             let pkceCodeVerifier: string | undefined = undefined;
 
             if (impl.config.clientSecret === undefined || impl.config.forcePKCE) {
-                const { code_challenge, code_verifier } = pkceChallenge(64);
+                const { code_challenge, code_verifier } = pkceChallenge(64); // According to https://www.rfc-editor.org/rfc/rfc7636, length must be between 43 and 128
                 queryParams["code_challenge"] = code_challenge;
                 queryParams["code_challenge_method"] = "S256";
                 pkceCodeVerifier = code_verifier;
@@ -193,11 +195,15 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                 if (impl.config.authorizationEndpointQueryParams[key] === null) {
                     delete queryParams[key];
                 } else {
-                    queryParams[key] = impl.config.authorizationEndpointQueryParams![key];
+                    queryParams[key] = impl.config.authorizationEndpointQueryParams[key];
                 }
             }
 
-            let url = impl.config.authorizationEndpoint!;
+            if (impl.config.authorizationEndpoint === undefined) {
+                throw new Error("ThirdParty provider's authorizationEndpoint is not configured.");
+            }
+
+            let url: string = impl.config.authorizationEndpoint;
 
             /* Transformation needed for dev keys BEGIN */
             if (isUsingDevelopmentClientId(impl.config.clientID)) {
@@ -220,7 +226,10 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
         },
 
         exchangeAuthCodeForOAuthTokens: async function ({ redirectURIInfo }) {
-            const tokenAPIURL = impl.config.tokenEndpoint!;
+            if (impl.config.tokenEndpoint === undefined) {
+                throw new Error("ThirdParty provider's tokenEndpoint is not configured.");
+            }
+            const tokenAPIURL = impl.config.tokenEndpoint;
             const accessTokenAPIParams: { [key: string]: string } = {
                 client_id: impl.config.clientID,
                 redirect_uri: redirectURIInfo.redirectURIOnProviderDashboard,
@@ -252,7 +261,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             return await doPostRequest(tokenAPIURL, accessTokenAPIParams);
         },
 
-        getUserInfo: async function ({ oAuthTokens }): Promise<UserInfo> {
+        getUserInfo: async function ({ oAuthTokens, userContext }): Promise<UserInfo> {
             const accessToken = oAuthTokens["access_token"];
             const idToken = oAuthTokens["id_token"];
 
@@ -277,6 +286,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                     await impl.config.validateIdTokenPayload({
                         idTokenPayload: rawUserInfoFromProvider.fromIdTokenPayload,
                         clientConfig: impl.config,
+                        userContext,
                     });
                 }
             }
@@ -291,7 +301,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                     if (impl.config.userInfoEndpointHeaders[key] === null) {
                         delete headers[key];
                     } else {
-                        headers[key] = impl.config.userInfoEndpointHeaders![key].toString();
+                        headers[key] = impl.config.userInfoEndpointHeaders[key].toString();
                     }
                 }
 
