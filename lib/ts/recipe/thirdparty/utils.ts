@@ -14,7 +14,7 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { RecipeInterface, APIInterface } from "./types";
+import { RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
@@ -34,13 +34,17 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
 
 function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
-    config: TypeInputSignInAndUp
+    config: TypeInputSignInAndUp | undefined
 ): TypeNormalisedInputSignInAndUp {
-    let providers = config.providers;
+    if (config === undefined || config.providers === undefined) {
+        return {
+            providers: [],
+        };
+    }
 
     const thirdPartyIdSet = new Set<string>();
 
-    for (const provider of providers) {
+    for (const provider of config.providers) {
         if (thirdPartyIdSet.has(provider.config.thirdPartyId)) {
             throw new Error(`The providers array has multiple entries for the same third party provider.`);
         }
@@ -48,6 +52,6 @@ function validateAndNormaliseSignInAndUpConfig(
     }
 
     return {
-        providers,
+        providers: config.providers,
     };
 }

@@ -25,28 +25,8 @@ export function getProviderConfigForClient(
     clientConfig: ProviderClientConfig
 ): ProviderConfigForClientType {
     return {
-        name: providerConfig.name!,
-
-        clientID: clientConfig.clientID,
-        clientSecret: clientConfig.clientSecret,
-        scope: clientConfig.scope || [],
-        forcePKCE: clientConfig.forcePKCE,
-        additionalConfig: clientConfig.additionalConfig,
-
-        authorizationEndpoint: providerConfig.authorizationEndpoint,
-        authorizationEndpointQueryParams: providerConfig.authorizationEndpointQueryParams,
-        tokenEndpoint: providerConfig.tokenEndpoint,
-        tokenEndpointBodyParams: providerConfig.tokenEndpointBodyParams,
-        userInfoEndpoint: providerConfig.userInfoEndpoint,
-        userInfoEndpointQueryParams: providerConfig.userInfoEndpointQueryParams,
-        userInfoEndpointHeaders: providerConfig.userInfoEndpointHeaders,
-        jwksURI: providerConfig.jwksURI,
-        oidcDiscoveryEndpoint: providerConfig.oidcDiscoveryEndpoint,
-        userInfoMap: providerConfig.userInfoMap,
-
-        validateIdTokenPayload: providerConfig.validateIdTokenPayload,
-        requireEmail: providerConfig.requireEmail,
-        generateFakeEmail: providerConfig.generateFakeEmail,
+        ...providerConfig,
+        ...clientConfig,
     };
 }
 
@@ -59,27 +39,26 @@ async function fetchAndSetConfig(provider: TypeProvider, clientType: string | un
 }
 
 function createProvider(input: ProviderInput): TypeProvider {
-    switch (input.config.thirdPartyId) {
-        case "active-directory":
-            return ActiveDirectory(input);
-        case "apple":
-            return Apple(input);
-        case "discord":
-            return Discord(input);
-        case "facebook":
-            return Facebook(input);
-        case "github":
-            return Github(input);
-        case "google":
-            return Google(input);
-        case "google-workspaces":
-            return GoogleWorkspaces(input);
-        case "okta":
-            return Okta(input);
-        case "linkedin":
-            return Linkedin(input);
-        case "boxy-saml":
-            return BoxySAML(input);
+    if (input.config.thirdPartyId.startsWith("active-directory")) {
+        return ActiveDirectory(input);
+    } else if (input.config.thirdPartyId.startsWith("apple")) {
+        return Apple(input);
+    } else if (input.config.thirdPartyId.startsWith("discord")) {
+        return Discord(input);
+    } else if (input.config.thirdPartyId.startsWith("facebook")) {
+        return Facebook(input);
+    } else if (input.config.thirdPartyId.startsWith("github")) {
+        return Github(input);
+    } else if (input.config.thirdPartyId.startsWith("google")) {
+        return Google(input);
+    } else if (input.config.thirdPartyId.startsWith("google-workspaces")) {
+        return GoogleWorkspaces(input);
+    } else if (input.config.thirdPartyId.startsWith("okta")) {
+        return Okta(input);
+    } else if (input.config.thirdPartyId.startsWith("linkedin")) {
+        return Linkedin(input);
+    } else if (input.config.thirdPartyId.startsWith("boxy-saml")) {
+        return BoxySAML(input);
     }
 
     return NewProvider(input);
@@ -117,8 +96,10 @@ export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderCo
         },
     };
 
-    const mergedClients = [...staticConfig.clients];
-    for (const client of coreConfig.clients) {
+    const mergedClients = staticConfig.clients === undefined ? [] : [...staticConfig.clients];
+    const coreConfigClients = coreConfig.clients === undefined ? [] : coreConfig.clients;
+
+    for (const client of coreConfigClients) {
         const index = mergedClients.findIndex((c) => c.clientType === client.clientType);
         if (index === -1) {
             mergedClients.push(client);

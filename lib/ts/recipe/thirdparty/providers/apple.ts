@@ -52,11 +52,22 @@ export default function Apple(input: ProviderInput): TypeProvider {
         originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
             const config = await oGetConfig({ clientType, userContext });
 
-            if (config.scope.length === 0) {
+            if (config.scope === undefined) {
                 config.scope = ["openid", "email"];
             }
 
             if (config.clientSecret === undefined) {
+                if (
+                    config.additionalConfig === undefined ||
+                    config.additionalConfig.keyId === undefined ||
+                    config.additionalConfig.teamId === undefined ||
+                    config.additionalConfig.privateKey === undefined
+                ) {
+                    throw new Error(
+                        "Please ensure that keyId, teamId and privateKey are provided in the additionalConfig"
+                    );
+                }
+
                 config.clientSecret = getClientSecret(
                     config.clientID,
                     config.additionalConfig.keyId,

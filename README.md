@@ -5,6 +5,7 @@
 <a href="https://supertokens.com/discord">
 <img src="https://img.shields.io/discord/603466164219281420.svg?logo=discord"
     alt="chat on Discord"></a>
+<span><img src="https://img.shields.io/npm/dm/supertokens-node"></span>
     
 ## About
 This is a NodeJS library that is used to interface between a node API process and the SuperTokens http service.

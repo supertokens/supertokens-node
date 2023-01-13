@@ -22,7 +22,7 @@ import { GeneralErrorResponse } from "../../types";
 export type UserInfo = {
     thirdPartyUserId: string;
     email?: { id: string; isVerified: boolean };
-    rawUserInfoFromProvider?: { fromIdTokenPayload?: any; fromUserInfoAPI?: any };
+    rawUserInfoFromProvider: { fromIdTokenPayload: { [key: string]: any }; fromUserInfoAPI: { [key: string]: any } };
 };
 
 export type UserInfoMap = {
@@ -38,39 +38,46 @@ export type UserInfoMap = {
     };
 };
 
-export type ProviderConfigForClientType = {
-    name: string;
-
+export type ProviderClientConfig = {
+    clientType?: string;
     clientID: string;
     clientSecret?: string;
-    scope: string[];
+    scope?: string[];
     forcePKCE?: boolean;
-    additionalConfig?: any;
+    additionalConfig?: { [key: string]: any };
+};
+
+type CommonProviderConfig = {
+    thirdPartyId: string;
+    tenantId?: string;
+    name?: string;
 
     authorizationEndpoint?: string;
-    authorizationEndpointQueryParams?: any;
+    authorizationEndpointQueryParams?: { [key: string]: string };
     tokenEndpoint?: string;
-    tokenEndpointBodyParams?: any;
+    tokenEndpointBodyParams?: { [key: string]: string };
     userInfoEndpoint?: string;
-    userInfoEndpointQueryParams?: any;
-    userInfoEndpointHeaders?: any;
+    userInfoEndpointQueryParams?: { [key: string]: string };
+    userInfoEndpointHeaders?: { [key: string]: string };
     jwksURI?: string;
     oidcDiscoveryEndpoint?: string;
     userInfoMap?: UserInfoMap;
     validateIdTokenPayload?: (input: {
-        idTokenPayload: any;
+        idTokenPayload: { [key: string]: any };
         clientConfig: ProviderConfigForClientType;
+        userContext: any;
     }) => Promise<void>;
     requireEmail?: boolean;
-    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext: any }) => string;
-    tenantId?: string;
+    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext: any }) => Promise<string>;
 };
+
+export type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
 
 export type TypeProvider = {
     id: string;
-    config?: ProviderConfigForClientType;
+    config: ProviderConfigForClientType;
 
-    getConfigForClientType: (input: { clientType?: string; userContext?: any }) => Promise<ProviderConfigForClientType>;
+    getConfigForClientType: (input: { clientType?: string; userContext: any }) => Promise<ProviderConfigForClientType>;
     getAuthorisationRedirectURL: (input: {
         redirectURIOnProviderDashboard: string;
         userContext: any;
@@ -97,39 +104,8 @@ export type User = {
     };
 };
 
-export type ProviderClientConfig = {
-    clientType?: string;
-    clientID: string;
-    clientSecret?: string;
-    scope?: string[];
-    forcePKCE?: boolean;
-    additionalConfig?: any;
-};
-
-export type ProviderConfig = {
-    tenantId?: string;
-    thirdPartyId: string;
-    name?: string;
-
-    clients: ProviderClientConfig[];
-    authorizationEndpoint?: string;
-    authorizationEndpointQueryParams?: any;
-    tokenEndpoint?: string;
-    tokenEndpointBodyParams?: any;
-    userInfoEndpoint?: string;
-    userInfoEndpointQueryParams?: any;
-    userInfoEndpointHeaders?: any;
-    jwksURI?: string;
-    oidcDiscoveryEndpoint?: string;
-    userInfoMap?: UserInfoMap;
-
-    requireEmail?: boolean;
-    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext: any }) => string;
-
-    validateIdTokenPayload?: (input: {
-        idTokenPayload: any;
-        clientConfig: ProviderConfigForClientType;
-    }) => Promise<void>;
+export type ProviderConfig = CommonProviderConfig & {
+    clients?: ProviderClientConfig[];
 };
 
 export type ProviderInput = {
@@ -138,7 +114,7 @@ export type ProviderInput = {
 };
 
 export type TypeInputSignInAndUp = {
-    providers: ProviderInput[];
+    providers?: ProviderInput[];
 };
 
 export type TypeNormalisedInputSignInAndUp = {
@@ -146,7 +122,7 @@ export type TypeNormalisedInputSignInAndUp = {
 };
 
 export type TypeInput = {
-    signInAndUpFeature: TypeInputSignInAndUp;
+    signInAndUpFeature?: TypeInputSignInAndUp;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -189,8 +165,11 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
-        oAuthTokens: any;
-        rawUserInfoFromProvider?: { fromIdTokenPayload?: any; fromUserInfoAPI?: any };
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: { [key: string]: any };
+            fromUserInfoAPI: { [key: string]: any };
+        };
         userContext: any;
     }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 
@@ -198,7 +177,6 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
-        tenantId?: string;
         userContext: any;
     }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 };
@@ -233,26 +211,34 @@ export type APIInterface = {
 
     signInUpPOST:
         | undefined
-        | ((input: {
-              provider: TypeProvider;
-
-              // one of either redirectURIInfo or oAuthTokens must be provided
-              redirectURIInfo?: {
-                  redirectURIOnProviderDashboard: string;
-                  redirectURIQueryParams: any;
-                  pkceCodeVerifier?: string;
-              };
-              oAuthTokens?: any;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<
+        | ((
+              input: {
+                  provider: TypeProvider;
+                  options: APIOptions;
+                  userContext: any;
+              } & (
+                  | {
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: string;
+                            redirectURIQueryParams: any;
+                            pkceCodeVerifier?: string;
+                        };
+                    }
+                  | {
+                        oAuthTokens: { [key: string]: any };
+                    }
+              )
+          ) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
-                    oAuthTokens: any;
-                    rawUserInfoFromProvider?: { fromIdTokenPayload?: any; fromUserInfoAPI?: any };
+                    oAuthTokens: { [key: string]: any };
+                    rawUserInfoFromProvider: {
+                        fromIdTokenPayload: { [key: string]: any };
+                        fromUserInfoAPI: { [key: string]: any };
+                    };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | GeneralErrorResponse
