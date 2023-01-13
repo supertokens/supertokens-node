@@ -39,27 +39,26 @@ async function fetchAndSetConfig(provider: TypeProvider, clientType: string | un
 }
 
 function createProvider(input: ProviderInput): TypeProvider {
-    switch (input.config.thirdPartyId) {
-        case "active-directory":
-            return ActiveDirectory(input);
-        case "apple":
-            return Apple(input);
-        case "discord":
-            return Discord(input);
-        case "facebook":
-            return Facebook(input);
-        case "github":
-            return Github(input);
-        case "google":
-            return Google(input);
-        case "google-workspaces":
-            return GoogleWorkspaces(input);
-        case "okta":
-            return Okta(input);
-        case "linkedin":
-            return Linkedin(input);
-        case "boxy-saml":
-            return BoxySAML(input);
+    if (input.config.thirdPartyId.startsWith("active-directory")) {
+        return ActiveDirectory(input);
+    } else if (input.config.thirdPartyId.startsWith("apple")) {
+        return Apple(input);
+    } else if (input.config.thirdPartyId.startsWith("discord")) {
+        return Discord(input);
+    } else if (input.config.thirdPartyId.startsWith("facebook")) {
+        return Facebook(input);
+    } else if (input.config.thirdPartyId.startsWith("github")) {
+        return Github(input);
+    } else if (input.config.thirdPartyId.startsWith("google")) {
+        return Google(input);
+    } else if (input.config.thirdPartyId.startsWith("google-workspaces")) {
+        return GoogleWorkspaces(input);
+    } else if (input.config.thirdPartyId.startsWith("okta")) {
+        return Okta(input);
+    } else if (input.config.thirdPartyId.startsWith("linkedin")) {
+        return Linkedin(input);
+    } else if (input.config.thirdPartyId.startsWith("boxy-saml")) {
+        return BoxySAML(input);
     }
 
     return NewProvider(input);
