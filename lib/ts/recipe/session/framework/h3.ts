@@ -31,4 +31,4 @@ export function verifySession(options?: VerifySessionOptions) {
             await supertokens.errorHandler(err, request, response);
         }
     });
-};
+}

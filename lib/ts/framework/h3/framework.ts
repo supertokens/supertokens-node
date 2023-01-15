@@ -26,7 +26,6 @@ import {
     getCookie,
     getHeader,
     getMethod,
-
 } from "h3";
 import type { HTTPMethod } from "../../types";
 import { normaliseHttpMethod } from "../../utils";
@@ -173,7 +172,7 @@ export class H3Response extends BaseResponse {
 export interface SessionEvent extends H3Event {
     context: {
         session?: SessionContainerInterface;
-    }
+    };
 }
 
 export const middleware = eventHandler(async (event) => {
