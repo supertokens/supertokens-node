@@ -187,17 +187,14 @@ export const middleware = eventHandler(async (event) => {
     }
 });
 
-export const errorHandler = () => {
-    return async (event: H3Event, errorPlain: Error, statusCode: number) => {
-        const error = createError(errorPlain);
-        error.statusCode = statusCode;
-        sendError(event, error);
-    };
-};
+export const errorHandler = eventHandler((event: H3Event) => {
+    const error = createError({});
+    sendError(event, error);
+});
 
 export interface H3Framework extends Framework {
     middleware: EventHandler<any>;
-    errorHandler: () => (event: H3Event, errorPlain: Error, statusCode: number) => Promise<void>;
+    errorHandler: EventHandler<any>;
 }
 
 export const H3Wrapper: H3Framework = {
