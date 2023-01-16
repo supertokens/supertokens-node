@@ -31,6 +31,7 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
+import AccountLinking from "./recipe/accountlinking/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -82,6 +83,10 @@ export default class SuperTokens {
             return func(this.appInfo, this.isInServerlessEnv);
         });
 
+        let isAccountLinkingInitialised = this.recipeModules.find((r) => r.getRecipeId() === AccountLinking.RECIPE_ID);
+        if (!isAccountLinkingInitialised) {
+            this.recipeModules.push(AccountLinking.init({})(this.appInfo, this.isInServerlessEnv));
+        }
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
         if (telemetry) {

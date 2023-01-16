@@ -56,7 +56,7 @@ export default class Recipe extends RecipeModule {
 
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo) => {
-            if (Recipe.instance !== undefined) {
+            if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
                     Recipe.RECIPE_ID,
                     appInfo,
