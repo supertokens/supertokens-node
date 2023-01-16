@@ -14,18 +14,18 @@
  */
 
 import Recipe from "./recipe";
-import type { AccountInfo, AccountInfoWithRecipeId, RecipeInterface } from "./types";
+import type { RecipeInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async getRecipeUserIdsForPrimaryUserIds(primaryUserIds: string[], userContext: any) {
+    static async getRecipeUserIdsForPrimaryUserIds(primaryUserIds: string[], userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRecipeUserIdsForPrimaryUserIds({
             primaryUserIds,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async getPrimaryUserIdsforRecipeUserIds(recipeUserIds: string[], userContext: any) {
+    static async getPrimaryUserIdsforRecipeUserIds(recipeUserIds: string[], userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdsforRecipeUserIds({
             recipeUserIds,
             userContext: userContext === undefined ? {} : userContext,
@@ -35,7 +35,7 @@ export default class Wrapper {
         recipeUserId: string,
         recipeId: string,
         timeJoined: number,
-        userContext: any
+        userContext?: any
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addNewRecipeUserIdWithoutPrimaryUserId({
             recipeUserId,
@@ -49,7 +49,7 @@ export default class Wrapper {
         limit: number | undefined,
         paginationToken: string | undefined,
         includeRecipeIds: string[] | undefined,
-        userContext: any
+        userContext?: any
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
             timeJoinedOrder,
@@ -59,60 +59,35 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async canCreatePrimaryUserId(recipeUserId: string, userContext: any) {
+    static async canCreatePrimaryUserId(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canCreatePrimaryUserId({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async createPrimaryUser(recipeUserId: string, userContext: any) {
+    static async createPrimaryUser(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async canLinkAccounts(recipeUserId: string, primaryUserId: string, userContext: any) {
+    static async canLinkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
             primaryUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async linkAccounts(recipeUserId: string, primaryUserId: string, userContext: any) {
+    static async linkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async unlinkAccounts(recipeUserId: string, userContext: any) {
+    static async unlinkAccounts(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unlinkAccounts({
             recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-    static async getUser(userId: string, userContext: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
-            userId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-    static async listUsersByAccountInfo(info: AccountInfo, userContext: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-            info,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-    static async getUserByAccountInfo(info: AccountInfoWithRecipeId, userContext: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByAccountInfo({
-            info,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean, userContext: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
-            userId,
-            removeAllLinkedAccounts,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -128,9 +103,5 @@ export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccounts = Wrapper.unlinkAccounts;
-export const getUser = Wrapper.getUser;
-export const listUsersByAccountInfo = Wrapper.listUsersByAccountInfo;
-export const getUserByAccountInfo = Wrapper.getUserByAccountInfo;
-export const deleteUser = Wrapper.deleteUser;
 
 export type { RecipeInterface };

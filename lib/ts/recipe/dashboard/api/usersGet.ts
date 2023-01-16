@@ -18,20 +18,43 @@ import SuperTokens from "../../../supertokens";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
 
+// Old format. Commented and kept for review purposes
+// type User = {
+//     id: string;
+//     isPrimaryUser: boolean;
+//     firstName?: string;
+//     lastName?: string;
+//     emails: string[];
+//     phoneNumbers: string[];
+//     thirdpartyInfo: {
+//         thirdpartyId: string;
+//         thirdpartyUserId: string;
+//     }[];
+//     linkedRecipes: {
+//         recipeId: string;
+//         recipeUserId: string;
+//     }[];
+// };
+
 type User = {
-    id: string;
+    id: string; // primaryUserId or recipeUserId
+    timeJoined: number; // minimum timeJoined value from linkedRecipes
     isPrimaryUser: boolean;
-    firstName?: string;
-    lastName?: string;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
-    }[];
-    linkedRecipes: {
+    firstName?: string;
+    lastName?: string;
+    loginMethods: {
         recipeId: string;
         recipeUserId: string;
+        timeJoined: number;
+        verified: boolean;
+        email?: string;
+        phoneNumber?: string;
+        thirdParty?: {
+            id: string;
+            userId: string;
+        };
     }[];
 };
 

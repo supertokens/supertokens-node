@@ -36,12 +36,6 @@ export default class SuperTokens {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
-    deleteUser: (input: {
-        userId: string;
-        removeAllLinkedAccounts: boolean;
-    }) => Promise<{
-        status: "OK";
-    }>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;

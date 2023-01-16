@@ -16,6 +16,8 @@
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { User } from "./types";
+import AccountLinking from "./recipe/accountlinking/recipe";
+import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -59,13 +61,6 @@ export default class SuperTokensWrapper {
         });
     }
 
-    static deleteUser(userId: string, removeAllLinkedAccounts: boolean = true) {
-        return SuperTokens.getInstanceOrThrowError().deleteUser({
-            userId,
-            removeAllLinkedAccounts,
-        });
-    }
-
     static createUserIdMapping(input: {
         superTokensUserId: string;
         externalUserId: string;
@@ -94,6 +89,32 @@ export default class SuperTokensWrapper {
     }) {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
+
+    static async getUser(userId: string, userContext?: any) {
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+            userId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async listUsersByAccountInfo(info: AccountInfo, userContext?: any) {
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+            info,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async getUserByAccountInfo(info: AccountInfoWithRecipeId, userContext?: any) {
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUserByAccountInfo({
+            info,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = false, userContext?: any) {
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
+            userId,
+            removeAllLinkedAccounts,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -115,5 +136,11 @@ export let getUserIdMapping = SuperTokensWrapper.getUserIdMapping;
 export let deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping;
 
 export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
+
+export let getUser = SuperTokensWrapper.getUser;
+
+export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
+
+export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
 
 export let Error = SuperTokensWrapper.Error;

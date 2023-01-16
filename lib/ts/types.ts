@@ -73,17 +73,22 @@ export type GeneralErrorResponse = {
 };
 
 export type User = {
-    id: string;
+    id: string; // primaryUserId or recipeUserId
+    timeJoined: number; // minimum timeJoined value from linkedRecipes
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
-    }[];
-    linkedRecipes: {
-        // this will always have one item in the array regardless of whether it's a primaryUser or a recipeUser
+
+    loginMethods: {
         recipeId: string;
         recipeUserId: string;
+        timeJoined: number;
+        verified: boolean;
+        email?: string;
+        phoneNumber?: string;
+        thirdParty?: {
+            id: string;
+            userId: string;
+        };
     }[];
 };

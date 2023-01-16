@@ -3,7 +3,7 @@ import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import { SessionContainer } from "../session";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoAndEmailWithRecipeId } from "./types";
 export default class Recipe extends RecipeModule {
@@ -11,15 +11,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
-    isInServerlessEnv: boolean;
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config: TypeInput,
-        _recipes: {},
-        _ingredients: {}
-    );
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput, _recipes: {}, _ingredients: {});
     static init(config: TypeInput): RecipeListFunction;
     static getInstanceOrThrowError(): Recipe;
     getAPIsHandled(): APIHandled[];
@@ -33,23 +25,23 @@ export default class Recipe extends RecipeModule {
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    getIdentitiesForPrimaryUserId: (
-        primaryUserId: string
+    getIdentitiesForUser: (
+        user: User
     ) => Promise<{
         verified: {
             emails: string[];
             phoneNumbers: string[];
             thirdpartyInfo: {
-                thirdpartyId: string;
-                thirdpartyUserId: string;
+                id: string;
+                userId: string;
             }[];
         };
         unverified: {
             emails: string[];
             phoneNumbers: string[];
             thirdpartyInfo: {
-                thirdpartyId: string;
-                thirdpartyUserId: string;
+                id: string;
+                userId: string;
             }[];
         };
     }>;

@@ -2,18 +2,23 @@
 import { APIInterface, APIOptions } from "../types";
 declare type User = {
     id: string;
+    timeJoined: number;
     isPrimaryUser: boolean;
-    firstName?: string;
-    lastName?: string;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
-    }[];
-    linkedRecipes: {
+    firstName?: string;
+    lastName?: string;
+    loginMethods: {
         recipeId: string;
         recipeUserId: string;
+        timeJoined: number;
+        verified: boolean;
+        email?: string;
+        phoneNumber?: string;
+        thirdParty?: {
+            id: string;
+            userId: string;
+        };
     }[];
 };
 export declare type Response = {

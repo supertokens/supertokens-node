@@ -51,15 +51,20 @@ export declare type GeneralErrorResponse = {
 };
 export declare type User = {
     id: string;
+    timeJoined: number;
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
-    }[];
-    linkedRecipes: {
+    loginMethods: {
         recipeId: string;
         recipeUserId: string;
+        timeJoined: number;
+        verified: boolean;
+        email?: string;
+        phoneNumber?: string;
+        thirdParty?: {
+            id: string;
+            userId: string;
+        };
     }[];
 };
