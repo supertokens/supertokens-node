@@ -4,7 +4,6 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
-import { User } from "./types";
 export default class SuperTokens {
     private static instance;
     framework: TypeFramework;
@@ -27,15 +26,6 @@ export default class SuperTokens {
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
-    getUsers: (input: {
-        timeJoinedOrder: "ASC" | "DESC";
-        limit?: number | undefined;
-        paginationToken?: string | undefined;
-        includeRecipeIds?: string[] | undefined;
-    }) => Promise<{
-        users: User[];
-        nextPaginationToken?: string | undefined;
-    }>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;

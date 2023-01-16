@@ -24,16 +24,6 @@ export default class Wrapper {
         status: "OK";
         createdNewEntry: boolean;
     }>;
-    static getUsers(
-        timeJoinedOrder: "ASC" | "DESC",
-        limit: number | undefined,
-        paginationToken: string | undefined,
-        includeRecipeIds: string[] | undefined,
-        userContext?: any
-    ): Promise<{
-        users: import("../../types").User[];
-        nextPaginationToken?: string | undefined;
-    }>;
     static canCreatePrimaryUserId(
         recipeUserId: string,
         userContext?: any
@@ -128,7 +118,6 @@ export declare const init: typeof Recipe.init;
 export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
 export declare const getPrimaryUserIdsforRecipeUserIds: typeof Wrapper.getPrimaryUserIdsforRecipeUserIds;
 export declare const addNewRecipeUserIdWithoutPrimaryUserId: typeof Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
-export declare const getUsers: typeof Wrapper.getUsers;
 export declare const canCreatePrimaryUserId: typeof Wrapper.canCreatePrimaryUserId;
 export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;

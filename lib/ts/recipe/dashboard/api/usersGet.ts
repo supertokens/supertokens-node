@@ -14,7 +14,7 @@
  */
 import { APIInterface, APIOptions } from "../types";
 import STError from "../../../error";
-import SuperTokens from "../../../supertokens";
+import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
 
@@ -90,11 +90,16 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
 
     let paginationToken = options.req.getKeyValueFromQuery("paginationToken");
 
-    let usersResponse = await SuperTokens.getInstanceOrThrowError().getUsers({
-        timeJoinedOrder: timeJoinedOrder,
-        limit: parseInt(limit),
-        paginationToken,
-    });
+    let usersResponse =
+        timeJoinedOrder === "DESC"
+            ? await getUsersNewestFirst({
+                  limit: parseInt(limit),
+                  paginationToken,
+              })
+            : await getUsersOldestFirst({
+                  limit: parseInt(limit),
+                  paginationToken,
+              });
 
     // If the UserMetaData recipe has been initialised, fetch first and last name
     try {

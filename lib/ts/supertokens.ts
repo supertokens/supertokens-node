@@ -31,7 +31,6 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
-import { User } from "./types";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -183,38 +182,6 @@ export default class SuperTokens {
             includeRecipeIds: includeRecipeIdsStr,
         });
         return Number(response.count);
-    };
-
-    getUsers = async (input: {
-        timeJoinedOrder: "ASC" | "DESC";
-        limit?: number;
-        paginationToken?: string;
-        includeRecipeIds?: string[];
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }> => {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            throw new Error(
-                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUsersOldestFirst() or <YourRecipe>.getUsersNewestFirst() instead (for example, EmailPassword.getUsersOldestFirst())"
-            );
-        }
-        let includeRecipeIdsStr = undefined;
-        if (input.includeRecipeIds !== undefined) {
-            includeRecipeIdsStr = input.includeRecipeIds.join(",");
-        }
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
-            includeRecipeIds: includeRecipeIdsStr,
-            timeJoinedOrder: input.timeJoinedOrder,
-            limit: input.limit,
-            paginationToken: input.paginationToken,
-        });
-        return {
-            users: response.users,
-            nextPaginationToken: response.nextPaginationToken,
-        };
     };
 
     createUserIdMapping = async function (input: {

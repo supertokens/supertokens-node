@@ -41,9 +41,10 @@ export default class SuperTokensWrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
+        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
+            userContext: undefined,
         });
     }
 
@@ -55,9 +56,10 @@ export default class SuperTokensWrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
+        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "DESC",
             ...input,
+            userContext: undefined,
         });
     }
 

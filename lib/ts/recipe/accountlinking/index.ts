@@ -44,21 +44,6 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async getUsers(
-        timeJoinedOrder: "ASC" | "DESC",
-        limit: number | undefined,
-        paginationToken: string | undefined,
-        includeRecipeIds: string[] | undefined,
-        userContext?: any
-    ) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
-            timeJoinedOrder,
-            limit,
-            paginationToken,
-            includeRecipeIds,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
     static async canCreatePrimaryUserId(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canCreatePrimaryUserId({
             recipeUserId,
@@ -97,7 +82,6 @@ export const init = Wrapper.init;
 export const getRecipeUserIdsForPrimaryUserIds = Wrapper.getRecipeUserIdsForPrimaryUserIds;
 export const getPrimaryUserIdsforRecipeUserIds = Wrapper.getPrimaryUserIdsforRecipeUserIds;
 export const addNewRecipeUserIdWithoutPrimaryUserId = Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
-export const getUsers = Wrapper.getUsers;
 export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
 export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;

@@ -52,7 +52,7 @@ export default class Recipe extends RecipeModule {
         info: AccountInfoAndEmailWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
-    createPrimaryUserIdOrLinkAccountPostSignUp: ({
+    doPostSignUpAccountLinkingOperations: ({
         info,
         infoVerified,
         recipeUserId,
