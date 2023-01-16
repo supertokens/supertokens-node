@@ -98,13 +98,6 @@ export class H3Response extends BaseResponse {
 
     sendHTMLResponse = (html: string) => {
         if (this.event.node.res.writable) {
-            /**
-             * response.set method is not available if response
-             * is a nextjs response object. setHeader method
-             * is present on OutgoingMessage which is one of the
-             * bases used to construct response object for express
-             * like response as well as nextjs like response
-             */
             this.event.node.res.setHeader("Content-Type", "text/html");
             this.event.node.res.statusCode = this.statusCode;
             send(this.event, html);

@@ -8,7 +8,7 @@ glob(__dirname + "/lib/**/*.d.ts", (err, files) => {
         let lines = contents.split("\n");
         let newContents = `// @ts-nocheck`;
         for (line of lines) {
-            if (line.match(/\/\/\/\ \<reference\ types\=\"(express|koa|loopback|hapi|aws|fastify)/g) === null) {
+            if (line.match(/\/\/\/\ \<reference\ types\=\"(express|koa|loopback|hapi|aws|fastify|h3)/g) === null) {
                 newContents += `\n${line}`;
             }
         }
