@@ -338,7 +338,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 return {
                     status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
                     description: "recipeUserId already associated with another primaryUserId",
-                    primaryUserId: recipeUser.id,
+                    primaryUserId: recipeUser.id, // this is actually the primary user ID cause isPrimaryUser is true
                 };
             }
             let canCreatePrimaryUser:

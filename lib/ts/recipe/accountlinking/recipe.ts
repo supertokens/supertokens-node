@@ -247,7 +247,7 @@ export default class Recipe extends RecipeModule {
         }
         throw Error("it should never reach here");
     };
-    createPrimaryUserIdOrLinkAccountPostSignUp = async ({
+    doPostSignUpAccountLinkingOperations = async ({
         info,
         infoVerified,
         recipeUserId,
@@ -279,7 +279,7 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
             if (user.status !== "OK") {
-                throw Error(user.status);
+                throw Error("should never come here. Error from createPrimaryUser: " + user.status);
             }
             return user.user.id;
         }
