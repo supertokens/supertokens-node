@@ -78,7 +78,7 @@ export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
         jwksUri,
     });
     function getKey(header: any, callback: any) {
-        client.getSigningKey(header.kid, function (_, key: any) {
+        client.getSigningKey(header.kid, function (_: any, key: any) {
             var signingKey = key.publicKey || key.rsaPublicKey;
             callback(null, signingKey);
         });
@@ -110,7 +110,6 @@ async function getOIDCDiscoveryInfo(issuer: string): Promise<any> {
     if (oidcInfoMap[issuer] !== undefined) {
         return oidcInfoMap[issuer];
     }
-
     const oidcInfo = await doGetRequest(
         normalizedDomain.getAsStringDangerous() + normalizedPath.getAsStringDangerous()
     );
@@ -123,8 +122,8 @@ export async function discoverOIDCEndpoints(config: ProviderConfigForClientType)
     if (config.oidcDiscoveryEndpoint !== undefined) {
         const oidcInfo = await getOIDCDiscoveryInfo(config.oidcDiscoveryEndpoint);
 
-        if (oidcInfo.authorisation_endpoint !== undefined && config.authorizationEndpoint === undefined) {
-            config.authorizationEndpoint = oidcInfo.authorisation_endpoint;
+        if (oidcInfo.authorization_endpoint !== undefined && config.authorizationEndpoint === undefined) {
+            config.authorizationEndpoint = oidcInfo.authorization_endpoint;
         }
 
         if (oidcInfo.token_endpoint !== undefined && config.tokenEndpoint === undefined) {
