@@ -72,6 +72,10 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
     }
 
+    static getUserForRecipeId(userId: string, recipeId: string) {
+        return SuperTokens.getInstanceOrThrowError().getUserForRecipeId(userId, recipeId);
+    }
+
     static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
         return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
     }
@@ -110,7 +114,7 @@ export default class SuperTokensWrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = false, userContext?: any) {
+    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = true, userContext?: any) {
         return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
             userId,
             removeAllLinkedAccounts,
@@ -144,5 +148,7 @@ export let getUser = SuperTokensWrapper.getUser;
 export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
 
 export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
+
+export let getUserForRecipeId = SuperTokensWrapper.getUserForRecipeId;
 
 export let Error = SuperTokensWrapper.Error;

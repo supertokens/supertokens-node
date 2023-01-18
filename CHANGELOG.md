@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added:
+
+-   Account-Linking Recipe added
+-   Functions `getUserForRecipeId`, `getUserByAccountInfo`, `listUsersByAccountInfo` and `getUser` added
+
+### Changed:
+
+-   Type of `User` object returned by get users function
+-   Functions `deleteuser`, `getUsersNewestFirst` and `getUsersOldestFirst` are now based on account linking recipe
+-   Function `deleteuser` takes a new parameter `removeAllLinkedAccounts` which will be `true` by default
+
 ## [12.1.0] - 2022-11-17
 
 ### Added:

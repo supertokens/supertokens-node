@@ -17,6 +17,7 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
+import { RecipeLevelUser } from "./recipe/accountlinking/types";
 
 export type AppInfo = {
     appName: string;
@@ -78,17 +79,11 @@ export type User = {
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
-
-    loginMethods: {
-        recipeId: string;
-        recipeUserId: string;
-        timeJoined: number;
-        verified: boolean;
-        email?: string;
-        phoneNumber?: string;
-        thirdParty?: {
-            id: string;
-            userId: string;
-        };
+    thirdpartyInfo: {
+        thirdpartyId: string;
+        thirdpartyUserId: string;
     }[];
+    loginMethods: (RecipeLevelUser & {
+        verified: boolean;
+    })[];
 };

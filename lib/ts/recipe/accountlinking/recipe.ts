@@ -17,7 +17,6 @@ import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
-import SuperTokensModule from "../../supertokens";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import { SessionContainer } from "../session";
 import type {
@@ -27,7 +26,8 @@ import type {
     AccountInfoAndEmailWithRecipeId,
     AccountInfoWithRecipeId,
 } from "./types";
-import { getUserForRecipeId, validateAndNormaliseUserInput } from "./utils";
+import { validateAndNormaliseUserInput } from "./utils";
+import { getUserForRecipeId } from "../..";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
@@ -74,12 +74,6 @@ export default class Recipe extends RecipeModule {
     }
 
     static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance === undefined) {
-            Recipe.init({})(
-                SuperTokensModule.getInstanceOrThrowError().appInfo,
-                SuperTokensModule.getInstanceOrThrowError().isInServerlessEnv
-            );
-        }
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
@@ -247,6 +241,7 @@ export default class Recipe extends RecipeModule {
         }
         throw Error("it should never reach here");
     };
+
     doPostSignUpAccountLinkingOperations = async ({
         info,
         infoVerified,

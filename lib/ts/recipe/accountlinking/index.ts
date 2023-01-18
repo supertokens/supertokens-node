@@ -13,8 +13,9 @@
  * under the License.
  */
 
+import { SessionContainer } from "../session";
 import Recipe from "./recipe";
-import type { RecipeInterface } from "./types";
+import type { AccountInfoAndEmailWithRecipeId, RecipeInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -25,12 +26,14 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
     static async getPrimaryUserIdsforRecipeUserIds(recipeUserIds: string[], userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdsforRecipeUserIds({
             recipeUserIds,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
     static async addNewRecipeUserIdWithoutPrimaryUserId(
         recipeUserId: string,
         recipeId: string,
@@ -44,18 +47,21 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
     static async canCreatePrimaryUserId(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canCreatePrimaryUserId({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
     static async createPrimaryUser(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
     static async canLinkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
@@ -63,6 +69,7 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
     static async linkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
             recipeUserId,
@@ -70,10 +77,46 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
     static async unlinkAccounts(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unlinkAccounts({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async isSignUpAllowed(info: AccountInfoAndEmailWithRecipeId, userContext: any) {
+        return await Recipe.getInstanceOrThrowError().isSignUpAllowed({
+            info,
+            userContext,
+        });
+    }
+
+    static async doPostSignUpAccountLinkingOperations(
+        info: AccountInfoAndEmailWithRecipeId,
+        infoVerified: boolean,
+        recipeUserId: string,
+        userContext: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations({
+            info,
+            infoVerified,
+            recipeUserId,
+            userContext,
+        });
+    }
+
+    static async accountLinkPostSignInViaSession(
+        session: SessionContainer,
+        info: AccountInfoAndEmailWithRecipeId,
+        infoVerified: boolean,
+        userContext: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().accountLinkPostSignInViaSession({
+            session,
+            info,
+            infoVerified,
+            userContext,
         });
     }
 }
@@ -87,5 +130,8 @@ export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccounts = Wrapper.unlinkAccounts;
+export const isSignUpAllowed = Wrapper.isSignUpAllowed;
+export const doPostSignUpAccountLinkingOperations = Wrapper.doPostSignUpAccountLinkingOperations;
+export const accountLinkPostSignInViaSession = Wrapper.accountLinkPostSignInViaSession;
 
 export type { RecipeInterface };

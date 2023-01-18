@@ -39,7 +39,7 @@ import {
     TypeInput,
     TypeNormalisedInput,
 } from "./types";
-import { getUserForRecipeId as getUserForRecipeIdAccountLinking } from "../accountlinking/utils";
+import Supertokens from "../..";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
     if (config.apiKey.trim().length === 0) {
@@ -150,7 +150,7 @@ export async function getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 }> {
-    let userResponse = await getUserForRecipeIdAccountLinking(userId, recipeId);
+    let userResponse = await Supertokens.getUserForRecipeId(userId, recipeId);
     let user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined = undefined;
     if (userResponse.user !== undefined) {
         user = {

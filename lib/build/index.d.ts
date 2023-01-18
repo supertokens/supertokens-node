@@ -39,6 +39,19 @@ export default class SuperTokensWrapper {
               doesExternalUserIdExist: boolean;
           }
     >;
+    static getUserForRecipeId(
+        userId: string,
+        recipeId: string
+    ): Promise<{
+        user: import("./recipe/accountlinking/types").RecipeLevelUser | undefined;
+        recipe:
+            | "emailpassword"
+            | "thirdparty"
+            | "passwordless"
+            | "thirdpartyemailpassword"
+            | "thirdpartypasswordless"
+            | undefined;
+    }>;
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
@@ -92,4 +105,5 @@ export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.up
 export declare let getUser: typeof SuperTokensWrapper.getUser;
 export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
 export declare let getUserByAccountInfo: typeof SuperTokensWrapper.getUserByAccountInfo;
+export declare let getUserForRecipeId: typeof SuperTokensWrapper.getUserForRecipeId;
 export declare let Error: typeof SuperTokensError;

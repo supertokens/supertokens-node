@@ -17,24 +17,7 @@ import STError from "../../../error";
 import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
-
-// Old format. Commented and kept for review purposes
-// type User = {
-//     id: string;
-//     isPrimaryUser: boolean;
-//     firstName?: string;
-//     lastName?: string;
-//     emails: string[];
-//     phoneNumbers: string[];
-//     thirdpartyInfo: {
-//         thirdpartyId: string;
-//         thirdpartyUserId: string;
-//     }[];
-//     linkedRecipes: {
-//         recipeId: string;
-//         recipeUserId: string;
-//     }[];
-// };
+import { RecipeLevelUser } from "../../accountlinking/types";
 
 type User = {
     id: string; // primaryUserId or recipeUserId
@@ -42,20 +25,15 @@ type User = {
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
+    thirdpartyInfo: {
+        thirdpartyId: string;
+        thirdpartyUserId: string;
+    }[];
     firstName?: string;
     lastName?: string;
-    loginMethods: {
-        recipeId: string;
-        recipeUserId: string;
-        timeJoined: number;
+    loginMethods: (RecipeLevelUser & {
         verified: boolean;
-        email?: string;
-        phoneNumber?: string;
-        thirdParty?: {
-            id: string;
-            userId: string;
-        };
-    }[];
+    })[];
 };
 
 export type Response = {

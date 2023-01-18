@@ -18,7 +18,7 @@ import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
-import { getUserForRecipeId } from "./utils";
+import { getUserForRecipeId } from "../..";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -177,24 +177,25 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
 
             for (let i = 0; i < user.loginMethods.length; i++) {
                 let loginMethod = user.loginMethods[i];
-                let info: AccountInfo | undefined = undefined;
+                let infos: AccountInfo[] = [];
                 if (loginMethod.email !== undefined) {
-                    info = {
+                    infos.push({
                         email: loginMethod.email,
-                    };
+                    });
                 }
                 if (loginMethod.phoneNumber !== undefined) {
-                    info = {
+                    infos.push({
                         phoneNumber: loginMethod.phoneNumber,
-                    };
+                    });
                 }
                 if (loginMethod.thirdParty !== undefined) {
-                    info = {
+                    infos.push({
                         thirdpartyId: loginMethod.thirdParty.id,
                         thirdpartyUserId: loginMethod.thirdParty.userId,
-                    };
+                    });
                 }
-                if (info !== undefined) {
+                for (let j = 0; j < infos.length; j++) {
+                    let info = infos[j];
                     let usersList = await this.listUsersByAccountInfo({
                         info,
                         userContext,
