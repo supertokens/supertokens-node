@@ -29,7 +29,7 @@ function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoRespo
         rawUserInfoFromProvider: {
             fromIdTokenPayload: {},
             fromUserInfoAPI: {},
-        }
+        },
     };
 
     const emailsInfo: any[] = rawUserInfoResponse.fromUserInfoAPI.emails;

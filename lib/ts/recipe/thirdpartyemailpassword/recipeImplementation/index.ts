@@ -2,19 +2,21 @@ import { RecipeInterface, User } from "../types";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
-import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
+import { RecipeInterface as ThirdPartyRecipeInterface, TypeProvider } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
+import { ProviderInput } from "../../thirdparty/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
-    thirdPartyQuerier?: Querier
+    thirdPartyQuerier?: Querier,
+    providers: ProviderInput[] = []
 ): RecipeInterface {
     let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier);
     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
     if (thirdPartyQuerier !== undefined) {
-        originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
+        originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier, providers);
     }
 
     return {
@@ -38,12 +40,41 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload: { [key: string]: any };
+                fromUserInfoAPI: { [key: string]: any };
+            };
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             if (originalThirdPartyImplementation === undefined) {
                 throw new Error("No thirdparty provider configured");
             }
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
+        },
+
+        thirdPartyManuallyCreateOrUpdateUser: async function (input: {
+            thirdPartyId: string;
+            thirdPartyUserId: string;
+            email: string;
+            userContext: any;
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+            if (originalThirdPartyImplementation === undefined) {
+                throw new Error("No thirdparty provider configured");
+            }
+            return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);
+        },
+
+        thirdPartyGetProvider: async function (input: {
+            thirdPartyId: string;
+            tenantId?: string;
+            clientType?: string;
+            userContext: any;
+        }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }> {
+            if (originalThirdPartyImplementation === undefined) {
+                throw new Error("No thirdparty provider configured");
+            }
+            return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },
 
         getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {

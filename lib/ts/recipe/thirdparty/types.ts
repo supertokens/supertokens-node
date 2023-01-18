@@ -102,6 +102,7 @@ export type User = {
         id: string;
         userId: string;
     };
+    tenantId?: string;
 };
 
 export type ProviderConfig = CommonProviderConfig & {

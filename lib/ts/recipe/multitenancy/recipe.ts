@@ -57,7 +57,7 @@ export default class Recipe extends RecipeModule {
 
     getTenantIdForUserIdFuncsFromOtherRecipes: GetTenantIdForUserId[] = [];
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(config);
         this.isInServerlessEnv = isInServerlessEnv;
@@ -108,7 +108,7 @@ export default class Recipe extends RecipeModule {
         return Recipe.instance;
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);

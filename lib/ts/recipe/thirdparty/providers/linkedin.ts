@@ -18,6 +18,10 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
     // TODO
     return {
         id: input.config.thirdPartyId,
+        config: {
+            clientID: "",
+            thirdPartyId: "linkedin",
+        },
         getConfigForClientType: async () => {
             throw new Error("Not implemented");
         },

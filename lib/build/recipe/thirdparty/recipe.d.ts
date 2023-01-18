@@ -1,16 +1,17 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
+import { GetTenantIdForUserId } from "../multitenancy/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
-    providers: TypeProvider[];
+    providers: ProviderInput[];
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
@@ -37,4 +38,5 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: GetEmailForUserIdFunc;
+    getTenantIdForUserId: GetTenantIdForUserId;
 }

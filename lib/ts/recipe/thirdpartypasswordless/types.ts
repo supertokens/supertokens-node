@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, ProviderInput } from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -50,6 +50,7 @@ export type User = (
 ) & {
     id: string;
     timeJoined: number;
+    tenantId?: string;
 };
 
 export type TypeInput = (
@@ -149,7 +150,7 @@ export type TypeInput = (
      */
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
-    providers?: TypeProvider[];
+    providers?: ProviderInput[];
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
     // Override this to override how user input codes are generated
@@ -184,7 +185,7 @@ export type TypeNormalisedInput = (
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    providers: TypeProvider[];
+    providers: ProviderInput[];
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
@@ -216,8 +217,27 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: { [key: string]: any };
+            fromUserInfoAPI: { [key: string]: any };
+        };
         userContext: any;
     }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+
+    thirdPartyManuallyCreateOrUpdateUser(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: string;
+        userContext: any;
+    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+
+    thirdPartyGetProvider(input: {
+        thirdPartyId: string;
+        tenantId?: string;
+        clientType?: string;
+        userContext: any;
+    }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
 
     createCode: (
         input: (
@@ -334,43 +354,60 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
+              redirectURIOnProviderDashboard: string;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
               | {
                     status: "OK";
-                    url: string;
+                    urlWithQueryParams: string;
+                    pkceCodeVerifier?: string;
                 }
               | GeneralErrorResponse
           >);
 
     thirdPartySignInUpPOST:
         | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
+        | ((
+              input: {
+                  provider: TypeProvider;
+                  options: ThirdPartyAPIOptions;
+                  userContext: any;
+              } & (
+                  | {
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: string;
+                            redirectURIQueryParams: any;
+                            pkceCodeVerifier?: string;
+                        };
+                    }
+                  | {
+                        oAuthTokens: { [key: string]: any };
+                    }
+              )
+          ) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
-                    authCodeResponse: any;
+                    oAuthTokens: { [key: string]: any };
+                    rawUserInfoFromProvider: {
+                        fromIdTokenPayload: { [key: string]: any };
+                        fromUserInfoAPI: { [key: string]: any };
+                    };
                 }
+              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | GeneralErrorResponse
-              | {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-                }
           >);
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
+        | ((input: {
+              formPostInfoFromProvider: any;
+              options: ThirdPartyAPIOptions;
+              userContext: any;
+          }) => Promise<void>);
 
     createCodePOST:
         | undefined

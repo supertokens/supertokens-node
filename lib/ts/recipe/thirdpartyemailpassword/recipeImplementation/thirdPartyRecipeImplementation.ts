@@ -1,4 +1,4 @@
-import { RecipeInterface, User } from "../../thirdparty/types";
+import { RecipeInterface, TypeProvider, User } from "../../thirdparty/types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPasswordRecipeInterface): RecipeInterface {
@@ -17,6 +17,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 id: user.id,
                 timeJoined: user.timeJoined,
                 thirdParty: user.thirdParty,
+                tenantId: user.tenantId,
             };
         },
 
@@ -24,6 +25,11 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload: { [key: string]: any };
+                fromUserInfoAPI: { [key: string]: any };
+            };
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             let result = await recipeInterface.thirdPartySignInUp(input);
@@ -38,8 +44,41 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                     id: result.user.id,
                     timeJoined: result.user.timeJoined,
                     thirdParty: result.user.thirdParty,
+                    tenantId: result.user.tenantId,
                 },
             };
+        },
+
+        manuallyCreateOrUpdateUser: async function (input: {
+            thirdPartyId: string;
+            thirdPartyUserId: string;
+            email: string;
+            userContext: any;
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+            let result = await recipeInterface.thirdPartyManuallyCreateOrUpdateUser(input);
+            if (result.user.thirdParty === undefined) {
+                throw new Error("Should never come here");
+            }
+            return {
+                status: "OK",
+                createdNewUser: result.createdNewUser,
+                user: {
+                    email: result.user.email,
+                    id: result.user.id,
+                    timeJoined: result.user.timeJoined,
+                    thirdParty: result.user.thirdParty,
+                    tenantId: result.user.tenantId,
+                },
+            };
+        },
+
+        getProvider: async function (input: {
+            thirdPartyId: string;
+            tenantId?: string;
+            clientType?: string;
+            userContext: any;
+        }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }> {
+            return await recipeInterface.thirdPartyGetProvider(input);
         },
 
         getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
@@ -53,6 +92,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 id: user.id,
                 timeJoined: user.timeJoined,
                 thirdParty: user.thirdParty,
+                tenantId: user.tenantId,
             };
         },
 

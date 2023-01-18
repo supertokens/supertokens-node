@@ -18,6 +18,10 @@ export default function Okta(input: ProviderInput): TypeProvider {
     // TODO
     return {
         id: input.config.thirdPartyId,
+        config: {
+            clientID: "",
+            thirdPartyId: "okta",
+        },
         getConfigForClientType: async () => {
             throw new Error("Not implemented");
         },

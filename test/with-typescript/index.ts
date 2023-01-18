@@ -121,10 +121,12 @@ UserMetadata.getUserMetadata("xyz").then((data) => {
 
 ThirdPartyPasswordless.init({
     providers: [
-        ThirdPartyPasswordless.Google({
-            clientId: "",
-            clientSecret: "",
-        }),
+        {
+            config: {
+                thirdPartyId: "google",
+                clients: [{ clientID: "" }],
+            },
+        },
     ],
     smsDelivery: {
         override: (oI) => {
@@ -309,10 +311,12 @@ Passwordless.init({
 
 ThirdPartyPasswordless.init({
     providers: [
-        ThirdPartyPasswordless.Google({
-            clientId: "",
-            clientSecret: "",
-        }),
+        {
+            config: {
+                thirdPartyId: "google",
+                clients: [{ clientID: "" }],
+            },
+        },
     ],
     smsDelivery: {
         service: new TwilioServiceTPP({
@@ -373,10 +377,12 @@ ThirdPartyPasswordless.init({
 
 ThirdPartyPasswordless.init({
     providers: [
-        ThirdPartyPasswordless.Google({
-            clientId: "",
-            clientSecret: "",
-        }),
+        {
+            config: {
+                thirdPartyId: "google",
+                clients: [{ clientID: "" }],
+            },
+        },
     ],
     smsDelivery: {
         service: new SupertokensServiceTPP(""),

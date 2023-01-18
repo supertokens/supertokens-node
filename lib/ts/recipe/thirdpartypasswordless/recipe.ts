@@ -83,7 +83,8 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(
                 RecipeImplementation(
                     Querier.getNewInstanceOrThrowError(PasswordlessRecipe.RECIPE_ID),
-                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
+                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID),
+                    this.config.providers
                 )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();

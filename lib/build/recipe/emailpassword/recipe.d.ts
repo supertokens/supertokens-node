@@ -8,6 +8,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
+import { GetTenantIdForUserId } from "../multitenancy/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -40,4 +41,5 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: GetEmailForUserIdFunc;
+    getTenantIdForUserId: GetTenantIdForUserId;
 }

@@ -1,10 +1,3 @@
 // @ts-nocheck
-import { TypeProvider } from "../types";
-declare type TypeThirdPartyProviderFacebookConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    isDefault?: boolean;
-};
-export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): TypeProvider;
-export {};
+import { ProviderInput, TypeProvider } from "../types";
+export default function Facebook(input: ProviderInput): TypeProvider;
