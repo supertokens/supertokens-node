@@ -19,7 +19,7 @@ import { APIInterface, APIOptions } from "../";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 import MultitenancyRecipe from "../../multitenancy/recipe";
 import { RecipeDisabledForTenantError } from "../../multitenancy";
-import { DEFAULT_TENANT_ID } from "../constants";
+import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {

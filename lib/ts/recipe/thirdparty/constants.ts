@@ -18,5 +18,3 @@ export const AUTHORISATION_API = "/authorisationurl";
 export const SIGN_IN_UP_API = "/signinup";
 
 export const APPLE_REDIRECT_HANDLER = "/callback/apple";
-
-export const DEFAULT_TENANT_ID = "defaultTenantId";

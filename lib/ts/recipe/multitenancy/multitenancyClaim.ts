@@ -37,7 +37,7 @@ export class MultitenancyDomainsClaimClass extends PrimitiveArrayClaim<string> {
     getLastRefetchTime(payload: any, _userContext?: any): number | undefined {
         const res = payload[this.key]?.t;
         if (res === undefined) {
-            return Number.MAX_SAFE_INTEGER;
+            return Date.now();
         }
         return res;
     }

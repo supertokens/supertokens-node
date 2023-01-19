@@ -1,8 +1,8 @@
-import { DEFAULT_TENANT_ID } from "../constants";
 import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } from "../types";
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
+import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
 const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";

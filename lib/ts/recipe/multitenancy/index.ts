@@ -39,7 +39,7 @@ export default class Wrapper {
     }
 
     static async deleteTenant(
-        tenantId?: string,
+        tenantId: string,
         userContext?: any
     ): Promise<{
         status: "OK";

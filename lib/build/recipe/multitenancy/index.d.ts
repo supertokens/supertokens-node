@@ -19,7 +19,7 @@ export default class Wrapper {
         createdNew: boolean;
     }>;
     static deleteTenant(
-        tenantId?: string,
+        tenantId: string,
         userContext?: any
     ): Promise<{
         status: "OK";

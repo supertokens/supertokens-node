@@ -122,7 +122,7 @@ export type RecipeInterface = {
         createdNew: boolean;
     }>;
     deleteTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
