@@ -17,7 +17,6 @@ import { send200Response, makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
 export default async function loginMethodsAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    const userContext = makeDefaultUserContextFromAPI(options.req);
     if (apiImplementation.loginMethodsGET === undefined) {
         return false;
     }
@@ -25,6 +24,7 @@ export default async function loginMethodsAPI(apiImplementation: APIInterface, o
     let tenantId = options.req.getKeyValueFromQuery("tenantId");
     const clientType = options.req.getKeyValueFromQuery("clientType");
 
+    const userContext = makeDefaultUserContextFromAPI(options.req);
     tenantId = await options.recipeImplementation.getTenantId({ tenantIdFromFrontend: tenantId, userContext });
 
     const result = await apiImplementation.loginMethodsGET({ tenantId, clientType, options, userContext });

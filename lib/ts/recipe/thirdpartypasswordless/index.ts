@@ -31,6 +31,20 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
+    static async thirdPartyGetProvider(
+        thirdPartyId: string,
+        tenantId: string | undefined,
+        clientType: string | undefined,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
+            thirdPartyId,
+            tenantId,
+            clientType,
+            userContext,
+        });
+    }
+
     static thirdPartyManuallyCreateOrUpdateUser(
         thirdPartyId: string,
         thirdPartyUserId: string,
@@ -203,6 +217,8 @@ export default class Wrapper {
 export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
+
+export let thirdPartyGetProvider = Wrapper.thirdPartyGetProvider;
 
 export let thirdPartyManuallyCreateOrUpdateUser = Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 

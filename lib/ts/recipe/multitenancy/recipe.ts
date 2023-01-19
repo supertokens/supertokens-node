@@ -43,7 +43,7 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    staticThirdPartyProviders: ProviderInput[];
+    staticThirdPartyProviders: ProviderInput[] = [];
 
     getTenantIdForUserId: GetTenantIdForUserId;
 
@@ -72,8 +72,6 @@ export default class Recipe extends RecipeModule {
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
-        this.staticThirdPartyProviders = [];
-
         this.getTenantIdForUserId = async (userId, userContext) => {
             if (this.config.getTenantIdForUserId !== undefined) {
                 return this.config.getTenantIdForUserId(userId, userContext);
@@ -88,10 +86,6 @@ export default class Recipe extends RecipeModule {
             return {
                 status: "UNKNOWN_USER_ID_ERROR",
             };
-        };
-
-        this.addGetTenantIdForUserIdFunc = (f) => {
-            this.getTenantIdForUserIdFuncsFromOtherRecipes.push(f);
         };
 
         this.getAllowedDomainsForTenantId = this.config.getAllowedDomainsForTenantId;

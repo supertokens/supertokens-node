@@ -7,6 +7,16 @@ import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
+    static thirdPartyGetProvider(
+        thirdPartyId: string,
+        tenantId: string | undefined,
+        clientType: string | undefined,
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+        provider: TypeProvider;
+        thirdPartyEnabled: boolean;
+    }>;
     static thirdPartyManuallyCreateOrUpdateUser(
         thirdPartyId: string,
         thirdPartyUserId: string,
@@ -93,6 +103,7 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let emailPasswordSignUp: typeof Wrapper.emailPasswordSignUp;
 export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
+export declare let thirdPartyGetProvider: typeof Wrapper.thirdPartyGetProvider;
 export declare let thirdPartyManuallyCreateOrUpdateUser: typeof Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 export declare let getUserById: typeof Wrapper.getUserById;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;

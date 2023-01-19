@@ -47,7 +47,7 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     return {
         getTenantIdForUserId: config?.getTenantIdForUserId,
         getAllowedDomainsForTenantId: config?.getAllowedDomainsForTenantId,
-        override,
         errorHandlers,
+        override,
     };
 }

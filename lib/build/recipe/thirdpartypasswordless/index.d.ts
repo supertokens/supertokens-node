@@ -14,6 +14,16 @@ import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
+    static thirdPartyGetProvider(
+        thirdPartyId: string,
+        tenantId: string | undefined,
+        clientType: string | undefined,
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+        provider: TypeProvider;
+        thirdPartyEnabled: boolean;
+    }>;
     static thirdPartyManuallyCreateOrUpdateUser(
         thirdPartyId: string,
         thirdPartyUserId: string,
@@ -252,6 +262,7 @@ export default class Wrapper {
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
+export declare let thirdPartyGetProvider: typeof Wrapper.thirdPartyGetProvider;
 export declare let thirdPartyManuallyCreateOrUpdateUser: typeof Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 export declare let passwordlessSignInUp: typeof Wrapper.passwordlessSignInUp;
 export declare let getUserById: typeof Wrapper.getUserById;
