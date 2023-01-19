@@ -20,6 +20,7 @@ import {
     maxVersion,
     normaliseHttpMethod,
     sendNon200ResponseWithMessage,
+    updateTenantId,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -220,8 +221,10 @@ export default class SuperTokens {
             limit: input.limit,
             paginationToken: input.paginationToken,
         });
+
+        const users: { recipeId: string; user: any }[] = response.users;
         return {
-            users: response.users,
+            users: users.map(updateTenantId),
             nextPaginationToken: response.nextPaginationToken,
         };
     };

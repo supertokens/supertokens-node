@@ -172,7 +172,16 @@ export type RecipeInterface = {
             fromUserInfoAPI: { [key: string]: any };
         };
         userContext: any;
-    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: { [key: string]: any };
+            fromUserInfoAPI: { [key: string]: any };
+        };
+    }>;
 
     manuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
@@ -247,5 +256,9 @@ export type APIInterface = {
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { formPostInfoFromProvider: any; options: APIOptions; userContext: any }) => Promise<void>);
+        | ((input: {
+              formPostInfoFromProvider: { [key: string]: any };
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<void>);
 };

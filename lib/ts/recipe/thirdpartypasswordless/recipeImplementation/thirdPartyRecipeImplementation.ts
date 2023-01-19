@@ -25,7 +25,16 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                 fromUserInfoAPI: { [key: string]: any };
             };
             userContext: any;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+        }): Promise<{
+            status: "OK";
+            createdNewUser: boolean;
+            user: User;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload: { [key: string]: any };
+                fromUserInfoAPI: { [key: string]: any };
+            };
+        }> {
             let result = await recipeInterface.thirdPartySignInUp(input);
             if (!("thirdParty" in result.user)) {
                 throw new Error("Should never come here");
@@ -34,6 +43,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
                 status: "OK",
                 createdNewUser: result.createdNewUser,
                 user: result.user,
+                oAuthTokens: result.oAuthTokens,
+                rawUserInfoFromProvider: result.rawUserInfoFromProvider,
             };
         },
 

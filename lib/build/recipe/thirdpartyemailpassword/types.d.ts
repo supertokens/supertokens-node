@@ -110,6 +110,17 @@ export declare type RecipeInterface = {
         status: "OK";
         createdNewUser: boolean;
         user: User;
+        oAuthTokens: {
+            [key: string]: any;
+        };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: {
+                [key: string]: any;
+            };
+            fromUserInfoAPI: {
+                [key: string]: any;
+            };
+        };
     }>;
     thirdPartyManuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;

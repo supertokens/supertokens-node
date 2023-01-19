@@ -11,11 +11,27 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             thirdPartyId,
             thirdPartyUserId,
             email,
+            oAuthTokens,
+            rawUserInfoFromProvider,
         }: {
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload: { [key: string]: any };
+                fromUserInfoAPI: { [key: string]: any };
+            };
+        }): Promise<{
+            status: "OK";
+            createdNewUser: boolean;
+            user: User;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload: { [key: string]: any };
+                fromUserInfoAPI: { [key: string]: any };
+            };
+        }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
                 thirdPartyId,
                 thirdPartyUserId,
@@ -25,6 +41,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 status: "OK",
                 createdNewUser: response.createdNewUser,
                 user: response.user,
+                oAuthTokens,
+                rawUserInfoFromProvider,
             };
         },
 

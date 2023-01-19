@@ -13,3 +13,10 @@ export declare function isAnIpAddress(ipaddress: string): boolean;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
 export declare function humaniseMilliseconds(ms: number): string;
 export declare function makeDefaultUserContextFromAPI(request: BaseRequest): any;
+export declare function updateTenantId(user: {
+    recipeId: string;
+    user: any;
+}): {
+    recipeId: string;
+    user: any;
+};
