@@ -12,14 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking changes
 
 -   The frontend SDK should be updated to a version supporting the header-based sessions!
-    -   supertokens-auth-react: >= 0.30.0
-    -   supertokens-web-js: >= 0.3.0
-    -   supertokens-website: >= 13.0.0
+    -   supertokens-auth-react: >= 0.32.0
+    -   supertokens-web-js: >= 0.5.0
+    -   supertokens-website: >= 16.0.0
     -   supertokens-react-native: >= 4.0.0
     -   !!!TODO: re-check before release and add mobile SDKs
 -   `createNewSession` now requires passing the request as well as the response.
     -   This only requires a change if you manually created sessions (e.g.: during testing)
     -   There is a migration example added below. It uses express, but the same principle applies for other supported frameworks.
+-   Only supporting FDI 1.16
 
 ### Added
 
