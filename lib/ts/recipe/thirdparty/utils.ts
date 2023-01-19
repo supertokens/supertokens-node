@@ -17,13 +17,13 @@ import { NormalisedAppinfo } from "../../types";
 import { RecipeInterface, APIInterface, User } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
 
-export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
-    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
+export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
+    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config?.signInAndUpFeature);
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
+        ...config?.override,
     };
 
     return {

@@ -8,6 +8,7 @@ import { middleware, errorHandler, SessionRequest } from "../../framework/expres
 import NextJS from "../../nextjs";
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import ThirdParty from "../../recipe/thirdparty";
+import Multitenancy from "../../recipe/multitenancy";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
 import { SMTPService as SMTPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
@@ -818,9 +819,112 @@ ThirdPartyEmailPassword.init({
     },
 });
 
+ThirdParty.init();
+
+ThirdParty.init({});
+
+ThirdParty.init({
+    signInAndUpFeature: {},
+});
+
 ThirdParty.init({
     signInAndUpFeature: {
         providers: [],
+    },
+});
+
+Multitenancy.init();
+
+Multitenancy.init({});
+
+Multitenancy.init({
+    getTenantIdForUserId: async function (userId, userContext) {
+        return {
+            status: "OK",
+            tenantId: "tenantId",
+        };
+    },
+    getAllowedDomainsForTenantId: async function (tenantId, userContext) {
+        return {
+            status: "OK",
+            domains: ["example.com"],
+        };
+    },
+});
+
+Multitenancy.init({
+    errorHandlers: {},
+});
+
+Multitenancy.init({
+    errorHandlers: {
+        onRecipeDisabledForTenantError: async function (message, userContext) {},
+        onTenantDoesNotExistError: async function (message, userContext) {},
+    },
+});
+
+Multitenancy.init({
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+                loginMethodsGET: async function ({ tenantId, clientType, options, userContext }) {
+                    return {
+                        status: "OK",
+                        emailPassword: {
+                            enabled: true,
+                        },
+                        passwordless: {
+                            enabled: true,
+                        },
+                        thirdParty: {
+                            enabled: true,
+                            providers: [],
+                        },
+                    };
+                },
+            };
+        },
+        functions: (oI) => {
+            return {
+                ...oI,
+                getTenantId: async function ({ tenantIdFromFrontend, userContext }) {
+                    return tenantIdFromFrontend;
+                },
+
+                createOrUpdateTenant: async function ({ tenantId, config, userContext }) {
+                    return await oI.createOrUpdateTenant({
+                        tenantId,
+                        config,
+                        userContext,
+                    });
+                },
+
+                deleteTenant: async function ({ tenantId, userContext }) {
+                    return await oI.deleteTenant({ tenantId, userContext });
+                },
+
+                getTenantConfig: async function ({ tenantId, userContext }) {
+                    return await oI.getTenantConfig({ tenantId, userContext });
+                },
+
+                listAllTenants: async function ({ userContext }) {
+                    return await oI.listAllTenants({ userContext });
+                },
+
+                createOrUpdateThirdPartyConfig: async function ({ config, skipValidation, userContext }) {
+                    return await oI.createOrUpdateThirdPartyConfig({ config, skipValidation, userContext });
+                },
+
+                deleteThirdPartyConfig: async function ({ tenantId, thirdPartyId, userContext }) {
+                    return await oI.deleteThirdPartyConfig({ tenantId, thirdPartyId, userContext });
+                },
+
+                listThirdPartyConfigsForThirdPartyId: async function ({ thirdPartyId, userContext }) {
+                    return await oI.listThirdPartyConfigsForThirdPartyId({ thirdPartyId, userContext });
+                },
+            };
+        },
     },
 });
 

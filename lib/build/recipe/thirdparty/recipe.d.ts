@@ -19,11 +19,11 @@ export default class Recipe extends RecipeModule {
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
-        config: TypeInput,
+        config: TypeInput | undefined,
         _recipes: {},
         _ingredients: {}
     );
-    static init(config: TypeInput): RecipeListFunction;
+    static init(config?: TypeInput): RecipeListFunction;
     static getInstanceOrThrowError(): Recipe;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];

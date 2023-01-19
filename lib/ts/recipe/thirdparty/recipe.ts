@@ -53,7 +53,7 @@ export default class Recipe extends RecipeModule {
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
-        config: TypeInput,
+        config: TypeInput | undefined,
         _recipes: {},
         _ingredients: {}
     ) {
@@ -88,7 +88,7 @@ export default class Recipe extends RecipeModule {
         });
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(

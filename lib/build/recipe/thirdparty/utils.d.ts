@@ -4,6 +4,6 @@ import { User } from "./types";
 import { TypeInput, TypeNormalisedInput } from "./types";
 export declare function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
-    config: TypeInput
+    config?: TypeInput
 ): TypeNormalisedInput;
 export declare function updateTenantId(user: User): User;
