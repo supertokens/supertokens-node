@@ -13,26 +13,53 @@
  * under the License.
  */
 import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
 export default function Okta(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        config: {
-            clientID: "",
-            thirdPartyId: "okta",
-        },
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
+    if (input.config.name === undefined) {
+        input.config.name = "Okta";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "sub",
+            email: "email",
+            emailVerified: "email_verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.oidcDiscoveryEndpoint === undefined) {
+                if (config.additionalConfig == undefined || config.additionalConfig.oktaDomain == undefined) {
+                    throw new Error("Please provide the oktaDomain in the additionalConfig of the Okta provider.");
+                }
+
+                config.oidcDiscoveryEndpoint = `${config.additionalConfig.oktaDomain}.okta.com`;
+            }
+
+            if (config.scope === undefined) {
+                config.scope = ["openid", "email"];
+            }
+
+            // TODO later if required, client assertion impl
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }
