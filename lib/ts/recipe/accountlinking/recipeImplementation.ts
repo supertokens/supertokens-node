@@ -267,13 +267,16 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 return canCreatePrimaryUser;
             }
 
-            let primaryUser = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/primary"),
-                {
-                    recipeUserId,
-                }
-            );
+            let primaryUser: {
+                status: "OK";
+                user: User;
+            } = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
+                recipeUserId,
+            });
 
+            if (!primaryUser.user.isPrimaryUser) {
+                throw Error("creating primaryUser for recipeUser failed in core");
+            }
             return primaryUser;
         },
         canLinkAccounts: async function (
@@ -463,6 +466,8 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                     throw Error("this error should never be thrown");
                 }
                 await config.onAccountLinked(user, recipeUser.user, userContext);
+            } else {
+                throw Error(`error thrown from core while linking accounts: ${accountsLinkingResult.status}`);
             }
             return accountsLinkingResult;
         },
@@ -524,6 +529,8 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             );
             if (accountsUnlinkingResult.status === "OK") {
                 await Session.revokeAllSessionsForUser(recipeUserId, userContext);
+            } else {
+                throw Error(`error thrown from core while unlinking accounts: ${accountsUnlinkingResult.status}`);
             }
 
             return {
@@ -544,7 +551,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             this: RecipeInterface,
             { info }: { info: AccountInfo }
         ): Promise<User[] | undefined> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+            let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
                 ...info,
             });
             if (result.status === "OK") {
@@ -556,7 +563,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             this: RecipeInterface,
             { info }: { info: AccountInfoWithRecipeId }
         ): Promise<User | undefined> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+            let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
                 ...info,
             });
             if (result.status === "OK") {
