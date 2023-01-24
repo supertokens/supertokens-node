@@ -1410,10 +1410,11 @@ Passwordless.init({
                     let device = await Passwordless.listCodesByPreAuthSessionId({
                         preAuthSessionId: input.preAuthSessionId,
                     });
-                    if (device !== undefined) {
+                    if (device !== undefined && input.userContext.calledManually === undefined) {
                         if (device.phoneNumber === "TEST_PHONE_NUMBER") {
                             let user = await Passwordless.signInUp({
                                 phoneNumber: "TEST_PHONE_NUMBER",
+                                userContext: { calledManually: true },
                             });
                             return {
                                 status: "OK",
