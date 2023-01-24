@@ -1398,3 +1398,33 @@ app.post("/create-anonymous-session", async (req, res) => {
         token: token.jwt,
     });
 });
+
+Passwordless.init({
+    contactMethod: "EMAIL",
+    flowType: "MAGIC_LINK",
+    override: {
+        functions: (original) => {
+            return {
+                ...original,
+                consumeCode: async function (input) {
+                    let device = await Passwordless.listCodesByPreAuthSessionId({
+                        preAuthSessionId: input.preAuthSessionId,
+                    });
+                    if (device !== undefined) {
+                        if (device.phoneNumber === "TEST_PHONE_NUMBER") {
+                            let user = await Passwordless.signInUp({
+                                phoneNumber: "TEST_PHONE_NUMBER",
+                            });
+                            return {
+                                status: "OK",
+                                createdNewUser: user.createdNewUser,
+                                user: user.user,
+                            };
+                        }
+                    }
+                    return original.consumeCode(input);
+                },
+            };
+        },
+    },
+});
