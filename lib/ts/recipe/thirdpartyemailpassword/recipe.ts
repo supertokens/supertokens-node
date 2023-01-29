@@ -118,7 +118,6 @@ export default class Recipe extends RecipeModule {
                           signUpFeature: {
                               formFields: this.config.signUpFeature.formFields,
                           },
-                          resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
                       },
                       {
                           emailDelivery: this.emailDelivery,

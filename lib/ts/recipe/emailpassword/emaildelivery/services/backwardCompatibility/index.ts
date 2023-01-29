@@ -12,10 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
+import { TypeEmailPasswordEmailDeliveryInput, RecipeInterface } from "../../../types";
 import { createAndSendCustomEmail as defaultCreateAndSendCustomEmail } from "../../../passwordResetFunctions";
 import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import { getUser } from "../../../../..";
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
@@ -23,42 +24,56 @@ export default class BackwardCompatibilityService
     private isInServerlessEnv: boolean;
     private appInfo: NormalisedAppinfo;
     private resetPasswordUsingTokenFeature: {
-        createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
+        createAndSendCustomEmail: (
+            user: {
+                id: string;
+                recipeUserId?: string;
+                email: string;
+                timeJoined: number;
+            },
+            passwordResetURLWithToken: string,
+            userContext: any
+        ) => Promise<void>;
     };
 
-    constructor(
-        recipeInterfaceImpl: RecipeInterface,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        resetPasswordUsingTokenFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                passwordResetURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
+    constructor(recipeInterfaceImpl: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         this.recipeInterfaceImpl = recipeInterfaceImpl;
         this.isInServerlessEnv = isInServerlessEnv;
         this.appInfo = appInfo;
         {
-            let inputCreateAndSendCustomEmail = resetPasswordUsingTokenFeature?.createAndSendCustomEmail;
-            this.resetPasswordUsingTokenFeature =
-                inputCreateAndSendCustomEmail !== undefined
-                    ? {
-                          createAndSendCustomEmail: inputCreateAndSendCustomEmail,
-                      }
-                    : {
-                          createAndSendCustomEmail: defaultCreateAndSendCustomEmail(this.appInfo),
-                      };
+            this.resetPasswordUsingTokenFeature = {
+                createAndSendCustomEmail: defaultCreateAndSendCustomEmail(this.appInfo),
+            };
         }
     }
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        let user = await this.recipeInterfaceImpl.getUserById({
-            userId: input.user.recipeUserId,
-            userContext: input.userContext,
-        });
+        let user:
+            | {
+                  id: string;
+                  recipeUserId?: string;
+                  email: string;
+                  timeJoined: number;
+              }
+            | undefined =
+            input.user.recipeUserId !== undefined
+                ? await this.recipeInterfaceImpl.getUserById({
+                      userId: input.user.recipeUserId,
+                      userContext: input.userContext,
+                  })
+                : undefined;
+        if (input.user.recipeUserId === undefined) {
+            let primaryUser = await getUser(input.user.id);
+            if (primaryUser === undefined) {
+                throw Error("this should never come here");
+            }
+            user = {
+                id: primaryUser.id,
+                recipeUserId: undefined,
+                timeJoined: primaryUser.timeJoined,
+                email: input.user.email,
+            };
+        }
         if (user === undefined) {
             throw Error("this should never come here");
         }

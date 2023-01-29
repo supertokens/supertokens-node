@@ -114,6 +114,10 @@ export default class Wrapper {
               status: "NO_PRIMARY_USER_FOUND";
           }
     >;
+    static getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(
+        recipeUserId: string,
+        userContext?: any
+    ): Promise<import("../../types").User | undefined>;
     static isSignUpAllowed(info: AccountInfoAndEmailWithRecipeId, userContext: any): Promise<boolean>;
     static doPostSignUpAccountLinkingOperations(
         info: AccountInfoAndEmailWithRecipeId,
@@ -142,13 +146,25 @@ export default class Wrapper {
           } & {
               accountsLinked: false;
               reason:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR"
+                  | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
                   | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
                   | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
           })
+        | ({
+              createRecipeUser: false;
+          } & {
+              accountsLinked: false;
+              reason:
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          })
     >;
+    static createPrimaryUserIdOrLinkAccounts(
+        recipeUserId: string,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ): Promise<void>;
 }
 export declare const init: typeof Recipe.init;
 export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
@@ -159,7 +175,9 @@ export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
 export declare const unlinkAccounts: typeof Wrapper.unlinkAccounts;
+export declare const getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export declare const doPostSignUpAccountLinkingOperations: typeof Wrapper.doPostSignUpAccountLinkingOperations;
 export declare const accountLinkPostSignInViaSession: typeof Wrapper.accountLinkPostSignInViaSession;
+export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
 export type { RecipeInterface };

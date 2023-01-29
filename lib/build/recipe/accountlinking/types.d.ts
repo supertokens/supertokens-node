@@ -179,6 +179,10 @@ export declare type RecipeInterface = {
     }) => Promise<{
         status: "OK";
     }>;
+    getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId: (input: {
+        recipeUserId: string;
+        userContext: any;
+    }) => Promise<User | undefined>;
 };
 export declare type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";

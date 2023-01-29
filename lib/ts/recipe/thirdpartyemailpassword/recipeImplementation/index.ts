@@ -109,7 +109,7 @@ export default function getRecipeInterface(
                 userContext: any;
             }
         ): Promise<{
-            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
         }> {
             let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {

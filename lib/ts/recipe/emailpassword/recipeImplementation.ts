@@ -1,6 +1,8 @@
 import { RecipeInterface, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { getUser, listUsersByAccountInfo } from "../..";
+import EmailVerification from "../emailverification/recipe";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
@@ -72,11 +74,14 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         createResetPasswordToken: async function ({
             userId,
+            email,
         }: {
             userId: string;
+            email: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
                 userId,
+                email,
             });
             if (response.status === "OK") {
                 return {
@@ -116,13 +121,54 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userId: string;
             email?: string;
             password?: string;
-        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<{
+            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+        }> {
+            let markEmailAsVerified = false;
+            if (input.email !== undefined) {
+                let userForUserId = await getUser(input.userId);
+                if (userForUserId !== undefined && userForUserId.isPrimaryUser) {
+                    let usersForEmail = await listUsersByAccountInfo({
+                        email: input.email,
+                    });
+                    if (usersForEmail !== undefined) {
+                        let primaryUserFromEmailUsers = usersForEmail.find((u) => u.isPrimaryUser);
+                        if (primaryUserFromEmailUsers !== undefined) {
+                            if (primaryUserFromEmailUsers.id !== userForUserId.id) {
+                                return {
+                                    status: "EMAIL_CHANGE_NOT_ALLOWED",
+                                };
+                            }
+                            markEmailAsVerified = true;
+                        }
+                    }
+                }
+            }
             let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                 userId: input.userId,
                 email: input.email,
                 password: input.password,
             });
             if (response.status === "OK") {
+                if (markEmailAsVerified && input.email !== undefined) {
+                    const emailVerificationInstance = EmailVerification.getInstance();
+                    if (emailVerificationInstance) {
+                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                userId: input.userId,
+                                email: input.email,
+                                userContext: undefined,
+                            }
+                        );
+
+                        if (tokenResponse.status === "OK") {
+                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                token: tokenResponse.token,
+                                userContext: undefined,
+                            });
+                        }
+                    }
+                }
                 return {
                     status: "OK",
                 };

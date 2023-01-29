@@ -85,6 +85,15 @@ export default class Wrapper {
         });
     }
 
+    static async getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(recipeUserId: string, userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(
+            {
+                recipeUserId,
+                userContext: userContext === undefined ? {} : userContext,
+            }
+        );
+    }
+
     static async isSignUpAllowed(info: AccountInfoAndEmailWithRecipeId, userContext: any) {
         return await Recipe.getInstanceOrThrowError().isSignUpAllowed({
             info,
@@ -119,6 +128,18 @@ export default class Wrapper {
             userContext,
         });
     }
+
+    static async createPrimaryUserIdOrLinkAccounts(
+        recipeUserId: string,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts({
+            recipeUserId,
+            session,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
 }
 
 export const init = Wrapper.init;
@@ -130,8 +151,11 @@ export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccounts = Wrapper.unlinkAccounts;
+export const getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId =
+    Wrapper.getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 export const doPostSignUpAccountLinkingOperations = Wrapper.doPostSignUpAccountLinkingOperations;
 export const accountLinkPostSignInViaSession = Wrapper.accountLinkPostSignInViaSession;
+export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
 
 export type { RecipeInterface };

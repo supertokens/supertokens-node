@@ -194,6 +194,10 @@ export type RecipeInterface = {
         removeAllLinkedAccounts: boolean;
         userContext: any;
     }) => Promise<{ status: "OK" }>;
+    getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId: (input: {
+        recipeUserId: string;
+        userContext: any;
+    }) => Promise<User | undefined>;
 };
 
 export type RecipeLevelUser = {

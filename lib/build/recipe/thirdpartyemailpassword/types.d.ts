@@ -4,7 +4,6 @@ import {
     NormalisedFormField,
     TypeFormField,
     TypeInputFormField,
-    TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
     TypeEmailPasswordEmailDeliveryInput,
     RecipeInterface as EPRecipeInterface,
@@ -47,7 +46,6 @@ export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -63,7 +61,6 @@ export declare type TypeNormalisedInput = {
         emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -149,7 +146,7 @@ export declare type RecipeInterface = {
         password?: string;
         userContext: any;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
     }>;
 };
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;

@@ -47,12 +47,6 @@ export declare type TypeNormalisedInputSignUp = {
 export declare type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
 };
-export declare type TypeInputResetPasswordUsingTokenFeature = {
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
-};
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
@@ -66,7 +60,6 @@ export declare type User = {
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -148,7 +141,7 @@ export declare type RecipeInterface = {
         password?: string;
         userContext: any;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
     }>;
 };
 export declare type APIOptions = {
@@ -304,7 +297,7 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
-        recipeUserId: string;
+        recipeUserId?: string;
         email: string;
     };
     passwordResetLink: string;

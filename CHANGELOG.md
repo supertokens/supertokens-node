@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Type of `User` object returned by get users function
 -   Functions `deleteuser`, `getUsersNewestFirst` and `getUsersOldestFirst` are now based on account linking recipe
 -   Function `deleteuser` takes a new parameter `removeAllLinkedAccounts` which will be `true` by default
+-   Generate Password Reset Token API logic updated
+
+### Removed:
+
+-   For EmailPassword recipe input, resetPasswordUsingTokenFeature user input removed
 
 ## [12.1.0] - 2022-11-17
 
