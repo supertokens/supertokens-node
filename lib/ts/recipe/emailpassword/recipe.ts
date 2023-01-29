@@ -25,6 +25,7 @@ import {
     GENERATE_PASSWORD_RESET_TOKEN_API,
     PASSWORD_RESET_API,
     SIGNUP_EMAIL_EXISTS_API,
+    LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -157,6 +158,12 @@ export default class Recipe extends RecipeModule {
                 pathWithoutApiBasePath: new NormalisedURLPath(SIGNUP_EMAIL_EXISTS_API),
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
+                id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
+                disabled: this.apiImpl.linkAccountToExistingAccountPOST === undefined,
             },
         ];
     };
