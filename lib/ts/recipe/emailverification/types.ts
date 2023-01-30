@@ -75,12 +75,13 @@ export type TypeNormalisedInput = {
 
 export type User = {
     id: string;
+    recipeUserId: string;
     email: string;
 };
 
 export type RecipeInterface = {
     createEmailVerificationToken(input: {
-        userId: string;
+        userId: string; // userId can be either recipeUserId or primaryUserId
         email: string;
         userContext: any;
     }): Promise<
@@ -157,6 +158,7 @@ export type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: {
         id: string;
+        recipeUserId: string;
         email: string;
     };
     emailVerifyLink: string;
