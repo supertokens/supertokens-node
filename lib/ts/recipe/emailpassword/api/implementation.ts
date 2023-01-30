@@ -569,19 +569,52 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
+            let isSignUpAllowed = await AccountLinkingRecipe.getInstanceOrThrowError().isSignUpAllowed({
+                info: {
+                    recipeId: "emailpassword",
+                    email,
+                },
+                userContext,
+            });
+
+            if (!isSignUpAllowed) {
+                return {
+                    status: "SIGNUP_NOT_ALLOWED",
+                    reason: "the sign-up info is already associated with another account where it is not verified",
+                };
+            }
             let response = await options.recipeImplementation.signUp({ email, password, userContext });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
                 return response;
             }
             let user = response.user;
 
-            let session = await Session.createNewSession(options.res, user.id, user.recipeUserId, {}, {}, userContext);
+            let userIdForSession = await AccountLinkingRecipe.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations(
+                {
+                    info: {
+                        email,
+                        recipeId: "emailpassword",
+                    },
+                    recipeUserId: user.id,
+                    userContext,
+                    infoVerified: false,
+                }
+            );
+
+            let session = await Session.createNewSession(
+                options.res,
+                userIdForSession,
+                user.recipeUserId,
+                {},
+                {},
+                userContext
+            );
             return {
                 status: "OK",
                 session,
                 user,
-                createdNewUser: true, // TODO
-                createdNewRecipeUser: true, // TODO
+                createdNewUser: userIdForSession === user.recipeUserId, // TODO
+                createdNewRecipeUser: true,
             };
         },
     };
