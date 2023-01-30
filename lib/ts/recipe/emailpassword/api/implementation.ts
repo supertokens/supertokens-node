@@ -4,6 +4,7 @@ import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
+import AccountLinking from "../../accountlinking";
 import AccountLinkingRecipe from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 
@@ -52,15 +53,15 @@ export default function getAPIImplementation(): APIInterface {
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
-            let result = await AccountLinkingRecipe.getInstanceOrThrowError().accountLinkPostSignInViaSession({
+            let result = await AccountLinking.accountLinkPostSignInViaSession(
                 session,
-                info: {
+                {
                     email,
                     recipeId: "emailpassword",
                 },
-                infoVerified: false,
-                userContext,
-            });
+                false,
+                userContext
+            );
             let createdNewRecipeUser = false;
             if (result.createRecipeUser) {
                 let password = formFields.filter((f) => f.id === "password")[0].value;
@@ -80,15 +81,15 @@ export default function getAPIImplementation(): APIInterface {
                         description: "",
                     };
                 } else {
-                    result = await AccountLinkingRecipe.getInstanceOrThrowError().accountLinkPostSignInViaSession({
+                    result = await AccountLinking.accountLinkPostSignInViaSession(
                         session,
-                        info: {
+                        {
                             email,
                             recipeId: "emailpassword",
                         },
-                        infoVerified: false,
-                        userContext,
-                    });
+                        false,
+                        userContext
+                    );
                 }
             }
             if (result.createRecipeUser) {
@@ -470,11 +471,7 @@ export default function getAPIImplementation(): APIInterface {
                         }
                         let recipeUser = response.user;
                         await verifyUser(response.user.id);
-                        await AccountLinkingRecipe.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
-                            recipeUserId: recipeUser.id,
-                            primaryUserId: user.id,
-                            userContext,
-                        });
+                        await AccountLinking.linkAccounts(recipeUser.id, user.id, userContext);
                     } else if (!epUser.verified) {
                         await verifyUser(epUser.id);
                     }
