@@ -5,40 +5,63 @@ import { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
+import { getUser } from "../../..";
+import Session from "../../session";
+import AccountLinking from "../../accountlinking";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        verifyEmailPOST: async function ({
-            token,
-            options,
-            session,
-            userContext,
-        }): Promise<
+        verifyEmailPOST: async function (
+            this: APIInterface,
+            { token, options, session, userContext }
+        ): Promise<
             { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
         > {
             const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
-            if (res.status === "OK" && session !== undefined) {
-                try {
-                    await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
-                } catch (err) {
-                    // This should never happen, since we've just set the status above.
-                    if ((err as Error).message === "UNKNOWN_USER_ID") {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Unknown User ID provided",
-                        });
+            if (res.status === "OK") {
+                await AccountLinking.createPrimaryUserIdOrLinkAccounts(res.user.recipeUserId, session, userContext);
+                if (session !== undefined) {
+                    try {
+                        await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                    } catch (err) {
+                        // This should never happen, since we've just set the status above.
+                        if ((err as Error).message === "UNKNOWN_USER_ID") {
+                            throw new SessionError({
+                                type: SessionError.UNAUTHORISED,
+                                message: "Unknown User ID provided",
+                            });
+                        }
+                        throw err;
                     }
-                    throw err;
+                }
+                // checking if a new primaryUserId has been associated with recipeUserId
+                // if user.id equals to user.recipeUserId, there are chances that
+                // a primaryUserId, different from user.id got associated with the
+                // recipe user. So we use getUser function
+                if (res.user.id === res.user.recipeUserId) {
+                    let user = await getUser(res.user.recipeUserId);
+                    if (user === undefined) {
+                        throw Error(
+                            `this error should never be thrown. user not found after verification: ${res.user.recipeUserId}`
+                        );
+                    }
+                    return {
+                        status: "OK",
+                        user: {
+                            ...res.user,
+                            id: user.id,
+                        },
+                    };
                 }
             }
             return res;
         },
 
-        isEmailVerifiedGET: async function ({
-            userContext,
-            session,
-        }): Promise<
+        isEmailVerifiedGET: async function (
+            this: APIInterface,
+            { userContext, session }
+        ): Promise<
             | {
                   status: "OK";
                   isVerified: boolean;
@@ -72,11 +95,10 @@ export default function getAPIInterface(): APIInterface {
             };
         },
 
-        generateEmailVerifyTokenPOST: async function ({
-            options,
-            userContext,
-            session,
-        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
+        generateEmailVerifyTokenPOST: async function (
+            this: APIInterface,
+            { options, userContext, session }
+        ): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
             }
@@ -84,8 +106,44 @@ export default function getAPIInterface(): APIInterface {
             const userId = session.getUserId();
             const recipeUserId = session.getRecipeUserId();
 
+            let user = await getUser(recipeUserId, userContext);
+
+            if (user === undefined) {
+                throw Error(`this error should not be thrown. session recipe user not found: ${userId}`);
+            }
+            if (user.isPrimaryUser) {
+                if (user.id !== userId) {
+                    session = await Session.createNewSession(
+                        options.res,
+                        user.id,
+                        recipeUserId,
+                        session.getAccessTokenPayload(),
+                        await session.getSessionData()
+                    );
+                }
+            }
+
+            // TODO: session claim exists for account linking
+            let recipeUserIdFromSessionClaim = recipeUserId;
+
+            let recipeUser = user.loginMethods.find((u) => u.recipeUserId === recipeUserId);
+
+            if (recipeUser === undefined) {
+                throw Error(`this error should not be thrown. recipe user not found: ${userId}`);
+            }
+
+            let isRecipeUserAccountVerified = recipeUser.verified;
+
+            let userIdForEmailVerification: string;
+
+            if (recipeUserIdFromSessionClaim === recipeUserId || !isRecipeUserAccountVerified) {
+                userIdForEmailVerification = recipeUserId;
+            } else {
+                userIdForEmailVerification = recipeUserIdFromSessionClaim;
+            }
+
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
-                recipeUserId,
+                userIdForEmailVerification,
                 userContext
             );
 
@@ -98,7 +156,7 @@ export default function getAPIInterface(): APIInterface {
                 };
             } else if (emailInfo.status === "OK") {
                 let response = await options.recipeImplementation.createEmailVerificationToken({
-                    userId: recipeUserId,
+                    userId: userIdForEmailVerification,
                     email: emailInfo.email,
                     userContext,
                 });
@@ -134,7 +192,7 @@ export default function getAPIInterface(): APIInterface {
                     type: "EMAIL_VERIFICATION",
                     user: {
                         id: userId,
-                        recipeUserId,
+                        recipeUserId: userIdForEmailVerification,
                         email: emailInfo.email,
                     },
                     emailVerifyLink,
