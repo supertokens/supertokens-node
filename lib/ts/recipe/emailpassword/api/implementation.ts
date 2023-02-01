@@ -566,13 +566,13 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let isSignUpAllowed = await AccountLinkingRecipe.getInstanceOrThrowError().isSignUpAllowed({
-                info: {
+            let isSignUpAllowed = await AccountLinking.isSignUpAllowed(
+                {
                     recipeId: "emailpassword",
                     email,
                 },
-                userContext,
-            });
+                userContext
+            );
 
             if (!isSignUpAllowed) {
                 return {
@@ -586,16 +586,14 @@ export default function getAPIImplementation(): APIInterface {
             }
             let user = response.user;
 
-            let userIdForSession = await AccountLinkingRecipe.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations(
+            let userIdForSession = await AccountLinking.doPostSignUpAccountLinkingOperations(
                 {
-                    info: {
-                        email,
-                        recipeId: "emailpassword",
-                    },
-                    recipeUserId: user.id,
-                    userContext,
-                    infoVerified: false,
-                }
+                    email,
+                    recipeId: "emailpassword",
+                },
+                false,
+                user.id,
+                userContext
             );
 
             let session = await Session.createNewSession(
