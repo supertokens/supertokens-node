@@ -56,6 +56,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.tes
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         openIdFeature: {
@@ -103,7 +104,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.tes
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "", {}, {});
+            let session = await Session.createNewSession(req, res, "", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -160,6 +161,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.tes
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         openIdFeature: {

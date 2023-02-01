@@ -105,12 +105,14 @@ export default function (
         createNewSession: async function (
             this: RecipeInterface,
             {
+                req,
                 res,
                 userId,
                 accessTokenPayload,
                 sessionData,
                 userContext,
             }: {
+                req: BaseRequest;
                 res: BaseResponse;
                 userId: string;
                 accessTokenPayload?: any;
@@ -132,6 +134,7 @@ export default function (
             });
 
             let sessionContainer = await originalImplementation.createNewSession({
+                req,
                 res,
                 userId,
                 accessTokenPayload,

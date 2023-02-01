@@ -63,19 +63,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -97,7 +110,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -144,19 +157,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -178,7 +204,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "", {}, {});
+            let session = await Session.createNewSession(req, res, "", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -198,7 +224,11 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         );
 
         let responseInfo = extractInfoFromResponse(createJWTResponse);
-        let accessTokenExpiryInSeconds = new Date(responseInfo.accessTokenExpiry).getTime() / 1000;
+
+        let accessTokenExpiryInSeconds =
+            JSON.parse(
+                Buffer.from(decodeURIComponent(responseInfo.accessToken).split(".")[1], "base64").toString("utf-8")
+            ).expiryTime / 1000;
         let sessionHandle = createJWTResponse.body.sessionHandle;
         let sessionInformation = await Session.getSessionInformation(sessionHandle);
 
@@ -206,8 +236,9 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         let jwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
         let expiryDiff = jwtExpiryInSeconds - accessTokenExpiryInSeconds;
 
-        // We check that JWT expiry is 30 seconds more than access token expiry. Accounting for a 5ms skew
-        assert(27 <= expiryDiff && expiryDiff <= 32);
+        // We check that JWT expiry is 30 seconds more than access token expiry. Accounting for a 5s skew
+        assert(27 <= expiryDiff);
+        assert(expiryDiff <= 32);
     });
 
     it("Test that when a session is refreshed, the JWT expiry is updated correctly", async function () {
@@ -223,19 +254,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -257,7 +301,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -298,10 +342,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         let refreshResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + responseInfo.refreshToken,
-                    "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + responseInfo.refreshToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -345,14 +386,14 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
-                                    accessTokenPayload = {
-                                        ...accessTokenPayload,
+                                createNewSession: async function (input) {
+                                    const accessTokenPayload = {
+                                        ...input.accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({ ...input, accessTokenPayload });
                                 },
                             };
                         },
@@ -374,7 +415,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -430,19 +471,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -464,7 +518,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -519,18 +573,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -552,7 +619,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "", {}, {});
+            let session = await Session.createNewSession(req, res, "", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -594,19 +661,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -638,18 +718,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -671,7 +764,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -714,19 +807,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -738,10 +844,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + responseInfo.refreshToken,
-                    "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + responseInfo.refreshToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -772,19 +875,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -806,7 +922,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -849,18 +965,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         sub: "customsub",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -882,7 +1011,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -924,19 +1053,32 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -958,7 +1100,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1001,18 +1143,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         iss: "customIss",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1034,7 +1189,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1074,18 +1229,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1107,7 +1275,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1167,18 +1335,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1200,7 +1381,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1236,10 +1417,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + responseInfo.refreshToken,
-                    "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + responseInfo.refreshToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1273,18 +1451,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true, propertyNameInAccessTokenPayload: "customPropertyName" },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1306,7 +1497,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1348,18 +1539,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1381,7 +1585,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1412,10 +1616,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         let refreshResponse = await new Promise((resolve) =>
             request(app)
                 .post("/refreshsession")
-                .set("Cookie", [
-                    "sRefreshToken=" + responseInfo.refreshToken,
-                    "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + responseInfo.refreshToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1445,18 +1646,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1478,7 +1692,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1520,10 +1734,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + responseInfo.refreshToken,
-                    "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + responseInfo.refreshToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1554,18 +1765,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1587,7 +1811,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1621,18 +1845,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true, propertyNameInAccessTokenPayload: "jwtProperty" },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1665,18 +1902,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1698,7 +1948,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1733,18 +1983,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true, propertyNameInAccessTokenPayload: "jwtProperty" },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1756,10 +2019,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + responseInfo.refreshToken,
-                    "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + responseInfo.refreshToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1794,18 +2054,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1827,7 +2100,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1866,10 +2139,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + responseInfo.refreshToken,
-                    "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + responseInfo.refreshToken])
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1905,18 +2175,31 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     jwt: { enable: true },
                     override: {
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1938,7 +2221,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1999,11 +2282,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    jwt: { enable: true },
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", jwt: { enable: true } })],
         });
 
         // Only run for version >= 2.9
@@ -2019,7 +2298,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", undefined, {});
+            let session = await Session.createNewSession(req, res, "userId", undefined, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 

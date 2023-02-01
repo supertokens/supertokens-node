@@ -89,7 +89,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -168,7 +168,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -247,7 +247,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

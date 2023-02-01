@@ -1016,10 +1016,7 @@ Supertokens.init({
         websiteDomain: "",
     },
     recipeList: [
-        Session.init({
-            antiCsrf: "NONE",
-            cookieDomain: "",
-        }),
+        Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE", cookieDomain: "" }),
         EmailPassword.init({
             override: {},
         }),
@@ -1203,7 +1200,7 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        let session = await Session.createNewSession(options.res, user.id);
+                        let session = await Session.createNewSession(options.req, options.res, user.id);
                         return {
                             status: "OK",
                             session,
@@ -1371,6 +1368,14 @@ Supertokens.init({
 
 Dashboard.init({
     apiKey: "",
+});
+
+Session.init({
+    getTokenTransferMethod: () => "cookie",
+});
+
+Session.init({
+    getTokenTransferMethod: () => "header",
 });
 
 Supertokens.init({
