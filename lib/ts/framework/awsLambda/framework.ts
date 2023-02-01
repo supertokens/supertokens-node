@@ -222,7 +222,7 @@ export class AWSResponse extends BaseResponse {
     sendJSONResponse = (content: any) => {
         if (!this.responseSet) {
             this.content = JSON.stringify(content);
-            this.setHeader("Context-Type", "application/json", false);
+            this.setHeader("Content-Type", "application/json", false);
             this.responseSet = true;
         }
     };

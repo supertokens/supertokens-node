@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [13.0.0] - 2023-01-08
+## [13.0.0] - 2023-02-01
 
 ### Breaking changes
 
@@ -51,6 +51,14 @@ app.post("/create", async (req, res) => {
     res.status(200).json({ message: true });
 });
 ```
+
+## [12.1.6] - 2023-01-22
+
+-   Updates jsonwebtoken dependency to version 9.0.0 to fix vulnerability in it's `verify` function.
+
+## [12.1.5] - 2022-12-10
+
+-   Fixes Content-type header in AWS lambda framework
 
 ## [12.1.4] - 2022-12-26
 
