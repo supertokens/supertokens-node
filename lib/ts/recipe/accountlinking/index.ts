@@ -15,8 +15,8 @@
 
 import { SessionContainer } from "../session";
 import Recipe from "./recipe";
-import type { AccountInfoAndEmailWithRecipeId, RecipeInterface } from "./types";
-
+import type { AccountInfoAndEmailWithRecipeId, RecipeInterface, RecipeLevelUser } from "./types";
+import type { User } from "../../types";
 export default class Wrapper {
     static init = Recipe.init;
 
@@ -140,6 +140,30 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
+    static async onAccountLinked(user: User, newAccountInfo: RecipeLevelUser, userContext?: any) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstanceOrThrowError().config.onAccountLinked(user, newAccountInfo, userContext);
+    }
+
+    static async shouldDoAutomaticAccountLinking(
+        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        user: User | undefined,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+            newAccountInfo,
+            user,
+            session,
+            userContext
+        );
+    }
+
+    static getIdentitiesForUser(user: User) {
+        return Recipe.getInstanceOrThrowError().getIdentitiesForUser(user);
+    }
 }
 
 export const init = Wrapper.init;
@@ -157,5 +181,8 @@ export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 export const doPostSignUpAccountLinkingOperations = Wrapper.doPostSignUpAccountLinkingOperations;
 export const accountLinkPostSignInViaSession = Wrapper.accountLinkPostSignInViaSession;
 export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
+export const onAccountLinked = Wrapper.onAccountLinked;
+export const shouldDoAutomaticAccountLinking = Wrapper.shouldDoAutomaticAccountLinking;
+export const getIdentitiesForUser = Wrapper.getIdentitiesForUser;
 
 export type { RecipeInterface };

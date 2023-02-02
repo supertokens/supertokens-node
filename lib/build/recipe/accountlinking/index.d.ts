@@ -1,7 +1,8 @@
 // @ts-nocheck
 import { SessionContainer } from "../session";
 import Recipe from "./recipe";
-import type { AccountInfoAndEmailWithRecipeId, RecipeInterface } from "./types";
+import type { AccountInfoAndEmailWithRecipeId, RecipeInterface, RecipeLevelUser } from "./types";
+import type { User } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static getRecipeUserIdsForPrimaryUserIds(
@@ -46,7 +47,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: import("../../types").User;
+              user: User;
           }
         | {
               status:
@@ -117,7 +118,7 @@ export default class Wrapper {
     static getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(
         recipeUserId: string,
         userContext?: any
-    ): Promise<import("../../types").User | undefined>;
+    ): Promise<User | undefined>;
     static isSignUpAllowed(info: AccountInfoAndEmailWithRecipeId, userContext: any): Promise<boolean>;
     static doPostSignUpAccountLinkingOperations(
         info: AccountInfoAndEmailWithRecipeId,
@@ -165,6 +166,41 @@ export default class Wrapper {
         session: SessionContainer | undefined,
         userContext?: any
     ): Promise<void>;
+    static onAccountLinked(user: User, newAccountInfo: RecipeLevelUser, userContext?: any): Promise<void>;
+    static shouldDoAutomaticAccountLinking(
+        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        user: User | undefined,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ): Promise<
+        | {
+              shouldAutomaticallyLink: false;
+          }
+        | {
+              shouldAutomaticallyLink: true;
+              shouldRequireVerification: boolean;
+          }
+    >;
+    static getIdentitiesForUser(
+        user: User
+    ): {
+        verified: {
+            emails: string[];
+            phoneNumbers: string[];
+            thirdpartyInfo: {
+                id: string;
+                userId: string;
+            }[];
+        };
+        unverified: {
+            emails: string[];
+            phoneNumbers: string[];
+            thirdpartyInfo: {
+                id: string;
+                userId: string;
+            }[];
+        };
+    };
 }
 export declare const init: typeof Recipe.init;
 export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
@@ -180,4 +216,7 @@ export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export declare const doPostSignUpAccountLinkingOperations: typeof Wrapper.doPostSignUpAccountLinkingOperations;
 export declare const accountLinkPostSignInViaSession: typeof Wrapper.accountLinkPostSignInViaSession;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
+export declare const onAccountLinked: typeof Wrapper.onAccountLinked;
+export declare const shouldDoAutomaticAccountLinking: typeof Wrapper.shouldDoAutomaticAccountLinking;
+export declare const getIdentitiesForUser: typeof Wrapper.getIdentitiesForUser;
 export type { RecipeInterface };

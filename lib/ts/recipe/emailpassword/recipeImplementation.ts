@@ -1,4 +1,5 @@
 import { RecipeInterface, User } from "./types";
+import AccountLinking from "../accountlinking";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser, listUsersByAccountInfo } from "../..";
@@ -9,15 +10,31 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         signUp: async function ({
             email,
             password,
+            doAutomaticAccountLinking,
+            userContext,
         }: {
             email: string;
             password: string;
+            doAutomaticAccountLinking: boolean;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
                 email,
                 password,
             });
             if (response.status === "OK") {
+                if (doAutomaticAccountLinking) {
+                    let primaryUserId = await AccountLinking.doPostSignUpAccountLinkingOperations(
+                        {
+                            email,
+                            recipeId: "emailpassword",
+                        },
+                        false,
+                        response.user.id,
+                        userContext
+                    );
+                    response.user.id = primaryUserId;
+                }
                 return response;
             } else {
                 return {
