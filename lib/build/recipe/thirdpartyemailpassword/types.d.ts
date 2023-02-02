@@ -90,6 +90,7 @@ export declare type RecipeInterface = {
     emailPasswordSignUp(input: {
         email: string;
         password: string;
+        doAutomaticAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {
