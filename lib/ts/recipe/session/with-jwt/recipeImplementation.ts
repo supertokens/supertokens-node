@@ -69,7 +69,7 @@ export default function (
         let decodedPayload = JsonWebToken.decode(existingJwt, { json: true });
 
         // JsonWebToken.decode possibly returns null
-        if (decodedPayload === null) {
+        if (decodedPayload === null || decodedPayload.exp === undefined) {
             throw new Error("Error reading JWT from session");
         }
 
