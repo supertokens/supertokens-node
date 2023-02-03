@@ -60,7 +60,7 @@ export default function getAPIInterface(): APIInterface {
 
         isEmailVerifiedGET: async function (
             this: APIInterface,
-            { userContext, session }
+            { userContext, session, options }
         ): Promise<
             | {
                   status: "OK";
@@ -72,18 +72,77 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            try {
-                await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
-            } catch (err) {
-                if ((err as Error).message === "UNKNOWN_USER_ID") {
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "Unknown User ID provided",
-                    });
-                }
-                throw err;
+            const userId = session.getUserId();
+            const recipeUserId = session.getRecipeUserId();
+
+            let user = await getUser(recipeUserId, userContext);
+
+            if (user === undefined) {
+                throw Error(`this error should not be thrown. session recipe user not found: ${userId}`);
             }
-            const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
+            if (user.isPrimaryUser) {
+                if (user.id !== userId) {
+                    session = await Session.createNewSession(
+                        options.res,
+                        user.id,
+                        recipeUserId,
+                        session.getAccessTokenPayload(),
+                        await session.getSessionData()
+                    );
+                }
+            }
+
+            // TODO: session claim exists for account linking
+            let recipeUserIdFromSessionClaim = recipeUserId;
+
+            let recipeUser = user.loginMethods.find((u) => u.recipeUserId === recipeUserId);
+
+            if (recipeUser === undefined) {
+                throw Error(`this error should not be thrown. recipe user not found: ${userId}`);
+            }
+
+            let isRecipeUserAccountVerified = recipeUser.verified;
+
+            let userIdForEmailVerification: string;
+
+            if (recipeUserIdFromSessionClaim === recipeUserId || !isRecipeUserAccountVerified) {
+                userIdForEmailVerification = recipeUserId;
+            } else {
+                userIdForEmailVerification = recipeUserIdFromSessionClaim;
+            }
+
+            let isVerified: boolean | undefined;
+
+            if (userIdForEmailVerification === recipeUserId) {
+                try {
+                    await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                } catch (err) {
+                    if ((err as Error).message === "UNKNOWN_USER_ID") {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Unknown User ID provided",
+                        });
+                    }
+                    throw err;
+                }
+                isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
+            } else {
+                const recipe = EmailVerificationRecipe.getInstanceOrThrowError();
+                let emailInfo = await recipe.getEmailForUserId(recipeUserId, userContext);
+
+                if (emailInfo.status === "OK") {
+                    isVerified = await recipe.recipeInterfaceImpl.isEmailVerified({
+                        userId: recipeUserId,
+                        email: emailInfo.email,
+                        userContext,
+                    });
+                } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
+                    // We consider people without email addresses as validated
+                    isVerified = true;
+                } else {
+                    throw new Error("UNKNOWN_USER_ID");
+                }
+            }
 
             if (isVerified === undefined) {
                 throw new Error("Should never come here: EmailVerificationClaim failed to set value");
