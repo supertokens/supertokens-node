@@ -22,6 +22,7 @@ import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import {
     DASHBOARD_API,
+    SIGN_IN_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -51,6 +52,7 @@ import { userPasswordPut } from "./api/userdetails/userPasswordPut";
 import { userPut } from "./api/userdetails/userPut";
 import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyTokenPost";
 import { userSessionsPost } from "./api/userdetails/userSessionsPost";
+import signIn from "./api/signIn";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -141,6 +143,10 @@ export default class Recipe extends RecipeModule {
         // For these APIs we dont need API key validation
         if (id === DASHBOARD_API) {
             return await dashboard(this.apiImpl, options);
+        }
+
+        if (id === SIGN_IN_API) {
+            return await signIn(this.apiImpl, options);
         }
 
         if (id === VALIDATE_KEY_API) {

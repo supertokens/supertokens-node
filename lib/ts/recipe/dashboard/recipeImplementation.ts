@@ -22,6 +22,11 @@ export default function getRecipeImplementation(): RecipeInterface {
             return `https://cdn.jsdelivr.net/gh/supertokens/dashboard@v${dashboardVersion}/build/`;
         },
         shouldAllowAccess: async function (input) {
+            // For cases where we're not using the API key, the JWT is being used; we allow their access by default
+            if (!input.config.apiKey) {
+                return true;
+            }
+
             let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
 
             // We receieve the api key as `Bearer API_KEY`, this retrieves just the key

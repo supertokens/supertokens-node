@@ -13,14 +13,24 @@
  * under the License.
  */
 
-export const DASHBOARD_API = "/dashboard";
-export const SIGN_IN_API = "/api/signin";
-export const VALIDATE_KEY_API = "/api/key/validate";
-export const USERS_LIST_GET_API = "/api/users";
-export const USERS_COUNT_API = "/api/users/count";
-export const USER_API = "/api/user";
-export const USER_EMAIL_VERIFY_API = "/api/user/email/verify";
-export const USER_METADATA_API = "/api/user/metadata";
-export const USER_SESSIONS_API = "/api/user/sessions";
-export const USER_PASSWORD_API = "/api/user/password";
-export const USER_EMAIL_VERIFY_TOKEN_API = "/api/user/email/verify/token";
+import { APIInterface, APIOptions } from "../types";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { sendUnauthorisedAccess } from "../utils";
+
+export default async function signIn(_: APIInterface, options: APIOptions): Promise<boolean> {
+    const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
+        req: options.req,
+        config: options.config,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
+
+    if (!shouldAllowAccess) {
+        sendUnauthorisedAccess(options.res);
+    } else {
+        options.res.sendJSONResponse({
+            status: "OK",
+        });
+    }
+
+    return true;
+}
