@@ -51,10 +51,6 @@ import ThirdPartyPasswordless from "../thirdpartypasswordless";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
-    if (config.apiKey.trim().length === 0) {
-        throw new Error("apiKey provided to Dashboard recipe cannot be empty");
-    }
-
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
