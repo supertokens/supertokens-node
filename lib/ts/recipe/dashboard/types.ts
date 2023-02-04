@@ -62,6 +62,8 @@ export type APIFunction = (apiImplementation: APIInterface, options: APIOptions)
 
 export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 
+export type AuthMode = "api-key" | "email-password"
+
 type CommonUserInformation = {
     id: string;
     timeJoined: number;
