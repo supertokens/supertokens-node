@@ -14,22 +14,40 @@
  */
 
 import { APIInterface, APIOptions } from "../types";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from "../../../utils";
 import { sendUnauthorisedAccess } from "../utils";
 
-export default async function signIn(_: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function signIn(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
         req: options.req,
         config: options.config,
         userContext: makeDefaultUserContextFromAPI(options.req),
     });
-
     if (!shouldAllowAccess) {
         sendUnauthorisedAccess(options.res);
     } else {
         options.res.sendJSONResponse({
             status: "OK",
         });
+    }
+
+    if(apiImplementation.signInPOST === undefined){
+        return false;
+    }
+
+    let result = await apiImplementation.signInPOST({
+        formFields,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
+
+    if (result.status === "OK") {
+        send200Response(options.res, {
+            status: "OK",
+            token: result.token
+        });
+    } else {
+        send200Response(options.res, result);
     }
 
     return true;

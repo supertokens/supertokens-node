@@ -61,6 +61,6 @@ export default function getAPIImplementation(): APIInterface {
                 </body>
             </html>
             `;
-        },
+        }
     };
 }

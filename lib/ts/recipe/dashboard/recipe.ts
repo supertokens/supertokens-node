@@ -218,6 +218,8 @@ export default class Recipe extends RecipeModule {
         return [];
     };
 
+    // VerifyJWTHere?
+
     isErrorFromThisRecipe = (err: any): err is error => {
         return error.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };

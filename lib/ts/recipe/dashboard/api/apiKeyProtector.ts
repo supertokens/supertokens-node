@@ -38,26 +38,15 @@ export default async function apiKeyProtector(
 
     // If the apiKey is not present, hit the token verification endpoint first.
     if (!options.config.apiKey) {
-        try {
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let endpointToHit = "https://somedemoendpointsample.free.beeceptor.com/recipe/dashboard/jwt/verify";
-            const authHeaderValue = options.req.getHeaderValue("authorization")?.split(" ")[1];
-            console.log(endpointToHit, {
-                headers: {
-                    Authorization: authHeaderValue,
-                },
-            });
-            const jwtVerificationResponse: JWTVerifyResponse = await querier.sendPostRequest(
-                new NormalisedURLPath(endpointToHit + authHeaderValue === "error" ? "error" : ""),
-                { jwt: authHeaderValue }
-            );
-            console.log(jwtVerificationResponse, "@@@@@@");
-            if (jwtVerificationResponse.status !== "OK") {
-                options.res.sendJSONResponse(jwtVerificationResponse);
-                return false;
-            }
-        } catch (error) {
-            console.log(error, "@@@@@@@@@err");
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        const authHeaderValue = options.req.getHeaderValue("authorization")?.split(" ")[1];
+        const jwtVerificationResponse: JWTVerifyResponse = await querier.sendPostRequest(
+            new NormalisedURLPath("/recipe/dashboard/verify"),
+            { jwt: authHeaderValue }
+        );
+        if (jwtVerificationResponse.status !== "OK") {
+            options.res.sendJSONResponse(jwtVerificationResponse);
+            return false;
         }
     }
 
