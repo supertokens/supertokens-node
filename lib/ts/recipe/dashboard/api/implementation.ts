@@ -19,6 +19,11 @@ import SuperTokens from "../../../supertokens";
 import { DASHBOARD_API } from "../constants";
 import { APIInterface, AuthMode } from "../types";
 
+type SignInPOSTResponse =
+    | { status: "OK"; token: string }
+    | { status: "INVALID_CREDENTIALS_ERROR" }
+    | { status: "USER_SUSPENDED_ERROR" };
+
 export default function getAPIImplementation(): APIInterface {
     return {
         dashboardGET: async function (input) {
@@ -61,6 +66,21 @@ export default function getAPIImplementation(): APIInterface {
                 </body>
             </html>
             `;
+        },
+        signInPOST: async function ({ formFields, options, userContext }): Promise<SignInPOSTResponse> {
+            let response: SignInPOSTResponse = await new Promise((resolve, reject) => {
+                try {
+                    setTimeout(() => {
+                        resolve({
+                            status: "OK",
+                            token: "SOMESAMPLETOKENHAHAHHAHAHAHAHHAHA",
+                        });
+                    }, 3000);
+                } catch (error) {
+                    reject({ formFields, options, userContext });
+                }
+            });
+            return response;
         },
     };
 }

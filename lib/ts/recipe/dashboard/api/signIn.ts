@@ -19,6 +19,10 @@ import { sendUnauthorisedAccess } from "../utils";
 import STError from "../../../error";
 
 export default async function signIn(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+    if (apiImplementation.signInPOST === undefined) {
+        return false;
+    }
+
     const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
         req: options.req,
         config: options.config,
@@ -41,12 +45,11 @@ export default async function signIn(apiImplementation: APIInterface, options: A
         });
     }
 
-    const result = { apiImplementation } as any;
-    // let result = await apiImplementation.signInPOST({
-    //     formFields: {email, password},
-    //     options,
-    //     userContext: makeDefaultUserContextFromAPI(options.req),
-    // });
+    let result = await apiImplementation.signInPOST({
+        formFields: { email, password },
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     if (result.status === "OK") {
         send200Response(options.res, {
