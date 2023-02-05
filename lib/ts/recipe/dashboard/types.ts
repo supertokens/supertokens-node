@@ -56,19 +56,6 @@ export type APIOptions = {
 
 export type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
-    signInPOST:
-    | undefined
-    | ((input: {
-        formFields: {
-            email: string;
-            password: string;
-        }[];
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | { status: "OK", token: string } | { status: "INVALID_CREDENTIALS_ERROR" } | { status: "USER_SUSPENDED_ERROR" }
-    >);
-
 };
 
 export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;

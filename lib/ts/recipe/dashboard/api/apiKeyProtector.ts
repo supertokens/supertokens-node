@@ -40,13 +40,27 @@ export default async function apiKeyProtector(
     if (!options.config.apiKey) {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         const authHeaderValue = options.req.getHeaderValue("authorization")?.split(" ")[1];
-        const jwtVerificationResponse: JWTVerifyResponse = await querier.sendPostRequest(
-            new NormalisedURLPath("/recipe/dashboard/verify"),
-            { jwt: authHeaderValue }
-        );
+        let jwtVerificationResponse: JWTVerifyResponse;
+        if (true) {
+            jwtVerificationResponse = await new Promise((resolve, reject) => {
+                try {
+                    setTimeout(() => {
+                        resolve({
+                            status: authHeaderValue?.includes("err") ? "INVALID_JWT" : "OK",
+                        });
+                    }, 3000);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        } else {
+            jwtVerificationResponse = await querier.sendPostRequest(new NormalisedURLPath("/recipe/dashboard/verify"), {
+                jwt: authHeaderValue,
+            });
+        }
+
         if (jwtVerificationResponse.status !== "OK") {
-            options.res.sendJSONResponse(jwtVerificationResponse);
-            return false;
+            sendUnauthorisedAccess(options.res);
         }
     }
 

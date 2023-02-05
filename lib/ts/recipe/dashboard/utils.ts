@@ -19,6 +19,7 @@ import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
+    SIGN_IN_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -85,6 +86,10 @@ export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): 
 export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined {
     if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === "post") {
         return VALIDATE_KEY_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(SIGN_IN_API) && method === "post") {
+        return SIGN_IN_API;
     }
 
     if (path.getAsStringDangerous().endsWith(USERS_LIST_GET_API) && method === "get") {

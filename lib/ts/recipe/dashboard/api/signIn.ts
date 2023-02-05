@@ -16,6 +16,7 @@
 import { APIInterface, APIOptions } from "../types";
 import { makeDefaultUserContextFromAPI, send200Response } from "../../../utils";
 import { sendUnauthorisedAccess } from "../utils";
+import STError from "../../../error";
 
 export default async function signIn(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
@@ -23,28 +24,34 @@ export default async function signIn(apiImplementation: APIInterface, options: A
         config: options.config,
         userContext: makeDefaultUserContextFromAPI(options.req),
     });
-    if (!shouldAllowAccess) {
-        sendUnauthorisedAccess(options.res);
-    } else {
-        options.res.sendJSONResponse({
-            status: "OK",
+    if (!shouldAllowAccess) sendUnauthorisedAccess(options.res);
+    const { email, password } = await options.req.getJSONBody();
+
+    if (email === undefined) {
+        throw new STError({
+            message: "Missing required parameter 'email'",
+            type: STError.BAD_INPUT_ERROR,
         });
     }
 
-    if(apiImplementation.signInPOST === undefined){
-        return false;
+    if (password === undefined) {
+        throw new STError({
+            message: "Missing required parameter 'password'",
+            type: STError.BAD_INPUT_ERROR,
+        });
     }
 
-    let result = await apiImplementation.signInPOST({
-        formFields,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+    const result = { apiImplementation } as any;
+    // let result = await apiImplementation.signInPOST({
+    //     formFields: {email, password},
+    //     options,
+    //     userContext: makeDefaultUserContextFromAPI(options.req),
+    // });
 
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            token: result.token
+            token: result.token,
         });
     } else {
         send200Response(options.res, result);
