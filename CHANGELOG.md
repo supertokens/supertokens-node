@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.0.1] - 2023-02-06
+
+-   Email template updates
+
 ## [13.0.0] - 2023-02-01
 
 ### Breaking changes
