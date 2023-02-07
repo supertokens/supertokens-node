@@ -54,7 +54,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -132,7 +132,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                         userInputCode = input.userInputCode;
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -198,7 +198,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -310,7 +310,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -358,7 +358,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -433,7 +433,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -537,7 +537,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                         sendCustomEmailCalled = true;
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -627,7 +627,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -769,7 +769,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -833,7 +833,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });

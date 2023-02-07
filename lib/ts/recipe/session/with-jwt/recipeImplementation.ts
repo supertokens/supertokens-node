@@ -69,7 +69,7 @@ export default function (
         let decodedPayload = JsonWebToken.decode(existingJwt, { json: true });
 
         // JsonWebToken.decode possibly returns null
-        if (decodedPayload === null) {
+        if (decodedPayload === null || decodedPayload.exp === undefined) {
             throw new Error("Error reading JWT from session");
         }
 
@@ -105,12 +105,14 @@ export default function (
         createNewSession: async function (
             this: RecipeInterface,
             {
+                req,
                 res,
                 userId,
                 accessTokenPayload,
                 sessionData,
                 userContext,
             }: {
+                req: BaseRequest;
                 res: BaseResponse;
                 userId: string;
                 accessTokenPayload?: any;
@@ -132,6 +134,7 @@ export default function (
             });
 
             let sessionContainer = await originalImplementation.createNewSession({
+                req,
                 res,
                 userId,
                 accessTokenPayload,

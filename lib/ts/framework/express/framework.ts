@@ -116,6 +116,10 @@ export class ExpressResponse extends BaseResponse {
         setHeaderForExpressLikeResponse(this.response, key, value, allowDuplicateKey);
     };
 
+    removeHeader = (key: string) => {
+        this.response.removeHeader(key);
+    };
+
     setCookie = (
         key: string,
         value: string,

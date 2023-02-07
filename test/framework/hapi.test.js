@@ -58,6 +58,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -75,7 +76,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             path: "/create",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -95,7 +96,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/auth/session/refresh",
             headers: {
-                Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sRefreshToken=${res.refreshToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -117,6 +118,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -134,7 +136,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -178,6 +180,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                             });
                         },
                     },
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         apis: (oI) => {
@@ -195,7 +198,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -234,7 +237,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/auth/session/refresh",
                 headers: {
-                    Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                    Cookie: `sRefreshToken=${res.refreshToken}`,
                     "anti-csrf": res.antiCsrf,
                 },
             })
@@ -244,7 +247,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res2.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -253,7 +256,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/auth/session/refresh",
             headers: {
-                Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sRefreshToken=${res.refreshToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -263,14 +266,10 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         assert.strictEqual(cookies.antiCsrf, undefined);
         assert.strictEqual(cookies.accessToken, "");
         assert.strictEqual(cookies.refreshToken, "");
-        assert.strictEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.strictEqual(cookies.idRefreshTokenFromCookie, "");
         assert.strictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.strictEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
-        assert(cookies.idRefreshTokenDomain === undefined);
     });
 
     //- check for token theft detection
@@ -286,18 +285,14 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -327,7 +322,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/auth/session/refresh",
                 headers: {
-                    Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                    Cookie: `sRefreshToken=${res.refreshToken}`,
                     "anti-csrf": res.antiCsrf,
                 },
             })
@@ -337,7 +332,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res2.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -346,7 +341,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/auth/session/refresh",
             headers: {
-                Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sRefreshToken=${res.refreshToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -358,10 +353,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         assert.strictEqual(cookies.antiCsrf, undefined);
         assert.strictEqual(cookies.accessToken, "");
         assert.strictEqual(cookies.refreshToken, "");
-        assert.strictEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.strictEqual(cookies.idRefreshTokenFromCookie, "");
         assert.strictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.strictEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
@@ -378,18 +370,14 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -426,15 +414,13 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         await this.server.inject({
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -447,7 +433,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/auth/session/refresh",
                 headers: {
-                    Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                    Cookie: `sRefreshToken=${res.refreshToken}`,
                     "anti-csrf": res.antiCsrf,
                 },
             })
@@ -455,8 +441,6 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         assert(res2.accessToken !== undefined);
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
@@ -464,7 +448,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/session/verify",
                 headers: {
-                    Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                    Cookie: `sAccessToken=${res2.accessToken}`,
                     "anti-csrf": res2.antiCsrf,
                 },
             })
@@ -479,7 +463,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}; sIdRefreshToken=${res3.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res3.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -490,18 +474,15 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/revoke",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}; sIdRefreshToken=${res3.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res3.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("test signout API works", async function () {
@@ -516,17 +497,13 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -546,7 +523,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/auth/signout",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -554,11 +531,8 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     //check basic usage of session
@@ -575,18 +549,14 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 websiteDomain: "supertokens.io",
                 apiBasePath: "/",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -623,15 +593,13 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         await this.server.inject({
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -644,15 +612,13 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/session/refresh",
                 headers: {
-                    Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                    Cookie: `sRefreshToken=${res.refreshToken}`,
                     "anti-csrf": res.antiCsrf,
                 },
             })
         );
         assert(res2.accessToken !== undefined);
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
 
         let res3 = extractInfoFromResponse(
@@ -660,7 +626,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/session/verify",
                 headers: {
-                    Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                    Cookie: `sAccessToken=${res2.accessToken}`,
                     "anti-csrf": res2.antiCsrf,
                 },
             })
@@ -675,7 +641,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}; sIdRefreshToken=${res3.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res3.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -686,18 +652,15 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/revoke",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}; sIdRefreshToken=${res3.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res3.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     // check session verify for with / without anti-csrf present
@@ -713,18 +676,14 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "id1", {}, {});
+                await Session.createNewSession(req, res, "id1", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -762,7 +721,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -772,7 +731,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verifyAntiCsrfFalse",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -792,11 +751,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         await this.server.register(HapiFramework.plugin);
@@ -805,7 +760,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "id1", {}, {});
+                await Session.createNewSession(req, res, "id1", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -849,7 +804,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verifyAntiCsrfFalse",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
             },
         });
         assert.strictEqual(response2.result.userId, "id1");
@@ -858,7 +813,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/verify",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
             },
         });
         assert.strictEqual(response.result.success, true);
@@ -877,17 +832,13 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -895,7 +846,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/usercreate",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "someUniqueUserId", {}, {});
+                await Session.createNewSession(req, res, "someUniqueUserId", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -942,18 +893,15 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/revoke",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
 
         await this.server.inject({
             method: "post",
@@ -970,7 +918,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/session/revokeUserid",
             headers: {
-                Cookie: `sAccessToken=${userCreateResponse.accessToken}; sIdRefreshToken=${userCreateResponse.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${userCreateResponse.accessToken}`,
                 "anti-csrf": userCreateResponse.antiCsrf,
             },
         });
@@ -994,18 +942,14 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -1072,7 +1016,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/updateSessionData",
             headers: {
-                Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${response.accessToken}`,
                 "anti-csrf": response.antiCsrf,
             },
         });
@@ -1082,7 +1026,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/getSessionData",
             headers: {
-                Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${response.accessToken}`,
                 "anti-csrf": response.antiCsrf,
             },
         });
@@ -1095,7 +1039,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/updateSessionData2",
             headers: {
-                Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${response.accessToken}`,
                 "anti-csrf": response.antiCsrf,
             },
         });
@@ -1105,7 +1049,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/getSessionData",
             headers: {
-                Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${response.accessToken}`,
                 "anti-csrf": response.antiCsrf,
             },
         });
@@ -1118,7 +1062,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/updateSessionDataInvalidSessionHandle",
             headers: {
-                Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${response.accessToken}`,
                 "anti-csrf": response.antiCsrf,
             },
         });
@@ -1138,18 +1082,14 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         this.server.route({
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "user1", {}, {});
+                await Session.createNewSession(req, res, "user1", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -1232,7 +1172,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/updateAccessTokenPayload",
                 headers: {
-                    Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                    Cookie: `sAccessToken=${response.accessToken}`,
                     "anti-csrf": response.antiCsrf,
                 },
             })
@@ -1247,7 +1187,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/getAccessTokenPayload",
             headers: {
-                Cookie: `sAccessToken=${updatedResponse.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${updatedResponse.accessToken}`,
                 "anti-csrf": response.antiCsrf,
             },
         });
@@ -1260,7 +1200,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/auth/session/refresh",
                 headers: {
-                    Cookie: `sRefreshToken=${response.refreshToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                    Cookie: `sRefreshToken=${response.refreshToken}`,
                     "anti-csrf": response.antiCsrf,
                 },
             })
@@ -1276,7 +1216,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 method: "post",
                 url: "/updateAccessTokenPayload2",
                 headers: {
-                    Cookie: `sAccessToken=${response2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
+                    Cookie: `sAccessToken=${response2.accessToken}`,
                     "anti-csrf": response2.antiCsrf,
                 },
             })
@@ -1291,7 +1231,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/getAccessTokenPayload",
             headers: {
-                Cookie: `sAccessToken=${updatedResponse2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${updatedResponse2.accessToken}`,
                 "anti-csrf": response2.antiCsrf,
             },
         });
@@ -1303,7 +1243,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             url: "/updateAccessTokenPayloadInvalidSessionHandle",
             headers: {
-                Cookie: `sAccessToken=${updatedResponse2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${updatedResponse2.accessToken}`,
                 "anti-csrf": response2.antiCsrf,
             },
         });
@@ -1339,7 +1279,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

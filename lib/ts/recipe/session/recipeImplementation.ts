@@ -8,28 +8,31 @@ import {
     SessionClaimValidator,
     SessionClaim,
     ClaimValidationError,
+    TokenTransferMethod,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
-    attachAccessTokenToCookie,
-    getAccessTokenFromCookie,
+    clearSession,
     getAntiCsrfTokenFromHeaders,
-    getIdRefreshTokenFromCookie,
-    getRefreshTokenFromCookie,
     setFrontTokenInHeaders,
-    getRidFromHeader,
+    getToken,
+    setToken,
+    setCookie,
 } from "./cookieAndHeaders";
-import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
+import { attachTokensToResponse, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
-import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
+import { normaliseHttpMethod, getRidFromHeader, isAnIpAddress } from "../../utils";
 import { Querier } from "../../querier";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { JSONObject } from "../../types";
+import { JSONObject, NormalisedAppinfo } from "../../types";
 import { logDebugMessage } from "../../logger";
 import { BaseResponse } from "../../framework/response";
 import { BaseRequest } from "../../framework/request";
+import { availableTokenTransferMethods } from "./constants";
+import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
+import { validateAccessTokenStructure } from "./accessToken";
 
 export class HandshakeInfo {
     constructor(
@@ -64,12 +67,17 @@ export type Helpers = {
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     config: TypeNormalisedInput;
+    appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
 };
+
+// We are defining this here to reduce the scope of legacy code
+const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
 
 export default function getRecipeInterface(
     querier: Querier,
     config: TypeNormalisedInput,
+    appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface {
     let handshakeInfo: undefined | HandshakeInfo;
@@ -110,26 +118,71 @@ export default function getRecipeInterface(
 
     let obj: RecipeInterface = {
         createNewSession: async function ({
+            req,
             res,
             userId,
             accessTokenPayload = {},
             sessionData = {},
+            userContext,
         }: {
+            req: BaseRequest;
             res: BaseResponse;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
             userContext: any;
         }): Promise<Session> {
-            let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
-            attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
+            logDebugMessage("createNewSession: Started");
+            let outputTransferMethod = config.getTokenTransferMethod({ req, forCreateNewSession: true, userContext });
+            if (outputTransferMethod === "any") {
+                outputTransferMethod = "header";
+            }
+            logDebugMessage("createNewSession: using transfer method " + outputTransferMethod);
+
+            if (
+                outputTransferMethod === "cookie" &&
+                helpers.config.cookieSameSite === "none" &&
+                !helpers.config.cookieSecure &&
+                !(
+                    (helpers.appInfo.topLevelAPIDomain === "localhost" ||
+                        isAnIpAddress(helpers.appInfo.topLevelAPIDomain)) &&
+                    (helpers.appInfo.topLevelWebsiteDomain === "localhost" ||
+                        isAnIpAddress(helpers.appInfo.topLevelWebsiteDomain))
+                )
+            ) {
+                // We can allow insecure cookie when both website & API domain are localhost or an IP
+                // When either of them is a different domain, API domain needs to have https and a secure cookie to work
+                throw new Error(
+                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+                );
+            }
+
+            const disableAntiCSRF = outputTransferMethod === "header";
+
+            let response = await SessionFunctions.createNewSession(
+                helpers,
+                userId,
+                disableAntiCSRF,
+                accessTokenPayload,
+                sessionData
+            );
+
+            for (const transferMethod of availableTokenTransferMethods) {
+                if (transferMethod !== outputTransferMethod && getToken(req, "access", transferMethod) !== undefined) {
+                    clearSession(config, res, transferMethod);
+                }
+            }
+
+            attachTokensToResponse(config, res, response, outputTransferMethod);
             return new Session(
                 helpers,
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                res
+                res,
+                req,
+                outputTransferMethod
             );
         },
 
@@ -139,10 +192,14 @@ export default function getRecipeInterface(
             return input.claimValidatorsAddedByOtherRecipes;
         },
 
+        /* In all cases if sIdRefreshToken token exists (so it's a legacy session) we return TRY_REFRESH_TOKEN. The refresh endpoint will clear this cookie and try to upgrade the session.
+           Check https://supertokens.com/docs/contribute/decisions/session/0007 for further details and a table of expected behaviours
+         */
         getSession: async function ({
             req,
             res,
             options,
+            userContext,
         }: {
             req: BaseRequest;
             res: BaseResponse;
@@ -150,63 +207,96 @@ export default function getRecipeInterface(
             userContext: any;
         }): Promise<Session | undefined> {
             logDebugMessage("getSession: Started");
-            logDebugMessage("getSession: rid in header: " + frontendHasInterceptor(req));
-            logDebugMessage("getSession: request method: " + req.getMethod());
-            let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
-            let idRefreshToken = getIdRefreshTokenFromCookie(req);
-            if (idRefreshToken === undefined) {
-                // we do not clear cookies here because of a
-                // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+            // This token isn't handled by getToken to limit the scope of this legacy/migration code
+            if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
+                // This could create a spike on refresh calls during the update of the backend SDK
+                throw new STError({
+                    message: "using legacy session, please call the refresh API",
+                    type: STError.TRY_REFRESH_TOKEN,
+                });
+            }
 
-                if (options !== undefined && typeof options !== "boolean" && options.sessionRequired === false) {
+            const sessionOptional = options?.sessionRequired === false;
+            logDebugMessage("getSession: optional validation: " + sessionOptional);
+
+            const accessTokens: {
+                [key in TokenTransferMethod]?: ParsedJWTInfo;
+            } = {};
+
+            // We check all token transfer methods for available access tokens
+            for (const transferMethod of availableTokenTransferMethods) {
+                const tokenString = getToken(req, "access", transferMethod);
+                if (tokenString !== undefined) {
+                    try {
+                        const info = parseJWTWithoutSignatureVerification(tokenString);
+                        validateAccessTokenStructure(info.payload);
+                        logDebugMessage("getSession: got access token from " + transferMethod);
+                        accessTokens[transferMethod] = info;
+                    } catch {
+                        logDebugMessage(
+                            `getSession: ignoring token in ${transferMethod}, because it doesn't match our access token structure`
+                        );
+                    }
+                }
+            }
+
+            const allowedTransferMethod = config.getTokenTransferMethod({
+                req,
+                forCreateNewSession: false,
+                userContext,
+            });
+            let requestTransferMethod: TokenTransferMethod;
+            let accessToken: ParsedJWTInfo | undefined;
+
+            if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "header") &&
+                accessTokens["header"] !== undefined
+            ) {
+                logDebugMessage("getSession: using header transfer method");
+                requestTransferMethod = "header";
+                accessToken = accessTokens["header"];
+            } else if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+                accessTokens["cookie"] !== undefined
+            ) {
+                logDebugMessage("getSession: using cookie transfer method");
+                requestTransferMethod = "cookie";
+                accessToken = accessTokens["cookie"];
+            } else {
+                if (sessionOptional) {
                     logDebugMessage(
-                        "getSession: returning undefined because idRefreshToken is undefined and sessionRequired is false"
+                        "getSession: returning undefined because accessToken is undefined and sessionRequired is false"
                     );
                     // there is no session that exists here, and the user wants session verification
                     // to be optional. So we return undefined.
                     return undefined;
                 }
 
-                logDebugMessage("getSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
+                logDebugMessage("getSession: UNAUTHORISED because accessToken in request is undefined");
                 throw new STError({
-                    message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
+                    message:
+                        "Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?",
                     type: STError.UNAUTHORISED,
                     payload: {
-                        clearCookies: false,
+                        // we do not clear the session here because of a
+                        // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+                        clearTokens: false,
                     },
                 });
             }
-            let accessToken = getAccessTokenFromCookie(req);
-            if (accessToken === undefined) {
-                // maybe the access token has expired.
-                /**
-                 * Based on issue: #156 (spertokens-node)
-                 * we throw TRY_REFRESH_TOKEN only if
-                 * options.sessionRequired === true || (frontendHasInterceptor or request method is get),
-                 * else we should return undefined
-                 */
-                if (
-                    options === undefined ||
-                    (options !== undefined && options.sessionRequired === true) ||
-                    frontendHasInterceptor(req) ||
-                    normaliseHttpMethod(req.getMethod()) === "get"
-                ) {
-                    logDebugMessage(
-                        "getSession: Returning try refresh token because access token from cookies is undefined"
-                    );
-                    throw new STError({
-                        message: "Access token has expired. Please call the refresh API",
-                        type: STError.TRY_REFRESH_TOKEN,
-                    });
-                }
-                return undefined;
-            }
+
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+            let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
             if (doAntiCsrfCheck === undefined) {
                 doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
             }
+
+            if (requestTransferMethod === "header") {
+                doAntiCsrfCheck = false;
+            }
+
             logDebugMessage("getSession: Value of doAntiCsrfCheck is: " + doAntiCsrfCheck);
 
             let response = await SessionFunctions.getSession(
@@ -216,6 +306,7 @@ export default function getRecipeInterface(
                 doAntiCsrfCheck,
                 getRidFromHeader(req) !== undefined
             );
+            let accessTokenString = accessToken.rawTokenString;
             if (response.accessToken !== undefined) {
                 setFrontTokenInHeaders(
                     res,
@@ -223,17 +314,30 @@ export default function getRecipeInterface(
                     response.accessToken.expiry,
                     response.session.userDataInJWT
                 );
-                attachAccessTokenToCookie(config, res, response.accessToken.token, response.accessToken.expiry);
-                accessToken = response.accessToken.token;
+                setToken(
+                    config,
+                    res,
+                    "access",
+                    response.accessToken.token,
+                    // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+                    // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                    // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+                    // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+                    Date.now() + 3153600000000,
+                    requestTransferMethod
+                );
+                accessTokenString = response.accessToken.token;
             }
             logDebugMessage("getSession: Success!");
             const session = new Session(
                 helpers,
-                accessToken,
+                accessTokenString,
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                res
+                res,
+                req,
+                requestTransferMethod
             );
 
             return session;
@@ -323,48 +427,121 @@ export default function getRecipeInterface(
             return SessionFunctions.getSessionInformation(helpers, sessionHandle);
         },
 
+        /*
+            In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
+            Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
+         */
         refreshSession: async function (
             this: RecipeInterface,
-            { req, res }: { req: BaseRequest; res: BaseResponse }
+            { req, res, userContext }: { req: BaseRequest; res: BaseResponse; userContext: any }
         ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
-            let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
-            if (inputIdRefreshToken === undefined) {
-                logDebugMessage("refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
-                // we do not clear cookies here because of a
-                // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
+            const refreshTokens: {
+                [key in TokenTransferMethod]?: string;
+            } = {};
+
+            // We check all token transfer methods for available refresh tokens
+            // We do this so that we can later clear all we are not overwriting
+            for (const transferMethod of availableTokenTransferMethods) {
+                refreshTokens[transferMethod] = getToken(req, "refresh", transferMethod);
+                if (refreshTokens[transferMethod] !== undefined) {
+                    logDebugMessage("refreshSession: got refresh token from " + transferMethod);
+                }
+            }
+
+            const allowedTransferMethod = config.getTokenTransferMethod({
+                req,
+                forCreateNewSession: false,
+                userContext,
+            });
+            logDebugMessage("refreshSession: getTokenTransferMethod returned " + allowedTransferMethod);
+
+            let requestTransferMethod: TokenTransferMethod;
+            let refreshToken: string | undefined;
+
+            if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "header") &&
+                refreshTokens["header"] !== undefined
+            ) {
+                logDebugMessage("refreshSession: using header transfer method");
+                requestTransferMethod = "header";
+                refreshToken = refreshTokens["header"];
+            } else if (
+                (allowedTransferMethod === "any" || allowedTransferMethod === "cookie") &&
+                refreshTokens["cookie"]
+            ) {
+                logDebugMessage("refreshSession: using cookie transfer method");
+                requestTransferMethod = "cookie";
+                refreshToken = refreshTokens["cookie"];
+            } else {
+                // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
+                if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
+                    logDebugMessage(
+                        "refreshSession: cleared legacy id refresh token because refresh token was not found"
+                    );
+                    setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+                }
+
+                logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
                 throw new STError({
-                    message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
+                    message: "Refresh token not found. Are you sending the refresh token in the request?",
+                    payload: {
+                        clearTokens: false,
+                    },
                     type: STError.UNAUTHORISED,
                 });
             }
 
-            let inputRefreshToken = getRefreshTokenFromCookie(req);
-            if (inputRefreshToken === undefined) {
-                logDebugMessage("refreshSession: UNAUTHORISED because refresh token from cookies is undefined");
-                throw new STError({
-                    message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
-                    type: STError.UNAUTHORISED,
-                });
+            try {
+                let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+                let response = await SessionFunctions.refreshSession(
+                    helpers,
+                    refreshToken,
+                    antiCsrfToken,
+                    getRidFromHeader(req) !== undefined,
+                    requestTransferMethod
+                );
+                logDebugMessage("refreshSession: Attaching refreshed session info as " + requestTransferMethod);
+
+                // We clear the tokens in all token transfer methods we are not going to overwrite
+                for (const transferMethod of availableTokenTransferMethods) {
+                    if (transferMethod !== requestTransferMethod && refreshTokens[transferMethod] !== undefined) {
+                        clearSession(config, res, transferMethod);
+                    }
+                }
+
+                attachTokensToResponse(config, res, response, requestTransferMethod);
+
+                logDebugMessage("refreshSession: Success!");
+                // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
+                if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
+                    logDebugMessage("refreshSession: cleared legacy id refresh token after successful refresh");
+                    setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+                }
+
+                return new Session(
+                    helpers,
+                    response.accessToken.token,
+                    response.session.handle,
+                    response.session.userId,
+                    response.session.userDataInJWT,
+                    res,
+                    req,
+                    requestTransferMethod
+                );
+            } catch (err) {
+                if (err.type === STError.TOKEN_THEFT_DETECTED || err.payload.clearTokens) {
+                    // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
+                    if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
+                        logDebugMessage(
+                            "refreshSession: cleared legacy id refresh token because refresh is clearing other tokens"
+                        );
+                        setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+                    }
+                }
+                throw err;
             }
-            let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
-            let response = await SessionFunctions.refreshSession(
-                helpers,
-                inputRefreshToken,
-                antiCsrfToken,
-                getRidFromHeader(req) !== undefined
-            );
-            attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
-            logDebugMessage("refreshSession: Success!");
-            return new Session(
-                helpers,
-                response.accessToken.token,
-                response.session.handle,
-                response.session.userId,
-                response.session.userDataInJWT,
-                res
-            );
         },
 
         regenerateAccessToken: async function (
@@ -554,6 +731,7 @@ export default function getRecipeInterface(
         updateJwtSigningPublicKeyInfo,
         getHandshakeInfo,
         config,
+        appInfo,
         getRecipeImpl: getRecipeImplAfterOverrides,
     };
 

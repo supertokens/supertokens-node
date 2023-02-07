@@ -1,40 +1,14 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
-import { TypeNormalisedInput } from "./types";
-/**
- * @description clears all the auth cookies from the response
- */
-export declare function clearSessionFromCookie(config: TypeNormalisedInput, res: BaseResponse): void;
-/**
- * @param expiry: must be time in milliseconds from epoch time.
- */
-export declare function attachAccessTokenToCookie(
+import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
+export declare function clearSessionFromAllTokenTransferMethods(config: TypeNormalisedInput, res: BaseResponse): void;
+export declare function clearSession(
     config: TypeNormalisedInput,
     res: BaseResponse,
-    token: string,
-    expiry: number
+    transferMethod: TokenTransferMethod
 ): void;
-/**
- * @param expiry: must be time in milliseconds from epoch time.
- */
-export declare function attachRefreshTokenToCookie(
-    config: TypeNormalisedInput,
-    res: BaseResponse,
-    token: string,
-    expiry: number
-): void;
-export declare function getAccessTokenFromCookie(req: BaseRequest): string | undefined;
-export declare function getRefreshTokenFromCookie(req: BaseRequest): string | undefined;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
-export declare function getRidFromHeader(req: BaseRequest): string | undefined;
-export declare function getIdRefreshTokenFromCookie(req: BaseRequest): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;
-export declare function setIdRefreshTokenInHeaderAndCookie(
-    config: TypeNormalisedInput,
-    res: BaseResponse,
-    idRefreshToken: string,
-    expiry: number
-): void;
 export declare function setFrontTokenInHeaders(
     res: BaseResponse,
     userId: string,
@@ -42,6 +16,20 @@ export declare function setFrontTokenInHeaders(
     accessTokenPayload: any
 ): void;
 export declare function getCORSAllowedHeaders(): string[];
+export declare function getToken(
+    req: BaseRequest,
+    tokenType: TokenType,
+    transferMethod: TokenTransferMethod
+): string | undefined;
+export declare function setToken(
+    config: TypeNormalisedInput,
+    res: BaseResponse,
+    tokenType: TokenType,
+    value: string,
+    expires: number,
+    transferMethod: TokenTransferMethod
+): void;
+export declare function setHeader(res: BaseResponse, name: string, value: string): void;
 /**
  *
  * @param res
@@ -61,3 +49,4 @@ export declare function setCookie(
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
 ): void;
+export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;
