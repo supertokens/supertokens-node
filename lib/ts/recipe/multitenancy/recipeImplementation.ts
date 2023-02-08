@@ -19,8 +19,19 @@ export default function getRecipeInterface(_: Querier): RecipeInterface {
         },
 
         getTenantConfig: async function () {
-            // TODO
-            throw new Error("Not implemented");
+            return {
+                status: "OK",
+                emailPassword: {
+                    enabled: true,
+                },
+                passwordless: {
+                    enabled: true,
+                },
+                thirdParty: {
+                    enabled: true,
+                    providers: [],
+                },
+            };
         },
 
         listAllTenants: async function () {

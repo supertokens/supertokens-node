@@ -305,7 +305,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.thirdPartySignInUp("custom-provider", "test-user-id", "test@example.com");
+        await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+            "custom-provider",
+            "test-user-id",
+            "test@example.com"
+        );
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -677,8 +681,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                     },
                 }),
                 ThirdPartyEmailPassword.init({
-                    // We need to add something to the providers array to make the thirdparty recipe initialize
-                    providers: [/** @type {any} */ {}],
+                    providers: [{ config: { thirdPartyId: "custom-provider" } }],
                 }),
                 Session.init(),
             ],
@@ -694,7 +697,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.thirdPartySignInUp(
+        let user = await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
             "custom-provider",
             "test-user-id",
             "test@example.com"

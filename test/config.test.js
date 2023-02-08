@@ -217,7 +217,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
             SessionRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 1);
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2); // multitenancy is initialised by default
             resetAll();
         }
 
@@ -235,7 +235,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             SessionRecipe.getInstanceOrThrowError();
             EmailPasswordRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 3); // multitenancy is initialised by default
             resetAll();
         }
     });

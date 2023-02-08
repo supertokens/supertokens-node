@@ -19,6 +19,7 @@ import {
 } from "../types";
 import NewProvider from "./custom";
 import { discoverOIDCEndpoints } from "./utils";
+import STError from "../error";
 
 export function getProviderConfigForClient(
     providerConfig: ProviderConfig,
@@ -49,10 +50,10 @@ function createProvider(input: ProviderInput): TypeProvider {
         return Facebook(input);
     } else if (input.config.thirdPartyId.startsWith("github")) {
         return Github(input);
-    } else if (input.config.thirdPartyId.startsWith("google")) {
-        return Google(input);
     } else if (input.config.thirdPartyId.startsWith("google-workspaces")) {
         return GoogleWorkspaces(input);
+    } else if (input.config.thirdPartyId.startsWith("google")) {
+        return Google(input);
     } else if (input.config.thirdPartyId.startsWith("okta")) {
         return Okta(input);
     } else if (input.config.thirdPartyId.startsWith("linkedin")) {
@@ -77,7 +78,10 @@ export async function findAndCreateProviderInstance(
             return providerInstance;
         }
     }
-    throw new Error(`the provider ${thirdPartyId} could not be found in the configuration`);
+    throw new STError({
+        type: STError.BAD_INPUT_ERROR,
+        message: `the provider ${thirdPartyId} could not be found in the configuration`,
+    });
 }
 
 export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderConfig): ProviderConfig {

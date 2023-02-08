@@ -28,26 +28,23 @@ let { middleware, errorHandler } = require("../../framework/express");
 describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: true,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },
