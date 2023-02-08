@@ -27,7 +27,7 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe(err: any): err is error;
     getIdentitiesForUser: (
         user: User
-    ) => Promise<{
+    ) => {
         verified: {
             emails: string[];
             phoneNumbers: string[];
@@ -44,7 +44,7 @@ export default class Recipe extends RecipeModule {
                 userId: string;
             }[];
         };
-    }>;
+    };
     isSignUpAllowed: ({
         info,
         userContext,
@@ -89,11 +89,34 @@ export default class Recipe extends RecipeModule {
           } & {
               accountsLinked: false;
               reason:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR"
+                  | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
                   | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
                   | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
           })
+        | ({
+              createRecipeUser: false;
+          } & {
+              accountsLinked: false;
+              reason:
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          })
     >;
+    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
+        recipeUserId,
+        userContext,
+    }: {
+        recipeUserId: string;
+        userContext: any;
+    }) => Promise<User | undefined>;
+    createPrimaryUserIdOrLinkAccounts: ({
+        recipeUserId,
+        session,
+        userContext,
+    }: {
+        recipeUserId: string;
+        session: SessionContainer | undefined;
+        userContext: any;
+    }) => Promise<void>;
 }

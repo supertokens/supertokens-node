@@ -27,7 +27,7 @@ import type {
     AccountInfoWithRecipeId,
 } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import { getUserForRecipeId } from "../..";
+import { getUser, getUserForRecipeId } from "../..";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
@@ -106,9 +106,9 @@ export default class Recipe extends RecipeModule {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     }
 
-    getIdentitiesForUser = async (
+    getIdentitiesForUser = (
         user: User
-    ): Promise<{
+    ): {
         verified: {
             emails: string[];
             phoneNumbers: string[];
@@ -125,7 +125,7 @@ export default class Recipe extends RecipeModule {
                 userId: string;
             }[];
         };
-    }> => {
+    } => {
         let identities: {
             verified: {
                 emails: string[];
@@ -231,7 +231,7 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
-        let identitiesForPrimaryUser = await this.getIdentitiesForUser(primaryUser);
+        let identitiesForPrimaryUser = this.getIdentitiesForUser(primaryUser);
 
         if (info.email !== undefined) {
             return identitiesForPrimaryUser.verified.emails.includes(info.email);
@@ -352,11 +352,16 @@ export default class Recipe extends RecipeModule {
               | {
                     accountsLinked: false;
                     reason:
-                        | "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR"
+                        | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
                         | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
+                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                }
+              | {
+                    accountsLinked: false;
+                    reason:
                         | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
                         | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
                 }
           ))
     > => {
@@ -383,7 +388,7 @@ export default class Recipe extends RecipeModule {
                 return {
                     createRecipeUser: false,
                     accountsLinked: false,
-                    reason: "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR",
+                    reason: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 };
             }
 
@@ -404,7 +409,7 @@ export default class Recipe extends RecipeModule {
                 return {
                     createRecipeUser: false,
                     accountsLinked: false,
-                    reason: "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR",
+                    reason: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 };
             }
             if (shouldDoAccountLinking.shouldRequireVerification) {
@@ -429,6 +434,7 @@ export default class Recipe extends RecipeModule {
                     createRecipeUser: false,
                     accountsLinked: false,
                     reason: canCreatePrimaryUser.status,
+                    primaryUserId: canCreatePrimaryUser.primaryUserId,
                 };
             }
             /**
@@ -443,6 +449,7 @@ export default class Recipe extends RecipeModule {
                     createRecipeUser: false,
                     accountsLinked: false,
                     reason: createPrimaryUserResult.status,
+                    primaryUserId: createPrimaryUserResult.primaryUserId,
                 };
             }
             user = createPrimaryUserResult.user;
@@ -461,7 +468,7 @@ export default class Recipe extends RecipeModule {
             return {
                 createRecipeUser: false,
                 accountsLinked: false,
-                reason: "ACCOUNT_LINKING_IS_NOT_ALLOWED_ERROR",
+                reason: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
             };
         }
 
@@ -509,7 +516,7 @@ export default class Recipe extends RecipeModule {
              * so the recipe will call back this function when the
              * recipe user is created
              */
-            let identitiesForPrimaryUser = await this.getIdentitiesForUser(user);
+            let identitiesForPrimaryUser = this.getIdentitiesForUser(user);
             if (info.email !== undefined) {
                 let result =
                     identitiesForPrimaryUser.verified.emails.includes(info.email) ||
@@ -543,13 +550,13 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
             if (existingRecipeUserForInputInfo !== undefined) {
-                let doesPrimaryUserIdAlreadyExists =
-                    existingRecipeUserForInputInfo.find((u) => u.isPrimaryUser) !== undefined;
-                if (doesPrimaryUserIdAlreadyExists) {
+                let primaryUserIfExists = existingRecipeUserForInputInfo.find((u) => u.isPrimaryUser);
+                if (primaryUserIfExists !== undefined) {
                     return {
                         createRecipeUser: false,
                         accountsLinked: false,
                         reason: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                        primaryUserId: primaryUserIfExists.id,
                     };
                 }
             }
@@ -601,10 +608,11 @@ export default class Recipe extends RecipeModule {
                 createRecipeUser: false,
                 accountsLinked: false,
                 reason: canLinkAccounts.status,
+                primaryUserId: canLinkAccounts.primaryUserId,
             };
         }
 
-        let identitiesForPrimaryUser = await this.getIdentitiesForUser(user);
+        let identitiesForPrimaryUser = this.getIdentitiesForUser(user);
         let recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser = false;
         if (info.email !== undefined) {
             recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser =
@@ -643,5 +651,118 @@ export default class Recipe extends RecipeModule {
             accountsLinked: true,
             updateVerificationClaim: true,
         };
+    };
+
+    getPrimaryUserIdThatCanBeLinkedToRecipeUserId = async ({
+        recipeUserId,
+        userContext,
+    }: {
+        recipeUserId: string;
+        userContext: any;
+    }): Promise<User | undefined> => {
+        let user = await getUser(recipeUserId, userContext);
+        if (user === undefined) {
+            return undefined;
+        }
+        if (user.isPrimaryUser) {
+            return user;
+        }
+        let pUser = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
+        if (pUser !== undefined && pUser.isPrimaryUser) {
+            return pUser;
+        }
+        let identifier:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              };
+        let loginMethodInfo = user.loginMethods[0]; // this is a recipe user so there will be only one item in the array
+        if (loginMethodInfo.email !== undefined) {
+            identifier = {
+                email: loginMethodInfo.email,
+            };
+        } else if (loginMethodInfo.phoneNumber !== undefined) {
+            identifier = {
+                phoneNumber: loginMethodInfo.phoneNumber,
+            };
+        } else {
+            throw Error("this error should never be thrown");
+        }
+        let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            info: identifier,
+            userContext,
+        });
+        if (users === undefined || users.length === 0) {
+            return undefined;
+        }
+        return users.find((u) => u.isPrimaryUser);
+    };
+
+    createPrimaryUserIdOrLinkAccounts = async ({
+        recipeUserId,
+        session,
+        userContext,
+    }: {
+        recipeUserId: string;
+        session: SessionContainer | undefined;
+        userContext: any;
+    }) => {
+        let primaryUser = await this.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            recipeUserId,
+            userContext,
+        });
+        if (primaryUser === undefined) {
+            let user = await getUser(recipeUserId, userContext);
+            if (user === undefined || user.isPrimaryUser) {
+                throw Error("this error should never be thrown");
+            }
+            let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                {
+                    ...user.loginMethods[0],
+                },
+                undefined,
+                session,
+                userContext
+            );
+            if (shouldDoAccountLinking.shouldAutomaticallyLink) {
+                await this.recipeInterfaceImpl.createPrimaryUser({
+                    recipeUserId: recipeUserId,
+                    userContext,
+                });
+                // TODO: remove session claim
+            }
+        } else {
+            /**
+             * recipeUser already linked with primaryUser
+             */
+            let recipeUser = primaryUser.loginMethods.find((u) => u.id === recipeUserId);
+            if (recipeUser === undefined) {
+                let user = await getUser(recipeUserId, userContext);
+                if (user === undefined || user.isPrimaryUser) {
+                    throw Error("this error should never be thrown");
+                }
+                let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                    {
+                        ...user.loginMethods[0],
+                    },
+                    primaryUser,
+                    session,
+                    userContext
+                );
+                if (shouldDoAccountLinking.shouldAutomaticallyLink) {
+                    let linkAccountsResult = await this.recipeInterfaceImpl.linkAccounts({
+                        recipeUserId: recipeUserId,
+                        primaryUserId: primaryUser.id,
+                        userContext,
+                    });
+                    if (linkAccountsResult.status === "OK") {
+                        // TODO: remove session claim if session claim exists
+                        // else create a new session
+                    }
+                }
+            }
+        }
     };
 }

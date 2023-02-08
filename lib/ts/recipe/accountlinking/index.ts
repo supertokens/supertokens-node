@@ -15,8 +15,8 @@
 
 import { SessionContainer } from "../session";
 import Recipe from "./recipe";
-import type { AccountInfoAndEmailWithRecipeId, RecipeInterface } from "./types";
-
+import type { AccountInfoAndEmailWithRecipeId, RecipeInterface, RecipeLevelUser } from "./types";
+import type { User } from "../../types";
 export default class Wrapper {
     static init = Recipe.init;
 
@@ -85,6 +85,13 @@ export default class Wrapper {
         });
     }
 
+    static async getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(recipeUserId: string, userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            recipeUserId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
     static async isSignUpAllowed(info: AccountInfoAndEmailWithRecipeId, userContext: any) {
         return await Recipe.getInstanceOrThrowError().isSignUpAllowed({
             info,
@@ -119,6 +126,59 @@ export default class Wrapper {
             userContext,
         });
     }
+
+    static async createPrimaryUserIdOrLinkAccounts(
+        recipeUserId: string,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts({
+            recipeUserId,
+            session,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async onAccountLinked(user: User, newAccountInfo: RecipeLevelUser, userContext?: any) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstanceOrThrowError().config.onAccountLinked(user, newAccountInfo, userContext);
+    }
+
+    static async shouldDoAutomaticAccountLinking(
+        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        user: User | undefined,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+            newAccountInfo,
+            user,
+            session,
+            userContext
+        );
+    }
+
+    static getIdentitiesForUser(user: User) {
+        return Recipe.getInstanceOrThrowError().getIdentitiesForUser(user);
+    }
+
+    static async fetchFromAccountToLinkTable(recipeUserId: string, userContext?: any) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchFromAccountToLinkTable({
+            recipeUserId,
+            userContext,
+        });
+    }
+
+    static async storeIntoAccountToLinkTable(recipeUserId: string, primaryUserId: string, userContext?: any) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.storeIntoAccountToLinkTable({
+            recipeUserId,
+            primaryUserId,
+            userContext,
+        });
+    }
 }
 
 export const init = Wrapper.init;
@@ -130,8 +190,16 @@ export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccounts = Wrapper.unlinkAccounts;
+export const getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId =
+    Wrapper.getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 export const doPostSignUpAccountLinkingOperations = Wrapper.doPostSignUpAccountLinkingOperations;
 export const accountLinkPostSignInViaSession = Wrapper.accountLinkPostSignInViaSession;
+export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
+export const onAccountLinked = Wrapper.onAccountLinked;
+export const shouldDoAutomaticAccountLinking = Wrapper.shouldDoAutomaticAccountLinking;
+export const getIdentitiesForUser = Wrapper.getIdentitiesForUser;
+export const fetchFromAccountToLinkTable = Wrapper.fetchFromAccountToLinkTable;
+export const storeIntoAccountToLinkTable = Wrapper.storeIntoAccountToLinkTable;
 
 export type { RecipeInterface };
