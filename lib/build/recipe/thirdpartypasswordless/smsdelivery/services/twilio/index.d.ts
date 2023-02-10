@@ -6,7 +6,7 @@ export default class TwilioService implements SmsDeliveryInterface<TypeThirdPart
     private passwordlessTwilioService;
     constructor(config: TypeInput<TypeThirdPartyPasswordlessSmsDeliveryInput>);
     sendSms: (
-        input: import("../../../../passwordless/types").TypePasswordlessSmsDeliveryInput & {
+        input: TypeThirdPartyPasswordlessSmsDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;

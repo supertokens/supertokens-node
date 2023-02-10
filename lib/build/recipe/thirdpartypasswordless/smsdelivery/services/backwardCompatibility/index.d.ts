@@ -21,7 +21,7 @@ export default class BackwardCompatibilityService
         }
     );
     sendSms: (
-        input: import("../../../../passwordless/types").TypePasswordlessSmsDeliveryInput & {
+        input: TypeThirdPartyPasswordlessSmsDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;
