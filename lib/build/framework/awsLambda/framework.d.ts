@@ -83,7 +83,7 @@ export interface SessionEventV2 extends SupertokensLambdaEventV2 {
 export interface SessionEvent extends SupertokensLambdaEvent {
     session?: SessionContainerInterface;
 }
-export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler<any, any>;
+export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler;
 export interface AWSFramework extends Framework {
     middleware: (handler?: Handler) => Handler;
 }

@@ -1,5 +1,5 @@
 import * as jwt from "jsonwebtoken";
-import * as jwksClient from "jwks-rsa";
+import jwksClient from "jwks-rsa";
 
 export async function verifyIdTokenFromJWKSEndpoint(
     idToken: string,
