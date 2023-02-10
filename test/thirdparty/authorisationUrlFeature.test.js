@@ -83,9 +83,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
@@ -145,9 +143,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
@@ -195,7 +191,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
@@ -237,7 +233,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],

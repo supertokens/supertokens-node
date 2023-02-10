@@ -71,9 +71,7 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -128,7 +126,7 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {

@@ -77,7 +77,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -199,7 +199,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -331,7 +331,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -468,7 +468,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

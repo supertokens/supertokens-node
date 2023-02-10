@@ -84,9 +84,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                 ThirdPartyEmailPasswordRecipe.init({
                     providers: [this.customProvider1],
                 }),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -127,9 +125,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res1.accessToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -144,15 +140,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         assert.strictEqual(response2.antiCsrf, undefined);
         assert.strictEqual(response2.accessToken, "");
         assert.strictEqual(response2.refreshToken, "");
-        assert.strictEqual(response2.idRefreshTokenFromHeader, "remove");
-        assert.strictEqual(response2.idRefreshTokenFromCookie, "");
         assert.strictEqual(response2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(response2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.strictEqual(response2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(response2.accessTokenDomain, undefined);
         assert.strictEqual(response2.refreshTokenDomain, undefined);
-        assert.strictEqual(response2.idRefreshTokenDomain, undefined);
-        assert.strictEqual(response2.frontToken, undefined);
+        assert.strictEqual(response2.frontToken, "remove");
 
         let response3 = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response3.text).status === "OK");
@@ -164,9 +156,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -178,18 +168,14 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                     })
             )
         );
-        assert(response4.antiCsrf === undefined);
-        assert(response4.accessToken === "");
-        assert(response4.refreshToken === "");
-        assert(response4.idRefreshTokenFromHeader === "remove");
-        assert(response4.idRefreshTokenFromCookie === "");
-        assert(response4.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response4.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response4.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response4.accessTokenDomain === undefined);
-        assert(response4.refreshTokenDomain === undefined);
-        assert(response4.idRefreshTokenDomain === undefined);
-        assert(response4.frontToken === undefined);
+        assert.strictEqual(response4.antiCsrf, undefined);
+        assert.strictEqual(response4.accessToken, "");
+        assert.strictEqual(response4.refreshToken, "");
+        assert.strictEqual(response4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(response4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(response4.accessTokenDomain, undefined);
+        assert.strictEqual(response4.refreshTokenDomain, undefined);
+        assert.strictEqual(response4.frontToken, "remove");
     });
 
     it("test that disabling default route and calling the API returns 404", async function () {
@@ -216,7 +202,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -257,7 +243,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                 ThirdPartyEmailPasswordRecipe.init({
                     providers: [this.customProvider1],
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -302,9 +288,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                 ThirdPartyEmailPasswordRecipe.init({
                     providers: [this.customProvider1],
                 }),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -346,9 +330,8 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         let signOutResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("rid", "session")
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -366,10 +349,8 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res1.refreshToken,
-                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                    ])
+                    .set("rid", "session")
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -386,12 +367,8 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
-                    .set("Cookie", [
-                        "sAccessToken=" +
-                            refreshedResponse.accessToken +
-                            ";sIdRefreshToken=" +
-                            refreshedResponse.idRefreshTokenFromCookie,
-                    ])
+                    .set("rid", "session")
+                    .set("Cookie", ["sAccessToken=" + refreshedResponse.accessToken])
                     .set("anti-csrf", refreshedResponse.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -407,15 +384,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         assert.strictEqual(signOutResponse.antiCsrf, undefined);
         assert.strictEqual(signOutResponse.accessToken, "");
         assert.strictEqual(signOutResponse.refreshToken, "");
-        assert.strictEqual(signOutResponse.idRefreshTokenFromHeader, "remove");
-        assert.strictEqual(signOutResponse.idRefreshTokenFromCookie, "");
         assert.strictEqual(signOutResponse.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(signOutResponse.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.strictEqual(signOutResponse.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.strictEqual(signOutResponse.accessTokenDomain, undefined);
         assert.strictEqual(signOutResponse.refreshTokenDomain, undefined);
-        assert.strictEqual(signOutResponse.idRefreshTokenDomain, undefined);
-
         let response2 = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response2.text).status === "OK");
         assert(response2.status === 200);
@@ -427,9 +399,8 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         signOutResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
-                .set("Cookie", [
-                    "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("rid", "session")
+                .set("Cookie", ["sAccessToken=" + res2.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -446,11 +417,8 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res2.refreshToken,
-                        "sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("rid", "session")
+                    .set("Cookie", ["sRefreshToken=" + res2.refreshToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -467,12 +435,8 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
-                    .set("Cookie", [
-                        "sAccessToken=" +
-                            refreshedResponse.accessToken +
-                            ";sIdRefreshToken=" +
-                            refreshedResponse.idRefreshTokenFromCookie,
-                    ])
+                    .set("rid", "session")
+                    .set("Cookie", ["sAccessToken=" + refreshedResponse.accessToken])
                     .set("anti-csrf", refreshedResponse.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -488,13 +452,9 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         assert(signOutResponse.antiCsrf === undefined);
         assert(signOutResponse.accessToken === "");
         assert(signOutResponse.refreshToken === "");
-        assert(signOutResponse.idRefreshTokenFromHeader === "remove");
-        assert(signOutResponse.idRefreshTokenFromCookie === "");
         assert(signOutResponse.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(signOutResponse.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(signOutResponse.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(signOutResponse.accessTokenDomain === undefined);
         assert(signOutResponse.refreshTokenDomain === undefined);
-        assert(signOutResponse.idRefreshTokenDomain === undefined);
     });
 });

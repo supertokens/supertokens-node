@@ -46,7 +46,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();

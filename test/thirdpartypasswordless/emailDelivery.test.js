@@ -82,7 +82,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -96,7 +96,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -126,7 +126,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -154,7 +154,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -168,7 +168,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -198,7 +198,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         let result = await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -238,7 +238,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -252,7 +252,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -267,7 +267,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
         await delay(2);
         assert.strictEqual(email, "test@example.com");
@@ -303,7 +303,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -317,7 +317,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -330,7 +330,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
         await delay(2);
         assert.strictEqual(functionCalled, false);
@@ -374,7 +374,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -388,7 +388,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -412,7 +412,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         process.env.TEST_MODE = "testing";
@@ -492,7 +492,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -506,7 +506,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -521,7 +521,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         await supertest(app)
             .post("/auth/user/email/verify/token")
             .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
             .expect(200);
 
         await delay(2);
@@ -548,7 +548,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -626,7 +626,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                         userInputCode = input.userInputCode;
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -692,7 +692,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -805,7 +805,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -853,7 +853,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -928,7 +928,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -1032,7 +1032,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                         sendCustomEmailCalled = true;
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -1122,7 +1122,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -1264,7 +1264,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -1328,7 +1328,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });

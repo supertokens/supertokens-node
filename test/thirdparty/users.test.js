@@ -75,7 +75,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
                         providers: [this.customProvider1],
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -146,7 +146,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
                         providers: [this.customProvider1],
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -217,7 +217,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
                         providers: [this.customProvider1],
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

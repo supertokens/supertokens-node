@@ -85,9 +85,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
                 ThirdPartyEmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -104,13 +102,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 
         assert(JSON.parse(response.text).status === "OK");
         assert(Object.keys(JSON.parse(response.text)).length === 1);
@@ -130,9 +122,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
                 ThirdPartyEmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -152,13 +142,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
         await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
-        response = await emailVerifyTokenRequest(
-            app,
-            infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
-            infoFromResponse.antiCsrf,
-            userId
-        );
+        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 
         assert(JSON.parse(response.text).status === "EMAIL_ALREADY_VERIFIED_ERROR");
         assert(response.status === 200);
@@ -179,9 +163,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
                 ThirdPartyEmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -232,9 +214,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
                     },
                 }),
                 ThirdPartyEmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -254,7 +234,6 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let response2 = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
             infoFromResponse.antiCsrf,
             userId
         );
@@ -295,9 +274,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
                 ThirdPartyEmailPassword.init({
                     providers: [this.customProvider1],
                 }),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -317,7 +294,6 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let response2 = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie,
             infoFromResponse.antiCsrf,
             userId
         );
@@ -349,9 +325,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
                     mode: "OPTIONAL",
                 }),
                 ThirdPartyEmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 

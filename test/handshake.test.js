@@ -44,7 +44,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         let sessionRecipeInstance = SessionRecipe.getInstanceOrThrowError();
@@ -75,7 +75,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         try {
             await Session.revokeSession("");
@@ -98,7 +98,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         let info = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
         assert(info.getJwtSigningPublicKeyList() instanceof Array);
@@ -130,7 +130,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         let info = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
         assert(info.getJwtSigningPublicKeyList() instanceof Array);
@@ -146,6 +146,6 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             expiryTime
         );
         let info2 = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
-        assert.deepEqual(info2.getJwtSigningPublicKeyList(), [{ publicKey: "hello2", expiryTime }]);
+        assert.deepStrictEqual(info2.getJwtSigningPublicKeyList(), [{ publicKey: "hello2", expiryTime }]);
     });
 });
