@@ -13,22 +13,53 @@
  * under the License.
  */
 import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
 export default function Google(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
+    if (input.config.name === undefined) {
+        input.config.name = "Google";
+    }
+
+    if (input.config.oidcDiscoveryEndpoint === undefined) {
+        input.config.oidcDiscoveryEndpoint = "https://accounts.google.com/";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "id",
+            email: "email",
+            emailVerified: "email_verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
+
+    input.config.authorizationEndpointQueryParams = {
+        included_grant_scopes: "true",
+        access_type: "offline",
+        ...input.config.authorizationEndpointQueryParams,
+    };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.scope === undefined) {
+                config.scope = ["openid", "email"];
+            }
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }

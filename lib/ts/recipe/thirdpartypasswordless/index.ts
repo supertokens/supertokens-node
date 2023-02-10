@@ -15,7 +15,6 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import * as thirdPartyProviders from "../thirdparty/providers";
 import {
     RecipeInterface,
     User,
@@ -32,8 +31,27 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
+    static async thirdPartyGetProvider(
+        thirdPartyId: string,
+        tenantId: string | undefined,
+        clientType: string | undefined,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
+            thirdPartyId,
+            tenantId,
+            clientType,
+            userContext,
+        });
+    }
+
+    static thirdPartyManuallyCreateOrUpdateUser(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
             thirdPartyId,
             thirdPartyUserId,
             email,
@@ -181,22 +199,6 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({ userContext: {}, ...input });
     }
 
-    static Google = thirdPartyProviders.Google;
-
-    static Github = thirdPartyProviders.Github;
-
-    static Facebook = thirdPartyProviders.Facebook;
-
-    static Apple = thirdPartyProviders.Apple;
-
-    static Discord = thirdPartyProviders.Discord;
-
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
-
-    // static Okta = thirdPartyProviders.Okta;
-
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
-
     static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
@@ -216,7 +218,9 @@ export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
 
-export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
+export let thirdPartyGetProvider = Wrapper.thirdPartyGetProvider;
+
+export let thirdPartyManuallyCreateOrUpdateUser = Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 
 export let passwordlessSignInUp = Wrapper.passwordlessSignInUp;
 
@@ -249,22 +253,6 @@ export let revokeAllCodes = Wrapper.revokeAllCodes;
 export let revokeCode = Wrapper.revokeCode;
 
 export let createMagicLink = Wrapper.createMagicLink;
-
-export let Google = Wrapper.Google;
-
-export let Github = Wrapper.Github;
-
-export let Facebook = Wrapper.Facebook;
-
-export let Apple = Wrapper.Apple;
-
-export let Discord = Wrapper.Discord;
-
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
-
-// export let Okta = Wrapper.Okta;
-
-// export let ActiveDirectory = Wrapper.ActiveDirectory;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 

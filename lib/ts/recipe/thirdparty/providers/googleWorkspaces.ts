@@ -13,22 +13,65 @@
  * under the License.
  */
 import { ProviderInput, TypeProvider } from "../types";
+import Google from "./google";
 
 export default function GoogleWorkspaces(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
+    if (input.config.name === undefined) {
+        input.config.name = "Google Workspaces";
+    }
+
+    if (input.config.validateIdTokenPayload === undefined) {
+        input.config.validateIdTokenPayload = async function (input) {
+            if (
+                input.clientConfig.additionalConfig?.hd !== undefined &&
+                input.clientConfig.additionalConfig?.hd !== "*"
+            ) {
+                if (input.clientConfig.additionalConfig?.hd !== input.idTokenPayload.hd) {
+                    throw new Error(
+                        "the value for hd claim in the id token does not match the value provided in the config"
+                    );
+                }
+            }
+        };
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "id",
+            email: "email",
+            emailVerified: "email_verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
+
+    input.config.authorizationEndpointQueryParams = {
+        included_grant_scopes: "true",
+        access_type: "offline",
+        ...input.config.authorizationEndpointQueryParams,
+    };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            config.additionalConfig = {
+                hd: "*",
+                ...config.additionalConfig,
+            };
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return Google(input);
 }

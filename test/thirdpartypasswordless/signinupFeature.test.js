@@ -35,125 +35,109 @@ let { middleware, errorHandler } = require("../../framework/express");
 describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: true,
                             },
                         };
                     },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
                 };
             },
         };
-        this.customProvider2 = {
-            id: "custom",
-            get: (recipe, authCode) => {
-                throw new Error("error from get function");
-            },
-        };
+
         this.customProvider3 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                         };
                     },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
                 };
             },
         };
+
         this.customProvider4 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         throw new Error("error from getProfileInfo");
                     },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
                 };
             },
         };
+
         this.customProvider5 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: false,
                             },
                         };
                     },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
                 };
             },
         };
+
         this.customProvider6 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
-                        if (authCodeResponse.access_token === undefined) {
+                    ...oI,
+                    getUserInfo: async function ({ oAuthTokens }) {
+                        if (oAuthTokens.access_token === undefined) {
                             return {};
                         }
+
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: true,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },
@@ -197,10 +181,17 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                         },
                     },
                     providers: [
-                        ThirdPartyPasswordless.Google({
-                            clientId: "test",
-                            clientSecret: "test-secret",
-                        }),
+                        {
+                            config: {
+                                thirdPartyId: "google",
+                                clients: [
+                                    {
+                                        clientID: "test",
+                                        clientSecret: "test-secret",
+                                    },
+                                ],
+                            },
+                        },
                     ],
                 }),
             ],
@@ -222,8 +213,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "google",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -278,10 +273,9 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    authCodeResponse: {
+                    oAuthTokens: {
                         access_token: "saodiasjodai",
                     },
-                    redirectURI: "http://127.0.0.1/callback",
                 })
                 .end((err, res) => {
                     if (err) {
@@ -323,7 +317,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    authCodeResponse: {
+                    oAuthTokens: {
                         access_token: "saodiasjodai",
                     },
                     redirectURI: "http://127.0.0.1/callback",
@@ -402,7 +396,6 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    redirectURI: "http://127.0.0.1/callback",
                 })
                 .end((err, res) => {
                     if (err) {
@@ -460,8 +453,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -505,8 +502,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -585,8 +586,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -664,8 +669,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "google",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -676,71 +685,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 })
         );
         assert.strictEqual(response1.statusCode, 400);
-        assert.strictEqual(
-            response1.body.message,
-            "The third party provider google seems to be missing from the backend configs."
-        );
-    });
-
-    it("test with thirdPartyPasswordless, provider get function throws error", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init(),
-                ThirdPartyPasswordless.init({
-                    contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
-                    },
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers: [this.customProvider2],
-                }),
-            ],
-        });
-
-        // run test if current CDI version >= 2.11
-        if (!(await isCDIVersionCompatible("2.11"))) {
-            return;
-        }
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        app.use((err, request, response, next) => {
-            response.status(500).send({
-                message: err.message,
-            });
-        });
-
-        let response1 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response1.statusCode, 500);
-        assert.deepStrictEqual(response1.body, { message: "error from get function" });
+        assert.strictEqual(response1.body.message, "the provider google could not be found in the configuration");
     });
 
     it("test with thirdPartyPasswordless, email not returned in getProfileInfo function", async function () {
@@ -785,8 +730,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -848,8 +797,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -930,7 +883,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response2.statusCode, 400);
         assert.strictEqual(
             response2.body.message,
-            "Please provide one of code or authCodeResponse in the request body"
+            "Please provide one of redirectURIInfo or oAuthTokens in the request body"
         );
 
         let response3 = await new Promise((resolve) =>
@@ -967,60 +920,6 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response4.statusCode, 400);
         assert.strictEqual(response4.body.message, "Please provide the thirdPartyId in request body");
 
-        let response5 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    code: true,
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response5.statusCode, 400);
-        assert.strictEqual(response5.body.message, "Please make sure that the code in the request body is a string");
-
-        let response6 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    code: 32432432,
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response6.statusCode, 400);
-        assert.strictEqual(response6.body.message, "Please make sure that the code in the request body is a string");
-
-        let response7 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    code: "32432432",
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.strictEqual(response7.statusCode, 400);
-        assert.strictEqual(response7.body.message, "Please provide the redirectURI in request body");
-
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
         let response8 = await new Promise((resolve) =>
@@ -1028,8 +927,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "32432432",
-                    redirectURI: "http://localhost.org",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://localhost.org",
+                        redirectURIQueryParams: {
+                            code: "32432432",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -1087,8 +990,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "32432432",
-                    redirectURI: "http://localhost.org",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://localhost.org",
+                        redirectURIQueryParams: {
+                            code: "32432432",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -1152,8 +1059,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "32432432",
-                    redirectURI: "http://localhost.org",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://localhost.org",
+                        redirectURIQueryParams: {
+                            code: "32432432",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {

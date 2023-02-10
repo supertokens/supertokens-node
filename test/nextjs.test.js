@@ -25,7 +25,6 @@ const ThirdPartyEmailPassword = require("../lib/build/recipe/thirdpartyemailpass
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
 const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
 let { verifySession } = require("../recipe/session/framework/express");
-let queryString = require("querystring");
 
 describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
@@ -441,10 +440,17 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     }),
                     ThirdPartyEmailPassword.init({
                         providers: [
-                            ThirdPartyEmailPassword.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientID: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     }),
                     Session.init({
@@ -516,7 +522,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 },
                 url: "/api/auth/callback/apple",
                 body: {
-                    state: "hello",
+                    state: "eyJyZWRpcmVjdFVSSSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9yZWRpcmVjdCJ9",
                     code: "testing",
                 },
             });
@@ -526,8 +532,12 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             });
 
             response.on("end", () => {
-                let expected = `<html><head><script>window.location.replace("https://supertokens.io/auth/callback/apple?state=hello&code=testing");</script></head></html>`;
-                assert.deepStrictEqual(Buffer.from(response._getData()).toString(), expected);
+                assert.deepStrictEqual(Buffer.from(response._getData()).toString(), "");
+                assert.deepStrictEqual(response._getStatusCode(), 303);
+                assert.deepStrictEqual(
+                    response._getHeaders().location,
+                    "http://localhost:3000/redirect?state=eyJyZWRpcmVjdFVSSSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9yZWRpcmVjdCJ9&code=testing"
+                );
                 return done();
             });
 

@@ -1,7 +1,9 @@
-import { RecipeInterface, User, ProviderInput, ProviderConfig } from "./types";
+import { RecipeInterface, User, ProviderInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
+import { updateTenantId } from "./utils";
+import MultitenancyRecipe from "../multitenancy/recipe";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
@@ -9,11 +11,27 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             thirdPartyId,
             thirdPartyUserId,
             email,
+            oAuthTokens,
+            rawUserInfoFromProvider,
         }: {
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload: { [key: string]: any };
+                fromUserInfoAPI: { [key: string]: any };
+            };
+        }): Promise<{
+            status: "OK";
+            createdNewUser: boolean;
+            user: User;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload: { [key: string]: any };
+                fromUserInfoAPI: { [key: string]: any };
+            };
+        }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
                 thirdPartyId,
                 thirdPartyUserId,
@@ -23,6 +41,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 status: "OK",
                 createdNewUser: response.createdNewUser,
                 user: response.user,
+                oAuthTokens,
+                rawUserInfoFromProvider,
             };
         },
 
@@ -52,8 +72,9 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userId,
             });
             if (response.status === "OK") {
+                const user = updateTenantId(response.user);
                 return {
-                    ...response.user,
+                    ...user,
                 };
             } else {
                 return undefined;
@@ -61,9 +82,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
         },
 
         getUsersByEmail: async function ({ email }: { email: string }): Promise<User[]> {
-            const { users } = await querier.sendGetRequest(new NormalisedURLPath("/recipe/users/by-email"), {
-                email,
-            });
+            let users: User[] = [];
+            users = (
+                await querier.sendGetRequest(new NormalisedURLPath("/recipe/users/by-email"), {
+                    email,
+                })
+            ).users;
+            users = users.map(updateTenantId);
 
             return users;
         },
@@ -80,8 +105,9 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 thirdPartyUserId,
             });
             if (response.status === "OK") {
+                const user = updateTenantId(response.user);
                 return {
-                    ...response.user,
+                    ...user,
                 };
             } else {
                 return undefined;
@@ -89,21 +115,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
         },
 
         getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {
-            // TODO
-            // const tenantConfig = await multitenancy.getTenantConfig({ tenantId, userContext }); // FIXME
-            const tenantConfig: {
-                status: "OK";
-                thirdParty: {
-                    enabled: boolean;
-                    providers: ProviderConfig[];
-                };
-            } = {
-                status: "OK",
-                thirdParty: {
-                    enabled: true,
-                    providers: [],
-                },
-            };
+            const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+            const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenantConfig({ tenantId, userContext });
 
             const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
                 tenantId,

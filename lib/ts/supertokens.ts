@@ -20,6 +20,7 @@ import {
     maxVersion,
     normaliseHttpMethod,
     sendNon200ResponseWithMessage,
+    updateTenantId,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -31,6 +32,7 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
+import MultitenancyRecipe from "./recipe/multitenancy/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -78,9 +80,18 @@ export default class SuperTokens {
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
+        let multitenancyFound = false;
         this.recipeModules = config.recipeList.map((func) => {
-            return func(this.appInfo, this.isInServerlessEnv);
+            const recipeModule = func(this.appInfo, this.isInServerlessEnv);
+            if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
+                multitenancyFound = true;
+            }
+            return recipeModule;
         });
+
+        if (!multitenancyFound) {
+            this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
 
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
@@ -210,8 +221,10 @@ export default class SuperTokens {
             limit: input.limit,
             paginationToken: input.paginationToken,
         });
+
+        const users: { recipeId: string; user: any }[] = response.users;
         return {
-            users: response.users,
+            users: users.map(updateTenantId),
             nextPaginationToken: response.nextPaginationToken,
         };
     };

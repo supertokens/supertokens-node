@@ -17,6 +17,9 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
+import MultitenancyRecipe from "../../multitenancy/recipe";
+import { RecipeDisabledForTenantError } from "../../multitenancy";
+import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
@@ -47,7 +50,8 @@ export default async function authorisationUrlAPI(
 
     const userContext = makeDefaultUserContextFromAPI(options.req);
 
-    // TODO tp-rework tenantId = multitenancyRecipe.getTenantId(tenantId, userContext);
+    const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+    tenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({ tenantIdFromFrontend: tenantId, userContext });
 
     const providerResponse = await options.recipeImplementation.getProvider({
         thirdPartyId,
@@ -57,7 +61,12 @@ export default async function authorisationUrlAPI(
     });
 
     if (!providerResponse.thirdPartyEnabled) {
-        // TODO tp-rework throw multitenancy.recipenotenabled error
+        throw new RecipeDisabledForTenantError({
+            type: "RECIPE_DISABLED_FOR_TENANT_ERROR",
+            message: `The third party recipe is disabled for ${
+                tenantId === undefined || tenantId === DEFAULT_TENANT_ID ? "default tenant" : tenantId
+            }`,
+        });
     }
 
     const provider = providerResponse.provider;

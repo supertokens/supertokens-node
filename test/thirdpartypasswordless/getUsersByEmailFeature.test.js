@@ -18,7 +18,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyPasswordlessRecipe = require("../../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
-const { thirdPartySignInUp } = require("../../lib/build/recipe/thirdpartypasswordless");
+const { thirdPartyManuallyCreateOrUpdateUser } = require("../../lib/build/recipe/thirdpartypasswordless");
 const { getUsersByEmail } = require("../../lib/build/recipe/thirdpartypasswordless");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
@@ -26,11 +26,15 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByEmailFeature.test.js]")}`, function () {
     const MockThirdPartyProvider = {
-        id: "mock",
+        config: {
+            thirdPartyId: "mock",
+        },
     };
 
     const MockThirdPartyProvider2 = {
-        id: "mock2",
+        config: {
+            thirdPartyId: "mock2",
+        },
     };
 
     const testSTConfig = {
@@ -103,8 +107,8 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByE
             return;
         }
 
-        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await thirdPartyManuallyCreateOrUpdateUser("mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await thirdPartyManuallyCreateOrUpdateUser("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
         const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
 

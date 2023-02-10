@@ -27,6 +27,7 @@ const EmailVerificationRecipe = require("../lib/build/recipe/emailverification/r
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
+let MultitenancyRecipe = require("../lib/build/recipe/multitenancy/recipe").default;
 const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
@@ -236,6 +237,7 @@ module.exports.resetAll = function () {
     PasswordlessRecipe.reset();
     OpenIDRecipe.reset();
     ProcessState.getInstance().reset();
+    MultitenancyRecipe.reset();
 };
 
 module.exports.killAllST = async function () {
@@ -424,8 +426,12 @@ module.exports.signInUPCustomRequest = async function (app, email, id) {
             .post("/auth/signinup")
             .send({
                 thirdPartyId: "custom",
-                code: "abcdefghj",
-                redirectURI: "http://127.0.0.1/callback",
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        code: "abcdefghj",
+                    },
+                },
             })
             .end((err, res) => {
                 if (err) {

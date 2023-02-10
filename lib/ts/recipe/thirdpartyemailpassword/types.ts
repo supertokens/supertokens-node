@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, ProviderInput } from "../thirdparty/types";
 import {
     NormalisedFormField,
     TypeFormField,
@@ -38,6 +38,7 @@ export type User = {
         id: string;
         userId: string;
     };
+    tenantId?: string;
 };
 
 export type TypeContextEmailPasswordSignUp = {
@@ -64,7 +65,7 @@ export type TypeNormalisedInputSignUp = {
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
-    providers?: TypeProvider[];
+    providers?: ProviderInput[];
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override?: {
@@ -78,7 +79,7 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
-    providers: TypeProvider[];
+    providers: ProviderInput[];
     getEmailDeliveryConfig: (
         emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
@@ -104,7 +105,35 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<User | undefined>;
 
+    thirdPartyGetProvider(input: {
+        thirdPartyId: string;
+        tenantId?: string;
+        clientType?: string;
+        userContext: any;
+    }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
+
     thirdPartySignInUp(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: string;
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: { [key: string]: any };
+            fromUserInfoAPI: { [key: string]: any };
+        };
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: { [key: string]: any };
+            fromUserInfoAPI: { [key: string]: any };
+        };
+    }>;
+
+    thirdPartyManuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
@@ -160,12 +189,14 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
+              redirectURIOnProviderDashboard: string;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
               | {
                     status: "OK";
-                    url: string;
+                    urlWithQueryParams: string;
+                    pkceCodeVerifier?: string;
                 }
               | GeneralErrorResponse
           >);
@@ -223,26 +254,37 @@ export type APIInterface = {
 
     thirdPartySignInUpPOST:
         | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
+        | ((
+              input: {
+                  provider: TypeProvider;
+                  options: ThirdPartyAPIOptions;
+                  userContext: any;
+              } & (
+                  | {
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: string;
+                            redirectURIQueryParams: any;
+                            pkceCodeVerifier?: string;
+                        };
+                    }
+                  | {
+                        oAuthTokens: { [key: string]: any };
+                    }
+              )
+          ) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
-                    authCodeResponse: any;
+                    oAuthTokens: { [key: string]: any };
+                    rawUserInfoFromProvider: {
+                        fromIdTokenPayload: { [key: string]: any };
+                        fromUserInfoAPI: { [key: string]: any };
+                    };
                 }
+              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | GeneralErrorResponse
-              | {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-                }
           >);
 
     emailPasswordSignInPOST:
@@ -289,7 +331,11 @@ export type APIInterface = {
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
+        | ((input: {
+              formPostInfoFromProvider: any;
+              options: ThirdPartyAPIOptions;
+              userContext: any;
+          }) => Promise<void>);
 };
 
 export type TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput;

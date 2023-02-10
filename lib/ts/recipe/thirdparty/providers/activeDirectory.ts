@@ -50,7 +50,7 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
                 config.scope = ["openid", "email"];
             }
 
-            // TODO client assertion stuff
+            // TODO later if required, client assertion impl
 
             return config;
         };

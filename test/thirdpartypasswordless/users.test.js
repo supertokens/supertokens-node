@@ -32,26 +32,23 @@ let { middleware, errorHandler } = require("../../framework/express");
 describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function ({ oAuthTokens }) {
                         return {
-                            id: authCodeResponse.id,
+                            thirdPartyUserId: oAuthTokens.id,
                             email: {
-                                id: authCodeResponse.email,
+                                id: oAuthTokens.email,
                                 isVerified: true,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },

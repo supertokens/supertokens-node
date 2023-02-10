@@ -56,12 +56,9 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     }),
                 ],
             });
-            assert(false);
         } catch (err) {
-            assert.strictEqual(
-                err.message,
-                "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config"
-            );
+            // This error should no more happen
+            assert(false);
         }
     });
 
@@ -81,25 +78,8 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     signInAndUpFeature: {
                         providers: [
                             {
-                                id: "custom",
-                                get: (recipe, authCode) => {
-                                    return {
-                                        accessTokenAPI: {
-                                            url: "test.com/oauth/token",
-                                        },
-                                        authorisationRedirect: {
-                                            url: "test.com/oauth/auth",
-                                        },
-                                        getProfileInfo: async (authCodeResponse) => {
-                                            return {
-                                                id: "user",
-                                                email: {
-                                                    id: "email@test.com",
-                                                    isVerified: true,
-                                                },
-                                            };
-                                        },
-                                    };
+                                config: {
+                                    thirdPartyId: "custom",
                                 },
                             },
                         ],

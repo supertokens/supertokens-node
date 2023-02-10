@@ -13,22 +13,72 @@
  * under the License.
  */
 import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
 export default function Facebook(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
+    if (input.config.name === undefined) {
+        input.config.name = "Facebook";
+    }
+
+    if (input.config.authorizationEndpoint === undefined) {
+        input.config.authorizationEndpoint = "https://www.facebook.com/v12.0/dialog/oauth";
+    }
+
+    if (input.config.tokenEndpoint === undefined) {
+        input.config.tokenEndpoint = "https://graph.facebook.com/v12.0/oauth/access_token";
+    }
+
+    if (input.config.userInfoEndpoint === undefined) {
+        input.config.userInfoEndpoint = "https://graph.facebook.com/me";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "id",
+            email: "email",
+            emailVerified: "email_verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.scope === undefined) {
+                config.scope = ["email"];
+            }
+
+            return config;
+        };
+
+        const oGetUserInfo = originalImplementation.getUserInfo;
+        originalImplementation.getUserInfo = async function (input) {
+            originalImplementation.config.userInfoEndpointQueryParams = {
+                access_token: input.oAuthTokens.access_token,
+                fields: "id,email",
+                format: "json",
+                ...originalImplementation.config.userInfoEndpointQueryParams,
+            };
+
+            originalImplementation.config.userInfoEndpointHeaders = {
+                ...originalImplementation.config.userInfoEndpointHeaders,
+                Authorization: null,
+            };
+
+            return await oGetUserInfo(input);
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }

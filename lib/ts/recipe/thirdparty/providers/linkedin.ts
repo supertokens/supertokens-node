@@ -13,22 +13,85 @@
  * under the License.
  */
 import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
+import { doGetRequest } from "./utils";
 
 export default function Linkedin(input: ProviderInput): TypeProvider {
-    // TODO
-    return {
-        id: input.config.thirdPartyId,
-        getConfigForClientType: async () => {
-            throw new Error("Not implemented");
-        },
-        getAuthorisationRedirectURL: async () => {
-            throw new Error("Not implemented");
-        },
-        exchangeAuthCodeForOAuthTokens: async () => {
-            throw new Error("Not implemented");
-        },
-        getUserInfo: async () => {
-            throw new Error("Not implemented");
-        },
+    if (input.config.name === undefined) {
+        input.config.name = "LinkedIn";
+    }
+
+    if (input.config.authorizationEndpoint === undefined) {
+        input.config.authorizationEndpoint = "https://www.linkedin.com/oauth/v2/authorization";
+    }
+
+    if (input.config.tokenEndpoint === undefined) {
+        input.config.tokenEndpoint = "https://www.linkedin.com/oauth/v2/accessToken";
+    }
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.scope === undefined) {
+                config.scope = ["r_emailaddress", "r_liteprofile"];
+            }
+
+            return config;
+        };
+
+        originalImplementation.getUserInfo = async function (input) {
+            const accessToken = input.oAuthTokens.accessToken;
+
+            if (accessToken === undefined) {
+                throw new Error("Access token not found");
+            }
+
+            const headers: { [key: string]: string } = {
+                Authorization: `Bearer ${accessToken}`,
+            };
+
+            let rawUserInfoFromProvider: {
+                fromUserInfoAPI: any;
+                fromIdTokenPayload: any;
+            } = {
+                fromUserInfoAPI: {},
+                fromIdTokenPayload: {},
+            };
+
+            const userInfoFromAccessToken = await doGetRequest("https://api.linkedin.com/v2/me", undefined, headers);
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+
+            const emailAPIURL = "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))";
+            const userInfoFromEmail = await doGetRequest(emailAPIURL, undefined, headers);
+
+            if (userInfoFromEmail.elements && userInfoFromEmail.elements.length > 0) {
+                rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.elements[0]["handle~"].emailAddress;
+            }
+            rawUserInfoFromProvider.fromUserInfoAPI = {
+                ...rawUserInfoFromProvider.fromUserInfoAPI,
+                ...userInfoFromEmail,
+            };
+
+            return {
+                thirdPartyUserId: rawUserInfoFromProvider.fromUserInfoAPI.id,
+                email: {
+                    id: rawUserInfoFromProvider.fromUserInfoAPI.email,
+                    isVerified: false,
+                },
+                rawUserInfoFromProvider,
+            };
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
     };
+
+    return NewProvider(input);
 }

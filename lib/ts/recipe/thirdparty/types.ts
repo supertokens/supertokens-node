@@ -53,12 +53,12 @@ type CommonProviderConfig = {
     name?: string;
 
     authorizationEndpoint?: string;
-    authorizationEndpointQueryParams?: { [key: string]: string };
+    authorizationEndpointQueryParams?: { [key: string]: string | null };
     tokenEndpoint?: string;
     tokenEndpointBodyParams?: { [key: string]: string };
     userInfoEndpoint?: string;
-    userInfoEndpointQueryParams?: { [key: string]: string };
-    userInfoEndpointHeaders?: { [key: string]: string };
+    userInfoEndpointQueryParams?: { [key: string]: string | null };
+    userInfoEndpointHeaders?: { [key: string]: string | null };
     jwksURI?: string;
     oidcDiscoveryEndpoint?: string;
     userInfoMap?: UserInfoMap;
@@ -102,6 +102,7 @@ export type User = {
         id: string;
         userId: string;
     };
+    tenantId?: string;
 };
 
 export type ProviderConfig = CommonProviderConfig & {
@@ -171,7 +172,16 @@ export type RecipeInterface = {
             fromUserInfoAPI: { [key: string]: any };
         };
         userContext: any;
-    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: { [key: string]: any };
+            fromUserInfoAPI: { [key: string]: any };
+        };
+    }>;
 
     manuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
@@ -246,5 +256,9 @@ export type APIInterface = {
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { formPostInfoFromProvider: any; options: APIOptions; userContext: any }) => Promise<void>);
+        | ((input: {
+              formPostInfoFromProvider: { [key: string]: any };
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<void>);
 };
