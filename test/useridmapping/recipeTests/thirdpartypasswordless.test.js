@@ -44,10 +44,17 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                             return;
                         },
                         providers: [
-                            ThirdPartyPasswordlessRecipe.Google({
-                                clientId: "google",
-                                clientSecret: "test",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientID: "google",
+                                            clientSecret: "test",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     }),
                     SessionRecipe.init(),
@@ -64,7 +71,11 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
             {
                 const email = "test2@example.com";
                 // create a new ThirdParty user
-                let signUpResponse = await ThirdPartyPasswordlessRecipe.thirdPartySignInUp("google", "tpId", email);
+                let signUpResponse = await ThirdPartyPasswordlessRecipe.thirdPartyManuallyCreateOrUpdateUser(
+                    "google",
+                    "tpId",
+                    email
+                );
 
                 // map the users id
                 let user = signUpResponse.user;

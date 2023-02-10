@@ -19,13 +19,15 @@ export default function getAPIInterface(): APIInterface {
             const { provider, options, userContext } = input;
             let oAuthTokensToUse: any = {};
 
-            if ("redirectURIInfo" in input) {
+            if ("redirectURIInfo" in input && input.redirectURIInfo !== undefined) {
                 oAuthTokensToUse = await provider.exchangeAuthCodeForOAuthTokens({
                     redirectURIInfo: input.redirectURIInfo,
                     userContext,
                 });
-            } else {
+            } else if ("oAuthTokens" in input && input.oAuthTokens !== undefined) {
                 oAuthTokensToUse = input.oAuthTokens;
+            } else {
+                throw Error("should never come here");
             }
 
             const userInfo = await provider.getUserInfo({ oAuthTokens: oAuthTokensToUse, userContext });

@@ -29,26 +29,23 @@ let { isCDIVersionCompatible } = require("../utils");
 describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery.test.js]")}`, function () {
     before(function () {
         this.customProvider = {
-            id: "supertokens",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function ({ oAuthTokens }) {
                         return {
-                            id: authCodeResponse.id,
+                            thirdPartyUserId: oAuthTokens.id,
                             email: {
-                                id: authCodeResponse.email,
+                                id: oAuthTokens.email,
                                 isVerified: true,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },
@@ -104,7 +101,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "supertokens",
+            "test-user-id",
+            "test@example.com"
+        );
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -172,7 +173,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "supertokens",
+            "test-user-id",
+            "test@example.com"
+        );
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -252,7 +257,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "supertokens",
+            "test-user-id",
+            "test@example.com"
+        );
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         await supertest(app)
@@ -384,7 +393,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "supertokens",
+            "test-user-id",
+            "test@example.com"
+        );
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         process.env.TEST_MODE = "production";
@@ -498,7 +511,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "supertokens",
+            "test-user-id",
+            "test@example.com"
+        );
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         await supertest(app)

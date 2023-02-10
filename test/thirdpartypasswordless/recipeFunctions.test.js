@@ -52,7 +52,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers: [/** @type {any} */ {}],
+                    providers: [{ config: { thirdPartyId: "customProvider" } }],
                     createAndSendCustomEmail: (input) => {
                         return;
                     },
@@ -69,7 +69,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         // create a ThirdParty user with a verified email
-        let response = await ThirdPartyPasswordless.thirdPartySignInUp(
+        let response = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
             "customProvider",
             "verifiedUser",
             "test@example.com"
@@ -83,7 +83,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         assert(await EmailVerification.isEmailVerified(response.user.id));
 
         // create a ThirdParty user with an unverfied email and check that it is not verified
-        let response2 = await ThirdPartyPasswordless.thirdPartySignInUp(
+        let response2 = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
             "customProvider2",
             "NotVerifiedUser",
             "test@example.com"

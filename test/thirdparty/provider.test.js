@@ -16,8 +16,8 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-let ThirParty = require("../../lib/build/recipe/thirdparty");
+let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+let ThirdParty = require("../../lib/build/recipe/thirdparty");
 let { middleware, errorHandler } = require("../../framework/express");
 let nock = require("nock");
 
@@ -68,7 +68,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -88,7 +88,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("google");
+        let providerRes = await ThirdParty.getProvider("google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -161,7 +161,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -185,7 +185,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("google");
+        let providerRes = await ThirdParty.getProvider("google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -234,7 +234,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -255,7 +255,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("google");
+        let providerRes = await ThirdParty.getProvider("google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -306,7 +306,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -326,7 +326,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("facebook");
+        let providerRes = await ThirdParty.getProvider("facebook");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "facebook");
@@ -401,7 +401,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -422,7 +422,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("facebook");
+        let providerRes = await ThirdParty.getProvider("facebook");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "facebook");
@@ -471,7 +471,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -491,7 +491,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("github");
+        let providerRes = await ThirdParty.getProvider("github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -566,7 +566,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -590,7 +590,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("github");
+        let providerRes = await ThirdParty.getProvider("github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -641,7 +641,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -662,7 +662,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("github");
+        let providerRes = await ThirdParty.getProvider("github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -715,7 +715,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -735,7 +735,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("apple");
+        let providerRes = await ThirdParty.getProvider("apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -817,7 +817,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -841,7 +841,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("apple");
+        let providerRes = await ThirdParty.getProvider("apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -897,7 +897,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -918,7 +918,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirParty.getProvider("apple");
+        let providerRes = await ThirdParty.getProvider("apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -971,7 +971,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
                             {
@@ -992,7 +992,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         try {
-            let providerRes = await ThirParty.getProvider("apple");
+            let providerRes = await ThirdParty.getProvider("apple");
             let providerInfo = providerRes.provider;
             assert(false);
         } catch (err) {
@@ -1013,7 +1013,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
-                    ThirPartyRecipe.init({
+                    ThirdPartyRecipe.init({
                         signInAndUpFeature: {
                             providers: [
                                 {

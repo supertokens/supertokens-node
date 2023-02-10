@@ -1516,10 +1516,17 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                         return;
                     },
                     providers: [
-                        ThirdPartyPasswordless.Google({
-                            clientId: "test",
-                            clientSecret: "test",
-                        }),
+                        {
+                            config: {
+                                thirdPartyId: "google",
+                                clients: [
+                                    {
+                                        clientID: "test",
+                                        clientSecret: "test-secret",
+                                    },
+                                ],
+                            },
+                        },
                     ],
                 }),
             ],
@@ -1530,7 +1537,7 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
 
         assert(config.providers.length === 1);
         let provider = config.providers[0];
-        assert(provider.id === "google");
+        assert(provider.config.thirdPartyId === "google");
     });
 
     it("test for thirdPartyPasswordless, minimum config for thirdparty module, custom provider", async function () {
@@ -1556,18 +1563,18 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                     },
                     providers: [
                         {
-                            id: "custom",
-                            get: (recipe, authCode) => {
+                            config: {
+                                thirdPartyId: "custom",
+                                authorizationEndpoint: "https://test.com/oauth/auth",
+                                tokenEndpoint: "https://test.com/oauth/token",
+                                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+                            },
+                            override: (oI) => {
                                 return {
-                                    accessTokenAPI: {
-                                        url: "test.com/oauth/token",
-                                    },
-                                    authorisationRedirect: {
-                                        url: "test.com/oauth/auth",
-                                    },
-                                    getProfileInfo: async (authCodeResponse) => {
+                                    ...oI,
+                                    getUserInfo: async function ({ oAuthTokens }) {
                                         return {
-                                            id: "user",
+                                            thirdPartyUserId: "user",
                                             email: {
                                                 id: "email@test.com",
                                                 isVerified: true,

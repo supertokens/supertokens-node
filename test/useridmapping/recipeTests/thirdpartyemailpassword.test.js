@@ -36,10 +36,17 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 recipeList: [
                     ThirdPartyEmailPasswordRecipe.init({
                         providers: [
-                            ThirdPartyEmailPasswordRecipe.Google({
-                                clientId: "google",
-                                clientSecret: "test",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientID: "google",
+                                            clientSecret: "test",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     }),
                     SessionRecipe.init(),
@@ -83,7 +90,11 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 // create a new ThirdParty user
                 const email = "test2@example.com";
 
-                let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartySignInUp("google", "tpId", email);
+                let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartyManuallyCreateOrUpdateUser(
+                    "google",
+                    "tpId",
+                    email
+                );
 
                 // map the users id
                 let user = signUpResponse.user;

@@ -71,8 +71,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
                 userId,
             });
-            const user = updateTenantId(response.user);
             if (response.status === "OK") {
+                const user = updateTenantId(response.user);
                 return {
                     ...user,
                 };

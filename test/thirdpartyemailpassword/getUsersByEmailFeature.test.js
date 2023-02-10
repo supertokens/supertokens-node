@@ -7,6 +7,7 @@ const {
     thirdPartySignInUp,
     getUsersByEmail,
     emailPasswordSignUp,
+    thirdPartyManuallyCreateOrUpdateUser,
 } = require("../../lib/build/recipe/thirdpartyemailpassword");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
@@ -87,8 +88,8 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         }
 
         await emailPasswordSignUp("john.doe@example.com", "somePass");
-        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await thirdPartyManuallyCreateOrUpdateUser("mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await thirdPartyManuallyCreateOrUpdateUser("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
         const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
 
