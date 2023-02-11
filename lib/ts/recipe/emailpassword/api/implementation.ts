@@ -68,7 +68,7 @@ export default function getAPIImplementation(): APIInterface {
                 let response = await options.recipeImplementation.signUp({
                     email,
                     password,
-                    doAutomaticAccountLinking: false,
+                    doAccountLinking: false,
                     userContext,
                 });
                 if (response.status !== "OK") {
@@ -465,7 +465,7 @@ export default function getAPIImplementation(): APIInterface {
                             email,
                             password: newPassword,
                             userContext,
-                            doAutomaticAccountLinking: false,
+                            doAccountLinking: false,
                         });
                         if (response.status !== "OK") {
                             throw Error("this error should not be thrown. EP user already for email: " + email);
@@ -580,7 +580,7 @@ export default function getAPIImplementation(): APIInterface {
             let response = await options.recipeImplementation.signUp({
                 email,
                 password,
-                doAutomaticAccountLinking: true,
+                doAccountLinking: true,
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
