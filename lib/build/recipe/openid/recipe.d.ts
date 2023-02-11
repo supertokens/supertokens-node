@@ -1,4 +1,3 @@
-// @ts-nocheck
 import STError from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
@@ -18,13 +17,7 @@ export default class OpenIdRecipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (
-        id: string,
-        req: BaseRequest,
-        response: BaseResponse,
-        path: normalisedURLPath,
-        method: HTTPMethod
-    ) => Promise<boolean>;
+    handleAPIRequest: (id: string, req: BaseRequest, response: BaseResponse, path: normalisedURLPath, method: HTTPMethod) => Promise<boolean>;
     handleError: (error: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;

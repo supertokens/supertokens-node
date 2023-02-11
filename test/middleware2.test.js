@@ -56,7 +56,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
 
         const app = express();
@@ -90,7 +90,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
 
         const app = express();
@@ -123,7 +123,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
 
         const app = express();
@@ -157,7 +157,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
 
         const app = express();
@@ -192,7 +192,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 EmailPassword.init({
                     override: {
                         apis: (oI) => {

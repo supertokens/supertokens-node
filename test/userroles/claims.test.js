@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { printPath, setupST, startST, killAllST, cleanST, mockResponse } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, mockResponse, mockRequest } = require("../utils");
 const { ProcessState } = require("../../lib/build/processState");
 const STExpress = require("../..");
 const UserRoles = require("../../lib/build/recipe/userroles").default;
@@ -31,7 +31,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -41,7 +41,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockResponse(), "userId");
+            const session = await Session.createNewSession(mockRequest(), mockResponse(), "userId");
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.UserRoleClaim), []);
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.PermissionClaim), []);
         });
@@ -62,7 +62,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                         skipAddingPermissionsToAccessToken: true,
                         skipAddingRolesToAccessToken: true,
                     }),
-                    Session.init(),
+                    Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
 
@@ -73,7 +73,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockResponse(), "userId");
+            const session = await Session.createNewSession(mockRequest(), mockResponse(), "userId");
             assert.strictEqual(await session.getClaimValue(UserRoles.UserRoleClaim), undefined);
             assert.strictEqual(await session.getClaimValue(UserRoles.PermissionClaim), undefined);
         });
@@ -89,7 +89,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -101,7 +101,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("userId", "test");
-            const session = await Session.createNewSession(mockResponse(), "userId");
+            const session = await Session.createNewSession(mockRequest(), mockResponse(), "userId");
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.UserRoleClaim), ["test"]);
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.PermissionClaim), ["a", "b"]);
         });
@@ -119,7 +119,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -131,7 +131,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("userId", "test");
-            const session = await Session.createNewSession(mockResponse(), "userId");
+            const session = await Session.createNewSession(mockRequest(), mockResponse(), "userId");
 
             await session.assertClaims([UserRoles.UserRoleClaim.validators.includes("test")]);
 
@@ -167,7 +167,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     UserRoles.init({
                         skipAddingRolesToAccessToken: true,
                     }),
-                    Session.init(),
+                    Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
 
@@ -178,7 +178,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockResponse(), "userId");
+            const session = await Session.createNewSession(mockRequest(), mockResponse(), "userId");
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("userId", "test");
 
@@ -195,7 +195,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRoles.init(), Session.init()],
+                recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             // Only run for version >= 2.14
@@ -207,7 +207,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("userId", "test");
-            const session = await Session.createNewSession(mockResponse(), "userId");
+            const session = await Session.createNewSession(mockRequest(), mockResponse(), "userId");
 
             await session.assertClaims([UserRoles.PermissionClaim.validators.includes("a")]);
 
@@ -243,7 +243,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                     UserRoles.init({
                         skipAddingPermissionsToAccessToken: true,
                     }),
-                    Session.init(),
+                    Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ],
             });
 
@@ -254,7 +254,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockResponse(), "userId");
+            const session = await Session.createNewSession(mockRequest(), mockResponse(), "userId");
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("userId", "test");
 

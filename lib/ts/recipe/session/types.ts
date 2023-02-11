@@ -62,11 +62,6 @@ export type CreateOrRefreshAPIResponse = {
         expiry: number;
         createdTime: number;
     };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
     antiCsrfToken: string | undefined;
 };
 
@@ -76,14 +71,27 @@ export interface ErrorHandlers {
     onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
 }
 
+export type TokenType = "access" | "refresh";
+
+// When adding a new token transfer method, it's also necessary to update the related constant (availableTokenTransferMethods)
+export type TokenTransferMethod = "header" | "cookie";
+
 export type TypeInput = {
+    sessionExpiredStatusCode?: number;
+    invalidClaimStatusCode?: number;
+
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
-    sessionExpiredStatusCode?: number;
     cookieDomain?: string;
+
+    getTokenTransferMethod?: (input: {
+        req: BaseRequest;
+        forCreateNewSession: boolean;
+        userContext: any;
+    }) => TokenTransferMethod | "any";
+
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    invalidClaimStatusCode?: number;
     jwt?:
         | {
               enable: true;
@@ -128,6 +136,12 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+
+    getTokenTransferMethod: (input: {
+        req: BaseRequest;
+        forCreateNewSession: boolean;
+        userContext: any;
+    }) => TokenTransferMethod | "any";
 
     invalidClaimStatusCode: number;
     jwt: {
@@ -205,6 +219,7 @@ export interface VerifySessionOptions {
 
 export type RecipeInterface = {
     createNewSession(input: {
+        req: BaseRequest;
         res: BaseResponse;
         userId: string;
         recipeUserId?: string;

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, startST, killAllST, setupST, cleanST, mockResponse } = require("../../utils");
+const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
@@ -53,6 +53,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -70,7 +71,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(response, "someId");
+            const session = await Session.createNewSession(mockRequest(), response, "someId");
 
             const failingValidator = UndefinedClaim.validators.hasValue(true);
             assert.deepStrictEqual(
@@ -106,7 +107,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init()],
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             assert.deepStrictEqual(await Session.validateClaimsForSessionHandle("asfd"), {

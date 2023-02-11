@@ -1,4 +1,3 @@
-// @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { User } from "./types";
@@ -29,43 +28,28 @@ export default class SuperTokensWrapper {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
-    }): Promise<
-        | {
-              status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
-          }
-        | {
-              status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
-              doesSuperTokensUserIdExist: boolean;
-              doesExternalUserIdExist: boolean;
-          }
-    >;
-    static getUserForRecipeId(
-        userId: string,
-        recipeId: string
-    ): Promise<{
+    }): Promise<{
+        status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
+    } | {
+        status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
+        doesSuperTokensUserIdExist: boolean;
+        doesExternalUserIdExist: boolean;
+    }>;
+    static getUserForRecipeId(userId: string, recipeId: string): Promise<{
         user: import("./recipe/accountlinking/types").RecipeLevelUser | undefined;
-        recipe:
-            | "emailpassword"
-            | "thirdparty"
-            | "passwordless"
-            | "thirdpartyemailpassword"
-            | "thirdpartypasswordless"
-            | undefined;
+        recipe: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless" | undefined;
     }>;
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-    }): Promise<
-        | {
-              status: "OK";
-              superTokensUserId: string;
-              externalUserId: string;
-              externalUserIdInfo: string | undefined;
-          }
-        | {
-              status: "UNKNOWN_MAPPING_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        superTokensUserId: string;
+        externalUserId: string;
+        externalUserIdInfo: string | undefined;
+    } | {
+        status: "UNKNOWN_MAPPING_ERROR";
+    }>;
     static deleteUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
@@ -84,11 +68,7 @@ export default class SuperTokensWrapper {
     static getUser(userId: string, userContext?: any): Promise<User | undefined>;
     static listUsersByAccountInfo(info: AccountInfo, userContext?: any): Promise<User[] | undefined>;
     static getUserByAccountInfo(info: AccountInfoWithRecipeId, userContext?: any): Promise<User | undefined>;
-    static deleteUser(
-        userId: string,
-        removeAllLinkedAccounts?: boolean,
-        userContext?: any
-    ): Promise<{
+    static deleteUser(userId: string, removeAllLinkedAccounts?: boolean, userContext?: any): Promise<{
         status: "OK";
     }>;
 }

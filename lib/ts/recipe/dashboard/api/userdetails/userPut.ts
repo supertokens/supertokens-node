@@ -1,7 +1,7 @@
 import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailPasswordRecipe from "../../../emailpassword/recipe";
-import ThirdPartyEmailPasswordRecipe from "../../../emailpassword/recipe";
+import ThirdPartyEmailPasswordRecipe from "../../../thirdpartyemailpassword/recipe";
 import PasswordlessRecipe from "../../../passwordless/recipe";
 import ThirdPartyPasswordlessRecipe from "../../../thirdpartypasswordless/recipe";
 import EmailPassword from "../../../emailpassword";

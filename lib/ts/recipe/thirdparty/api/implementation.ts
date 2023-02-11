@@ -232,6 +232,7 @@ export default function getAPIInterface(): APIInterface {
             }
 
             let session = await Session.createNewSession(
+                options.req,
                 options.res,
                 response.user.id,
                 response.user.recipeUserId,
