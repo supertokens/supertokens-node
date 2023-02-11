@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { MiddlewareContext, Response, Middleware } from "@loopback/rest";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import { HTTPMethod } from "../../types";
@@ -24,16 +23,8 @@ export declare class LoopbackResponse extends BaseResponse {
     constructor(ctx: MiddlewareContext);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    setCookie: (
-        key: string,
-        value: string,
-        domain: string | undefined,
-        secure: boolean,
-        httpOnly: boolean,
-        expires: number,
-        path: string,
-        sameSite: "strict" | "lax" | "none"
-    ) => void;
+    removeHeader: (key: string) => void;
+    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
 }

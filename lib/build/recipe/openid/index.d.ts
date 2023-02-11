@@ -1,30 +1,18 @@
-// @ts-nocheck
 import OpenIdRecipe from "./recipe";
 export default class OpenIdRecipeWrapper {
     static init: typeof OpenIdRecipe.init;
-    static getOpenIdDiscoveryConfiguration(
-        userContext?: any
-    ): Promise<{
+    static getOpenIdDiscoveryConfiguration(userContext?: any): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;
     }>;
-    static createJWT(
-        payload?: any,
-        validitySeconds?: number,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    >;
-    static getJWKS(
-        userContext?: any
-    ): Promise<{
+    static createJWT(payload?: any, validitySeconds?: number, userContext?: any): Promise<{
+        status: "OK";
+        jwt: string;
+    } | {
+        status: "UNSUPPORTED_ALGORITHM_ERROR";
+    }>;
+    static getJWKS(userContext?: any): Promise<{
         status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;

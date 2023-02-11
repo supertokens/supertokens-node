@@ -1,11 +1,4 @@
-// @ts-nocheck
-import type {
-    APIGatewayProxyEventV2,
-    APIGatewayProxyEvent,
-    APIGatewayProxyResult,
-    APIGatewayProxyStructuredResultV2,
-    Handler,
-} from "aws-lambda";
+import type { APIGatewayProxyEventV2, APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyStructuredResultV2, Handler } from "aws-lambda";
 import { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
@@ -57,24 +50,14 @@ export declare class AWSResponse extends BaseResponse {
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    setCookie: (
-        key: string,
-        value: string,
-        domain: string | undefined,
-        secure: boolean,
-        httpOnly: boolean,
-        expires: number,
-        path: string,
-        sameSite: "strict" | "lax" | "none"
-    ) => void;
+    removeHeader: (key: string) => void;
+    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
     /**
      * @param {number} statusCode
      */
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
-    sendResponse: (
-        response?: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2 | undefined
-    ) => APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
+    sendResponse: (response?: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2 | undefined) => APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
 }
 export interface SessionEventV2 extends SupertokensLambdaEventV2 {
     session?: SessionContainerInterface;
@@ -82,7 +65,7 @@ export interface SessionEventV2 extends SupertokensLambdaEventV2 {
 export interface SessionEvent extends SupertokensLambdaEvent {
     session?: SessionContainerInterface;
 }
-export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler<any, any>;
+export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler;
 export interface AWSFramework extends Framework {
     middleware: (handler?: Handler) => Handler;
 }

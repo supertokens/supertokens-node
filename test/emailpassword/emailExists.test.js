@@ -78,7 +78,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -118,7 +118,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -164,7 +164,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -206,7 +206,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -252,7 +252,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -298,7 +298,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -335,7 +335,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -378,7 +378,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -427,7 +427,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();

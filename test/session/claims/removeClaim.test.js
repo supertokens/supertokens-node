@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, startST, killAllST, setupST, cleanST, mockResponse } = require("../../utils");
+const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
@@ -62,6 +62,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -79,7 +80,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "someId");
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 1);
@@ -107,6 +108,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -124,7 +126,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(response, "someId");
+            const session = await Session.createNewSession(mockRequest(), response, "someId");
 
             const payload = session.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 1);
@@ -153,6 +155,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,

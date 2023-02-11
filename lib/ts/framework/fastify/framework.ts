@@ -110,6 +110,10 @@ export class FastifyResponse extends BaseResponse {
         }
     };
 
+    removeHeader = (key: string) => {
+        this.response.removeHeader(key);
+    };
+
     setCookie = (
         key: string,
         value: string,

@@ -40,6 +40,11 @@ import {
     TypeNormalisedInput,
 } from "./types";
 import Supertokens from "../..";
+import EmailPasswordRecipe from "../emailpassword/recipe";
+import ThirdPartyRecipe from "../thirdparty/recipe";
+import PasswordlessRecipe from "../passwordless/recipe";
+import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
+import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
     if (config.apiKey.trim().length === 0) {
@@ -163,4 +168,55 @@ export async function getUserForRecipeId(
         user,
         recipe: userResponse.recipe,
     };
+}
+
+export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
+    let isRecipeInitialised = false;
+
+    if (recipeId === "emailpassword") {
+        try {
+            EmailPasswordRecipe.getInstanceOrThrowError();
+            isRecipeInitialised = true;
+        } catch (_) {}
+
+        if (!isRecipeInitialised) {
+            try {
+                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+                isRecipeInitialised = true;
+            } catch (_) {}
+        }
+    } else if (recipeId === "passwordless") {
+        try {
+            PasswordlessRecipe.getInstanceOrThrowError();
+            isRecipeInitialised = true;
+        } catch (_) {}
+
+        if (!isRecipeInitialised) {
+            try {
+                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+                isRecipeInitialised = true;
+            } catch (_) {}
+        }
+    } else if (recipeId === "thirdparty") {
+        try {
+            ThirdPartyRecipe.getInstanceOrThrowError();
+            isRecipeInitialised = true;
+        } catch (_) {}
+
+        if (!isRecipeInitialised) {
+            try {
+                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+                isRecipeInitialised = true;
+            } catch (_) {}
+        }
+
+        if (!isRecipeInitialised) {
+            try {
+                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+                isRecipeInitialised = true;
+            } catch (_) {}
+        }
+    }
+
+    return isRecipeInitialised;
 }

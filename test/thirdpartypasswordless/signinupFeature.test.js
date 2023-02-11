@@ -248,9 +248,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
@@ -302,16 +300,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies1.accessToken, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.notStrictEqual(cookies1.antiCsrf, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.strictEqual(cookies1.accessTokenDomain, undefined);
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies1.frontToken, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(
             await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
@@ -348,16 +342,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies2.accessToken, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.notStrictEqual(cookies2.antiCsrf, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies2.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.strictEqual(cookies2.accessTokenDomain, undefined);
         assert.strictEqual(cookies2.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies2.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies2.frontToken, undefined);
+        assert.notStrictEqual(cookies2.frontToken, "remove");
     });
 
     it("test with thirdPartyPasswordless, missing code and authCodeResponse", async function () {
@@ -372,9 +362,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -427,9 +415,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
@@ -482,16 +468,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies1.accessToken, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.notStrictEqual(cookies1.antiCsrf, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.strictEqual(cookies1.accessTokenDomain, undefined);
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies1.frontToken, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(
             await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
@@ -528,16 +510,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies2.accessToken, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.notStrictEqual(cookies2.antiCsrf, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies2.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.strictEqual(cookies2.accessTokenDomain, undefined);
         assert.strictEqual(cookies2.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies2.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies2.frontToken, undefined);
+        assert.notStrictEqual(cookies2.frontToken, "remove");
     });
 
     it("test with thirdPartyPasswordless, with minimum config for thirdparty module, email unverified", async function () {
@@ -552,9 +530,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -607,16 +583,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies1.accessToken, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.notStrictEqual(cookies1.antiCsrf, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.strictEqual(cookies1.accessTokenDomain, undefined);
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies1.frontToken, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(
             await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
@@ -636,7 +608,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -694,7 +666,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -755,7 +727,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -812,7 +784,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -875,7 +847,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -1063,7 +1035,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -1128,7 +1100,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

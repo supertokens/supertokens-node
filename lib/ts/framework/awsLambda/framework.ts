@@ -189,6 +189,12 @@ export class AWSResponse extends BaseResponse {
         });
     };
 
+    removeHeader = (key: string) => {
+        this.event.supertokens.response.headers = this.event.supertokens.response.headers.filter(
+            (header) => header.key.toLowerCase() !== key.toLowerCase()
+        );
+    };
+
     setCookie = (
         key: string,
         value: string,
@@ -216,7 +222,7 @@ export class AWSResponse extends BaseResponse {
     sendJSONResponse = (content: any) => {
         if (!this.responseSet) {
             this.content = JSON.stringify(content);
-            this.setHeader("Context-Type", "application/json", false);
+            this.setHeader("Content-Type", "application/json", false);
             this.responseSet = true;
         }
     };

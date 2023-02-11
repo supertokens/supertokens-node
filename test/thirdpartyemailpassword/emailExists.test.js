@@ -59,7 +59,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -99,7 +99,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -145,7 +145,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -187,7 +187,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();

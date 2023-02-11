@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
 declare type Response = {
     status: "OK";

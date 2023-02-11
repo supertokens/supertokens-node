@@ -1,37 +1,21 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signUp(
-        email: string,
-        password: string,
-        doAutomaticAccountLinking?: boolean,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-    >;
-    static signIn(
-        email: string,
-        password: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
-    >;
+    static signUp(email: string, password: string, doAutomaticAccountLinking?: boolean, userContext?: any): Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
+    static signIn(email: string, password: string, userContext?: any): Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "WRONG_CREDENTIALS_ERROR";
+    }>;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
     static getUserByEmail(email: string, userContext?: any): Promise<User | undefined>;
     /**
@@ -45,33 +29,19 @@ export default class Wrapper {
      *
      * And we want to allow primaryUserId being passed in.
      */
-    static createResetPasswordToken(
-        userId: string,
-        email: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "UNKNOWN_USER_ID_ERROR";
-          }
-    >;
-    static resetPasswordUsingToken(
-        token: string,
-        newPassword: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-    >;
+    static createResetPasswordToken(userId: string, email: string, userContext?: any): Promise<{
+        status: "OK";
+        token: string;
+    } | {
+        status: "UNKNOWN_USER_ID_ERROR";
+    }>;
+    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any): Promise<{
+        status: "OK";
+        email: string;
+        userId: string;
+    } | {
+        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
@@ -80,11 +50,9 @@ export default class Wrapper {
     }): Promise<{
         status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
     }>;
-    static sendEmail(
-        input: TypeEmailPasswordEmailDeliveryInput & {
-            userContext?: any;
-        }
-    ): Promise<void>;
+    static sendEmail(input: TypeEmailPasswordEmailDeliveryInput & {
+        userContext?: any;
+    }): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

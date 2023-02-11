@@ -1,4 +1,3 @@
-// @ts-nocheck
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 export declare class Querier {
@@ -15,13 +14,10 @@ export declare class Querier {
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getNewInstanceOrThrowError(rIdToCore?: string): Querier;
-    static init(
-        hosts?: {
-            domain: NormalisedURLDomain;
-            basePath: NormalisedURLPath;
-        }[],
-        apiKey?: string
-    ): void;
+    static init(hosts?: {
+        domain: NormalisedURLDomain;
+        basePath: NormalisedURLPath;
+    }[], apiKey?: string): void;
     sendPostRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     sendDeleteRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     sendGetRequest: (path: NormalisedURLPath, params: any) => Promise<any>;

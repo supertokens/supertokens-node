@@ -132,7 +132,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
         const app = express();
@@ -366,7 +366,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

@@ -622,21 +622,28 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 status: "OK",
             };
         },
-        getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId: async function (
-            this: RecipeInterface,
-            {
+        fetchFromAccountToLinkTable: async function ({
+            recipeUserId,
+        }: {
+            recipeUserId: string;
+        }): Promise<User | undefined> {
+            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link"), {
                 recipeUserId,
-            }: {
-                recipeUserId: string;
-            }
-        ): Promise<User | undefined> {
-            let result = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/linked_or_linkable"),
-                {
-                    recipeUserId,
-                }
-            );
+            });
             return result.user;
+        },
+        storeIntoAccountToLinkTable: async function ({
+            recipeUserId,
+            primaryUserId,
+        }: {
+            recipeUserId: string;
+            primaryUserId: string;
+        }): Promise<{ status: "OK" }> {
+            let result = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/link"), {
+                recipeUserId,
+                primaryUserId,
+            });
+            return result;
         },
     };
 }
