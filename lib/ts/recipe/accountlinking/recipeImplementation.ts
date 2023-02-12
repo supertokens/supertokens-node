@@ -627,7 +627,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         }: {
             recipeUserId: string;
         }): Promise<User | undefined> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link"), {
+            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link/table"), {
                 recipeUserId,
             });
             return result.user;
@@ -639,10 +639,13 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             recipeUserId: string;
             primaryUserId: string;
         }): Promise<{ status: "OK" }> {
-            let result = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/link"), {
-                recipeUserId,
-                primaryUserId,
-            });
+            let result = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
+                {
+                    recipeUserId,
+                    primaryUserId,
+                }
+            );
             return result;
         },
     };

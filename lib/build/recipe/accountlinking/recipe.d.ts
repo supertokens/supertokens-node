@@ -52,6 +52,15 @@ export default class Recipe extends RecipeModule {
         info: AccountInfoAndEmailWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
+    markEmailAsVerified: ({
+        email,
+        recipeUserId,
+        userContext,
+    }: {
+        email: string;
+        recipeUserId: string;
+        userContext: any;
+    }) => Promise<void>;
     doPostSignUpAccountLinkingOperations: ({
         info,
         infoVerified,

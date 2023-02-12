@@ -32,6 +32,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
+import EmailVerification from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -240,6 +241,32 @@ export default class Recipe extends RecipeModule {
             return identitiesForPrimaryUser.verified.phoneNumbers.includes(info.phoneNumber);
         }
         throw Error("it should never reach here");
+    };
+
+    markEmailAsVerified = async ({
+        email,
+        recipeUserId,
+        userContext,
+    }: {
+        email: string;
+        recipeUserId: string;
+        userContext: any;
+    }): Promise<void> => {
+        const emailVerificationInstance = EmailVerification.getInstance();
+        if (emailVerificationInstance) {
+            const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
+                userId: recipeUserId,
+                email: email,
+                userContext,
+            });
+
+            if (tokenResponse.status === "OK") {
+                await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                    token: tokenResponse.token,
+                    userContext,
+                });
+            }
+        }
     };
 
     doPostSignUpAccountLinkingOperations = async ({
@@ -614,22 +641,49 @@ export default class Recipe extends RecipeModule {
 
         let identitiesForPrimaryUser = this.getIdentitiesForUser(user);
         let recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser = false;
+        let emailIdentityVerifiedForPrimaryUser = false;
+        let phoneNumberIdentityVerifiedForPrimaryUser = false;
         if (info.email !== undefined) {
             recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser =
                 identitiesForPrimaryUser.verified.emails.includes(info.email) ||
                 identitiesForPrimaryUser.unverified.emails.includes(info.email);
+            emailIdentityVerifiedForPrimaryUser = identitiesForPrimaryUser.verified.emails.includes(info.email);
         }
         if (!recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser && info.phoneNumber !== undefined) {
             recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser =
                 identitiesForPrimaryUser.verified.phoneNumbers.includes(info.phoneNumber) ||
                 identitiesForPrimaryUser.unverified.phoneNumbers.includes(info.phoneNumber);
+            phoneNumberIdentityVerifiedForPrimaryUser = identitiesForPrimaryUser.verified.phoneNumbers.includes(
+                info.phoneNumber
+            );
         }
         if (recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser) {
             /**
-             * TODO: let's Ly belongs to P1 such that Ly equal to Lx.
+             * let's Ly belongs to P1 such that Ly equal to Lx.
              * if LY verified, mark Lx as verified. If Lx is verfied,
              * then mark all Ly as verified
              */
+            if (info.email !== undefined && (emailIdentityVerifiedForPrimaryUser || infoVerified)) {
+                let recipeUserIdsForEmailVerificationUpdate = user.loginMethods
+                    .filter((u) => u.email === info.email && !u.verified)
+                    .map((l) => l.email);
+                if (!infoVerified) {
+                    recipeUserIdsForEmailVerificationUpdate.push(recipeUser.id);
+                }
+                recipeUserIdsForEmailVerificationUpdate = Array.from(new Set(recipeUserIdsForEmailVerificationUpdate));
+                for (let i = 0; i < recipeUserIdsForEmailVerificationUpdate.length; i++) {
+                    let rUserId = recipeUserIdsForEmailVerificationUpdate[i];
+                    if (rUserId !== undefined) {
+                        await this.markEmailAsVerified({
+                            email: info.email,
+                            recipeUserId: rUserId,
+                            userContext,
+                        });
+                    }
+                }
+            } else if (info.phoneNumber !== undefined && (phoneNumberIdentityVerifiedForPrimaryUser || infoVerified)) {
+                // DISCUSS: should we consider this scenario. phoneNumber will always be verified
+            }
         } else {
             if (shouldDoAccountLinking.shouldRequireVerification) {
                 if (!infoVerified) {
