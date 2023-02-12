@@ -23,7 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   For EmailPassword recipe input, resetPasswordUsingTokenFeature user input removed
 
-## [13.0.1] - 2023-02-06
+## [13.0.2] - 2023-02-10
+
+-   Package version update for twilio to ^4.7.2 and verify-apple-id-token to ^3.0.1
+-   Package typescript version changed to 4.2
+
+## [13.0.1] - 2023-02-08
 
 -   Email template updates
 

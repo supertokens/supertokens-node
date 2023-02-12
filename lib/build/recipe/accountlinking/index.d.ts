@@ -1,96 +1,187 @@
+// @ts-nocheck
 import { SessionContainer } from "../session";
 import Recipe from "./recipe";
 import type { AccountInfoAndEmailWithRecipeId, RecipeInterface, RecipeLevelUser } from "./types";
 import type { User } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static getRecipeUserIdsForPrimaryUserIds(primaryUserIds: string[], userContext?: any): Promise<{
+    static getRecipeUserIdsForPrimaryUserIds(
+        primaryUserIds: string[],
+        userContext?: any
+    ): Promise<{
         [primaryUserId: string]: string[];
     }>;
-    static getPrimaryUserIdsforRecipeUserIds(recipeUserIds: string[], userContext?: any): Promise<{
+    static getPrimaryUserIdsforRecipeUserIds(
+        recipeUserIds: string[],
+        userContext?: any
+    ): Promise<{
         [recipeUserId: string]: string | null;
     }>;
-    static addNewRecipeUserIdWithoutPrimaryUserId(recipeUserId: string, recipeId: string, timeJoined: number, userContext?: any): Promise<{
+    static addNewRecipeUserIdWithoutPrimaryUserId(
+        recipeUserId: string,
+        recipeId: string,
+        timeJoined: number,
+        userContext?: any
+    ): Promise<{
         status: "OK";
         createdNewEntry: boolean;
     }>;
-    static canCreatePrimaryUserId(recipeUserId: string, userContext?: any): Promise<{
-        status: "OK";
-    } | {
-        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-        description: string;
-    }>;
-    static createPrimaryUser(recipeUserId: string, userContext?: any): Promise<{
-        status: "OK";
-        user: User;
-    } | {
-        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-        description: string;
-    }>;
-    static canLinkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any): Promise<{
-        status: "OK";
-    } | {
-        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        description: string;
-        primaryUserId: string;
-    } | {
-        status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-        description: string;
-    } | {
-        status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-        description: string;
-    }>;
-    static linkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any): Promise<{
-        status: "OK";
-    } | {
-        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-        description: string;
-    } | {
-        status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-        description: string;
-    } | {
-        status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-        description: string;
-    }>;
-    static unlinkAccounts(recipeUserId: string, userContext?: any): Promise<{
-        status: "OK";
-        wasRecipeUserDeleted: boolean;
-    } | {
-        status: "NO_PRIMARY_USER_FOUND";
-    }>;
-    static getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(recipeUserId: string, userContext?: any): Promise<User | undefined>;
+    static canCreatePrimaryUserId(
+        recipeUserId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status:
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+    >;
+    static createPrimaryUser(
+        recipeUserId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status:
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+    >;
+    static canLinkAccounts(
+        recipeUserId: string,
+        primaryUserId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              description: string;
+              primaryUserId: string;
+          }
+        | {
+              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
+              description: string;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+    >;
+    static linkAccounts(
+        recipeUserId: string,
+        primaryUserId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+        | {
+              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
+              description: string;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+              description: string;
+          }
+    >;
+    static unlinkAccounts(
+        recipeUserId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              wasRecipeUserDeleted: boolean;
+          }
+        | {
+              status: "NO_PRIMARY_USER_FOUND";
+          }
+    >;
+    static getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(
+        recipeUserId: string,
+        userContext?: any
+    ): Promise<User | undefined>;
     static isSignUpAllowed(info: AccountInfoAndEmailWithRecipeId, userContext: any): Promise<boolean>;
-    static doPostSignUpAccountLinkingOperations(info: AccountInfoAndEmailWithRecipeId, infoVerified: boolean, recipeUserId: string, userContext: any): Promise<string>;
-    static accountLinkPostSignInViaSession(session: SessionContainer, info: AccountInfoAndEmailWithRecipeId, infoVerified: boolean, userContext: any): Promise<{
-        createRecipeUser: true;
-        updateVerificationClaim: boolean;
-    } | ({
-        createRecipeUser: false;
-    } & ({
-        accountsLinked: true;
-        updateVerificationClaim: boolean;
-    } | {
-        accountsLinked: false;
-        reason: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR" | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-    } | {
-        accountsLinked: false;
-        reason: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-    }))>;
-    static createPrimaryUserIdOrLinkAccounts(recipeUserId: string, session: SessionContainer | undefined, userContext?: any): Promise<void>;
+    static doPostSignUpAccountLinkingOperations(
+        info: AccountInfoAndEmailWithRecipeId,
+        infoVerified: boolean,
+        recipeUserId: string,
+        userContext: any
+    ): Promise<string>;
+    static accountLinkPostSignInViaSession(
+        session: SessionContainer,
+        info: AccountInfoAndEmailWithRecipeId,
+        infoVerified: boolean,
+        userContext: any
+    ): Promise<
+        | {
+              createRecipeUser: true;
+              updateVerificationClaim: boolean;
+          }
+        | ({
+              createRecipeUser: false;
+          } & (
+              | {
+                    accountsLinked: true;
+                    updateVerificationClaim: boolean;
+                }
+              | {
+                    accountsLinked: false;
+                    reason:
+                        | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
+                        | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
+                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                }
+              | {
+                    accountsLinked: false;
+                    reason:
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                }
+          ))
+    >;
+    static createPrimaryUserIdOrLinkAccounts(
+        recipeUserId: string,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ): Promise<void>;
     static onAccountLinked(user: User, newAccountInfo: RecipeLevelUser, userContext?: any): Promise<void>;
-    static shouldDoAutomaticAccountLinking(newAccountInfo: AccountInfoAndEmailWithRecipeId, user: User | undefined, session: SessionContainer | undefined, userContext?: any): Promise<{
-        shouldAutomaticallyLink: false;
-    } | {
-        shouldAutomaticallyLink: true;
-        shouldRequireVerification: boolean;
-    }>;
-    static getIdentitiesForUser(user: User): {
+    static shouldDoAutomaticAccountLinking(
+        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        user: User | undefined,
+        session: SessionContainer | undefined,
+        userContext?: any
+    ): Promise<
+        | {
+              shouldAutomaticallyLink: false;
+          }
+        | {
+              shouldAutomaticallyLink: true;
+              shouldRequireVerification: boolean;
+          }
+    >;
+    static getIdentitiesForUser(
+        user: User
+    ): {
         verified: {
             emails: string[];
             phoneNumbers: string[];
@@ -109,7 +200,11 @@ export default class Wrapper {
         };
     };
     static fetchFromAccountToLinkTable(recipeUserId: string, userContext?: any): Promise<User | undefined>;
-    static storeIntoAccountToLinkTable(recipeUserId: string, primaryUserId: string, userContext?: any): Promise<{
+    static storeIntoAccountToLinkTable(
+        recipeUserId: string,
+        primaryUserId: string,
+        userContext?: any
+    ): Promise<{
         status: "OK";
     }>;
 }

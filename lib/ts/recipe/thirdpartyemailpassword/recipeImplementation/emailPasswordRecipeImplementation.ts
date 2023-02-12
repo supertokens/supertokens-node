@@ -6,7 +6,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         signUp: async function (input: {
             email: string;
             password: string;
-            doAutomaticAccountLinking: boolean;
+            doAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await recipeInterface.emailPasswordSignUp(input);

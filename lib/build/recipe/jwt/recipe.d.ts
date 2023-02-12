@@ -1,3 +1,4 @@
+// @ts-nocheck
 import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
@@ -16,7 +17,13 @@ export default class Recipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled(): APIHandled[];
-    handleAPIRequest: (_: string, req: BaseRequest, res: BaseResponse, __: normalisedURLPath, ___: HTTPMethod) => Promise<boolean>;
+    handleAPIRequest: (
+        _: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        __: normalisedURLPath,
+        ___: HTTPMethod
+    ) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;

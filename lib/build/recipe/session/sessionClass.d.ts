@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
@@ -11,7 +12,17 @@ export default class Session implements SessionContainerInterface {
     protected res: BaseResponse;
     protected readonly req: BaseRequest;
     protected readonly transferMethod: TokenTransferMethod;
-    constructor(helpers: Helpers, accessToken: string, sessionHandle: string, userId: string, recipeUserId: string, userDataInAccessToken: any, res: BaseResponse, req: BaseRequest, transferMethod: TokenTransferMethod);
+    constructor(
+        helpers: Helpers,
+        accessToken: string,
+        sessionHandle: string,
+        userId: string,
+        recipeUserId: string,
+        userDataInAccessToken: any,
+        res: BaseResponse,
+        req: BaseRequest,
+        transferMethod: TokenTransferMethod
+    );
     getRecipeUserId(_userContext?: any): string;
     revokeSession(userContext?: any): Promise<void>;
     getSessionData(userContext?: any): Promise<any>;

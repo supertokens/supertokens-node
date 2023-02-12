@@ -1,24 +1,64 @@
+// @ts-nocheck
 import SuperTokensError from "./error";
-import { VerifySessionOptions, RecipeInterface, SessionContainerInterface as SessionContainer, SessionInformation, APIInterface, APIOptions, SessionClaimValidator, SessionClaim, ClaimValidationError } from "./types";
+import {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainerInterface as SessionContainer,
+    SessionInformation,
+    APIInterface,
+    APIOptions,
+    SessionClaimValidator,
+    SessionClaim,
+    ClaimValidationError,
+} from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static createNewSession(req: any, res: any, userId: string, recipeUserId?: string, accessTokenPayload?: any, sessionData?: any, userContext?: any): Promise<SessionContainer>;
-    static validateClaimsForSessionHandle(sessionHandle: string, overrideGlobalClaimValidators?: (globalClaimValidators: SessionClaimValidator[], sessionInfo: SessionInformation, userContext: any) => Promise<SessionClaimValidator[]> | SessionClaimValidator[], userContext?: any): Promise<{
-        status: "SESSION_DOES_NOT_EXIST_ERROR";
-    } | {
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
-    }>;
+    static createNewSession(
+        req: any,
+        res: any,
+        userId: string,
+        recipeUserId?: string,
+        accessTokenPayload?: any,
+        sessionData?: any,
+        userContext?: any
+    ): Promise<SessionContainer>;
+    static validateClaimsForSessionHandle(
+        sessionHandle: string,
+        overrideGlobalClaimValidators?: (
+            globalClaimValidators: SessionClaimValidator[],
+            sessionInfo: SessionInformation,
+            userContext: any
+        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        userContext?: any
+    ): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              invalidClaims: ClaimValidationError[];
+          }
+    >;
     static getSession(req: any, res: any): Promise<SessionContainer>;
-    static getSession(req: any, res: any, options?: VerifySessionOptions & {
-        sessionRequired?: true;
-    }, userContext?: any): Promise<SessionContainer>;
-    static getSession(req: any, res: any, options?: VerifySessionOptions & {
-        sessionRequired: false;
-    }, userContext?: any): Promise<SessionContainer | undefined>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions & {
+            sessionRequired?: true;
+        },
+        userContext?: any
+    ): Promise<SessionContainer>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions & {
+            sessionRequired: false;
+        },
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
     static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
@@ -26,45 +66,85 @@ export default class SessionWrapper {
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
     static updateSessionData(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;
-    static regenerateAccessToken(accessToken: string, newAccessTokenPayload?: any, userContext?: any): Promise<{
-        status: "OK";
-        session: {
-            handle: string;
-            userId: string;
-            recipeUserId: string;
-            userDataInJWT: any;
-        };
-        accessToken?: {
-            token: string;
-            expiry: number;
-            createdTime: number;
-        } | undefined;
-    } | undefined>;
-    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any, userContext?: any): Promise<boolean>;
-    static mergeIntoAccessTokenPayload(sessionHandle: string, accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<boolean>;
-    static createJWT(payload?: any, validitySeconds?: number, userContext?: any): Promise<{
-        status: "OK";
-        jwt: string;
-    } | {
-        status: "UNSUPPORTED_ALGORITHM_ERROR";
-    }>;
-    static getJWKS(userContext?: any): Promise<{
+    static regenerateAccessToken(
+        accessToken: string,
+        newAccessTokenPayload?: any,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              session: {
+                  handle: string;
+                  userId: string;
+                  recipeUserId: string;
+                  userDataInJWT: any;
+              };
+              accessToken?:
+                  | {
+                        token: string;
+                        expiry: number;
+                        createdTime: number;
+                    }
+                  | undefined;
+          }
+        | undefined
+    >;
+    static updateAccessTokenPayload(
+        sessionHandle: string,
+        newAccessTokenPayload: any,
+        userContext?: any
+    ): Promise<boolean>;
+    static mergeIntoAccessTokenPayload(
+        sessionHandle: string,
+        accessTokenPayloadUpdate: JSONObject,
+        userContext?: any
+    ): Promise<boolean>;
+    static createJWT(
+        payload?: any,
+        validitySeconds?: number,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              jwt: string;
+          }
+        | {
+              status: "UNSUPPORTED_ALGORITHM_ERROR";
+          }
+    >;
+    static getJWKS(
+        userContext?: any
+    ): Promise<{
         status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;
-    static getOpenIdDiscoveryConfiguration(userContext?: any): Promise<{
+    static getOpenIdDiscoveryConfiguration(
+        userContext?: any
+    ): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;
     }>;
     static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<boolean>;
-    static setClaimValue<T>(sessionHandle: string, claim: SessionClaim<T>, value: T, userContext?: any): Promise<boolean>;
-    static getClaimValue<T>(sessionHandle: string, claim: SessionClaim<T>, userContext?: any): Promise<{
-        status: "SESSION_DOES_NOT_EXIST_ERROR";
-    } | {
-        status: "OK";
-        value: T | undefined;
-    }>;
+    static setClaimValue<T>(
+        sessionHandle: string,
+        claim: SessionClaim<T>,
+        value: T,
+        userContext?: any
+    ): Promise<boolean>;
+    static getClaimValue<T>(
+        sessionHandle: string,
+        claim: SessionClaim<T>,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              value: T | undefined;
+          }
+    >;
     static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;
@@ -88,4 +168,12 @@ export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
 export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation, SessionClaimValidator, };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    APIInterface,
+    APIOptions,
+    SessionInformation,
+    SessionClaimValidator,
+};
