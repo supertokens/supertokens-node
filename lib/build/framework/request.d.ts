@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { HTTPMethod } from "../types";
 export declare abstract class BaseRequest {
     wrapperUsed: boolean;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
@@ -29,7 +30,11 @@ export declare type TypeProviderGetResponse = {
 };
 export declare type TypeProvider = {
     id: string;
-    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined, userContext: any) => TypeProviderGetResponse;
+    get: (
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined,
+        userContext: any
+    ) => TypeProviderGetResponse;
     isDefault?: boolean;
 };
 export declare type User = {
@@ -51,26 +56,26 @@ export declare type TypeNormalisedInputSignInAndUp = {
 export declare type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type RecipeInterface = {
-    getUserById(input: {
-        userId: string;
-        userContext: any;
-    }): Promise<User | undefined>;
-    getUsersByEmail(input: {
-        email: string;
-        userContext: any;
-    }): Promise<User[]>;
+    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
+    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
@@ -98,75 +103,94 @@ export declare type APIOptions = {
     appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
-    authorisationUrlGET: undefined | ((input: {
-        provider: TypeProvider;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        url: string;
-    } | GeneralErrorResponse>);
-    signInUpPOST: undefined | ((input: {
-        provider: TypeProvider;
-        code: string;
-        redirectURI: string;
-        authCodeResponse?: any;
-        clientId?: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        createdNewRecipeUser: boolean;
-        user: User;
-        session: SessionContainerInterface;
-        authCodeResponse: any;
-    } | {
-        status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-    } | {
-        status: "SIGNUP_NOT_ALLOWED";
-        reason: string;
-    } | {
-        status: "SIGNIN_NOT_ALLOWED";
-        primaryUserId: string;
-        description: string;
-    } | GeneralErrorResponse>);
-    linkAccountToExistingAccountPOST: undefined | ((input: {
-        provider: TypeProvider;
-        code: string;
-        redirectURI: string;
-        authCodeResponse?: any;
-        clientId?: string;
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        user: User;
-        createdNewRecipeUser: boolean;
-        session: SessionContainerInterface;
-        wereAccountsAlreadyLinked: boolean;
-        authCodeResponse: any;
-    } | {
-        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-        description: string;
-    } | {
-        status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-        primaryUserId: string;
-        description: string;
-    } | {
-        status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-        description: string;
-    } | {
-        status: "ACCOUNT_NOT_VERIFIED_ERROR";
-        isNotVerifiedAccountFromInputSession: boolean;
-        description: string;
-    } | GeneralErrorResponse>);
-    appleRedirectHandlerPOST: undefined | ((input: {
-        code: string;
-        state: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<void>);
+    authorisationUrlGET:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
+    signInUpPOST:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              authCodeResponse?: any;
+              clientId?: string;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
+                    user: User;
+                    session: SessionContainerInterface;
+                    authCodeResponse: any;
+                }
+              | {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+                }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | {
+                    status: "SIGNIN_NOT_ALLOWED";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | GeneralErrorResponse
+          >);
+    linkAccountToExistingAccountPOST:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              authCodeResponse?: any;
+              clientId?: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    createdNewRecipeUser: boolean;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                    authCodeResponse: any;
+                }
+              | {
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | {
+                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
+                    isNotVerifiedAccountFromInputSession: boolean;
+                    description: string;
+                }
+              | GeneralErrorResponse
+          >);
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };

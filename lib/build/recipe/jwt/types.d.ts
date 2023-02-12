@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse } from "../../types";
@@ -12,14 +13,20 @@ export declare type JsonWebKey = {
 export declare type TypeInput = {
     jwtValiditySeconds?: number;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
     jwtValiditySeconds: number;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
@@ -36,12 +43,15 @@ export declare type RecipeInterface = {
         payload?: any;
         validitySeconds?: number;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        jwt: string;
-    } | {
-        status: "UNSUPPORTED_ALGORITHM_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              jwt: string;
+          }
+        | {
+              status: "UNSUPPORTED_ALGORITHM_ERROR";
+          }
+    >;
     getJWKS(input: {
         userContext: any;
     }): Promise<{
@@ -50,11 +60,16 @@ export declare type RecipeInterface = {
     }>;
 };
 export declare type APIInterface = {
-    getJWKSGET: undefined | ((input: {
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        keys: JsonWebKey[];
-    } | GeneralErrorResponse>);
+    getJWKSGET:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    keys: JsonWebKey[];
+                }
+              | GeneralErrorResponse
+          >);
 };

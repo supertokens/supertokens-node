@@ -1,5 +1,6 @@
+// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
-import * as Twilio from "twilio";
+import { ClientOpts } from "twilio/lib/base/BaseTwilio";
 /**
  * only one of "from" and "messagingServiceSid" should be passed.
  * if both are passed, we should throw error to the user
@@ -8,33 +9,40 @@ import * as Twilio from "twilio";
  * if none of "from" and "messagingServiceSid" is passed, error
  * should be thrown.
  */
-export declare type TwilioServiceConfig = {
-    accountSid: string;
-    authToken: string;
-    from: string;
-    opts?: Twilio.Twilio.TwilioClientOptions;
-} | {
-    accountSid: string;
-    authToken: string;
-    messagingServiceSid: string;
-    opts?: Twilio.Twilio.TwilioClientOptions;
-};
+export declare type TwilioServiceConfig =
+    | {
+          accountSid: string;
+          authToken: string;
+          from: string;
+          opts?: ClientOpts;
+      }
+    | {
+          accountSid: string;
+          authToken: string;
+          messagingServiceSid: string;
+          opts?: ClientOpts;
+      };
 export interface GetContentResult {
     body: string;
     toPhoneNumber: string;
 }
 export declare type TypeInputSendRawSms = GetContentResult & {
     userContext: any;
-} & ({
-    from: string;
-} | {
-    messagingServiceSid: string;
-});
+} & (
+        | {
+              from: string;
+          }
+        | {
+              messagingServiceSid: string;
+          }
+    );
 export declare type ServiceInterface<T> = {
     sendRawSms: (input: TypeInputSendRawSms) => Promise<void>;
-    getContent: (input: T & {
-        userContext: any;
-    }) => Promise<GetContentResult>;
+    getContent: (
+        input: T & {
+            userContext: any;
+        }
+    ) => Promise<GetContentResult>;
 };
 export declare type TypeInput<T> = {
     twilioSettings: TwilioServiceConfig;

@@ -1,10 +1,10 @@
-import * as jwt from "jsonwebtoken";
-import * as jwksClient from "jwks-rsa";
+import { verify, VerifyOptions } from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
 
 export async function verifyIdTokenFromJWKSEndpoint(
     idToken: string,
     jwksUri: string,
-    otherOptions: jwt.VerifyOptions
+    otherOptions: VerifyOptions
 ): Promise<any> {
     const client = jwksClient({
         jwksUri,
@@ -17,7 +17,7 @@ export async function verifyIdTokenFromJWKSEndpoint(
     }
 
     let payload: any = await new Promise((resolve, reject) => {
-        jwt.verify(idToken, getKey, otherOptions, function (err, decoded) {
+        verify(idToken, getKey, otherOptions, function (err, decoded) {
             if (err) {
                 reject(err);
             } else {
