@@ -138,28 +138,26 @@ export default class Wrapper {
           }
         | ({
               createRecipeUser: false;
-          } & {
-              accountsLinked: true;
-              updateVerificationClaim: boolean;
-          })
-        | ({
-              createRecipeUser: false;
-          } & {
-              accountsLinked: false;
-              reason:
-                  | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
-                  | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
-                  | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-          })
-        | ({
-              createRecipeUser: false;
-          } & {
-              accountsLinked: false;
-              reason:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-          })
+          } & (
+              | {
+                    accountsLinked: true;
+                    updateVerificationClaim: boolean;
+                }
+              | {
+                    accountsLinked: false;
+                    reason:
+                        | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
+                        | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
+                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                }
+              | {
+                    accountsLinked: false;
+                    reason:
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                }
+          ))
     >;
     static createPrimaryUserIdOrLinkAccounts(
         recipeUserId: string,
@@ -201,6 +199,14 @@ export default class Wrapper {
             }[];
         };
     };
+    static fetchFromAccountToLinkTable(recipeUserId: string, userContext?: any): Promise<User | undefined>;
+    static storeIntoAccountToLinkTable(
+        recipeUserId: string,
+        primaryUserId: string,
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+    }>;
 }
 export declare const init: typeof Recipe.init;
 export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
@@ -219,4 +225,6 @@ export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPri
 export declare const onAccountLinked: typeof Wrapper.onAccountLinked;
 export declare const shouldDoAutomaticAccountLinking: typeof Wrapper.shouldDoAutomaticAccountLinking;
 export declare const getIdentitiesForUser: typeof Wrapper.getIdentitiesForUser;
+export declare const fetchFromAccountToLinkTable: typeof Wrapper.fetchFromAccountToLinkTable;
+export declare const storeIntoAccountToLinkTable: typeof Wrapper.storeIntoAccountToLinkTable;
 export type { RecipeInterface };

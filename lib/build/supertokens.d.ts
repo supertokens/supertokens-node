@@ -30,8 +30,8 @@ export default class SuperTokens {
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;
-        externalUserIdInfo?: string | undefined;
-        force?: boolean | undefined;
+        externalUserIdInfo?: string;
+        force?: boolean;
     }) => Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -44,7 +44,7 @@ export default class SuperTokens {
     >;
     getUserIdMapping: (input: {
         userId: string;
-        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" | undefined;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
     }) => Promise<
         | {
               status: "OK";
@@ -58,16 +58,16 @@ export default class SuperTokens {
     >;
     deleteUserIdMapping: (input: {
         userId: string;
-        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" | undefined;
-        force?: boolean | undefined;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        force?: boolean;
     }) => Promise<{
         status: "OK";
         didMappingExist: boolean;
     }>;
     updateOrDeleteUserIdMappingInfo: (input: {
         userId: string;
-        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" | undefined;
-        externalUserIdInfo?: string | undefined;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        externalUserIdInfo?: string;
     }) => Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;

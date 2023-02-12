@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import * as JsonWebToken from "jsonwebtoken";
+import { decode } from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
@@ -144,10 +144,10 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         assert.notStrictEqual(existingJWT, undefined);
 
         let currentTimeInSeconds = Date.now() / 1000;
-        let decodedPayload = JsonWebToken.decode(existingJWT, { json: true });
+        let decodedPayload = decode(existingJWT, { json: true });
 
         // JsonWebToken.decode possibly returns null
-        if (decodedPayload === null) {
+        if (decodedPayload === null || decodedPayload.exp === undefined) {
             throw new Error("Error reading JWT from session");
         }
 

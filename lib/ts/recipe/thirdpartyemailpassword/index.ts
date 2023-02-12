@@ -42,16 +42,11 @@ export default class Wrapper {
         });
     }
 
-    static emailPasswordSignUp(
-        email: string,
-        password: string,
-        doAutomaticAccountLinking = false,
-        userContext: any = {}
-    ) {
+    static emailPasswordSignUp(email: string, password: string, doAccountLinking = false, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
             email,
             password,
-            doAutomaticAccountLinking,
+            doAccountLinking,
             userContext,
         });
     }

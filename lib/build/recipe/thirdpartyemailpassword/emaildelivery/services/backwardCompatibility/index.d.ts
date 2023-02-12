@@ -12,7 +12,7 @@ export default class BackwardCompatibilityService
         isInServerlessEnv: boolean
     );
     sendEmail: (
-        input: import("../../../../emailpassword/types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
+        input: TypeThirdPartyEmailPasswordEmailDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;

@@ -16,6 +16,8 @@ export declare type NormalisedAppinfo = {
     appName: string;
     websiteDomain: NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
+    topLevelAPIDomain: string;
+    topLevelWebsiteDomain: string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;

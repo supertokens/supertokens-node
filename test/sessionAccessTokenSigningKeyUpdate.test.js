@@ -31,6 +31,7 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
+let { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { maxVersion } = require("../lib/build/utils");
 const { fail } = require("assert");
@@ -40,7 +41,6 @@ const { fail } = require("assert");
 - calling createNewSession twice, should overwrite the first call (in terms of cookies)
 - calling createNewSession in the case of unauthorised error, should create a proper session
 - revoking old session after create new session, should not remove new session's cookies.
-- check that if idRefreshToken is not passed to express, verify throws UNAUTHORISED
 - check that Access-Control-Expose-Headers header is being set properly during create, use and destroy session**** only for express
 */
 
@@ -70,11 +70,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
@@ -83,6 +79,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -90,10 +87,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                response.accessToken.token,
+                parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                response.idRefreshToken.token
+                true
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -108,10 +105,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         try {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                response.accessToken.token,
+                parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                response.idRefreshToken.token
+                true
             );
             // Old core versions should throw here because the signing key was updated
             if (!coreSupportsMultipleSignigKeys) {
@@ -137,15 +134,18 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
-            response.antiCsrfToken
+            response.antiCsrfToken,
+            true,
+            "cookie",
+            "cookie"
         );
 
         await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-            response2.accessToken.token,
+            parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
             true,
-            response2.idRefreshToken.token
+            true
         );
 
         // We call verify, since refresh does not refresh the signing key info
@@ -168,11 +168,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
@@ -181,6 +177,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const oldSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -188,6 +185,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -200,6 +198,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const newSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -209,10 +208,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                newSession.accessToken.token,
+                parseJWTWithoutSignatureVerification(newSession.accessToken.token),
                 newSession.antiCsrfToken,
                 true,
-                newSession.idRefreshToken.token
+                true
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -234,10 +233,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             try {
                 await SessionFunctions.getSession(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                    oldSession.accessToken.token,
+                    parseJWTWithoutSignatureVerification(oldSession.accessToken.token),
                     oldSession.antiCsrfToken,
                     true,
-                    oldSession.idRefreshToken.token
+                    true
                 );
                 // Old core versions should throw here because the signing key was updated
                 if (!coreSupportsMultipleSignigKeys) {
@@ -272,11 +271,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
@@ -285,6 +280,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -294,6 +290,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -301,10 +298,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                response.accessToken.token,
+                parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                response.idRefreshToken.token
+                true
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -320,10 +317,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             try {
                 await SessionFunctions.getSession(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                    response2.accessToken.token,
+                    parseJWTWithoutSignatureVerification(response2.accessToken.token),
                     response2.antiCsrfToken,
                     true,
-                    response2.idRefreshToken.token
+                    true
                 );
                 // Old core versions should throw here because the signing key was updated
                 if (!coreSupportsMultipleSignigKeys) {
@@ -358,11 +355,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
@@ -371,6 +364,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -384,6 +378,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -395,10 +390,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                response.accessToken.token,
+                parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
                 true,
-                response.idRefreshToken.token
+                true
             );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -418,10 +413,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             try {
                 await SessionFunctions.getSession(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                    response2.accessToken.token,
+                    parseJWTWithoutSignatureVerification(response2.accessToken.token),
                     response2.antiCsrfToken,
                     true,
-                    response2.idRefreshToken.token
+                    true
                 );
 
                 // Old core versions should throw here because the signing key was updated
@@ -457,16 +452,13 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let session = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -474,10 +466,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                session.accessToken.token,
+                parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                session.idRefreshToken.token
+                true
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -497,10 +489,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                session.accessToken.token,
+                parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                session.idRefreshToken.token
+                true
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -519,6 +511,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -532,10 +525,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             // jwt signing key has not expired, according to the SDK, so it should succeed
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                session2.accessToken.token,
+                parseJWTWithoutSignatureVerification(session2.accessToken.token),
                 session2.antiCsrfToken,
                 true,
-                session2.idRefreshToken.token
+                true
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -552,10 +545,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             // jwt signing key has not expired, according to the SDK, so it should succeed
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                session2.accessToken.token,
+                parseJWTWithoutSignatureVerification(session2.accessToken.token),
                 session2.antiCsrfToken,
                 true,
-                session2.idRefreshToken.token
+                true
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -570,10 +563,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             try {
                 await SessionFunctions.getSession(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                    session.accessToken.token,
+                    parseJWTWithoutSignatureVerification(session.accessToken.token),
                     session.antiCsrfToken,
                     true,
-                    session.idRefreshToken.token
+                    true
                 );
                 fail();
             } catch (err) {
@@ -603,11 +596,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         let q = Querier.getNewInstanceOrThrowError(undefined);
@@ -621,6 +610,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
+            false,
             {},
             {}
         );
@@ -628,10 +618,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                session.accessToken.token,
+                parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                session.idRefreshToken.token
+                true
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(
@@ -648,10 +638,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
-                session.accessToken.token,
+                parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                session.idRefreshToken.token
+                true
             );
 
             let verifyState3 = await ProcessState.getInstance().waitForEvent(

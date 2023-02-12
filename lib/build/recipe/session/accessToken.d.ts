@@ -1,6 +1,7 @@
 // @ts-nocheck
+import { ParsedJWTInfo } from "./jwt";
 export declare function getInfoFromAccessToken(
-    token: string,
+    jwtInfo: ParsedJWTInfo,
     jwtSigningPublicKey: string,
     doAntiCsrfCheck: boolean
 ): Promise<{
@@ -14,4 +15,5 @@ export declare function getInfoFromAccessToken(
     expiryTime: number;
     timeCreated: number;
 }>;
+export declare function validateAccessTokenStructure(payload: any): void;
 export declare function sanitizeNumberInput(field: any): number | undefined;

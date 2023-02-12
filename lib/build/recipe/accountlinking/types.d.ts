@@ -179,10 +179,14 @@ export declare type RecipeInterface = {
     }) => Promise<{
         status: "OK";
     }>;
-    getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId: (input: {
+    fetchFromAccountToLinkTable: (input: { recipeUserId: string; userContext: any }) => Promise<User | undefined>;
+    storeIntoAccountToLinkTable: (input: {
         recipeUserId: string;
+        primaryUserId: string;
         userContext: any;
-    }) => Promise<User | undefined>;
+    }) => Promise<{
+        status: "OK";
+    }>;
 };
 export declare type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";

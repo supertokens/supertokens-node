@@ -22,11 +22,11 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(email: string, password: string, doAutomaticAccountLinking = false, userContext?: any) {
+    static signUp(email: string, password: string, doAccountLinking = false, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
-            doAutomaticAccountLinking,
+            doAccountLinking,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

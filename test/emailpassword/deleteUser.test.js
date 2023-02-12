@@ -64,7 +64,7 @@ describe(`deleteUser: ${printPath("[test/emailpassword/deleteUser.test.js]")}`, 
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         let querier = Querier.getNewInstanceOrThrowError(undefined);

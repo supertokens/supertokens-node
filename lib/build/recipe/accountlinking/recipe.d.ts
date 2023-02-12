@@ -80,29 +80,34 @@ export default class Recipe extends RecipeModule {
           }
         | ({
               createRecipeUser: false;
-          } & {
-              accountsLinked: true;
-              updateVerificationClaim: boolean;
-          })
-        | ({
-              createRecipeUser: false;
-          } & {
-              accountsLinked: false;
-              reason:
-                  | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
-                  | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
-                  | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-          })
-        | ({
-              createRecipeUser: false;
-          } & {
-              accountsLinked: false;
-              reason:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-          })
+          } & (
+              | {
+                    accountsLinked: true;
+                    updateVerificationClaim: boolean;
+                }
+              | {
+                    accountsLinked: false;
+                    reason:
+                        | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
+                        | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
+                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                }
+              | {
+                    accountsLinked: false;
+                    reason:
+                        | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                    primaryUserId: string;
+                }
+          ))
     >;
+    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
+        recipeUserId,
+        userContext,
+    }: {
+        recipeUserId: string;
+        userContext: any;
+    }) => Promise<User | undefined>;
     createPrimaryUserIdOrLinkAccounts: ({
         recipeUserId,
         session,

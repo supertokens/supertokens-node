@@ -70,6 +70,7 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: process.env.TRANSFER_METHOD ? () => process.env.TRANSFER_METHOD : undefined,
                     jwt: {
                         enable: true,
                         propertyNameInAccessTokenPayload: jwtPropertyName,
@@ -91,13 +92,25 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
                         functions: function (oI) {
                             return {
                                 ...oI,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oI.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oI.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -118,6 +131,7 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
         },
         recipeList: [
             Session.init({
+                getTokenTransferMethod: process.env.TRANSFER_METHOD ? () => process.env.TRANSFER_METHOD : undefined,
                 errorHandlers: {
                     onUnauthorised: (err, req, res) => {
                         res.setStatusCode(401);
@@ -201,7 +215,7 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
-    let session = await Session.createNewSession(res, userId);
+    let session = await Session.createNewSession(req, res, userId);
     res.send(session.getUserId());
 });
 

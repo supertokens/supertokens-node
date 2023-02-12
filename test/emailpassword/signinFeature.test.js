@@ -135,7 +135,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -192,7 +192,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -247,7 +247,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -308,7 +308,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -352,7 +352,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -395,7 +395,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         const app = express();
 
@@ -442,9 +442,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
         const app = express();
@@ -486,15 +484,11 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(cookies.accessToken !== undefined);
         assert(cookies.refreshToken !== undefined);
         assert(cookies.antiCsrf !== undefined);
-        assert(cookies.idRefreshTokenFromHeader !== undefined);
-        assert(cookies.idRefreshTokenFromCookie !== undefined);
         assert(cookies.accessTokenExpiry !== undefined);
         assert(cookies.refreshTokenExpiry !== undefined);
-        assert(cookies.idRefreshTokenExpiry !== undefined);
         assert(cookies.refreshToken !== undefined);
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
-        assert(cookies.idRefreshTokenDomain === undefined);
         assert(cookies.frontToken !== undefined);
     });
 
@@ -539,7 +533,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                         ],
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
         const app = express();
@@ -618,7 +612,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                         ],
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
         const app = express();
@@ -680,7 +674,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         const app = express();
 
@@ -734,7 +728,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         const app = express();
 
@@ -789,7 +783,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         const app = express();
 
@@ -838,7 +832,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         const app = express();
 
@@ -889,7 +883,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
         const app = express();
 
@@ -948,7 +942,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
@@ -989,7 +983,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
@@ -1043,7 +1037,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
         const app = express();

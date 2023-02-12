@@ -520,13 +520,6 @@ function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetim
                     text-decoration: underline;
                 }
         
-                @media only screen and (min-width:768px) {
-                    .templateContainer {
-                        width: 600px !important;
-                    }
-        
-                }
-        
                 @media only screen and (max-width: 480px) {
         
                     body,
@@ -1439,13 +1432,6 @@ function getPasswordlessLoginURLLinkBody(
                     font-weight: normal;
                     /*@editable*/
                     text-decoration: underline;
-                }
-        
-                @media only screen and (min-width:768px) {
-                    .templateContainer {
-                        width: 600px !important;
-                    }
-        
                 }
         
                 @media only screen and (max-width: 480px) {
@@ -2376,13 +2362,6 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     font-weight: normal;
                     /*@editable*/
                     text-decoration: underline;
-                }
-
-                @media only screen and (min-width:768px) {
-                    .templateContainer {
-                        width: 600px !important;
-                    }
-
                 }
 
                 @media only screen and (max-width: 480px) {

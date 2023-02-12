@@ -72,7 +72,7 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
-        doAutomaticAccountLinking: boolean;
+        doAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {

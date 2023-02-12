@@ -23,7 +23,7 @@ let { verifySession } = require("../../recipe/session/framework/awsLambda");
 const request = require("supertest");
 const axios = require("axios").default;
 
-describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`, function () {
+describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -55,11 +55,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         await this.app.start();
@@ -73,8 +69,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
 
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
         try {
@@ -98,7 +92,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
                 baseURL: "http://localhost:9876",
                 method: "post",
                 headers: {
-                    Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                    Cookie: `sAccessToken=${res.accessToken}`,
                 },
             });
         } catch (err) {
@@ -115,7 +109,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
             baseURL: "http://localhost:9876",
             method: "post",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -126,7 +120,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
             baseURL: "http://localhost:9876",
             method: "post",
             headers: {
-                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res.accessToken}`,
             },
         });
         assert.deepStrictEqual(result.data, { user: "userId" });
@@ -151,7 +145,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
             baseURL: "http://localhost:9876",
             method: "post",
             headers: {
-                Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                Cookie: `sRefreshToken=${res.refreshToken}`,
                 "anti-csrf": res.antiCsrf,
             },
         });
@@ -160,8 +154,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
 
         assert(res2.accessToken !== undefined);
         assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
 
         result = await axios({
@@ -169,7 +161,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
             baseURL: "http://localhost:9876",
             method: "post",
             headers: {
-                Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res2.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -183,7 +175,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
             baseURL: "http://localhost:9876",
             method: "post",
             headers: {
-                Cookie: `sAccessToken=${res3.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                Cookie: `sAccessToken=${res3.accessToken}`,
                 "anti-csrf": res2.antiCsrf,
             },
         });
@@ -191,11 +183,8 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
         let sessionRevokedResponseExtracted = extractInfoFromResponse(result);
         assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(sessionRevokedResponseExtracted.accessToken === "");
         assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     it("sending custom response", async function () {
@@ -227,7 +216,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

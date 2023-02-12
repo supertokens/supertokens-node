@@ -130,6 +130,10 @@ export class KoaResponse extends BaseResponse {
         }
     };
 
+    removeHeader = (key: string) => {
+        this.ctx.remove(key);
+    };
+
     setCookie = (
         key: string,
         value: string,

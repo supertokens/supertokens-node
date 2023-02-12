@@ -13,7 +13,7 @@
  * under the License.
  */
 import OverrideableBuilder from "supertokens-js-override";
-import * as Twilio from "twilio";
+import { ClientOpts } from "twilio/lib/base/BaseTwilio";
 
 /**
  * only one of "from" and "messagingServiceSid" should be passed.
@@ -28,13 +28,13 @@ export type TwilioServiceConfig =
           accountSid: string;
           authToken: string;
           from: string;
-          opts?: Twilio.Twilio.TwilioClientOptions;
+          opts?: ClientOpts;
       }
     | {
           accountSid: string;
           authToken: string;
           messagingServiceSid: string;
-          opts?: Twilio.Twilio.TwilioClientOptions;
+          opts?: ClientOpts;
       };
 
 export interface GetContentResult {

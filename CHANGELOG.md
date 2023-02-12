@@ -23,6 +23,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   For EmailPassword recipe input, resetPasswordUsingTokenFeature user input removed
 
+## [13.0.2] - 2023-02-10
+
+-   Package version update for twilio to ^4.7.2 and verify-apple-id-token to ^3.0.1
+-   Package typescript version changed to 4.2
+
+## [13.0.1] - 2023-02-08
+
+-   Email template updates
+
+## [13.0.0] - 2023-02-01
+
+### Breaking changes
+
+-   The frontend SDK should be updated to a version supporting the header-based sessions!
+    -   supertokens-auth-react: >= 0.31.0
+    -   supertokens-web-js: >= 0.5.0
+    -   supertokens-website: >= 16.0.0
+    -   supertokens-react-native: >= 4.0.0
+    -   supertokens-ios >= 0.2.0
+    -   supertokens-android >= 0.3.0
+    -   supertokens-flutter >= 0.1.0
+-   `createNewSession` now requires passing the request as well as the response.
+    -   This only requires a change if you manually created sessions (e.g.: during testing)
+    -   There is a migration example added below. It uses express, but the same principle applies for other supported frameworks.
+-   Only supporting FDI 1.16
+
+### Added
+
+-   Added support for authorizing requests using the `Authorization` header instead of cookies
+    -   Added `getTokenTransferMethod` config option
+    -   Check out https://supertokens.com/docs/thirdpartyemailpassword/common-customizations/sessions/token-transfer-method for more information
+
+### Migration
+
+This example uses express, but the same principle applies for other supported frameworks.
+
+Before:
+
+```
+const app = express();
+app.post("/create", async (req, res) => {
+    await Session.createNewSession(res, "testing-userId", {}, {});
+    res.status(200).json({ message: true });
+});
+```
+
+After the update:
+
+```
+const app = express();
+app.post("/create", async (req, res) => {
+    await Session.createNewSession(req, res, "testing-userId", {}, {});
+    res.status(200).json({ message: true });
+});
+```
+
+## [12.1.6] - 2023-01-22
+
+-   Updates jsonwebtoken dependency to version 9.0.0 to fix vulnerability in it's `verify` function.
+
+## [12.1.5] - 2022-12-10
+
+-   Fixes Content-type header in AWS lambda framework
+
+## [12.1.4] - 2022-12-26
+
+-   Updates dashboard version
+-   Updates user GET API for the dashboard recipe
+
+## [12.1.3] - 2022-12-12
+
+-   Updates some dependencies cause of `npm audit`
+
+## [12.1.2] - 2022-12-06
+
+-   Fixes issue where if sendEmail is overridden with a different email, it will reset that email.
+
+## [12.1.1] - 2022-11-25
+
+-   Fixed an issue with importing the wrong recipe in the dashboard APIs
+
 ## [12.1.0] - 2022-11-17
 
 ### Added:

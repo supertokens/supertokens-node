@@ -70,7 +70,12 @@ export class HapiRequest extends BaseRequest {
 }
 
 export interface ExtendedResponseToolkit extends ResponseToolkit {
-    lazyHeaderBindings: (h: ResponseToolkit, key: string, value: string, allowDuplicateKey: boolean) => void;
+    lazyHeaderBindings: (
+        h: ResponseToolkit,
+        key: string,
+        value: string | undefined,
+        allowDuplicateKey: boolean
+    ) => void;
 }
 
 export class HapiResponse extends BaseResponse {
@@ -105,6 +110,10 @@ export class HapiResponse extends BaseResponse {
         }
     };
 
+    removeHeader = (key: string) => {
+        this.response.lazyHeaderBindings(this.response, key, undefined, false);
+    };
+
     setCookie = (
         key: string,
         value: string,
@@ -116,6 +125,7 @@ export class HapiResponse extends BaseResponse {
         sameSite: "strict" | "lax" | "none"
     ) => {
         let now = Date.now();
+
         if (expires > now) {
             this.response.state(key, value, {
                 isHttpOnly: httpOnly,
@@ -213,11 +223,18 @@ const plugin: Plugin<{}> = {
         server.decorate("toolkit", "lazyHeaderBindings", function (
             h: ResponseToolkit,
             key: string,
-            value: string,
+            value: string | undefined,
             allowDuplicateKey: boolean
         ) {
-            (h.request.app as any).lazyHeaders = (h.request.app as any).lazyHeaders || [];
-            (h.request.app as any).lazyHeaders.push({ key, value, allowDuplicateKey });
+            const anyApp = h.request.app as any;
+            anyApp.lazyHeaders = anyApp.lazyHeaders || [];
+            if (value === undefined) {
+                anyApp.lazyHeaders = anyApp.lazyHeaders.filter(
+                    (header: { key: string }) => header.key.toLowerCase() !== key.toLowerCase()
+                );
+            } else {
+                anyApp.lazyHeaders.push({ key, value, allowDuplicateKey });
+            }
         });
         let supportedRoutes: ServerRoute[] = [];
         let routeMethodSet = new Set<string>();

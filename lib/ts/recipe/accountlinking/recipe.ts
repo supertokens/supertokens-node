@@ -653,6 +653,53 @@ export default class Recipe extends RecipeModule {
         };
     };
 
+    getPrimaryUserIdThatCanBeLinkedToRecipeUserId = async ({
+        recipeUserId,
+        userContext,
+    }: {
+        recipeUserId: string;
+        userContext: any;
+    }): Promise<User | undefined> => {
+        let user = await getUser(recipeUserId, userContext);
+        if (user === undefined) {
+            return undefined;
+        }
+        if (user.isPrimaryUser) {
+            return user;
+        }
+        let pUser = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
+        if (pUser !== undefined && pUser.isPrimaryUser) {
+            return pUser;
+        }
+        let identifier:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              };
+        let loginMethodInfo = user.loginMethods[0]; // this is a recipe user so there will be only one item in the array
+        if (loginMethodInfo.email !== undefined) {
+            identifier = {
+                email: loginMethodInfo.email,
+            };
+        } else if (loginMethodInfo.phoneNumber !== undefined) {
+            identifier = {
+                phoneNumber: loginMethodInfo.phoneNumber,
+            };
+        } else {
+            throw Error("this error should never be thrown");
+        }
+        let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            info: identifier,
+            userContext,
+        });
+        if (users === undefined || users.length === 0) {
+            return undefined;
+        }
+        return users.find((u) => u.isPrimaryUser);
+    };
+
     createPrimaryUserIdOrLinkAccounts = async ({
         recipeUserId,
         session,
@@ -662,7 +709,7 @@ export default class Recipe extends RecipeModule {
         session: SessionContainer | undefined;
         userContext: any;
     }) => {
-        let primaryUser = await this.recipeInterfaceImpl.getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId({
+        let primaryUser = await this.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
             recipeUserId,
             userContext,
         });

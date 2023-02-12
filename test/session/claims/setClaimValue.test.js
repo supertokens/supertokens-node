@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, startST, killAllST, setupST, cleanST, mockResponse } = require("../../utils");
+const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
@@ -69,6 +69,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -86,7 +87,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "someId");
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 1);
@@ -117,6 +118,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -134,7 +136,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "someId");
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 1);
@@ -163,7 +165,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [Session.init()],
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
 
             const res = await Session.setClaimValue("asfd", TrueClaim, false);

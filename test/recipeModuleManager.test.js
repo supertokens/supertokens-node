@@ -62,9 +62,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailPassword.init(),
             ],
         });
@@ -79,9 +77,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailPassword.init(),
             ],
         });
@@ -110,11 +106,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
         await Querier.getNewInstanceOrThrowError(undefined);
@@ -153,9 +145,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 EmailPassword.init(),
             ],
         });
@@ -619,11 +609,12 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             recipeList: [TestRecipe1.init(), TestRecipe2.init(), TestRecipe3.init(), TestRecipe3Duplicate.init()],
         });
         let headers = await ST.getAllCORSHeaders();
-        assert(headers.length === 5);
-        assert(headers.includes("rid") && headers.includes("fdi-version"));
-        assert(
-            headers.includes("test-recipe-1") && headers.includes("test-recipe-2") && headers.includes("test-recipe-3")
-        );
+        assert.strictEqual(headers.length, 5);
+        assert(headers.includes("rid"));
+        assert(headers.includes("fdi-version"));
+        assert(headers.includes("test-recipe-1"));
+        assert(headers.includes("test-recipe-2"));
+        assert(headers.includes("test-recipe-3"));
     });
 });
 

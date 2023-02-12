@@ -17,6 +17,7 @@ export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static createNewSession(
+        req: any,
         res: any,
         userId: string,
         recipeUserId?: string,

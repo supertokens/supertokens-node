@@ -8,7 +8,7 @@ export default class Wrapper {
     static signUp(
         email: string,
         password: string,
-        doAutomaticAccountLinking?: boolean,
+        doAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {

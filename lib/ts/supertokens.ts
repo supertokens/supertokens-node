@@ -20,6 +20,7 @@ import {
     maxVersion,
     normaliseHttpMethod,
     sendNon200ResponseWithMessage,
+    getRidFromHeader,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -311,7 +312,7 @@ export default class SuperTokens {
             return false;
         }
 
-        let requestRID = request.getHeaderValue(HEADER_RID);
+        let requestRID = getRidFromHeader(request);
         logDebugMessage("middleware: requestRID is: " + requestRID);
         if (requestRID === "anti-csrf") {
             // see https://github.com/supertokens/supertokens-node/issues/202

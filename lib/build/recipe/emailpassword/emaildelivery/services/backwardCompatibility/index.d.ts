@@ -10,7 +10,7 @@ export default class BackwardCompatibilityService
     private resetPasswordUsingTokenFeature;
     constructor(recipeInterfaceImpl: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean);
     sendEmail: (
-        input: import("../../../types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
+        input: TypeEmailPasswordEmailDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;
