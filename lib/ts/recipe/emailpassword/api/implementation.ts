@@ -1,11 +1,12 @@
 import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
-import Session from "../../session";
+import Session, { createNewSession } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking";
 import EmailVerification from "../../emailverification/recipe";
+import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -78,7 +79,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
                 createdNewRecipeUser = true;
                 if (result.updateVerificationClaim) {
-                    // TODO: update session verification claim
+                    await session.setClaimValue(AccountLinkingClaim, response.user.id, userContext);
                     return {
                         status: "ACCOUNT_NOT_VERIFIED_ERROR",
                         isNotVerifiedAccountFromInputSession: false,
@@ -133,7 +134,7 @@ export default function getAPIImplementation(): APIInterface {
             }
             let wereAccountsAlreadyLinked = false;
             if (result.updateVerificationClaim) {
-                // TODO: remove session claim
+                await session.removeClaim(AccountLinkingClaim, userContext);
             } else {
                 wereAccountsAlreadyLinked = true;
             }
@@ -489,7 +490,18 @@ export default function getAPIImplementation(): APIInterface {
                         { overrideGlobalClaimValidators: () => [], sessionRequired: false },
                         userContext
                     );
-                    await AccountLinking.createPrimaryUserIdOrLinkAccounts(user.id, session, userContext);
+                    let result = await AccountLinking.createPrimaryUserIdOrLinkAccounts(user.id, session, userContext);
+                    if (result.createNewSession) {
+                        await createNewSession(
+                            options.req,
+                            options.res,
+                            result.primaryUserId,
+                            result.recipeUserId,
+                            {},
+                            {},
+                            userContext
+                        );
+                    }
                 }
             }
             return response;

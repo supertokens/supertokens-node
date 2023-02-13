@@ -163,7 +163,16 @@ export default class Wrapper {
         recipeUserId: string,
         session: SessionContainer | undefined,
         userContext?: any
-    ): Promise<void>;
+    ): Promise<
+        | {
+              createNewSession: false;
+          }
+        | {
+              createNewSession: true;
+              primaryUserId: string;
+              recipeUserId: string;
+          }
+    >;
     static onAccountLinked(user: User, newAccountInfo: RecipeLevelUser, userContext?: any): Promise<void>;
     static shouldDoAutomaticAccountLinking(
         newAccountInfo: AccountInfoAndEmailWithRecipeId,
