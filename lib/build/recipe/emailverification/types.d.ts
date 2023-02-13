@@ -129,6 +129,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     user: User;
+                    session?: SessionContainerInterface;
                 }
               | {
                     status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
@@ -145,6 +146,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     isVerified: boolean;
+                    session?: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);

@@ -128,7 +128,9 @@ export type APIInterface = {
               userContext: any;
               session?: SessionContainerInterface;
           }) => Promise<
-              { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
+              | { status: "OK"; user: User; session?: SessionContainerInterface }
+              | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
+              | GeneralErrorResponse
           >);
 
     isEmailVerifiedGET:
@@ -141,6 +143,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                     isVerified: boolean;
+                    session?: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);

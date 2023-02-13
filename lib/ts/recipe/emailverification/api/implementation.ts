@@ -6,8 +6,9 @@ import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
 import { getUser } from "../../..";
-import Session from "../../session";
+import Session, { createNewSession } from "../../session";
 import AccountLinking from "../../accountlinking";
+import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -20,8 +21,23 @@ export default function getAPIInterface(): APIInterface {
             const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
             if (res.status === "OK") {
-                await AccountLinking.createPrimaryUserIdOrLinkAccounts(res.user.recipeUserId, session, userContext);
+                let result = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                    res.user.recipeUserId,
+                    session,
+                    userContext
+                );
                 if (session !== undefined) {
+                    if (result.createNewSession) {
+                        session = await createNewSession(
+                            options.req,
+                            options.res,
+                            result.primaryUserId,
+                            result.recipeUserId,
+                            {},
+                            {},
+                            userContext
+                        );
+                    }
                     try {
                         await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
                     } catch (err) {
@@ -92,8 +108,10 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            // TODO: session claim exists for account linking
-            let recipeUserIdFromSessionClaim = recipeUserId;
+            let recipeUserIdFromSessionClaim = await session.getClaimValue(AccountLinkingClaim, userContext);
+            if (recipeUserIdFromSessionClaim === undefined) {
+                recipeUserIdFromSessionClaim = recipeUserId;
+            }
 
             let recipeUser = user.loginMethods.find((u) => u.recipeUserId === recipeUserId);
 
@@ -182,8 +200,10 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            // TODO: session claim exists for account linking
-            let recipeUserIdFromSessionClaim = recipeUserId;
+            let recipeUserIdFromSessionClaim = await session.getClaimValue(AccountLinkingClaim, userContext);
+            if (recipeUserIdFromSessionClaim === undefined) {
+                recipeUserIdFromSessionClaim = recipeUserId;
+            }
 
             let recipeUser = user.loginMethods.find((u) => u.recipeUserId === recipeUserId);
 
