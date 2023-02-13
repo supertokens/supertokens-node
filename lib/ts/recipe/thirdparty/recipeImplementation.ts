@@ -34,7 +34,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                                 userId: thirdPartyUserId,
                             },
                         },
-                        false,
+                        true,
                         response.user.id,
                         userContext
                     );
