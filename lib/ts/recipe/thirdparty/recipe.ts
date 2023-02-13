@@ -20,7 +20,12 @@ import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import STError from "./error";
 
-import { SIGN_IN_UP_API, AUTHORISATION_API, APPLE_REDIRECT_HANDLER } from "./constants";
+import {
+    SIGN_IN_UP_API,
+    AUTHORISATION_API,
+    APPLE_REDIRECT_HANDLER,
+    LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
+} from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
@@ -131,6 +136,12 @@ export default class Recipe extends RecipeModule {
                 pathWithoutApiBasePath: new NormalisedURLPath(APPLE_REDIRECT_HANDLER),
                 id: APPLE_REDIRECT_HANDLER,
                 disabled: this.apiImpl.appleRedirectHandlerPOST === undefined,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
+                id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
+                disabled: this.apiImpl.linkAccountToExistingAccountPOST === undefined,
             },
         ];
     };

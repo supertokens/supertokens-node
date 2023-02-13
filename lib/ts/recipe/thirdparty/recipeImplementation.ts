@@ -1,6 +1,7 @@
 import { RecipeInterface, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import AccountLinking from "../accountlinking";
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
     return {
@@ -8,16 +9,38 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             thirdPartyId,
             thirdPartyUserId,
             email,
+            doAccountLinking,
+            userContext,
         }: {
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            doAccountLinking: boolean;
+            userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
                 thirdPartyId,
                 thirdPartyUserId,
                 email: { id: email },
             });
+            if (response.createdNewUser) {
+                if (doAccountLinking) {
+                    let primaryUserId = await AccountLinking.doPostSignUpAccountLinkingOperations(
+                        {
+                            email,
+                            recipeId: "thirdparty",
+                            thirdParty: {
+                                id: thirdPartyId,
+                                userId: thirdPartyUserId,
+                            },
+                        },
+                        false,
+                        response.user.id,
+                        userContext
+                    );
+                    response.user.id = primaryUserId;
+                }
+            }
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,

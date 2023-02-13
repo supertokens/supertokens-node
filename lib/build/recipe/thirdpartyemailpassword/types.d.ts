@@ -81,6 +81,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        doAccountLinking: boolean;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -191,6 +192,9 @@ export declare type APIInterface = {
                     status: "ACCOUNT_NOT_VERIFIED_ERROR";
                     isNotVerifiedAccountFromInputSession: boolean;
                     description: string;
+                }
+              | {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
               | GeneralErrorResponse
           >);

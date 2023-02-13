@@ -25,6 +25,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            doAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             let result = await recipeInterface.thirdPartySignInUp(input);

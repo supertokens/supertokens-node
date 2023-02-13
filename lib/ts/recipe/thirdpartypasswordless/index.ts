@@ -32,11 +32,18 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
+    static thirdPartySignInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        doAccountLinking = false,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
             thirdPartyId,
             thirdPartyUserId,
             email,
+            doAccountLinking,
             userContext,
         });
     }

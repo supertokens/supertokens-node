@@ -39,6 +39,7 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            doAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             if (originalThirdPartyImplementation === undefined) {

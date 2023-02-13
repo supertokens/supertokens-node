@@ -492,13 +492,16 @@ export default function getAPIImplementation(): APIInterface {
                     );
                     let result = await AccountLinking.createPrimaryUserIdOrLinkAccounts(user.id, session, userContext);
                     if (result.createNewSession) {
+                        let currentAccessTokenPayload =
+                            session === undefined ? undefined : session.getAccessTokenPayload();
+                        let currentSessionData = session === undefined ? undefined : await session.getSessionData();
                         await createNewSession(
                             options.req,
                             options.res,
                             result.primaryUserId,
                             result.recipeUserId,
-                            {},
-                            {},
+                            currentAccessTokenPayload,
+                            currentSessionData,
                             userContext
                         );
                     }

@@ -6,15 +6,26 @@ import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import EmailVerification from "../../emailverification/recipe";
+import AccountLinking from "../../accountlinking";
+import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
+import { listUsersByAccountInfo, getUser } from "../../../";
+import { UserInfo } from "../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        linkAccountToExistingAccountPOST: async function (_input: {
+        linkAccountToExistingAccountPOST: async function ({
+            provider,
+            code,
+            redirectURI,
+            authCodeResponse,
+            session,
+            options,
+            userContext,
+        }: {
             provider: TypeProvider;
             code: string;
             redirectURI: string;
             authCodeResponse?: any;
-            clientId?: string;
             session: SessionContainerInterface;
             options: APIOptions;
             userContext: any;
@@ -46,12 +57,182 @@ export default function getAPIInterface(): APIInterface {
                   isNotVerifiedAccountFromInputSession: boolean;
                   description: string;
               }
+            | {
+                  status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+              }
             | GeneralErrorResponse
         > {
+            let userInfo;
+            let accessTokenAPIResponse: any;
+
+            {
+                let providerInfo = provider.get(undefined, undefined, userContext);
+                if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
+                    redirectURI = DEV_OAUTH_REDIRECT_URL;
+                } else if (providerInfo.getRedirectURI !== undefined) {
+                    // we overwrite the redirectURI provided by the frontend
+                    // since the backend wants to take charge of setting this.
+                    redirectURI = providerInfo.getRedirectURI(userContext);
+                }
+            }
+
+            let providerInfo = provider.get(redirectURI, code, userContext);
+
+            if (authCodeResponse !== undefined) {
+                accessTokenAPIResponse = {
+                    data: authCodeResponse,
+                };
+            } else {
+                // we should use code to get the authCodeResponse body
+                if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
+                    Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
+                        if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId(userContext)) {
+                            providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
+                                providerInfo.getClientId(userContext)
+                            );
+                        }
+                    });
+                }
+
+                accessTokenAPIResponse = await axios.default({
+                    method: "post",
+                    url: providerInfo.accessTokenAPI.url,
+                    data: qs.stringify(providerInfo.accessTokenAPI.params),
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded",
+                        accept: "application/json", // few providers like github don't send back json response by default
+                    },
+                });
+            }
+
+            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
+
+            let emailInfo = userInfo.email;
+            if (emailInfo === undefined) {
+                return {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+                };
+            }
+            let email = emailInfo.id;
+            let result = await AccountLinking.accountLinkPostSignInViaSession(
+                session,
+                {
+                    thirdParty: {
+                        id: provider.id,
+                        userId: userInfo.id,
+                    },
+                    email,
+                    recipeId: "thirdparty",
+                },
+                emailInfo.isVerified,
+                userContext
+            );
+            let createdNewRecipeUser = false;
+            if (result.createRecipeUser) {
+                let response = await options.recipeImplementation.signInUp({
+                    thirdPartyId: provider.id,
+                    thirdPartyUserId: userInfo.id,
+                    email: emailInfo.id,
+                    doAccountLinking: false,
+                    userContext,
+                });
+                if (response.status !== "OK") {
+                    throw Error(
+                        `this error should never be thrown while creating a new user during accountLinkPostSignInViaSession flow: ${response.status}`
+                    );
+                }
+                createdNewRecipeUser = true;
+                if (result.updateVerificationClaim) {
+                    await session.setClaimValue(AccountLinkingClaim, response.user.id, userContext);
+                    return {
+                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                        isNotVerifiedAccountFromInputSession: false,
+                        description: "",
+                    };
+                } else {
+                    result = await AccountLinking.accountLinkPostSignInViaSession(
+                        session,
+                        {
+                            email,
+                            recipeId: "emailpassword",
+                        },
+                        false,
+                        userContext
+                    );
+                }
+            }
+            if (result.createRecipeUser) {
+                throw Error(
+                    `this error should never be thrown after creating a new user during accountLinkPostSignInViaSession flow`
+                );
+            }
+            if (!result.accountsLinked) {
+                if (result.reason === "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+                    return {
+                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                        isNotVerifiedAccountFromInputSession: true,
+                        description: "",
+                    };
+                }
+                if (result.reason === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+                    return {
+                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                        isNotVerifiedAccountFromInputSession: false,
+                        description: "",
+                    };
+                }
+                if (
+                    result.reason === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
+                    result.reason === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                ) {
+                    return {
+                        status: result.reason,
+                        description: "",
+                        primaryUserId: result.primaryUserId,
+                    };
+                }
+                return {
+                    status: result.reason,
+                    description: "",
+                };
+            }
+            let wereAccountsAlreadyLinked = false;
+            if (result.updateVerificationClaim) {
+                await session.removeClaim(AccountLinkingClaim, userContext);
+            } else {
+                wereAccountsAlreadyLinked = true;
+            }
+            let user = await getUser(session.getUserId());
+            if (user === undefined) {
+                throw Error(
+                    "this error should never be thrown. Can't find primary user with userId: " + session.getUserId()
+                );
+            }
+            let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
+            if (recipeUser === undefined) {
+                throw Error(
+                    "this error should never be thrown. Can't find emailPassword recipeUser with email: " +
+                        email +
+                        "  and primary userId: " +
+                        session.getUserId()
+                );
+            }
             return {
-                status: "ACCOUNT_NOT_VERIFIED_ERROR",
-                isNotVerifiedAccountFromInputSession: false,
-                description: "",
+                status: "OK",
+                user: {
+                    id: user.id,
+                    recipeUserId: recipeUser.id,
+                    timeJoined: recipeUser.timeJoined,
+                    email,
+                    thirdParty: {
+                        id: provider.id,
+                        userId: userInfo.id,
+                    },
+                },
+                createdNewRecipeUser,
+                wereAccountsAlreadyLinked,
+                session,
+                authCodeResponse,
             };
         },
         authorisationUrlGET: async function ({
@@ -151,7 +332,7 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let userInfo;
+            let userInfo: UserInfo;
             let accessTokenAPIResponse: any;
 
             {
@@ -202,10 +383,61 @@ export default function getAPIInterface(): APIInterface {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER",
                 };
             }
+
+            /**
+             * list all users based on TP info
+             */
+            let usersBasedOnTPInfo = await listUsersByAccountInfo({
+                thirdpartyId: provider.id,
+                thirdpartyUserId: userInfo.id,
+            });
+
+            if (usersBasedOnTPInfo !== undefined) {
+                let primaryUserBasedOnTPInfo = usersBasedOnTPInfo.find((u) => u.isPrimaryUser);
+                if (primaryUserBasedOnTPInfo !== undefined) {
+                    let usersBasedOnEmailInfo = await listUsersByAccountInfo({
+                        thirdpartyId: provider.id,
+                        thirdpartyUserId: userInfo.id,
+                    });
+                    if (usersBasedOnEmailInfo !== undefined) {
+                        let primaryUserBasedOnEmailInfo = usersBasedOnEmailInfo.find((u) => u.isPrimaryUser);
+                        if (primaryUserBasedOnEmailInfo !== undefined) {
+                            if (primaryUserBasedOnEmailInfo.id !== primaryUserBasedOnTPInfo.id) {
+                                throw {
+                                    status: "SIGNIN_NOT_ALLOWED",
+                                    primaryUserId: primaryUserBasedOnEmailInfo.id,
+                                    description:
+                                        "email is already associated with another primary user Id and current thirdparty id is associated with another primary user id",
+                                };
+                            }
+                        }
+                    }
+                }
+            } else {
+                let isSignUpAllowed = await AccountLinking.isSignUpAllowed(
+                    {
+                        recipeId: "thirdparty",
+                        email: emailInfo.id,
+                        thirdParty: {
+                            id: provider.id,
+                            userId: userInfo.id,
+                        },
+                    },
+                    userContext
+                );
+
+                if (!isSignUpAllowed) {
+                    return {
+                        status: "SIGNUP_NOT_ALLOWED",
+                        reason: "the sign-up info is already associated with another account where it is not verified",
+                    };
+                }
+            }
             let response = await options.recipeImplementation.signInUp({
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.id,
                 email: emailInfo.id,
+                doAccountLinking: true,
                 userContext,
             });
 

@@ -18,6 +18,7 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        doAccountLinking?: boolean,
         userContext?: any
     ): Promise<{
         status: "OK";
