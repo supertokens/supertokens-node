@@ -6,7 +6,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailPass
     serviceImpl: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;
     constructor(config: TypeInput<TypeEmailPasswordEmailDeliveryInput>);
     sendEmail: (
-        input: import("../../../types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
+        input: TypeEmailPasswordEmailDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;

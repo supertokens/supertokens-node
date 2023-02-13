@@ -32,14 +32,14 @@ export default class AccountLinkingRecipe extends RecipeModule {
           }
         | ({
               createRecipeUser: false;
-          } & {
-              accountsLinked: true;
-          })
-        | ({
-              createRecipeUser: false;
-          } & {
-              accountsLinked: false;
-              reason: string;
-          })
+          } & (
+              | {
+                    accountsLinked: true;
+                }
+              | {
+                    accountsLinked: false;
+                    reason: string;
+                }
+          ))
     >;
 }

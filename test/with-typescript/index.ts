@@ -26,6 +26,7 @@ import UserMetadata from "../../recipe/usermetadata";
 import { BooleanClaim, PrimitiveClaim, SessionClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
+import JWT from "../../recipe/jwt";
 
 UserRoles.init({
     override: {
@@ -1015,10 +1016,7 @@ Supertokens.init({
         websiteDomain: "",
     },
     recipeList: [
-        Session.init({
-            antiCsrf: "NONE",
-            cookieDomain: "",
-        }),
+        Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE", cookieDomain: "" }),
         EmailPassword.init({
             override: {},
         }),
@@ -1202,7 +1200,7 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        let session = await Session.createNewSession(options.res, user.id);
+                        let session = await Session.createNewSession(options.req, options.res, user.id);
                         return {
                             status: "OK",
                             session,
@@ -1361,4 +1359,69 @@ Supertokens.init({
 
 Dashboard.init({
     apiKey: "",
+});
+
+Session.init({
+    getTokenTransferMethod: () => "cookie",
+});
+
+Session.init({
+    getTokenTransferMethod: () => "header",
+});
+
+Supertokens.init({
+    appInfo: {
+        apiDomain: "..",
+        appName: "..",
+        websiteDomain: "..",
+    },
+    recipeList: [JWT.init()],
+});
+
+app.post("/create-anonymous-session", async (req, res) => {
+    let token = await JWT.createJWT(
+        {
+            sub: "<Generate random ID>",
+            isAnonymous: true,
+            // other info...
+        },
+        3153600000
+    ); // 100 years validity.
+    if (token.status !== "OK") {
+        throw new Error("Should never come here");
+    }
+    res.json({
+        token: token.jwt,
+    });
+});
+
+Passwordless.init({
+    contactMethod: "EMAIL",
+    flowType: "MAGIC_LINK",
+    override: {
+        functions: (original) => {
+            return {
+                ...original,
+                consumeCode: async function (input) {
+                    let device = await Passwordless.listCodesByPreAuthSessionId({
+                        preAuthSessionId: input.preAuthSessionId,
+                    });
+                    if (device !== undefined && input.userContext.calledManually === undefined) {
+                        if (device.phoneNumber === "TEST_PHONE_NUMBER") {
+                            let user = await Passwordless.signInUp({
+                                phoneNumber: "TEST_PHONE_NUMBER",
+                                userContext: { calledManually: true },
+                            });
+                            return {
+                                status: "OK",
+                                createdNewUser: user.createdNewUser,
+                                user: user.user,
+                            };
+                        }
+                    }
+                    return original.consumeCode(input);
+                },
+            };
+        },
+    },
 });

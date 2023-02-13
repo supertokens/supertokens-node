@@ -14,7 +14,7 @@
  */
 
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import * as Twilio from "twilio";
+import Twilio from "twilio/lib/rest/Twilio";
 import {
     ServiceInterface,
     TypeInputSendRawSms,
@@ -22,9 +22,7 @@ import {
 } from "../../../../../ingredients/smsdelivery/services/twilio";
 import getPasswordlessLoginSmsContent from "./passwordlessLogin";
 
-export function getServiceImplementation(
-    twilioClient: Twilio.Twilio
-): ServiceInterface<TypePasswordlessSmsDeliveryInput> {
+export function getServiceImplementation(twilioClient: Twilio): ServiceInterface<TypePasswordlessSmsDeliveryInput> {
     return {
         sendRawSms: async function (input: TypeInputSendRawSms) {
             if ("from" in input) {

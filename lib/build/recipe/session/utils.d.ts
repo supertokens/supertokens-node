@@ -7,6 +7,7 @@ import {
     SessionClaimValidator,
     SessionContainerInterface,
     VerifySessionOptions,
+    TokenTransferMethod,
 } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
@@ -38,7 +39,6 @@ export declare function sendTokenTheftDetectedResponse(
     response: BaseResponse
 ): Promise<void>;
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;
-export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function getURLProtocol(url: string): string;
 export declare function validateAndNormaliseUserInput(
     recipeInstance: SessionRecipe,
@@ -46,10 +46,11 @@ export declare function validateAndNormaliseUserInput(
     config?: TypeInput
 ): TypeNormalisedInput;
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
-export declare function attachCreateOrRefreshSessionResponseToExpressRes(
+export declare function attachTokensToResponse(
     config: TypeNormalisedInput,
     res: BaseResponse,
-    response: CreateOrRefreshAPIResponse
+    response: CreateOrRefreshAPIResponse,
+    transferMethod: TokenTransferMethod
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,

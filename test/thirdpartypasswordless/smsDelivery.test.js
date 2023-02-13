@@ -55,7 +55,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -136,7 +136,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         userInputCode = input.userInputCode;
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -202,7 +202,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -308,7 +308,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -364,7 +364,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -457,7 +457,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -519,7 +519,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -588,7 +588,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -695,7 +695,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         sendCustomSMSCalled = true;
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -785,7 +785,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -923,7 +923,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -1004,7 +1004,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -1122,7 +1122,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });
@@ -1204,7 +1204,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
             telemetry: false,
         });

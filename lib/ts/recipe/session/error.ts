@@ -28,7 +28,7 @@ export default class SessionError extends STError {
                   message: string;
                   type: "UNAUTHORISED";
                   payload?: {
-                      clearCookies: boolean;
+                      clearTokens: boolean;
                   };
               }
             | {
@@ -55,7 +55,7 @@ export default class SessionError extends STError {
                 ? {
                       ...options,
                       payload: {
-                          clearCookies: true,
+                          clearTokens: true,
                       },
                   }
                 : { ...options }

@@ -1,5 +1,6 @@
 // @ts-nocheck
-import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
+import { ParsedJWTInfo } from "./jwt";
+import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
@@ -7,6 +8,7 @@ import { Helpers } from "./recipeImplementation";
 export declare function createNewSession(
     helpers: Helpers,
     userId: string,
+    disableAntiCsrf: boolean,
     recipeUserId?: string,
     accessTokenPayload?: any,
     sessionData?: any
@@ -16,7 +18,7 @@ export declare function createNewSession(
  */
 export declare function getSession(
     helpers: Helpers,
-    accessToken: string,
+    parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     containsCustomHeader: boolean
@@ -49,7 +51,8 @@ export declare function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    containsCustomHeader: boolean
+    containsCustomHeader: boolean,
+    transferMethod: TokenTransferMethod
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.

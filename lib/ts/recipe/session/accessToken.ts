@@ -14,10 +14,10 @@
  */
 
 import STError from "./error";
-import { verifyJWTAndGetPayload } from "./jwt";
+import { ParsedJWTInfo, verifyJWT } from "./jwt";
 
 export async function getInfoFromAccessToken(
-    token: string,
+    jwtInfo: ParsedJWTInfo,
     jwtSigningPublicKey: string,
     doAntiCsrfCheck: boolean
 ): Promise<{
@@ -32,30 +32,27 @@ export async function getInfoFromAccessToken(
     timeCreated: number;
 }> {
     try {
-        let payload = verifyJWTAndGetPayload(token, jwtSigningPublicKey);
+        verifyJWT(jwtInfo, jwtSigningPublicKey);
+        const payload = jwtInfo.payload;
 
-        let sessionHandle = sanitizeStringInput(payload.sessionHandle);
-        let userId = sanitizeStringInput(payload.userId);
-        let recipeUserId = sanitizeStringInput(payload.recipeUserId);
-        let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1);
+        // This should be called before this function, but the check is very quick, so we can also do them here
+        validateAccessTokenStructure(payload);
+
+        // We can mark these as defined (the ! after the calls), since validateAccessTokenPayload checks this
+        let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
+        let userId = sanitizeStringInput(payload.userId)!;
+        let recipeUserId = sanitizeStringInput(payload.recipeUserId)!;
+        let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let userData = payload.userData;
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
-        let expiryTime = sanitizeNumberInput(payload.expiryTime);
-        let timeCreated = sanitizeNumberInput(payload.timeCreated);
-        if (
-            sessionHandle === undefined ||
-            userId === undefined ||
-            recipeUserId === undefined ||
-            refreshTokenHash1 === undefined ||
-            userData === undefined ||
-            (antiCsrfToken === undefined && doAntiCsrfCheck) ||
-            expiryTime === undefined ||
-            timeCreated === undefined
-        ) {
-            // it would come here if we change the structure of the JWT.
-            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        let expiryTime = sanitizeNumberInput(payload.expiryTime)!;
+        let timeCreated = sanitizeNumberInput(payload.timeCreated)!;
+
+        if (antiCsrfToken === undefined && doAntiCsrfCheck) {
+            throw Error("Access token does not contain the anti-csrf token.");
         }
+
         if (expiryTime < Date.now()) {
             throw Error("Access token expired");
         }
@@ -75,6 +72,21 @@ export async function getInfoFromAccessToken(
             message: "Failed to verify access token",
             type: STError.TRY_REFRESH_TOKEN,
         });
+    }
+}
+
+export function validateAccessTokenStructure(payload: any) {
+    if (
+        typeof payload.sessionHandle !== "string" ||
+        typeof payload.userId !== "string" ||
+        typeof payload.recipeUserId !== "string" ||
+        typeof payload.refreshTokenHash1 !== "string" ||
+        payload.userData === undefined ||
+        typeof payload.expiryTime !== "number" ||
+        typeof payload.timeCreated !== "number"
+    ) {
+        // it would come here if we change the structure of the JWT.
+        throw Error("Access token does not contain all the information. Maybe the structure has changed?");
     }
 }
 

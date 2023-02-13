@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, mockResponse } = require("../../utils");
+const { printPath, setupST, startST, killAllST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const { ProcessState } = require("../../../lib/build/processState");
 const SuperTokens = require("../../..");
@@ -48,6 +48,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -71,7 +72,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 return;
             }
             const response = mockResponse();
-            const res = await Session.createNewSession(response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "someId");
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 1);
@@ -93,6 +94,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -120,7 +122,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 return;
             }
             const response = mockResponse();
-            const res = await Session.createNewSession(response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "someId");
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 0);
         });
@@ -145,6 +147,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 },
                 recipeList: [
                     Session.init({
+                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => ({
                                 ...oI,
@@ -170,7 +173,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             }
             const includesNullInPayload = maxVersion(apiVersion, "2.14") !== "2.14";
             const response = mockResponse();
-            const res = await Session.createNewSession(response, "someId", payloadParam);
+            const res = await Session.createNewSession(mockRequest(), response, "someId", payloadParam);
 
             // The passed object should be unchanged
             assert.strictEqual(Object.keys(payloadParam).length, 1);

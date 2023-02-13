@@ -20,6 +20,7 @@ const {
     cleanST,
     setKeyValueInConfig,
     extractInfoFromResponse,
+    delay,
 } = require("./utils");
 let assert = require("assert");
 const express = require("express");
@@ -62,6 +63,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     override: {
                         apis: (oI) => {
                             return {
@@ -107,6 +109,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     errorHandlers: {
                         onTokenTheftDetected: (sessionHandle, userId, req, res) => {
                             res.setStatusCode(403);
@@ -121,7 +124,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -181,9 +184,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/user/id")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -199,9 +200,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -216,9 +215,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -233,9 +230,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V1 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV1")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -250,9 +245,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2Optional = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleOptional")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
@@ -278,48 +271,12 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         assert(r2Optional === false);
 
-        // not passing id refresh token
-        let r3V0 = await new Promise((resolve) =>
-            request(app)
-                .get("/user/handleV0")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V0 === "unauthorised");
-
-        let r3V1 = await new Promise((resolve) =>
-            request(app)
-                .get("/user/handleV1")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V1 === "unauthorised");
-
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res1.refreshToken,
-                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -335,9 +292,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .get("/user/id")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -352,9 +307,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -368,10 +321,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + res1.refreshToken,
-                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -388,9 +338,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/logout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -403,21 +351,16 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.antiCsrf, undefined);
+        assert.strictEqual(res4.accessToken, "");
+        assert.strictEqual(res4.refreshToken, "");
+        assert.strictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
         let r5 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res4.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -427,10 +370,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r5 === "try refresh token");
+        assert.strictEqual(r5, "unauthorised");
     });
 
     it("test session verify middleware with auto refresh", async function () {
+        await setKeyValueInConfig(2);
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -443,6 +387,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     antiCsrf: "VIA_TOKEN",
                     errorHandlers: {
                         onTokenTheftDetected: (sessionHandle, userId, req, res) => {
@@ -461,7 +406,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -517,9 +462,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/user/id")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -535,9 +478,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -552,9 +493,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -569,9 +508,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V1 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV1")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -583,45 +520,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         assert(r2V1 === "try refresh token");
 
-        // not passing id refresh token
-        let r3V0 = await new Promise((resolve) =>
-            request(app)
-                .get("/user/handleV0")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V0 === "unauthorised");
-
-        let r3V1 = await new Promise((resolve) =>
-            request(app)
-                .get("/user/handleV1")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V1 === "unauthorised");
-
         let rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleOptional")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
@@ -652,10 +554,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res1.refreshToken,
-                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -671,9 +570,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .get("/user/id")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -688,9 +585,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -704,10 +599,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + res1.refreshToken,
-                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -728,9 +620,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/logout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -743,21 +633,17 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.antiCsrf, undefined);
+        assert.strictEqual(res4.accessToken, "");
+        assert.strictEqual(res4.refreshToken, "");
+        assert.strictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
+        await delay(2);
         let r5 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -767,10 +653,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r5 === "try refresh token");
+        assert.strictEqual(r5, "try refresh token");
     });
 
     it("test session verify middleware with driver config", async function () {
+        await setKeyValueInConfig(2);
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -784,6 +671,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     cookieDomain: "test-driver",
                     cookieSecure: true,
                     cookieSameSite: "strict",
@@ -802,7 +690,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -863,9 +751,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/id")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -882,9 +768,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -900,9 +784,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -917,9 +799,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V1 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV1")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -931,45 +811,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         assert(r2V1 === "try refresh token");
 
-        // not passing id refresh token
-        let r3V0 = await new Promise((resolve) =>
-            request(app)
-                .get("/custom/user/handleV0")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V0 === "unauthorised");
-
-        let r3V1 = await new Promise((resolve) =>
-            request(app)
-                .get("/custom/user/handleV1")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V1 === "unauthorised");
-
         let rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleOptional")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
@@ -1000,10 +845,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/custom/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res1.refreshToken,
-                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -1019,9 +861,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .get("/custom/user/id")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1037,9 +877,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1054,10 +892,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/custom/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + res1.refreshToken,
-                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -1074,9 +909,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/custom/logout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1089,21 +922,16 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-
+        assert.strictEqual(res4.antiCsrf, undefined);
+        assert.strictEqual(res4.accessToken, "");
+        assert.strictEqual(res4.refreshToken, "");
+        assert.strictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        await delay(2);
         let r5 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -1113,7 +941,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r5 === "try refresh token");
+        assert.strictEqual(r5, "try refresh token");
     });
 
     it("test session verify middleware with driver config with auto refresh", async function () {
@@ -1131,6 +959,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     cookieDomain: "test-driver",
                     cookieSecure: true,
                     cookieSameSite: "strict",
@@ -1152,7 +981,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -1207,15 +1036,13 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
 
         assert(res1.accessTokenHttpOnly);
-        assert(res1.idRefreshTokenHttpOnly);
+
         assert(res1.refreshTokenHttpOnly);
 
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/id")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1232,9 +1059,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1250,9 +1075,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -1267,9 +1090,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2V1 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV1")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -1281,45 +1102,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         assert(r2V1 === "try refresh token");
 
-        // not passing id refresh token
-        let r3V0 = await new Promise((resolve) =>
-            request(app)
-                .get("/custom/user/handleV0")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V0 === "unauthorised");
-
-        let r3V1 = await new Promise((resolve) =>
-            request(app)
-                .get("/custom/user/handleV1")
-                .expect(401)
-                .set("Cookie", ["sAccessToken=" + res1.accessToken])
-                .set("anti-csrf", res1.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.body.message);
-                    }
-                })
-        );
-        assert(r3V1 === "unauthorised");
-
         let rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleOptional")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
@@ -1349,10 +1135,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/custom/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res1.refreshToken,
-                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -1368,9 +1151,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .get("/custom/user/id")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1386,9 +1167,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1403,10 +1182,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/custom/session/refresh")
-                .set("Cookie", [
-                    "sRefreshToken=" + res1.refreshToken,
-                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -1423,9 +1199,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/custom/logout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1438,21 +1212,17 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.antiCsrf, undefined);
+        assert.strictEqual(res4.accessToken, "");
+        assert.strictEqual(res4.refreshToken, "");
+        assert.strictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
+        await delay(2);
         let r5 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
-                .set("Cookie", [
-                    "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -1483,6 +1253,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     cookieDomain: "test-driver",
                     cookieSecure: true,
                     cookieSameSite: "strict",
@@ -1504,7 +1275,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -1545,15 +1316,13 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
 
         assert(res1.accessTokenHttpOnly);
-        assert(res1.idRefreshTokenHttpOnly);
+
         assert(res1.refreshTokenHttpOnly);
 
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/id")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1570,9 +1339,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handle")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1589,9 +1356,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r2 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handle")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -1622,6 +1387,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     cookieDomain: "test-driver",
                     cookieSecure: true,
                     cookieSameSite: "strict",
@@ -1643,7 +1409,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -1684,15 +1450,13 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
 
         assert(res1.accessTokenHttpOnly);
-        assert(res1.idRefreshTokenHttpOnly);
+
         assert(res1.refreshTokenHttpOnly);
 
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/id")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1709,9 +1473,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handle")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1728,10 +1490,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/custom/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res1.refreshToken,
-                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -1747,9 +1506,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .get("/custom/user/id")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res2.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1765,9 +1522,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handle")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -1783,9 +1538,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             await new Promise((resolve) =>
                 request(app)
                     .post("/custom/logout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res3.accessToken])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -1798,21 +1551,16 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.antiCsrf, undefined);
+        assert.strictEqual(res4.accessToken, "");
+        assert.strictEqual(res4.refreshToken, "");
+        assert.strictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
         let r2 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handle")
-                .set("Cookie", [
-                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
@@ -1842,6 +1590,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     cookieDomain: "test-driver",
                     cookieSecure: true,
                     cookieSameSite: "strict",
@@ -1890,6 +1639,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware without error handler added", async function () {
+        await setKeyValueInConfig("access_token_validity", 2);
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -1902,6 +1652,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    getTokenTransferMethod: () => "cookie",
                     errorHandlers: {
                         onTokenTheftDetected: (sessionHandle, userId, req, res) => {
                             res.setStatusCode(403);
@@ -1920,7 +1671,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -1960,82 +1711,62 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let res1 = extractInfoFromResponse(await request(app).post("/create").expect(200));
         let r1 = await request(app)
             .get("/user/id")
-            .set("Cookie", ["sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res1.accessToken])
             .set("anti-csrf", res1.antiCsrf)
             .expect(200);
         assert.strictEqual(r1.body.message, "testing-userId");
 
         await request(app)
             .get("/user/handleV0")
-            .set("Cookie", ["sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res1.accessToken])
             .set("anti-csrf", res1.antiCsrf)
             .expect(200);
 
         // not passing anti csrf even if requried
         let r2V0 = await request(app)
             .get("/user/handleV0")
-            .set("Cookie", ["sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res1.accessToken])
             .expect(401);
         assert.strictEqual(r2V0.body.message, "try refresh token");
 
         let r2V1 = await request(app)
             .get("/user/handleV1")
-            .set("Cookie", ["sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res1.accessToken])
             .expect(401);
         assert.strictEqual(r2V1.body.message, "try refresh token");
 
         let r2Optional = await request(app)
             .get("/user/handleOptional")
-            .set("Cookie", ["sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res1.accessToken])
             .expect(200);
         assert.strictEqual(r2Optional.body.message, true);
 
         r2Optional = await request(app).get("/user/handleOptional").expect(200);
         assert.strictEqual(r2Optional.body.message, false);
 
-        // not passing id refresh token
-        let r3V0 = await request(app)
-            .get("/user/handleV0")
-            .expect(401)
-            .set("Cookie", ["sAccessToken=" + res1.accessToken])
-            .set("anti-csrf", res1.antiCsrf);
-        assert.strictEqual(r3V0.body.message, "unauthorised");
-
-        let r3V1 = await request(app)
-            .get("/user/handleV1")
-            .expect(401)
-            .set("Cookie", ["sAccessToken=" + res1.accessToken])
-            .set("anti-csrf", res1.antiCsrf);
-        assert.strictEqual(r3V1.body.message, "unauthorised");
-
         let res2 = extractInfoFromResponse(
             await request(app)
                 .post("/auth/session/refresh")
                 .expect(200)
-                .set("Cookie", [
-                    "sRefreshToken=" + res1.refreshToken,
-                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
         );
 
         let res3 = extractInfoFromResponse(
             await request(app)
                 .get("/user/id")
-                .set("Cookie", [
-                    "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res2.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
         );
         await request(app)
             .get("/user/handleV0")
-            .set("Cookie", ["sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res3.accessToken])
             .set("anti-csrf", res2.antiCsrf)
             .expect(200);
         let r4 = await request(app)
             .post("/auth/session/refresh")
-            .set("Cookie", ["sRefreshToken=" + res1.refreshToken, "sIdRefreshToken=" + res1.idRefreshTokenFromCookie])
+            .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
             .set("anti-csrf", res1.antiCsrf)
             .expect(403);
         assert.strictEqual(r4.body.message, "token theft detected");
@@ -2043,25 +1774,21 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let res4 = extractInfoFromResponse(
             await request(app)
                 .post("/logout")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res3.accessToken])
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.antiCsrf, undefined);
+        assert.strictEqual(res4.accessToken, "");
+        assert.strictEqual(res4.refreshToken, "");
+        assert.strictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
+        await delay(2);
         let r5 = await request(app)
             .get("/user/handleV0")
-            .set("Cookie", ["sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie])
+            .set("Cookie", ["sAccessToken=" + res3.accessToken])
             .expect(401);
         assert.strictEqual(r5.body.message, "try refresh token");
     });

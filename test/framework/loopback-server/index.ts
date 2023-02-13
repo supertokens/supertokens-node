@@ -9,11 +9,23 @@ class Create {
     @post("/create")
     @response(200)
     async handler() {
-        await Session.createNewSession(this.ctx, "userId", {}, {});
+        await Session.createNewSession(this.ctx, this.ctx, "userId", {}, {});
         return {};
     }
 }
 
+class CreateThrowing {
+    constructor(@inject(RestBindings.Http.CONTEXT) private ctx: MiddlewareContext) {}
+    @post("/create-throw")
+    @response(200)
+    async handler() {
+        await Session.createNewSession(this.ctx, this.ctx, "userId", {}, {});
+        throw new Session.Error({
+            message: "unauthorised",
+            type: Session.Error.UNAUTHORISED,
+        });
+    }
+}
 class Verify {
     constructor(@inject(RestBindings.Http.CONTEXT) private ctx: MiddlewareContext) {}
     @post("/session/verify")
@@ -57,6 +69,7 @@ let app = new RestApplication({
 
 app.middleware(middleware);
 app.controller(Create);
+app.controller(CreateThrowing);
 app.controller(Verify);
 app.controller(Revoke);
 app.controller(VerifyOptionalCSRF);

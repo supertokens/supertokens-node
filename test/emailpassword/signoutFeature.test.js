@@ -69,9 +69,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -91,9 +89,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
                     .set("anti-csrf", res.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -105,18 +101,14 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                     })
             )
         );
-        assert(response2.antiCsrf === undefined);
-        assert(response2.accessToken === "");
-        assert(response2.refreshToken === "");
-        assert(response2.idRefreshTokenFromHeader === "remove");
-        assert(response2.idRefreshTokenFromCookie === "");
-        assert(response2.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.accessTokenDomain === undefined);
-        assert(response2.refreshTokenDomain === undefined);
-        assert(response2.idRefreshTokenDomain === undefined);
-        assert(response2.frontToken === undefined);
+        assert.strictEqual(response2.antiCsrf, undefined);
+        assert.strictEqual(response2.accessToken, "");
+        assert.strictEqual(response2.refreshToken, "");
+        assert.strictEqual(response2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(response2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(response2.accessTokenDomain, undefined);
+        assert.strictEqual(response2.refreshTokenDomain, undefined);
+        assert.strictEqual(response2.frontToken, "remove");
     });
 
     // Disable default route and test that that API returns 404
@@ -143,7 +135,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -181,7 +173,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const app = express();
@@ -224,9 +216,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             },
             recipeList: [
                 EmailPassword.init(),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
             ],
         });
 
@@ -247,7 +237,8 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
         let signOutResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("rid", "session")
+                .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -257,18 +248,15 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                     }
                 })
         );
-        assert(signOutResponse.status === 401);
-        assert(JSON.parse(signOutResponse.text).message === "try refresh token");
+        assert.strictEqual(signOutResponse.status, 401);
+        assert.strictEqual(signOutResponse.body.message, "try refresh token");
 
         let refreshedResponse = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -285,12 +273,8 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
-                    .set("Cookie", [
-                        "sAccessToken=" +
-                            refreshedResponse.accessToken +
-                            ";sIdRefreshToken=" +
-                            refreshedResponse.idRefreshTokenFromCookie,
-                    ])
+                    .set("rid", "session")
+                    .set("Cookie", ["sAccessToken=" + refreshedResponse.accessToken])
                     .set("anti-csrf", refreshedResponse.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -306,13 +290,9 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
         assert(signOutResponse.antiCsrf === undefined);
         assert(signOutResponse.accessToken === "");
         assert(signOutResponse.refreshToken === "");
-        assert(signOutResponse.idRefreshTokenFromHeader === "remove");
-        assert(signOutResponse.idRefreshTokenFromCookie === "");
         assert(signOutResponse.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(signOutResponse.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(signOutResponse.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(signOutResponse.accessTokenDomain === undefined);
         assert(signOutResponse.refreshTokenDomain === undefined);
-        assert(signOutResponse.idRefreshTokenDomain === undefined);
     });
 });

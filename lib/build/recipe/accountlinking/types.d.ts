@@ -1,6 +1,6 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
-import { User } from "../../types";
+import type { User } from "../../types";
 import { SessionContainer } from "../session";
 export declare type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
@@ -24,7 +24,6 @@ export declare type TypeInput = {
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
@@ -49,10 +48,8 @@ export declare type TypeNormalisedInput = {
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type APIInterface = {};
 export declare type RecipeInterface = {
     getRecipeUserIdsForPrimaryUserIds: (input: {
         primaryUserIds: string[];
@@ -71,7 +68,15 @@ export declare type RecipeInterface = {
         recipeId: string;
         timeJoined: number;
         userContext: any;
-    }) => Promise<void>;
+    }) => Promise<
+        | {
+              status: "OK";
+              createdNewEntry: boolean;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          }
+    >;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
@@ -167,7 +172,7 @@ export declare type RecipeInterface = {
         wasRecipeUserDeleted: boolean;
     }>;
 };
-declare type RecipeLevelUser = {
+export declare type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
     id: string;
     timeJoined: number;
@@ -188,4 +193,3 @@ export declare type AccountInfoAndEmailWithRecipeId = {
         userId: string;
     };
 };
-export {};

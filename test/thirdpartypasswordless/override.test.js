@@ -114,7 +114,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -241,7 +241,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -356,7 +356,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -490,7 +490,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

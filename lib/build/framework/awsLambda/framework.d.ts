@@ -57,6 +57,7 @@ export declare class AWSResponse extends BaseResponse {
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
+    removeHeader: (key: string) => void;
     setCookie: (
         key: string,
         value: string,
@@ -82,7 +83,7 @@ export interface SessionEventV2 extends SupertokensLambdaEventV2 {
 export interface SessionEvent extends SupertokensLambdaEvent {
     session?: SessionContainerInterface;
 }
-export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler<any, any>;
+export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler;
 export interface AWSFramework extends Framework {
     middleware: (handler?: Handler) => Handler;
 }
