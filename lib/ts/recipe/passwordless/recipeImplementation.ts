@@ -2,6 +2,8 @@ import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import AccountLinking from "../accountlinking";
+import { getUser, listUsersByAccountInfo } from "../..";
+import EmailVerification from "../emailverification/recipe";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContext(input: any): any {
@@ -124,10 +126,72 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return { status: "OK" };
         },
         updateUser: async function (input) {
+            let markEmailAsVerified = false;
+            if (input.email !== undefined && typeof input.email === "string") {
+                let userForUserId = await getUser(input.userId);
+                if (userForUserId !== undefined && userForUserId.isPrimaryUser) {
+                    let usersForEmail = await listUsersByAccountInfo({
+                        email: input.email,
+                    });
+                    if (usersForEmail !== undefined) {
+                        let primaryUserFromEmailUsers = usersForEmail.find((u) => u.isPrimaryUser);
+                        if (primaryUserFromEmailUsers !== undefined) {
+                            if (primaryUserFromEmailUsers.id !== userForUserId.id) {
+                                return {
+                                    status: "EMAIL_CHANGE_NOT_ALLOWED",
+                                };
+                            }
+                            markEmailAsVerified = true;
+                        }
+                    }
+                }
+            }
+            if (input.phoneNumber !== undefined && typeof input.phoneNumber === "string") {
+                let userForUserId = await getUser(input.userId);
+                if (userForUserId !== undefined && userForUserId.isPrimaryUser) {
+                    let usersForPhoneNumbers = await listUsersByAccountInfo({
+                        phoneNumber: input.phoneNumber,
+                    });
+                    if (usersForPhoneNumbers !== undefined) {
+                        let primaryUserFromEmailUsers = usersForPhoneNumbers.find((u) => u.isPrimaryUser);
+                        if (primaryUserFromEmailUsers !== undefined) {
+                            if (primaryUserFromEmailUsers.id !== userForUserId.id) {
+                                return {
+                                    status: "PHONE_NUMBER_ALREADY_EXISTS_ERROR",
+                                };
+                            }
+                        }
+                    }
+                }
+            }
             let response = await querier.sendPutRequest(
                 new NormalisedURLPath("/recipe/user"),
                 copyAndRemoveUserContext(input)
             );
+            if (response.status === "OK") {
+                if (markEmailAsVerified && input.email !== undefined && typeof input.email === "string") {
+                    const emailVerificationInstance = EmailVerification.getInstance();
+                    if (emailVerificationInstance) {
+                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                userId: input.userId,
+                                email: input.email,
+                                userContext: undefined,
+                            }
+                        );
+
+                        if (tokenResponse.status === "OK") {
+                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                token: tokenResponse.token,
+                                userContext: undefined,
+                            });
+                        }
+                    }
+                }
+                return {
+                    status: "OK",
+                };
+            }
             return response;
         },
         getEmailOrPhoneNumberForCode: async function (input) {
