@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -30,11 +30,13 @@ import createCodeAPI from "./api/createCode";
 import emailExistsAPI from "./api/emailExists";
 import phoneNumberExistsAPI from "./api/phoneNumberExists";
 import resendCodeAPI from "./api/resendCode";
+import AccountLinking from "../accountlinking";
 import {
     CONSUME_CODE_API,
     CREATE_CODE_API,
     DOES_EMAIL_EXIST_API,
     DOES_PHONE_NUMBER_EXIST_API,
+    LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
     RESEND_CODE_API,
 } from "./constants";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
@@ -166,6 +168,12 @@ export default class Recipe extends RecipeModule {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(RESEND_CODE_API),
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
+                id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
+                disabled: this.apiImpl.linkAccountToExistingAccountPOST === undefined,
+            },
         ];
     };
 
@@ -270,7 +278,17 @@ export default class Recipe extends RecipeModule {
                   phoneNumber: string;
                   userContext?: any;
               }
-    ) => {
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
+          }
+    > => {
         let codeInfo = await this.recipeInterfaceImpl.createCode(
             "email" in input
                 ? {
@@ -283,18 +301,46 @@ export default class Recipe extends RecipeModule {
                   }
         );
 
+        let isSignUpAllowed: boolean;
+        if ("email" in input) {
+            isSignUpAllowed = await AccountLinking.isSignUpAllowed(
+                {
+                    recipeId: "passwordless",
+                    email: input.email,
+                },
+                input.userContext
+            );
+        } else {
+            isSignUpAllowed = await AccountLinking.isSignUpAllowed(
+                {
+                    recipeId: "passwordless",
+                    phoneNumber: input.phoneNumber,
+                },
+                input.userContext
+            );
+        }
+
+        if (!isSignUpAllowed) {
+            return {
+                status: "SIGNUP_NOT_ALLOWED",
+                reason: "the sign-up info is already associated with another account where it is not verified",
+            };
+        }
+
         let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
             this.config.flowType === "MAGIC_LINK"
                 ? {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
                       userContext: input.userContext,
+                      doAccountLinking: true,
                   }
                 : {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
                       userContext: input.userContext,
+                      doAccountLinking: true,
                   }
         );
 

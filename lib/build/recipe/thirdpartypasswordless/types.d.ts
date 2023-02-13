@@ -218,11 +218,13 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   userContext: any;
+                  doAccountLinking: boolean;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   userContext: any;
+                  doAccountLinking: boolean;
               }
     ) => Promise<
         | {
@@ -273,6 +275,26 @@ export declare type RecipeInterface = {
         preAuthSessionId: string;
         userContext: any;
     }) => Promise<DeviceType | undefined>;
+    getEmailOrPhoneNumberForCode: (
+        input:
+            | {
+                  userInputCode: string;
+                  deviceId: string;
+                  preAuthSessionId: string;
+                  userContext: any;
+              }
+            | {
+                  linkCode: string;
+                  preAuthSessionId: string;
+                  userContext: any;
+              }
+    ) => Promise<
+        | {
+              email?: string;
+              phoneNumber?: string;
+          }
+        | undefined
+    >;
 };
 export declare type PasswordlessAPIOptions = PasswordlessAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;

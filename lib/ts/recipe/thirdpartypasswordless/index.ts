@@ -94,6 +94,29 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   userContext?: any;
+                  doAccountLinking?: boolean;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  userContext?: any;
+                  doAccountLinking?: boolean;
+              }
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
+            userContext: {},
+            doAccountLinking: false,
+            ...input,
+        });
+    }
+
+    static async getEmailOrPhoneNumberForCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  userContext?: any;
               }
             | {
                   preAuthSessionId: string;
@@ -101,7 +124,10 @@ export default class Wrapper {
                   userContext?: any;
               }
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input });
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getEmailOrPhoneNumberForCode({
+            userContext: {},
+            ...input,
+        });
     }
 
     static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {

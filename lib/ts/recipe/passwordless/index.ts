@@ -59,14 +59,20 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   userContext?: any;
+                  doAccountLinking?: boolean;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   userContext?: any;
+                  doAccountLinking?: boolean;
               }
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input });
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
+            userContext: {},
+            doAccountLinking: false,
+            ...input,
+        });
     }
 
     static getUserById(input: { userId: string; userContext?: any }) {
@@ -171,6 +177,25 @@ export default class Wrapper {
             ...input,
         });
     }
+    static async getEmailOrPhoneNumberForCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  userContext?: any;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  userContext?: any;
+              }
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getEmailOrPhoneNumberForCode({
+            userContext: {},
+            ...input,
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -212,3 +237,5 @@ export type { RecipeInterface, User, APIOptions, APIInterface };
 export let sendEmail = Wrapper.sendEmail;
 
 export let sendSms = Wrapper.sendSms;
+
+export let getEmailOrPhoneNumberForCode = Wrapper.getEmailOrPhoneNumberForCode;

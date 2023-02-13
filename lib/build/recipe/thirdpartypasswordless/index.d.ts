@@ -80,11 +80,13 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   userContext?: any;
+                  doAccountLinking?: boolean;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   userContext?: any;
+                  doAccountLinking?: boolean;
               }
     ): Promise<
         | {
@@ -100,6 +102,26 @@ export default class Wrapper {
         | {
               status: "RESTART_FLOW_ERROR";
           }
+    >;
+    static getEmailOrPhoneNumberForCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  userContext?: any;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  userContext?: any;
+              }
+    ): Promise<
+        | {
+              email?: string | undefined;
+              phoneNumber?: string | undefined;
+          }
+        | undefined
     >;
     static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
     static updatePasswordlessUser(input: {
@@ -166,11 +188,17 @@ export default class Wrapper {
                   phoneNumber: string;
                   userContext?: any;
               }
-    ): Promise<{
-        status: string;
-        createdNewUser: boolean;
-        user: import("../passwordless/types").User;
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: import("../passwordless/types").User;
+          }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;

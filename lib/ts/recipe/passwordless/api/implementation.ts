@@ -2,21 +2,46 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
+import AccountLinking from "../../accountlinking";
+import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
+import { getUser } from "../../..";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         consumeCodePOST: async function (input) {
+            let emailOrPhoneNumberForCode = await input.options.recipeImplementation.getEmailOrPhoneNumberForCode(
+                input
+            );
+            if (emailOrPhoneNumberForCode !== undefined) {
+                let isSignUpAllowed = await AccountLinking.isSignUpAllowed(
+                    {
+                        recipeId: "passwordless",
+                        email: emailOrPhoneNumberForCode.email,
+                        phoneNumber: emailOrPhoneNumberForCode.phoneNumber,
+                    },
+                    input.userContext
+                );
+
+                if (!isSignUpAllowed) {
+                    return {
+                        status: "SIGNUP_NOT_ALLOWED",
+                        reason: "the sign-up info is already associated with another account where it is not verified",
+                    };
+                }
+            }
             let response = await input.options.recipeImplementation.consumeCode(
                 "deviceId" in input
                     ? {
                           preAuthSessionId: input.preAuthSessionId,
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
+                          doAccountLinking: true,
                           userContext: input.userContext,
                       }
                     : {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
+                          doAccountLinking: true,
                           userContext: input.userContext,
                       }
             );
@@ -266,10 +291,146 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
         },
-        linkAccountToExistingAccountPOST: async function (_input) {
+        linkAccountToExistingAccountPOST: async function (input) {
+            let emailOrPhoneNumberForCode = await input.options.recipeImplementation.getEmailOrPhoneNumberForCode(
+                input
+            );
+            if (emailOrPhoneNumberForCode === undefined) {
+                throw Error("Invalid input");
+            }
+            let email = emailOrPhoneNumberForCode.email;
+            let phoneNumber = emailOrPhoneNumberForCode.phoneNumber;
+            let session = input.session;
+            let result = await AccountLinking.accountLinkPostSignInViaSession(
+                session,
+                {
+                    email,
+                    phoneNumber,
+                    recipeId: "passwordless",
+                },
+                true,
+                input.userContext
+            );
+            let createdNewRecipeUser = false;
+            if (result.createRecipeUser) {
+                let response = await input.options.recipeImplementation.consumeCode(
+                    "deviceId" in input
+                        ? {
+                              preAuthSessionId: input.preAuthSessionId,
+                              deviceId: input.deviceId,
+                              userInputCode: input.userInputCode,
+                              doAccountLinking: true,
+                              userContext: input.userContext,
+                          }
+                        : {
+                              preAuthSessionId: input.preAuthSessionId,
+                              linkCode: input.linkCode,
+                              doAccountLinking: true,
+                              userContext: input.userContext,
+                          }
+                );
+
+                if (response.status !== "OK") {
+                    throw Error(
+                        `this error should never be thrown while creating a new user during accountLinkPostSignInViaSession flow: ${response.status}`
+                    );
+                }
+                createdNewRecipeUser = true;
+                if (result.updateVerificationClaim) {
+                    await session.setClaimValue(AccountLinkingClaim, response.user.id, input.userContext);
+                    return {
+                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                        isNotVerifiedAccountFromInputSession: false,
+                        description: "",
+                    };
+                } else {
+                    result = await AccountLinking.accountLinkPostSignInViaSession(
+                        session,
+                        {
+                            email,
+                            phoneNumber,
+                            recipeId: "passwordless",
+                        },
+                        true,
+                        input.userContext
+                    );
+                }
+            }
+            if (result.createRecipeUser) {
+                throw Error(
+                    `this error should never be thrown after creating a new user during accountLinkPostSignInViaSession flow`
+                );
+            }
+            if (!result.accountsLinked) {
+                if (result.reason === "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+                    return {
+                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                        isNotVerifiedAccountFromInputSession: true,
+                        description: "",
+                    };
+                }
+                if (result.reason === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+                    return {
+                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
+                        isNotVerifiedAccountFromInputSession: false,
+                        description: "",
+                    };
+                }
+                if (
+                    result.reason === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
+                    result.reason === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                ) {
+                    return {
+                        status: result.reason,
+                        description: "",
+                        primaryUserId: result.primaryUserId,
+                    };
+                }
+                return {
+                    status: result.reason,
+                    description: "",
+                };
+            }
+            let wereAccountsAlreadyLinked = false;
+            if (result.updateVerificationClaim) {
+                await session.removeClaim(AccountLinkingClaim, input.userContext);
+            } else {
+                wereAccountsAlreadyLinked = true;
+            }
+            let user = await getUser(session.getUserId());
+            if (user === undefined) {
+                throw Error(
+                    "this error should never be thrown. Can't find primary user with userId: " + session.getUserId()
+                );
+            }
+            let recipeUser = user.loginMethods.find(
+                (u) =>
+                    u.recipeId === "passwordless" &&
+                    ((email !== undefined && u.email === email) ||
+                        (phoneNumber !== undefined && u.phoneNumber === phoneNumber))
+            );
+            if (recipeUser === undefined) {
+                throw Error(
+                    "this error should never be thrown. Can't find passwordless recipeUser with email: " +
+                        email +
+                        " & phoneNumber: " +
+                        phoneNumber +
+                        "  and primary userId: " +
+                        session.getUserId()
+                );
+            }
             return {
-                status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "",
+                status: "OK",
+                user: {
+                    id: user.id,
+                    recipeUserId: recipeUser.id,
+                    timeJoined: recipeUser.timeJoined,
+                    email,
+                    phoneNumber,
+                },
+                createdNewRecipeUser,
+                wereAccountsAlreadyLinked,
+                session,
             };
         },
     };

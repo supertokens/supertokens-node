@@ -60,11 +60,13 @@ export default class Wrapper {
                   userInputCode: string;
                   deviceId: string;
                   userContext?: any;
+                  doAccountLinking?: boolean;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
                   userContext?: any;
+                  doAccountLinking?: boolean;
               }
     ): Promise<
         | {
@@ -145,11 +147,17 @@ export default class Wrapper {
                   phoneNumber: string;
                   userContext?: any;
               }
-    ): Promise<{
-        status: string;
-        createdNewUser: boolean;
-        user: User;
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {
             userContext?: any;
@@ -160,6 +168,26 @@ export default class Wrapper {
             userContext?: any;
         }
     ): Promise<void>;
+    static getEmailOrPhoneNumberForCode(
+        input:
+            | {
+                  preAuthSessionId: string;
+                  userInputCode: string;
+                  deviceId: string;
+                  userContext?: any;
+              }
+            | {
+                  preAuthSessionId: string;
+                  linkCode: string;
+                  userContext?: any;
+              }
+    ): Promise<
+        | {
+              email?: string | undefined;
+              phoneNumber?: string | undefined;
+          }
+        | undefined
+    >;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -181,3 +209,4 @@ export declare let signInUp: typeof Wrapper.signInUp;
 export type { RecipeInterface, User, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;
+export declare let getEmailOrPhoneNumberForCode: typeof Wrapper.getEmailOrPhoneNumberForCode;

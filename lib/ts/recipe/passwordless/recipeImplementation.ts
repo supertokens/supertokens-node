@@ -1,6 +1,7 @@
 import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import AccountLinking from "../accountlinking";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContext(input: any): any {
@@ -17,6 +18,21 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 new NormalisedURLPath("/recipe/signinup/code/consume"),
                 copyAndRemoveUserContext(input)
             );
+            if (response.status === "OK" && response.createdNewUser) {
+                if (input.doAccountLinking) {
+                    let primaryUserId = await AccountLinking.doPostSignUpAccountLinkingOperations(
+                        {
+                            email: response.email,
+                            phoneNumber: response.phoneNumber,
+                            recipeId: "passwordless",
+                        },
+                        true,
+                        response.user.id,
+                        input.userContext
+                    );
+                    response.user.id = primaryUserId;
+                }
+            }
             return response;
         },
         createCode: async function (input) {
@@ -113,6 +129,19 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 copyAndRemoveUserContext(input)
             );
             return response;
+        },
+        getEmailOrPhoneNumberForCode: async function (input) {
+            let response = await querier.sendPutRequest(
+                new NormalisedURLPath("/recipe/email-or-phonenumber"),
+                copyAndRemoveUserContext(input)
+            );
+            if (response.status === "OK") {
+                return {
+                    email: response.email,
+                    phoneNumber: response.phoneNumber,
+                };
+            }
+            return undefined;
         },
     };
 }

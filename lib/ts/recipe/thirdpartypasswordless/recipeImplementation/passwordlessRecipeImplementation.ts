@@ -59,5 +59,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
         updateUser: async function (input) {
             return await recipeInterface.updatePasswordlessUser(input);
         },
+        getEmailOrPhoneNumberForCode: async function (input) {
+            return await recipeInterface.getEmailOrPhoneNumberForCode(input);
+        },
     };
 }

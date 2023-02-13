@@ -175,11 +175,13 @@ export declare type RecipeInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
                   userContext: any;
+                  doAccountLinking: boolean;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
                   userContext: any;
+                  doAccountLinking: boolean;
               }
     ) => Promise<
         | {
@@ -195,6 +197,26 @@ export declare type RecipeInterface = {
         | {
               status: "RESTART_FLOW_ERROR";
           }
+    >;
+    getEmailOrPhoneNumberForCode: (
+        input:
+            | {
+                  userInputCode: string;
+                  deviceId: string;
+                  preAuthSessionId: string;
+                  userContext: any;
+              }
+            | {
+                  linkCode: string;
+                  preAuthSessionId: string;
+                  userContext: any;
+              }
+    ) => Promise<
+        | {
+              email?: string;
+              phoneNumber?: string;
+          }
+        | undefined
     >;
     getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>;

@@ -1412,6 +1412,9 @@ Passwordless.init({
                                 phoneNumber: "TEST_PHONE_NUMBER",
                                 userContext: { calledManually: true },
                             });
+                            if (user.status !== "OK") {
+                                throw user;
+                            }
                             return {
                                 status: "OK",
                                 createdNewUser: user.createdNewUser,

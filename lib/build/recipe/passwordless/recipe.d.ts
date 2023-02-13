@@ -1,6 +1,6 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -63,10 +63,16 @@ export default class Recipe extends RecipeModule {
                   phoneNumber: string;
                   userContext?: any;
               }
-    ) => Promise<{
-        status: string;
-        createdNewUser: boolean;
-        user: import("./types").User;
-    }>;
+    ) => Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
     getEmailForUserId: GetEmailForUserIdFunc;
 }

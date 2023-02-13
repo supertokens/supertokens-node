@@ -114,5 +114,9 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             }
             return originalThirdPartyImplementation.getUserByThirdPartyInfo.bind(DerivedTP(this))(input);
         },
+
+        getEmailOrPhoneNumberForCode: async function (input) {
+            return originalPasswordlessImplementation.getEmailOrPhoneNumberForCode.bind(DerivedPwdless(this))(input);
+        },
     };
 }

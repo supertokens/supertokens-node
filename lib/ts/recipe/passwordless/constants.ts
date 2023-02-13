@@ -22,3 +22,5 @@ export const CONSUME_CODE_API = "/signinup/code/consume";
 export const DOES_EMAIL_EXIST_API = "/signup/email/exists";
 
 export const DOES_PHONE_NUMBER_EXIST_API = "/signup/phonenumber/exists";
+
+export const LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API = "/link-account/signup";
