@@ -9,6 +9,7 @@ import { getUser } from "../../..";
 import Session, { createNewSession } from "../../session";
 import AccountLinking from "../../accountlinking";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -16,7 +17,9 @@ export default function getAPIInterface(): APIInterface {
             this: APIInterface,
             { token, options, session, userContext }
         ): Promise<
-            { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
+            | { status: "OK"; user: User; session?: SessionContainerInterface }
+            | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
+            | GeneralErrorResponse
         > {
             const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
@@ -68,6 +71,7 @@ export default function getAPIInterface(): APIInterface {
                             ...res.user,
                             id: user.id,
                         },
+                        session,
                     };
                 }
             }
@@ -81,6 +85,7 @@ export default function getAPIInterface(): APIInterface {
             | {
                   status: "OK";
                   isVerified: boolean;
+                  session: SessionContainerInterface;
               }
             | GeneralErrorResponse
         > {
@@ -169,6 +174,7 @@ export default function getAPIInterface(): APIInterface {
             return {
                 status: "OK",
                 isVerified,
+                session,
             };
         },
 

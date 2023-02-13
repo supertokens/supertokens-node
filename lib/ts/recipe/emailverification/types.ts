@@ -143,7 +143,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                     isVerified: boolean;
-                    session?: SessionContainerInterface;
+                    session: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);
