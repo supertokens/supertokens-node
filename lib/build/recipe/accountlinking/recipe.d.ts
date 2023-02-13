@@ -125,5 +125,14 @@ export default class Recipe extends RecipeModule {
         recipeUserId: string;
         session: SessionContainer | undefined;
         userContext: any;
-    }) => Promise<void>;
+    }) => Promise<
+        | {
+              createNewSession: false;
+          }
+        | {
+              createNewSession: true;
+              primaryUserId: string;
+              recipeUserId: string;
+          }
+    >;
 }

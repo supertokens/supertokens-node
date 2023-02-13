@@ -33,6 +33,7 @@ import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
 import EmailVerification from "../emailverification/recipe";
+import { AccountLinkingClaim } from "./accountLinkingClaim";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -762,7 +763,16 @@ export default class Recipe extends RecipeModule {
         recipeUserId: string;
         session: SessionContainer | undefined;
         userContext: any;
-    }) => {
+    }): Promise<
+        | {
+              createNewSession: false;
+          }
+        | {
+              createNewSession: true;
+              primaryUserId: string;
+              recipeUserId: string;
+          }
+    > => {
         let primaryUser = await this.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
             recipeUserId,
             userContext,
@@ -785,7 +795,10 @@ export default class Recipe extends RecipeModule {
                     recipeUserId: recipeUserId,
                     userContext,
                 });
-                // TODO: remove session claim
+                // remove session claim
+                if (session !== undefined) {
+                    await session.removeClaim(AccountLinkingClaim, userContext);
+                }
             }
         } else {
             /**
@@ -812,11 +825,29 @@ export default class Recipe extends RecipeModule {
                         userContext,
                     });
                     if (linkAccountsResult.status === "OK") {
-                        // TODO: remove session claim if session claim exists
+                        // remove session claim if session claim exists
                         // else create a new session
+                        if (session !== undefined) {
+                            let existingSessionClaimValue = await session.getClaimValue(
+                                AccountLinkingClaim,
+                                userContext
+                            );
+                            if (existingSessionClaimValue !== undefined) {
+                                await session.removeClaim(AccountLinkingClaim, userContext);
+                            } else {
+                                return {
+                                    createNewSession: true,
+                                    primaryUserId: primaryUser.id,
+                                    recipeUserId,
+                                };
+                            }
+                        }
                     }
                 }
             }
         }
+        return {
+            createNewSession: false,
+        };
     };
 }
