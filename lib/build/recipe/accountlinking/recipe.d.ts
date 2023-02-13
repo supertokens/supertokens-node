@@ -52,6 +52,15 @@ export default class Recipe extends RecipeModule {
         info: AccountInfoAndEmailWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
+    markEmailAsVerified: ({
+        email,
+        recipeUserId,
+        userContext,
+    }: {
+        email: string;
+        recipeUserId: string;
+        userContext: any;
+    }) => Promise<void>;
     doPostSignUpAccountLinkingOperations: ({
         info,
         infoVerified,
@@ -116,5 +125,14 @@ export default class Recipe extends RecipeModule {
         recipeUserId: string;
         session: SessionContainer | undefined;
         userContext: any;
-    }) => Promise<void>;
+    }) => Promise<
+        | {
+              createNewSession: false;
+          }
+        | {
+              createNewSession: true;
+              primaryUserId: string;
+              recipeUserId: string;
+          }
+    >;
 }
