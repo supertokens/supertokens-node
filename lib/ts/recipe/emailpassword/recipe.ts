@@ -33,7 +33,6 @@ import passwordResetAPI from "./api/passwordReset";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import EmailVerificationRecipe from "../emailverification/recipe";
-import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
@@ -43,7 +42,6 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { GetTenantIdForUserId } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -95,11 +93,6 @@ export default class Recipe extends RecipeModule {
             const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
             if (emailVerificationRecipe !== undefined) {
                 emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
-            }
-
-            const mtRecipe = MultitenancyRecipe.getInstance();
-            if (mtRecipe !== undefined) {
-                mtRecipe.addGetTenantIdForUserIdFunc(this.getTenantIdForUserId.bind(this));
             }
         });
     }
@@ -229,18 +222,6 @@ export default class Recipe extends RecipeModule {
             return {
                 status: "OK",
                 email: userInfo.email,
-            };
-        }
-        return {
-            status: "UNKNOWN_USER_ID_ERROR",
-        };
-    };
-
-    getTenantIdForUserId: GetTenantIdForUserId = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            return {
-                status: "OK",
             };
         }
         return {

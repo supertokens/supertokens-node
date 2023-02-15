@@ -9,7 +9,6 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { GetTenantIdForUserId } from "../multitenancy/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -70,5 +69,4 @@ export default class Recipe extends RecipeModule {
         user: import("./types").User;
     }>;
     getEmailForUserId: GetEmailForUserIdFunc;
-    getTenantIdForUserId: GetTenantIdForUserId;
 }

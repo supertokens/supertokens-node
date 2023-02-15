@@ -33,7 +33,6 @@ import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { GetTenantIdForUserId } from "../multitenancy/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -83,7 +82,6 @@ export default class Recipe extends RecipeModule {
             const mtRecipe = MultitenancyRecipe.getInstance();
             if (mtRecipe !== undefined) {
                 mtRecipe.staticThirdPartyProviders = this.config.signInAndUpFeature.providers;
-                mtRecipe.addGetTenantIdForUserIdFunc(this.getTenantIdForUserId);
             }
         });
     }
@@ -191,19 +189,6 @@ export default class Recipe extends RecipeModule {
             return {
                 status: "OK",
                 email: userInfo.email,
-            };
-        }
-        return {
-            status: "UNKNOWN_USER_ID_ERROR",
-        };
-    };
-
-    getTenantIdForUserId: GetTenantIdForUserId = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            return {
-                status: "OK",
-                tenantId: userInfo.tenantId,
             };
         }
         return {

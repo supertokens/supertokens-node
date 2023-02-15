@@ -838,12 +838,6 @@ Multitenancy.init();
 Multitenancy.init({});
 
 Multitenancy.init({
-    getTenantIdForUserId: async function (userId, userContext) {
-        return {
-            status: "OK",
-            tenantId: "tenantId",
-        };
-    },
     getAllowedDomainsForTenantId: async function (tenantId, userContext) {
         return {
             status: "OK",

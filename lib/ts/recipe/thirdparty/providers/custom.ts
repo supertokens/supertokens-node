@@ -2,7 +2,6 @@ import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } fr
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
-import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
 const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
@@ -137,7 +136,6 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
 
     if (input.config.generateFakeEmail === undefined) {
         input.config.generateFakeEmail = async function ({ thirdPartyUserId }) {
-            thirdPartyUserId = thirdPartyUserId.replace("|", ".");
             return `${thirdPartyUserId}@${input.config.thirdPartyId}.fakeemail.com`;
         };
     }
@@ -324,10 +322,6 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             }
 
             const userInfoResult = getSupertokensUserInfoResultFromRawUserInfo(impl.config, rawUserInfoFromProvider);
-
-            if (impl.config.tenantId !== undefined && impl.config.tenantId !== DEFAULT_TENANT_ID) {
-                userInfoResult.thirdPartyUserId += "|" + impl.config.tenantId;
-            }
 
             return {
                 thirdPartyUserId: userInfoResult.thirdPartyUserId,

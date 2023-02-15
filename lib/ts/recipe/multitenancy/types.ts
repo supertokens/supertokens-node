@@ -36,28 +36,7 @@ export interface NormalisedErrorHandlers {
     onRecipeDisabledForTenantError: RecipeDisabledForTenantErrorHandlerMiddleware;
 }
 
-export type GetTenantIdForUserId = (
-    userId: string,
-    userContext: any
-) => Promise<
-    | {
-          status: "OK";
-          tenantId?: string;
-      }
-    | { status: "UNKNOWN_USER_ID_ERROR" }
->;
-
 export type TypeInput = {
-    getTenantIdForUserId?: (
-        userId: string,
-        userContext: any
-    ) => Promise<
-        | {
-              status: "OK";
-              tenantId?: string;
-          }
-        | { status: "UNKNOWN_USER_ID_ERROR" }
-    >;
     getAllowedDomainsForTenantId?: (
         tenantId: string | undefined,
         userContext: any
@@ -77,16 +56,6 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    getTenantIdForUserId?: (
-        userId: string,
-        userContext: any
-    ) => Promise<
-        | {
-              status: "OK";
-              tenantId?: string;
-          }
-        | { status: "UNKNOWN_USER_ID_ERROR" }
-    >;
     getAllowedDomainsForTenantId?: (
         tenantId: string | undefined,
         userContext: any

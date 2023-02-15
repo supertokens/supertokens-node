@@ -27,7 +27,7 @@ import SessionRecipe from "../session/recipe";
 import { ProviderInput } from "../thirdparty/types";
 import { LOGIN_METHODS_API } from "./constants";
 import { AllowedDomainsClaim } from "./multitenancyClaim";
-import { APIInterface, GetTenantIdForUserId, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import loginMethodsAPI from "./api/loginMethods";
 
@@ -45,8 +45,6 @@ export default class Recipe extends RecipeModule {
 
     staticThirdPartyProviders: ProviderInput[] = [];
 
-    getTenantIdForUserId: GetTenantIdForUserId;
-
     getAllowedDomainsForTenantId?: (
         tenantId: string | undefined,
         userContext: any
@@ -54,8 +52,6 @@ export default class Recipe extends RecipeModule {
         status: "OK";
         domains: string[];
     }>;
-
-    getTenantIdForUserIdFuncsFromOtherRecipes: GetTenantIdForUserId[] = [];
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
@@ -71,22 +67,6 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
-
-        this.getTenantIdForUserId = async (userId, userContext) => {
-            if (this.config.getTenantIdForUserId !== undefined) {
-                return this.config.getTenantIdForUserId(userId, userContext);
-            }
-
-            for (const f of this.getTenantIdForUserIdFuncsFromOtherRecipes) {
-                const tenantIdRes = await f(userId, userContext);
-                if (tenantIdRes.status === "OK") {
-                    return tenantIdRes;
-                }
-            }
-            return {
-                status: "UNKNOWN_USER_ID_ERROR",
-            };
-        };
 
         this.getAllowedDomainsForTenantId = this.config.getAllowedDomainsForTenantId;
     }
@@ -181,9 +161,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    addGetTenantIdForUserIdFunc = (func: GetTenantIdForUserId): void => {
-        this.getTenantIdForUserIdFuncsFromOtherRecipes.push(func);
     };
 }

@@ -6,7 +6,6 @@ import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { GetTenantIdForUserId } from "../multitenancy/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -38,5 +37,4 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: GetEmailForUserIdFunc;
-    getTenantIdForUserId: GetTenantIdForUserId;
 }

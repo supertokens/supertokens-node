@@ -14,7 +14,7 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { RecipeInterface, APIInterface, User } from "./types";
+import { RecipeInterface, APIInterface } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
@@ -54,14 +54,4 @@ function validateAndNormaliseSignInAndUpConfig(
     return {
         providers: config.providers,
     };
-}
-
-export function updateTenantId(user: User): User {
-    if (user.thirdParty.userId.includes("|")) {
-        return {
-            ...user,
-            tenantId: user.thirdParty.userId.split("|")[1],
-        };
-    }
-    return user;
 }

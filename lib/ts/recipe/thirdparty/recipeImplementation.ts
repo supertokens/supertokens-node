@@ -2,7 +2,6 @@ import { RecipeInterface, User, ProviderInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
-import { updateTenantId } from "./utils";
 import MultitenancyRecipe from "../multitenancy/recipe";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
@@ -72,10 +71,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userId,
             });
             if (response.status === "OK") {
-                const user = updateTenantId(response.user);
-                return {
-                    ...user,
-                };
+                return response.user;
             } else {
                 return undefined;
             }
@@ -88,7 +84,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     email,
                 })
             ).users;
-            users = users.map(updateTenantId);
 
             return users;
         },
@@ -105,10 +100,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 thirdPartyUserId,
             });
             if (response.status === "OK") {
-                const user = updateTenantId(response.user);
-                return {
-                    ...user,
-                };
+                return response.user;
             } else {
                 return undefined;
             }

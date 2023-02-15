@@ -8,19 +8,15 @@ export class MultitenancyDomainsClaimClass extends PrimitiveArrayClaim<string> {
     constructor() {
         super({
             key: "st-tenant-domains",
-            async fetchValue(userId, userContext) {
+            async fetchValue(_, userContext) {
                 const recipe = Recipe.getInstanceOrThrowError();
-                let tenantIdRes = await recipe.getTenantIdForUserId(userId, userContext);
+                let tenantId = undefined; // TODO: tenantId will be passed to fetchValue later
 
-                if (tenantIdRes.status === "OK") {
-                    if (recipe.getAllowedDomainsForTenantId === undefined) {
-                        return []; // User did not provide a function to get allowed domains, but is using a validator. So we don't allow any domains by default
-                    }
-                    const domainsRes = await recipe.getAllowedDomainsForTenantId(tenantIdRes.tenantId, userContext);
-                    return domainsRes.domains;
-                } else {
-                    throw new Error("UNKNOWN_USER_ID");
+                if (recipe.getAllowedDomainsForTenantId === undefined) {
+                    return []; // User did not provide a function to get allowed domains, but is using a validator. So we don't allow any domains by default
                 }
+                const domainsRes = await recipe.getAllowedDomainsForTenantId(tenantId, userContext);
+                return domainsRes.domains;
             },
             defaultMaxAgeInSeconds: 3600,
         });
