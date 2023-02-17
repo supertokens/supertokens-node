@@ -20,6 +20,11 @@ import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { sendUnauthorisedAccess } from "../utils";
 
+type SignInResponse =
+    | { status: "OK"; sessionId: string }
+    | { status: "INVALID_CREDENTIALS_ERROR" }
+    | { status: "USER_SUSPENDED_ERROR" };
+
 export default async function signIn(_: APIInterface, options: APIOptions): Promise<boolean> {
     const { email, password } = await options.req.getJSONBody();
 
@@ -38,10 +43,13 @@ export default async function signIn(_: APIInterface, options: APIOptions): Prom
     }
 
     let querier = Querier.getNewInstanceOrThrowError(undefined);
-    const signInResponse = await querier.sendPostRequest(new NormalisedURLPath("/recipe/dashboard/signin"), {
-        email,
-        password,
-    });
+    const signInResponse = await querier.sendPostRequest<SignInResponse>(
+        new NormalisedURLPath("/recipe/dashboard/signin"),
+        {
+            email,
+            password,
+        }
+    );
 
     if (signInResponse.status === "OK") {
         send200Response(options.res, {
