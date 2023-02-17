@@ -12,13 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { Querier } from "../../../querier";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIFunction, APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess } from "../utils";
-import NormalisedURLPath from "../../../normalisedURLPath";
-
-type JWTVerifyResponse = { status: "OK" } | { status: "INVALID_JWT" };
 
 export default async function apiKeyProtector(
     apiImplementation: APIInterface,
@@ -34,34 +30,6 @@ export default async function apiKeyProtector(
     if (!shouldAllowAccess) {
         sendUnauthorisedAccess(options.res);
         return true;
-    }
-
-    // If the apiKey is not present, hit the token verification endpoint first.
-    if (!options.config.apiKey) {
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        const authHeaderValue = options.req.getHeaderValue("authorization")?.split(" ")[1];
-        let jwtVerificationResponse: JWTVerifyResponse;
-        if (true) {
-            jwtVerificationResponse = await new Promise((resolve, reject) => {
-                try {
-                    setTimeout(() => {
-                        resolve({
-                            status: authHeaderValue?.includes("err") ? "INVALID_JWT" : "OK",
-                        });
-                    }, 3000);
-                } catch (error) {
-                    reject(error);
-                }
-            });
-        } else {
-            jwtVerificationResponse = await querier.sendPostRequest(new NormalisedURLPath("/recipe/dashboard/verify"), {
-                jwt: authHeaderValue,
-            });
-        }
-
-        if (jwtVerificationResponse.status !== "OK") {
-            sendUnauthorisedAccess(options.res);
-        }
     }
 
     const response = await apiFunction(apiImplementation, options);

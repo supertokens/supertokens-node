@@ -13,23 +13,19 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
-import { sendUnauthorisedAccess } from "../utils";
+import { APIInterface, APIOptions } from "../types";
+import { sendUnauthorisedAccess, validateApiKey } from "../utils";
 
 export default async function validateKey(_: APIInterface, options: APIOptions): Promise<boolean> {
-    const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
-        req: options.req,
-        config: options.config,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+    const input = { req: options.req, config: options.config, userContext: makeDefaultUserContextFromAPI(options.req) };
 
-    if (!shouldAllowAccess) {
-        sendUnauthorisedAccess(options.res);
-    } else {
+    if (await validateApiKey(input)) {
         options.res.sendJSONResponse({
             status: "OK",
         });
+    } else {
+        sendUnauthorisedAccess(options.res);
     }
 
     return true;

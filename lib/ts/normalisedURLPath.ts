@@ -45,7 +45,6 @@ export default class NormalisedURLPath {
 
 function normaliseURLPathOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
-
     try {
         if (!input.startsWith("http://") && !input.startsWith("https://")) {
             throw new Error("converting to proper URL");
@@ -56,7 +55,6 @@ function normaliseURLPathOrThrowError(input: string): string {
         if (input.charAt(input.length - 1) === "/") {
             return input.substr(0, input.length - 1);
         }
-
         return input;
     } catch (err) {}
     // not a valid URL

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseResponse } from "../../framework";
+import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
@@ -341,4 +341,17 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
     }
 
     return isRecipeInitialised;
+}
+
+export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
+    let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
+
+    // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+    apiKeyHeaderValue = apiKeyHeaderValue?.split(" ")[1];
+
+    if (apiKeyHeaderValue === undefined) {
+        return false;
+    }
+
+    return apiKeyHeaderValue === input.config.apiKey;
 }

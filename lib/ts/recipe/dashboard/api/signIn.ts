@@ -14,21 +14,13 @@
  */
 
 import { APIInterface, APIOptions } from "../types";
-import { makeDefaultUserContextFromAPI, send200Response } from "../../../utils";
-import { sendUnauthorisedAccess } from "../utils";
+import { send200Response } from "../../../utils";
 import STError from "../../../error";
+import { Querier } from "../../../querier";
+import NormalisedURLPath from "../../../normalisedURLPath";
+import { sendUnauthorisedAccess } from "../utils";
 
-export default async function signIn(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.signInPOST === undefined) {
-        return false;
-    }
-
-    const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
-        req: options.req,
-        config: options.config,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
-    if (!shouldAllowAccess) sendUnauthorisedAccess(options.res);
+export default async function signIn(_: APIInterface, options: APIOptions): Promise<boolean> {
     const { email, password } = await options.req.getJSONBody();
 
     if (email === undefined) {
@@ -45,19 +37,19 @@ export default async function signIn(apiImplementation: APIInterface, options: A
         });
     }
 
-    let result = await apiImplementation.signInPOST({
-        formFields: { email, password },
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+    let querier = Querier.getNewInstanceOrThrowError(undefined);
+    const signInResponse = await querier.sendPostRequest(new NormalisedURLPath("/recipe/dashboard/signin"), {
+        email,
+        password,
     });
 
-    if (result.status === "OK") {
+    if (signInResponse.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            token: result.token,
+            sessionId: signInResponse.sessionId,
         });
     } else {
-        send200Response(options.res, result);
+        sendUnauthorisedAccess(options.res);
     }
 
     return true;
