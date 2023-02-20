@@ -39,6 +39,7 @@ export default class SessionWrapper {
     static Error = SuperTokensError;
 
     static async createNewSession(
+        req: any,
         res: any,
         userId: string,
         accessTokenPayload: any = {},
@@ -57,10 +58,15 @@ export default class SessionWrapper {
             };
         }
 
+        if (!req.wrapperUsed) {
+            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+        }
+
         if (!res.wrapperUsed) {
             res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
         }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
+            req,
             res,
             userId,
             accessTokenPayload: finalAccessTokenPayload,

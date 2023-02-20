@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { RecipeInterface, TypeNormalisedInput, KeyInfo, AntiCsrfType } from "./types";
 import { Querier } from "../../querier";
+import { NormalisedAppinfo } from "../../types";
 export declare class HandshakeInfo {
     antiCsrf: AntiCsrfType;
     accessTokenBlacklistingEnabled: boolean;
@@ -23,10 +24,12 @@ export declare type Helpers = {
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     config: TypeNormalisedInput;
+    appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
 };
 export default function getRecipeInterface(
     querier: Querier,
     config: TypeNormalisedInput,
+    appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface;

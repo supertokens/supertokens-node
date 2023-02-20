@@ -1016,10 +1016,7 @@ Supertokens.init({
         websiteDomain: "",
     },
     recipeList: [
-        Session.init({
-            antiCsrf: "NONE",
-            cookieDomain: "",
-        }),
+        Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "NONE", cookieDomain: "" }),
         EmailPassword.init({
             override: {},
         }),
@@ -1203,7 +1200,7 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        let session = await Session.createNewSession(options.res, user.id);
+                        let session = await Session.createNewSession(options.req, options.res, user.id);
                         return {
                             status: "OK",
                             session,
@@ -1374,6 +1371,14 @@ Dashboard.init({
     apiKey: "",
 });
 
+Session.init({
+    getTokenTransferMethod: () => "cookie",
+});
+
+Session.init({
+    getTokenTransferMethod: () => "header",
+});
+
 Supertokens.init({
     appInfo: {
         apiDomain: "..",
@@ -1398,4 +1403,35 @@ app.post("/create-anonymous-session", async (req, res) => {
     res.json({
         token: token.jwt,
     });
+});
+
+Passwordless.init({
+    contactMethod: "EMAIL",
+    flowType: "MAGIC_LINK",
+    override: {
+        functions: (original) => {
+            return {
+                ...original,
+                consumeCode: async function (input) {
+                    let device = await Passwordless.listCodesByPreAuthSessionId({
+                        preAuthSessionId: input.preAuthSessionId,
+                    });
+                    if (device !== undefined && input.userContext.calledManually === undefined) {
+                        if (device.phoneNumber === "TEST_PHONE_NUMBER") {
+                            let user = await Passwordless.signInUp({
+                                phoneNumber: "TEST_PHONE_NUMBER",
+                                userContext: { calledManually: true },
+                            });
+                            return {
+                                status: "OK",
+                                createdNewUser: user.createdNewUser,
+                                user: user.user,
+                            };
+                        }
+                    }
+                    return original.consumeCode(input);
+                },
+            };
+        },
+    },
 });

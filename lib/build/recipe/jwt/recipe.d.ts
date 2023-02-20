@@ -1,7 +1,7 @@
 // @ts-nocheck
 import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
-import NormalisedURLPath from "../../normalisedURLPath";
+import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
@@ -21,7 +21,7 @@ export default class Recipe extends RecipeModule {
         _: string,
         req: BaseRequest,
         res: BaseResponse,
-        __: NormalisedURLPath,
+        __: normalisedURLPath,
         ___: HTTPMethod
     ) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void>;

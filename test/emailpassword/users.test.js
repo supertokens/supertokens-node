@@ -46,7 +46,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const express = require("express");
@@ -110,7 +110,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         const express = require("express");
@@ -174,7 +174,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         let userCount = await getUserCount();

@@ -233,9 +233,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider6],
@@ -279,16 +277,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(cookies1.accessToken, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.notStrictEqual(cookies1.antiCsrf, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.strictEqual(cookies1.accessTokenDomain, undefined);
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies1.frontToken, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
 
         let response2 = await new Promise((resolve) =>
             request(app)
@@ -320,16 +314,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(cookies2.accessToken, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.notStrictEqual(cookies2.antiCsrf, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies2.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.strictEqual(cookies2.accessTokenDomain, undefined);
         assert.strictEqual(cookies2.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies2.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies2.frontToken, undefined);
+        assert.notStrictEqual(cookies2.frontToken, "remove");
     });
 
     it("test missing code and authCodeResponse", async function () {
@@ -344,9 +334,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider6],
@@ -392,9 +380,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
@@ -438,16 +424,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(cookies1.accessToken, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.notStrictEqual(cookies1.antiCsrf, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.strictEqual(cookies1.accessTokenDomain, undefined);
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies1.frontToken, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), true);
 
@@ -481,16 +463,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(cookies2.accessToken, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.notStrictEqual(cookies2.antiCsrf, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies2.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies2.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies2.refreshToken, undefined);
         assert.strictEqual(cookies2.accessTokenDomain, undefined);
         assert.strictEqual(cookies2.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies2.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies2.frontToken, undefined);
+        assert.notStrictEqual(cookies2.frontToken, "remove");
     });
 
     it("test minimum config for thirdparty module, email unverified", async function () {
@@ -506,9 +484,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider5],
@@ -552,16 +528,12 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(cookies1.accessToken, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.notStrictEqual(cookies1.antiCsrf, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromHeader, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenFromCookie, undefined);
         assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
-        assert.notStrictEqual(cookies1.idRefreshTokenExpiry, undefined);
         assert.notStrictEqual(cookies1.refreshToken, undefined);
         assert.strictEqual(cookies1.accessTokenDomain, undefined);
         assert.strictEqual(cookies1.refreshTokenDomain, undefined);
-        assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
-        assert.notStrictEqual(cookies1.frontToken, undefined);
+        assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), false);
     });
@@ -578,7 +550,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
@@ -628,7 +600,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider2],
@@ -681,7 +653,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider3],
@@ -730,7 +702,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider4],
@@ -785,7 +757,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
@@ -962,7 +934,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                         providers: [this.customProvider1],
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 
@@ -1021,7 +993,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                         providers: [this.customProvider1],
                     },
                 }),
-                Session.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
         });
 

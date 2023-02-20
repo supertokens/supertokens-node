@@ -1,6 +1,6 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
-import * as Twilio from "twilio";
+import { ClientOpts } from "twilio/lib/base/BaseTwilio";
 /**
  * only one of "from" and "messagingServiceSid" should be passed.
  * if both are passed, we should throw error to the user
@@ -14,13 +14,13 @@ export declare type TwilioServiceConfig =
           accountSid: string;
           authToken: string;
           from: string;
-          opts?: Twilio.Twilio.TwilioClientOptions;
+          opts?: ClientOpts;
       }
     | {
           accountSid: string;
           authToken: string;
           messagingServiceSid: string;
-          opts?: Twilio.Twilio.TwilioClientOptions;
+          opts?: ClientOpts;
       };
 export interface GetContentResult {
     body: string;

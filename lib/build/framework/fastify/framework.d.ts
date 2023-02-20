@@ -1,5 +1,4 @@
 // @ts-nocheck
-/// <reference types="node" />
 import type { FastifyRequest as OriginalFastifyRequest, FastifyReply, FastifyPluginCallback } from "fastify";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
@@ -23,6 +22,7 @@ export declare class FastifyResponse extends BaseResponse {
     constructor(response: FastifyReply);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
+    removeHeader: (key: string) => void;
     setCookie: (
         key: string,
         value: string,
@@ -49,19 +49,5 @@ export interface FasitfyFramework extends Framework {
     plugin: FastifyPluginCallback;
     errorHandler: () => (err: any, req: OriginalFastifyRequest, res: FastifyReply) => Promise<void>;
 }
-export declare const errorHandler: () => (
-    err: any,
-    req: OriginalFastifyRequest<
-        import("fastify/types/route").RouteGenericInterface,
-        import("http").Server,
-        import("http").IncomingMessage
-    >,
-    res: FastifyReply<
-        import("http").Server,
-        import("http").IncomingMessage,
-        import("http").ServerResponse,
-        import("fastify/types/route").RouteGenericInterface,
-        unknown
-    >
-) => Promise<void>;
+export declare const errorHandler: () => (err: any, req: OriginalFastifyRequest, res: FastifyReply) => Promise<void>;
 export declare const FastifyWrapper: FasitfyFramework;
