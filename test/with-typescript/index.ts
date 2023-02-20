@@ -1359,7 +1359,6 @@ Supertokens.init({
                         dashboardGET: async () => {
                             return "";
                         },
-                        signInPOST: async () => ({ status: "OK", token: "" }),
                     };
                 },
             },
