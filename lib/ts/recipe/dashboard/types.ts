@@ -30,6 +30,7 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     apiKey: string;
+    authMode: AuthMode;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

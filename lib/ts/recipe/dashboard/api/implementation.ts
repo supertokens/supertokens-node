@@ -33,7 +33,7 @@ export default function getAPIImplementation(): APIInterface {
             let connectionURI: string = "";
             const superTokensInstance = SuperTokens.getInstanceOrThrowError();
 
-            const authMode: AuthMode = input.options.config.apiKey ? "api-key" : "email-password";
+            const authMode: AuthMode = input.options.config.authMode
 
             if (superTokensInstance.supertokens !== undefined) {
                 connectionURI = superTokensInstance.supertokens.connectionURI;
