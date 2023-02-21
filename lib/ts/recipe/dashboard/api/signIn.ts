@@ -18,7 +18,6 @@ import { send200Response } from "../../../utils";
 import STError from "../../../error";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
-import { sendUnauthorisedAccess } from "../utils";
 
 type SignInResponse =
     | { status: "OK"; sessionId: string }
@@ -51,14 +50,7 @@ export default async function signIn(_: APIInterface, options: APIOptions): Prom
         }
     );
 
-    if (signInResponse.status === "OK") {
-        send200Response(options.res, {
-            status: "OK",
-            sessionId: signInResponse.sessionId,
-        });
-    } else {
-        sendUnauthorisedAccess(options.res);
-    }
+    send200Response(options.res, signInResponse);
 
     return true;
 }
