@@ -14,6 +14,7 @@ export declare type TypeInput = {
 };
 export declare type TypeNormalisedInput = {
     apiKey: string;
+    authMode: AuthMode;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

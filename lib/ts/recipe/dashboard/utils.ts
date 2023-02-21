@@ -61,7 +61,7 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
     return {
         apiKey: config.apiKey,
         override,
-        authMode: config.apiKey ? "api-key" : "email-password"
+        authMode: config.apiKey ? "api-key" : "email-password",
     };
 }
 
