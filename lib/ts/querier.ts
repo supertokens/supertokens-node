@@ -141,7 +141,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendDeleteRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
+    sendDeleteRequest = async (path: NormalisedURLPath, body: any, params?: any): Promise<any> => {
         return this.sendRequestHelper(
             path,
             "DELETE",
@@ -166,6 +166,7 @@ export class Querier {
                     url,
                     data: body,
                     headers,
+                    params,
                 });
             },
             this.__hosts?.length || 0

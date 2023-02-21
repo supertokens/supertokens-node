@@ -23,6 +23,7 @@ import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./u
 import {
     DASHBOARD_API,
     SIGN_IN_API,
+    SIGN_OUT_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -53,6 +54,7 @@ import { userPut } from "./api/userdetails/userPut";
 import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyTokenPost";
 import { userSessionsPost } from "./api/userdetails/userSessionsPost";
 import signIn from "./api/signIn";
+import signOut from "./api/signOut";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -151,6 +153,10 @@ export default class Recipe extends RecipeModule {
 
         if (id === VALIDATE_KEY_API) {
             return await validateKey(this.apiImpl, options);
+        }
+
+        if (id === SIGN_OUT_API) {
+            return await signOut(this.apiImpl, options);
         }
 
         // Do API key validation for the remaining APIs
