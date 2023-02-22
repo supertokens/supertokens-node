@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.1.0] - 2023-02-22
+
+-   Adds APIs and logic to the dashboard recipe to enable email password based login
+
 ## [13.0.2] - 2023-02-10
 
 -   Package version update for twilio to ^4.7.2 and verify-apple-id-token to ^3.0.1
