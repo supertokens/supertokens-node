@@ -140,6 +140,7 @@ export default class SuperTokens {
             throw new Error("calling testing function in non testing env");
         }
         Querier.reset();
+        DashboardRecipe.reset();
         SuperTokens.instance = undefined;
     }
 
