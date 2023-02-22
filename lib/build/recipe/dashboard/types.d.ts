@@ -40,24 +40,17 @@ export declare type APIInterface = {
 };
 export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
-declare type CommonUserInformation = {
+export declare type RecipeLevelUser = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
     id: string;
     timeJoined: number;
-    firstName: string;
-    lastName: string;
-};
-export declare type EmailPasswordUser = CommonUserInformation & {
-    email: string;
-};
-export declare type ThirdPartyUser = CommonUserInformation & {
-    email: string;
-    thirdParty: {
+    recipeUserId: string;
+    email?: string;
+    phoneNumber?: string;
+    thirdParty?: {
         id: string;
         userId: string;
     };
+    firstName: string;
+    lastName: string;
 };
-export declare type PasswordlessUser = CommonUserInformation & {
-    email?: string;
-    phone?: string;
-};
-export {};

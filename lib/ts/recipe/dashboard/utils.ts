@@ -31,13 +31,11 @@ import {
 } from "./constants";
 import {
     APIInterface,
-    EmailPasswordUser,
-    PasswordlessUser,
     RecipeIdForUser,
     RecipeInterface,
-    ThirdPartyUser,
     TypeInput,
     TypeNormalisedInput,
+    RecipeLevelUser,
 } from "./types";
 import Supertokens from "../..";
 import EmailPasswordRecipe from "../emailpassword/recipe";
@@ -146,7 +144,7 @@ export async function getUserForRecipeId(
     userId: string,
     recipeId: string
 ): Promise<{
-    user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined;
+    user: RecipeLevelUser | undefined;
     recipe:
         | "emailpassword"
         | "thirdparty"
@@ -156,7 +154,7 @@ export async function getUserForRecipeId(
         | undefined;
 }> {
     let userResponse = await Supertokens.getUserForRecipeId(userId, recipeId);
-    let user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined = undefined;
+    let user: RecipeLevelUser | undefined = undefined;
     if (userResponse.user !== undefined) {
         user = {
             ...userResponse.user,

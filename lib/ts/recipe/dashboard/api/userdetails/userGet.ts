@@ -1,11 +1,4 @@
-import {
-    APIFunction,
-    APIInterface,
-    APIOptions,
-    EmailPasswordUser,
-    PasswordlessUser,
-    ThirdPartyUser,
-} from "../../types";
+import { APIFunction, APIInterface, APIOptions, RecipeLevelUser } from "../../types";
 import STError from "../../../../error";
 import { getUserForRecipeId, isRecipeInitialised, isValidRecipeId } from "../../utils";
 import UserMetaDataRecipe from "../../../usermetadata/recipe";
@@ -20,18 +13,8 @@ type Response =
       }
     | {
           status: "OK";
-          recipeId: "emailpassword";
-          user: EmailPasswordUser;
-      }
-    | {
-          status: "OK";
-          recipeId: "thirdparty";
-          user: ThirdPartyUser;
-      }
-    | {
-          status: "OK";
-          recipeId: "passwordless";
-          user: PasswordlessUser;
+          recipeId: "emailpassword" | "thirdparty" | "passwordless";
+          user: RecipeLevelUser;
       };
 
 export const userGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
@@ -65,9 +48,7 @@ export const userGet: APIFunction = async (_: APIInterface, options: APIOptions)
         };
     }
 
-    let user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined = (
-        await getUserForRecipeId(userId, recipeId)
-    ).user;
+    let user: RecipeLevelUser | undefined = (await getUserForRecipeId(userId, recipeId)).user;
 
     if (user === undefined) {
         return {
