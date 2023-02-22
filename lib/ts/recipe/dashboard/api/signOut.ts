@@ -13,20 +13,23 @@
  * under the License.
  */
 
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
-import { sendUnauthorisedAccess, validateApiKey } from "../utils";
+import { send200Response } from "../../../utils";
+import { Querier } from "../../../querier";
+import NormalisedURLPath from "../../../normalisedURLPath";
 
-export default async function validateKey(_: APIInterface, options: APIOptions): Promise<boolean> {
-    const input = { req: options.req, config: options.config, userContext: makeDefaultUserContextFromAPI(options.req) };
-
-    if (await validateApiKey(input)) {
-        options.res.sendJSONResponse({
-            status: "OK",
-        });
+export default async function signOut(_: APIInterface, options: APIOptions): Promise<boolean> {
+    if (options.config.apiKey) {
+        send200Response(options.res, { status: "OK" });
     } else {
-        sendUnauthorisedAccess(options.res);
+        const sessionIdFormAuthHeader = options.req.getHeaderValue("authorization")?.split(" ")[1];
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        const sessionDeleteResponse = await querier.sendDeleteRequest(
+            new NormalisedURLPath("/recipe/dashboard/session"),
+            {},
+            { sessionId: sessionIdFormAuthHeader }
+        );
+        send200Response(options.res, sessionDeleteResponse);
     }
-
     return true;
 }

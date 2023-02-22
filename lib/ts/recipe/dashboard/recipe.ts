@@ -22,6 +22,8 @@ import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import {
     DASHBOARD_API,
+    SIGN_IN_API,
+    SIGN_OUT_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -51,6 +53,8 @@ import { userPasswordPut } from "./api/userdetails/userPasswordPut";
 import { userPut } from "./api/userdetails/userPut";
 import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyTokenPost";
 import { userSessionsPost } from "./api/userdetails/userSessionsPost";
+import signIn from "./api/signIn";
+import signOut from "./api/signOut";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -64,7 +68,7 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
 
         this.config = validateAndNormaliseUserInput(config);
@@ -87,7 +91,7 @@ export default class Recipe extends RecipeModule {
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
@@ -143,6 +147,10 @@ export default class Recipe extends RecipeModule {
             return await dashboard(this.apiImpl, options);
         }
 
+        if (id === SIGN_IN_API) {
+            return await signIn(this.apiImpl, options);
+        }
+
         if (id === VALIDATE_KEY_API) {
             return await validateKey(this.apiImpl, options);
         }
@@ -194,6 +202,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = userPasswordPut;
         } else if (id === USER_EMAIL_VERIFY_TOKEN_API) {
             apiFunction = userEmailVerifyTokenPost;
+        } else if (id === SIGN_OUT_API) {
+            apiFunction = signOut;
         }
 
         // If the id doesnt match any APIs return false
