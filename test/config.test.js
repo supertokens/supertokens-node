@@ -219,7 +219,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             SessionRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 1);
+            // The number of recipes should be 2 because we initialise the dashboard recipe by default
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
             resetAll();
         }
 
@@ -237,7 +238,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             SessionRecipe.getInstanceOrThrowError();
             EmailPasswordRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
+            // The number of recipes should be 3 because we initialise the dashboard recipe by default
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 3);
             resetAll();
         }
     });
