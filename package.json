@@ -70,6 +70,7 @@
         "express": "^4.18.2",
         "fastify": "3.18.1",
         "glob": "7.1.7",
+        "h3": "^1.0.2",
         "koa": "^2.13.3",
         "lambda-tester": "^4.0.1",
         "loopback-datasource-juggler": "^4.26.0",
