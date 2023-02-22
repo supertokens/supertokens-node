@@ -97,9 +97,7 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new Error(
-                    "Emailverification recipe has already been initialised. Please check your code for bugs."
-                );
+                throw new Error("Dashboard recipe has already been initialised. Please check your code for bugs.");
             }
         };
     }

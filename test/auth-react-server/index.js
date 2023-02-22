@@ -36,6 +36,7 @@ let { default: SuperTokensRaw } = require("../../lib/build/supertokens");
 const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassword/recipe");
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
+const { default: DashboardRaw } = require("../../lib/build/recipe/dashboard/recipe");
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
@@ -285,6 +286,7 @@ function initST({ passwordlessConfig } = {}) {
     ThirdPartyRaw.reset();
     ThirdPartyEmailPasswordRaw.reset();
     SessionRaw.reset();
+    DashboardRaw.reset();
 
     SuperTokensRaw.reset();
 
