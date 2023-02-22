@@ -52,17 +52,17 @@ import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
 import ThirdPartyPasswordless from "../thirdpartypasswordless";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 
-export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
+export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
+        ...(config === undefined ? {} : config.override),
     };
 
     return {
-        apiKey: config.apiKey,
+        apiKey: config === undefined ? undefined : config.apiKey,
         override,
-        authMode: config.apiKey ? "api-key" : "email-password",
+        authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
     };
 }
 
