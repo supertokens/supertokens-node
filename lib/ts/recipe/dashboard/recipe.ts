@@ -155,10 +155,6 @@ export default class Recipe extends RecipeModule {
             return await validateKey(this.apiImpl, options);
         }
 
-        if (id === SIGN_OUT_API) {
-            return await signOut(this.apiImpl, options);
-        }
-
         // Do API key validation for the remaining APIs
         let apiFunction: APIFunction | undefined;
 
@@ -206,6 +202,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = userPasswordPut;
         } else if (id === USER_EMAIL_VERIFY_TOKEN_API) {
             apiFunction = userEmailVerifyTokenPost;
+        } else if (id === SIGN_OUT_API) {
+            apiFunction = signOut;
         }
 
         // If the id doesnt match any APIs return false

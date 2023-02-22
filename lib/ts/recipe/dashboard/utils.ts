@@ -94,7 +94,7 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
         return SIGN_IN_API;
     }
 
-    if (path.getAsStringDangerous().endsWith(SIGN_OUT_API) && method === "delete") {
+    if (path.getAsStringDangerous().endsWith(SIGN_OUT_API) && method === "post") {
         return SIGN_OUT_API;
     }
 
