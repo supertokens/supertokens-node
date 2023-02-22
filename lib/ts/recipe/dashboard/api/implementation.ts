@@ -17,7 +17,7 @@ import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import SuperTokens from "../../../supertokens";
 import { DASHBOARD_API } from "../constants";
-import { APIInterface } from "../types";
+import { APIInterface, AuthMode } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -33,6 +33,8 @@ export default function getAPIImplementation(): APIInterface {
             let connectionURI: string = "";
             const superTokensInstance = SuperTokens.getInstanceOrThrowError();
 
+            const authMode: AuthMode = input.options.config.authMode;
+
             if (superTokensInstance.supertokens !== undefined) {
                 connectionURI = superTokensInstance.supertokens.connectionURI;
             }
@@ -47,6 +49,7 @@ export default function getAPIImplementation(): APIInterface {
                             .appendPath(new NormalisedURLPath(DASHBOARD_API))
                             .getAsStringDangerous()}"
                         window.connectionURI = "${connectionURI}"
+                        window.authMode = "${authMode}"
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">

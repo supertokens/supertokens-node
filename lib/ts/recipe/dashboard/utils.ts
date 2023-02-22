@@ -13,12 +13,14 @@
  * under the License.
  */
 
-import { BaseResponse } from "../../framework";
+import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
+    SIGN_IN_API,
+    SIGN_OUT_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -51,10 +53,6 @@ import ThirdPartyPasswordless from "../thirdpartypasswordless";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
-    if (config.apiKey.trim().length === 0) {
-        throw new Error("apiKey provided to Dashboard recipe cannot be empty");
-    }
-
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -64,6 +62,7 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
     return {
         apiKey: config.apiKey,
         override,
+        authMode: config.apiKey ? "api-key" : "email-password",
     };
 }
 
@@ -89,6 +88,14 @@ export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): 
 export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined {
     if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === "post") {
         return VALIDATE_KEY_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(SIGN_IN_API) && method === "post") {
+        return SIGN_IN_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(SIGN_OUT_API) && method === "post") {
+        return SIGN_OUT_API;
     }
 
     if (path.getAsStringDangerous().endsWith(USERS_LIST_GET_API) && method === "get") {
@@ -340,4 +347,17 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
     }
 
     return isRecipeInitialised;
+}
+
+export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
+    let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
+
+    // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+    apiKeyHeaderValue = apiKeyHeaderValue?.split(" ")[1];
+
+    if (apiKeyHeaderValue === undefined) {
+        return false;
+    }
+
+    return apiKeyHeaderValue === input.config.apiKey;
 }
