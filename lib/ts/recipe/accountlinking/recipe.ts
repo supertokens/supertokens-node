@@ -286,6 +286,9 @@ export default class Recipe extends RecipeModule {
             undefined,
             userContext
         );
+        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+            return recipeUserId;
+        }
         if (shouldDoAccountLinking.shouldAutomaticallyLink && shouldDoAccountLinking.shouldRequireVerification) {
             if (!infoVerified) {
                 return recipeUserId;
