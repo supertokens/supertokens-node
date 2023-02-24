@@ -187,7 +187,7 @@ export type RecipeInterface = {
           }
     >;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    listUsersByAccountInfo: (input: { info: AccountInfo; userContext: any }) => Promise<User[] | undefined>;
+    listUsersByAccountInfo: (input: { info: AccountInfo; userContext: any }) => Promise<User[]>;
     deleteUser: (input: {
         userId: string;
         removeAllLinkedAccounts: boolean;
