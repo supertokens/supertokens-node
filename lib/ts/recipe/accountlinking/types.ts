@@ -229,10 +229,6 @@ export type AccountInfo =
           email: string;
       }
     | {
-          thirdpartyId: string;
-          thirdpartyUserId: string;
-      }
-    | {
           phoneNumber: string;
       };
 
@@ -245,6 +241,7 @@ export type AccountInfoWithRecipeId =
           recipeId: "thirdparty";
           thirdpartyId: string;
           thirdpartyUserId: string;
+          email: string;
       }
     | {
           recipeId: "passwordless";

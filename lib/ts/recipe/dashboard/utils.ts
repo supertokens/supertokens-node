@@ -37,7 +37,7 @@ import {
     TypeNormalisedInput,
     RecipeLevelUser,
 } from "./types";
-import Supertokens from "../..";
+import Supertokens from "../../supertokens";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import PasswordlessRecipe from "../passwordless/recipe";
@@ -153,7 +153,7 @@ export async function getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 }> {
-    let userResponse = await Supertokens.getUserForRecipeId(userId, recipeId);
+    let userResponse = await Supertokens.getInstanceOrThrowError()._getUserForRecipeId(userId, recipeId);
     let user: RecipeLevelUser | undefined = undefined;
     if (userResponse.user !== undefined) {
         user = {

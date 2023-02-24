@@ -19,15 +19,10 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import { SessionContainer } from "../session";
-import type {
-    TypeNormalisedInput,
-    RecipeInterface,
-    TypeInput,
-    AccountInfoAndEmailWithRecipeId,
-    AccountInfoWithRecipeId,
-} from "./types";
+import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoAndEmailWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import { getUser, getUserForRecipeId } from "../..";
+import { getUser } from "../..";
+import SuperTokens from "../../supertokens";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
@@ -131,7 +126,7 @@ export default class Recipe extends RecipeModule {
             verified: {
                 emails: string[];
                 phoneNumbers: string[];
-                thirdpartyInfo: {
+                thirdParty: {
                     id: string;
                     userId: string;
                 }[];
@@ -139,7 +134,7 @@ export default class Recipe extends RecipeModule {
             unverified: {
                 emails: string[];
                 phoneNumbers: string[];
-                thirdpartyInfo: {
+                thirdParty: {
                     id: string;
                     userId: string;
                 }[];
@@ -148,12 +143,12 @@ export default class Recipe extends RecipeModule {
             verified: {
                 emails: [],
                 phoneNumbers: [],
-                thirdpartyInfo: [],
+                thirdParty: [],
             },
             unverified: {
                 emails: [],
                 phoneNumbers: [],
-                thirdpartyInfo: [],
+                thirdParty: [],
             },
         };
         for (let i = 0; i < user.loginMethods.length; i++) {
@@ -174,12 +169,16 @@ export default class Recipe extends RecipeModule {
             }
             if (loginMethod.thirdParty !== undefined) {
                 if (loginMethod.verified) {
-                    identities.verified.thirdpartyInfo.push(loginMethod.thirdParty);
+                    identities.verified.thirdParty.push(loginMethod.thirdParty);
                 } else {
-                    identities.unverified.thirdpartyInfo.push(loginMethod.thirdParty);
+                    identities.unverified.thirdParty.push(loginMethod.thirdParty);
                 }
             }
         }
+        identities.verified.emails = Array.from(new Set(identities.verified.emails));
+        identities.unverified.emails = Array.from(new Set(identities.unverified.emails));
+        identities.verified.phoneNumbers = Array.from(new Set(identities.verified.phoneNumbers));
+        identities.unverified.phoneNumbers = Array.from(new Set(identities.unverified.phoneNumbers));
         return identities;
     };
 
@@ -215,6 +214,10 @@ export default class Recipe extends RecipeModule {
         if (users.length === 0) {
             return true;
         }
+        /**
+         * For a given email/phoneNumber, there can only exists
+         * one primary user at max
+         */
         let primaryUser = users.find((u) => u.isPrimaryUser);
         if (primaryUser === undefined) {
             return true;
@@ -225,10 +228,10 @@ export default class Recipe extends RecipeModule {
             undefined,
             userContext
         );
-        let shouldRequireVerification = shouldDoAccountLinking.shouldAutomaticallyLink
-            ? shouldDoAccountLinking.shouldRequireVerification
-            : false;
-        if (!shouldRequireVerification) {
+        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+            return true;
+        }
+        if (!shouldDoAccountLinking.shouldRequireVerification) {
             return true;
         }
 
@@ -280,34 +283,6 @@ export default class Recipe extends RecipeModule {
         recipeUserId: string;
         userContext: any;
     }): Promise<string> => {
-        let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
-            info,
-            undefined,
-            undefined,
-            userContext
-        );
-        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-            return recipeUserId;
-        }
-        if (shouldDoAccountLinking.shouldRequireVerification) {
-            if (!infoVerified) {
-                return recipeUserId;
-            }
-        }
-        let canCreatePrimaryUserId = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
-            recipeUserId,
-            userContext,
-        });
-        if (canCreatePrimaryUserId) {
-            let user = await this.recipeInterfaceImpl.createPrimaryUser({
-                recipeUserId,
-                userContext,
-            });
-            if (user.status !== "OK") {
-                throw Error("should never come here. Error from createPrimaryUser: " + user.status);
-            }
-            return user.user.id;
-        }
         let identifier:
             | {
                   email: string;
@@ -334,19 +309,60 @@ export default class Recipe extends RecipeModule {
             throw Error("this error should never be thrown");
         }
         let primaryUser = users.find((u) => u.isPrimaryUser);
+        let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+            info,
+            primaryUser,
+            undefined,
+            userContext
+        );
+        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+            return recipeUserId;
+        }
+        if (shouldDoAccountLinking.shouldRequireVerification) {
+            if (!infoVerified) {
+                return recipeUserId;
+            }
+        }
+        let canCreatePrimaryUserId = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
+            recipeUserId,
+            userContext,
+        });
+        if (canCreatePrimaryUserId.status === "OK") {
+            let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
+                recipeUserId,
+                userContext,
+            });
+            if (createPrimaryUserResult.status !== "OK") {
+                throw Error("should never come here. Error from createPrimaryUser: " + createPrimaryUserResult.status);
+            }
+            return createPrimaryUserResult.user.id;
+        }
+        /**
+         * if it reaches this point, it means there should exists a
+         * primary user to which the recipe userId can be linked to
+         */
         if (primaryUser === undefined) {
             throw Error("this error should never be thrown");
         }
-        
+
         let result = await this.recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId: primaryUser.id,
             userContext,
         });
-        if (result.status !== "OK") {
-            throw Error("this error status shouldn't not be thrown. Error" + result.status);
+        if (result.status === "OK") {
+            return primaryUser.id;
         }
-        return primaryUser.id;
+        if (result.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            return result.primaryUserId;
+        }
+        if (result.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            return result.primaryUserId;
+        }
+        if (result.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
+            return primaryUser.id;
+        }
+        throw Error("this error status shouldn't not be thrown");
     };
 
     accountLinkPostSignInViaSession = async ({
@@ -415,7 +431,7 @@ export default class Recipe extends RecipeModule {
             }
 
             let recipeId = user.loginMethods[0].recipeId;
-            let recipeUser = await getUserForRecipeId(user.id, recipeId);
+            let recipeUser = await SuperTokens.getInstanceOrThrowError()._getUserForRecipeId(user.id, recipeId);
 
             if (recipeUser.user === undefined) {
                 throw Error("This error should never be thrown. Check for bug in `getUserForRecipeId` function");
@@ -498,35 +514,48 @@ export default class Recipe extends RecipeModule {
          * checking if a recipe user already exists for the given
          * login info
          */
-        let recipeInfo: AccountInfoWithRecipeId;
-        if (info.recipeId === "emailpassword" && info.email !== undefined) {
-            recipeInfo = {
-                recipeId: "emailpassword",
+        let identifier:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              };
+        if (info.email !== undefined) {
+            identifier = {
                 email: info.email,
             };
-        } else if (info.recipeId === "thirdparty" && info.thirdParty !== undefined) {
-            recipeInfo = {
-                recipeId: "thirdparty",
-                thirdpartyId: info.thirdParty.id,
-                thirdpartyUserId: info.thirdParty.userId,
-            };
-        } else if (info.recipeId === "passwordless" && info.email !== undefined) {
-            recipeInfo = {
-                recipeId: "passwordless",
-                email: info.email,
-            };
-        } else if (info.recipeId === "passwordless" && info.phoneNumber !== undefined) {
-            recipeInfo = {
-                recipeId: "passwordless",
+        }
+        if (info.phoneNumber !== undefined) {
+            identifier = {
                 phoneNumber: info.phoneNumber,
             };
         } else {
             throw Error("this error should never be thrown");
         }
-        let recipeUser = await this.recipeInterfaceImpl.getUserByAccountInfo({
-            info: recipeInfo,
+        let existingRecipeUsersForInputInfo = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            info: identifier,
             userContext,
         });
+        let recipeUser = existingRecipeUsersForInputInfo.find((u) =>
+            u.loginMethods.find((lU) => {
+                if (lU.recipeId === info.recipeId) {
+                    return false;
+                }
+                if (info.recipeId === "thirdparty") {
+                    if (info.thirdParty !== undefined) {
+                        if (lU.thirdParty === undefined) {
+                            return false;
+                        }
+                        return (
+                            lU.thirdParty.id === info.thirdParty.id && lU.thirdParty.userId === info.thirdParty.userId
+                        );
+                    }
+                    return false;
+                }
+                return lU.email === info.email || info.phoneNumber === info.phoneNumber;
+            })
+        );
         if (recipeUser === undefined) {
             /**
              * if recipe user doesn't exists, we check if
@@ -561,18 +590,13 @@ export default class Recipe extends RecipeModule {
                     };
                 }
             }
-
             /**
              * checking if there already exists any other primary
              * user which is associated with the identifying info
              * for the given input
              */
-            let existingRecipeUserForInputInfo = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-                info: recipeInfo,
-                userContext,
-            });
-            if (existingRecipeUserForInputInfo !== undefined) {
-                let primaryUserIfExists = existingRecipeUserForInputInfo.find((u) => u.isPrimaryUser);
+            if (existingRecipeUsersForInputInfo !== undefined) {
+                let primaryUserIfExists = existingRecipeUsersForInputInfo.find((u) => u.isPrimaryUser);
                 if (primaryUserIfExists !== undefined) {
                     return {
                         createRecipeUser: false,

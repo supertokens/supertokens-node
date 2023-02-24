@@ -31,7 +31,7 @@ export default class Recipe extends RecipeModule {
         verified: {
             emails: string[];
             phoneNumbers: string[];
-            thirdpartyInfo: {
+            thirdParty: {
                 id: string;
                 userId: string;
             }[];
@@ -39,7 +39,7 @@ export default class Recipe extends RecipeModule {
         unverified: {
             emails: string[];
             phoneNumbers: string[];
-            thirdpartyInfo: {
+            thirdParty: {
                 id: string;
                 userId: string;
             }[];

@@ -13,12 +13,12 @@
  * under the License.
  */
 
-import { AccountInfo, AccountInfoWithRecipeId, RecipeInterface, TypeNormalisedInput } from "./types";
+import { AccountInfo, RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
-import { getUserForRecipeId } from "../..";
+import SuperTokens from "../../supertokens";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -186,12 +186,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 if (loginMethod.phoneNumber !== undefined) {
                     infos.push({
                         phoneNumber: loginMethod.phoneNumber,
-                    });
-                }
-                if (loginMethod.thirdParty !== undefined) {
-                    infos.push({
-                        thirdpartyId: loginMethod.thirdParty.id,
-                        thirdpartyUserId: loginMethod.thirdParty.userId,
                     });
                 }
                 for (let j = 0; j < infos.length; j++) {
@@ -461,7 +455,10 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 if (loginMethodInfo === undefined) {
                     throw Error("this error should never be thrown");
                 }
-                let recipeUser = await getUserForRecipeId(loginMethodInfo.recipeUserId, loginMethodInfo.recipeId);
+                let recipeUser = await SuperTokens.getInstanceOrThrowError()._getUserForRecipeId(
+                    loginMethodInfo.recipeUserId,
+                    loginMethodInfo.recipeId
+                );
                 if (recipeUser.user === undefined) {
                     throw Error("this error should never be thrown");
                 }
@@ -550,26 +547,11 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
             { info }: { info: AccountInfo }
-        ): Promise<User[] | undefined> {
+        ): Promise<User[]> {
             let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
                 ...info,
             });
-            if (result.status === "OK") {
-                return result.users;
-            }
-            return undefined;
-        },
-        getUserByAccountInfo: async function (
-            this: RecipeInterface,
-            { info }: { info: AccountInfoWithRecipeId }
-        ): Promise<User | undefined> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
-                ...info,
-            });
-            if (result.status === "OK") {
-                return result.users[0];
-            }
-            return undefined;
+            return result.users;
         },
         deleteUser: async function (
             this: RecipeInterface,

@@ -73,7 +73,7 @@ export default class SuperTokens {
     }>;
     middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
-    getUserForRecipeId: (
+    _getUserForRecipeId: (
         userId: string,
         recipeId: string
     ) => Promise<{

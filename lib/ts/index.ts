@@ -17,7 +17,7 @@ import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { User } from "./types";
 import AccountLinking from "./recipe/accountlinking/recipe";
-import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
+import { AccountInfo } from "./recipe/accountlinking/types";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -71,7 +71,6 @@ export default class SuperTokensWrapper {
     }) {
         return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
     }
-
 
     static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
         return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
@@ -137,7 +136,5 @@ export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUs
 export let getUser = SuperTokensWrapper.getUser;
 
 export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
-
-
 
 export let Error = SuperTokensWrapper.Error;

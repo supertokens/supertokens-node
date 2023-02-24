@@ -2,7 +2,7 @@
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { User } from "./types";
-import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
+import { AccountInfo } from "./recipe/accountlinking/types";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
@@ -39,19 +39,6 @@ export default class SuperTokensWrapper {
               doesExternalUserIdExist: boolean;
           }
     >;
-    static getUserForRecipeId(
-        userId: string,
-        recipeId: string
-    ): Promise<{
-        user: import("./recipe/accountlinking/types").RecipeLevelUser | undefined;
-        recipe:
-            | "emailpassword"
-            | "thirdparty"
-            | "passwordless"
-            | "thirdpartyemailpassword"
-            | "thirdpartypasswordless"
-            | undefined;
-    }>;
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
@@ -82,8 +69,7 @@ export default class SuperTokensWrapper {
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
     static getUser(userId: string, userContext?: any): Promise<User | undefined>;
-    static listUsersByAccountInfo(info: AccountInfo, userContext?: any): Promise<User[] | undefined>;
-    static getUserByAccountInfo(info: AccountInfoWithRecipeId, userContext?: any): Promise<User | undefined>;
+    static listUsersByAccountInfo(info: AccountInfo, userContext?: any): Promise<User[]>;
     static deleteUser(
         userId: string,
         removeAllLinkedAccounts?: boolean,
@@ -104,6 +90,4 @@ export declare let deleteUserIdMapping: typeof SuperTokensWrapper.deleteUserIdMa
 export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
 export declare let getUser: typeof SuperTokensWrapper.getUser;
 export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
-export declare let getUserByAccountInfo: typeof SuperTokensWrapper.getUserByAccountInfo;
-export declare let getUserForRecipeId: typeof SuperTokensWrapper.getUserForRecipeId;
 export declare let Error: typeof SuperTokensError;
