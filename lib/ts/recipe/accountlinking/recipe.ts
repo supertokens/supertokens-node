@@ -337,15 +337,7 @@ export default class Recipe extends RecipeModule {
         if (primaryUser === undefined) {
             throw Error("this error should never be thrown");
         }
-        shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
-            info,
-            primaryUser,
-            undefined,
-            userContext
-        );
-        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-            return recipeUserId;
-        }
+        
         let result = await this.recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId: primaryUser.id,
