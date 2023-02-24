@@ -146,6 +146,5 @@ export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
 
 export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
 
-export let getUserForRecipeId = SuperTokensWrapper.getUserForRecipeId;
 
 export let Error = SuperTokensWrapper.Error;
