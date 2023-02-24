@@ -212,7 +212,7 @@ export default class Recipe extends RecipeModule {
             info: identifier,
             userContext,
         });
-        if (users === undefined || users.length === 0) {
+        if (users.length === 0) {
             return true;
         }
         let primaryUser = users.find((u) => u.isPrimaryUser);
