@@ -105,12 +105,6 @@ export default class SuperTokensWrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async getUserByAccountInfo(info: AccountInfoWithRecipeId, userContext?: any) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUserByAccountInfo({
-            info,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
     static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = true, userContext?: any) {
         return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
             userId,
