@@ -72,9 +72,6 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
     }
 
-    static getUserForRecipeId(userId: string, recipeId: string) {
-        return SuperTokens.getInstanceOrThrowError().getUserForRecipeId(userId, recipeId);
-    }
 
     static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
         return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
