@@ -19,7 +19,7 @@ import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 
 export default async function signOut(_: APIInterface, options: APIOptions): Promise<boolean> {
-    if (options.config.apiKey) {
+    if (options.config.authMode === "api-key") {
         send200Response(options.res, { status: "OK" });
     } else {
         const sessionIdFormAuthHeader = options.req.getHeaderValue("authorization")?.split(" ")[1];

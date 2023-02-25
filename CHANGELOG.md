@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.1.1] - 2023-02-24
+
+-   Refactor dashboard recipe to use auth mode instead of manually checking for api key
+
 ## [13.1.0] - 2023-02-22
 
 -   Adds APIs and logic to the dashboard recipe to enable email password based login
