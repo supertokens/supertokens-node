@@ -170,7 +170,7 @@ export declare type RecipeInterface = {
           }
     >;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    listUsersByAccountInfo: (input: { info: AccountInfo; userContext: any }) => Promise<User[]>;
+    listUsersByAccountInfo: (input: { accountInfo: AccountInfo; userContext: any }) => Promise<User[]>;
     deleteUser: (input: {
         userId: string;
         removeAllLinkedAccounts: boolean;
@@ -214,19 +214,8 @@ export declare type AccountInfo =
       }
     | {
           phoneNumber: string;
-      };
-export declare type AccountInfoWithRecipeId =
-    | {
-          recipeId: "emailpassword" | "passwordless";
-          email: string;
       }
     | {
-          recipeId: "thirdparty";
-          thirdpartyId: string;
-          thirdpartyUserId: string;
-          email: string;
-      }
-    | {
-          recipeId: "passwordless";
-          phoneNumber: string;
+          thirdPartyId: string;
+          thirdPartyUserId: string;
       };

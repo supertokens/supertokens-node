@@ -98,9 +98,9 @@ export default class SuperTokensWrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async listUsersByAccountInfo(info: AccountInfo, userContext?: any) {
+    static async listUsersByAccountInfo(accountInfo: AccountInfo, userContext?: any) {
         return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-            info,
+            accountInfo,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

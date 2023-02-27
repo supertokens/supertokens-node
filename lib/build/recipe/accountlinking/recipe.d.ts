@@ -25,7 +25,7 @@ export default class Recipe extends RecipeModule {
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    getIdentitiesForUser: (
+    transformUserInfoIntoVerifiedAndUnverifiedBucket: (
         user: User
     ) => {
         verified: {
@@ -46,10 +46,10 @@ export default class Recipe extends RecipeModule {
         };
     };
     isSignUpAllowed: ({
-        info,
+        newUser,
         userContext,
     }: {
-        info: AccountInfoAndEmailWithRecipeId;
+        newUser: AccountInfoAndEmailWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
     markEmailAsVerified: ({
@@ -62,13 +62,13 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }) => Promise<void>;
     doPostSignUpAccountLinkingOperations: ({
-        info,
-        infoVerified,
+        newUser,
+        newUserVerified,
         recipeUserId,
         userContext,
     }: {
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
+        newUser: AccountInfoAndEmailWithRecipeId;
+        newUserVerified: boolean;
         recipeUserId: string;
         userContext: any;
     }) => Promise<string>;

@@ -19,7 +19,13 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import { SessionContainer } from "../session";
-import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoAndEmailWithRecipeId } from "./types";
+import type {
+    TypeNormalisedInput,
+    RecipeInterface,
+    TypeInput,
+    AccountInfoAndEmailWithRecipeId,
+    AccountInfo,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import { getUser } from "../..";
 import SuperTokens from "../../supertokens";
@@ -102,26 +108,7 @@ export default class Recipe extends RecipeModule {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     }
 
-    getIdentitiesForUser = (
-        user: User
-    ): {
-        verified: {
-            emails: string[];
-            phoneNumbers: string[];
-            thirdParty: {
-                id: string;
-                userId: string;
-            }[];
-        };
-        unverified: {
-            emails: string[];
-            phoneNumbers: string[];
-            thirdParty: {
-                id: string;
-                userId: string;
-            }[];
-        };
-    } => {
+    transformUserInfoIntoVerifiedAndUnverifiedBucket = (user: User) => {
         let identities: {
             verified: {
                 emails: string[];
@@ -175,40 +162,45 @@ export default class Recipe extends RecipeModule {
                 }
             }
         }
+
+        // we remove duplicate emails / phone numbers from the above arrays.
         identities.verified.emails = Array.from(new Set(identities.verified.emails));
         identities.unverified.emails = Array.from(new Set(identities.unverified.emails));
         identities.verified.phoneNumbers = Array.from(new Set(identities.verified.phoneNumbers));
         identities.unverified.phoneNumbers = Array.from(new Set(identities.unverified.phoneNumbers));
+        // Note that we do not need to filter out thirdParty info based on uniqueness, cause
+        // one user can only have one unique thirdPart login.
         return identities;
     };
 
     isSignUpAllowed = async ({
-        info,
+        newUser,
         userContext,
     }: {
-        info: AccountInfoAndEmailWithRecipeId;
+        newUser: AccountInfoAndEmailWithRecipeId;
         userContext: any;
     }): Promise<boolean> => {
-        let identifier:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              };
-        if (info.email !== undefined) {
-            identifier = {
-                email: info.email,
+        let accountInfo: AccountInfo;
+        if (newUser.email !== undefined) {
+            accountInfo = {
+                email: newUser.email,
             };
-        } else if (info.phoneNumber !== undefined) {
-            identifier = {
-                phoneNumber: info.phoneNumber,
+        } else if (newUser.phoneNumber !== undefined) {
+            accountInfo = {
+                phoneNumber: newUser.phoneNumber,
+            };
+        } else if (newUser.thirdParty !== undefined) {
+            accountInfo = {
+                thirdPartyId: newUser.thirdParty.id,
+                thirdPartyUserId: newUser.thirdParty.userId,
             };
         } else {
-            throw Error("this error should never be thrown");
+            // It's not possible to come here because all the login methods are covered above.
+            throw new Error("Should never come here");
         }
+
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-            info: identifier,
+            accountInfo,
             userContext,
         });
         if (users.length === 0) {
@@ -223,7 +215,7 @@ export default class Recipe extends RecipeModule {
             return true;
         }
         let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
-            info,
+            newUser,
             primaryUser,
             undefined,
             userContext
@@ -235,15 +227,15 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
-        let identitiesForPrimaryUser = this.getIdentitiesForUser(primaryUser);
+        let identitiesForPrimaryUser = this.transformUserInfoIntoVerifiedAndUnverifiedBucket(primaryUser);
 
-        if (info.email !== undefined) {
-            return identitiesForPrimaryUser.verified.emails.includes(info.email);
+        if (newUser.email !== undefined) {
+            return identitiesForPrimaryUser.verified.emails.includes(newUser.email);
         }
-        if (info.phoneNumber !== undefined) {
-            return identitiesForPrimaryUser.verified.phoneNumbers.includes(info.phoneNumber);
+        if (newUser.phoneNumber !== undefined) {
+            return identitiesForPrimaryUser.verified.phoneNumbers.includes(newUser.phoneNumber);
         }
-        throw Error("it should never reach here");
+        return false;
     };
 
     markEmailAsVerified = async ({
@@ -272,45 +264,45 @@ export default class Recipe extends RecipeModule {
         }
     };
 
+    // this function returns the user ID for which the session will be created.
     doPostSignUpAccountLinkingOperations = async ({
-        info,
-        infoVerified,
+        newUser,
+        newUserVerified,
         recipeUserId,
         userContext,
     }: {
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
+        newUser: AccountInfoAndEmailWithRecipeId;
+        newUserVerified: boolean;
         recipeUserId: string;
         userContext: any;
     }): Promise<string> => {
-        let identifier:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              };
-        if (info.email !== undefined) {
-            identifier = {
-                email: info.email,
+        let accountInfo: AccountInfo;
+        if (newUser.email !== undefined) {
+            accountInfo = {
+                email: newUser.email,
             };
-        } else if (info.phoneNumber !== undefined) {
-            identifier = {
-                phoneNumber: info.phoneNumber,
+        } else if (newUser.phoneNumber !== undefined) {
+            accountInfo = {
+                phoneNumber: newUser.phoneNumber,
+            };
+        } else if (newUser.thirdParty !== undefined) {
+            accountInfo = {
+                thirdPartyId: newUser.thirdParty.id,
+                thirdPartyUserId: newUser.thirdParty.userId,
             };
         } else {
             throw Error("this error should never be thrown");
         }
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-            info: identifier,
+            accountInfo,
             userContext,
         });
-        if (users === undefined || users.length === 0) {
-            throw Error("this error should never be thrown");
+        if (users.length === 0) {
+            return recipeUserId;
         }
         let primaryUser = users.find((u) => u.isPrimaryUser);
         let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
-            info,
+            newUser,
             primaryUser,
             undefined,
             userContext
@@ -318,10 +310,8 @@ export default class Recipe extends RecipeModule {
         if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
             return recipeUserId;
         }
-        if (shouldDoAccountLinking.shouldRequireVerification) {
-            if (!infoVerified) {
-                return recipeUserId;
-            }
+        if (shouldDoAccountLinking.shouldRequireVerification && !newUserVerified) {
+            return recipeUserId;
         }
         let canCreatePrimaryUserId = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
             recipeUserId,
@@ -332,17 +322,22 @@ export default class Recipe extends RecipeModule {
                 recipeUserId,
                 userContext,
             });
-            if (createPrimaryUserResult.status !== "OK") {
-                throw Error("should never come here. Error from createPrimaryUser: " + createPrimaryUserResult.status);
+            if (createPrimaryUserResult.status === "OK") {
+                return createPrimaryUserResult.user.id;
             }
-            return createPrimaryUserResult.user.id;
+            // if it comes here, it means that that there is already a primary user for the
+            // account info, or that this recipeUserId is already linked. Either way, we proceed
+            // to the next step, cause that takes care of both these cases.
         }
-        /**
-         * if it reaches this point, it means there should exists a
-         * primary user to which the recipe userId can be linked to
-         */
+
         if (primaryUser === undefined) {
-            throw Error("this error should never be thrown");
+            // it can come here if there is a race condition. So we just try again
+            return await this.doPostSignUpAccountLinkingOperations({
+                newUser: newUser,
+                newUserVerified: newUserVerified,
+                recipeUserId,
+                userContext,
+            });
         }
 
         let result = await this.recipeInterfaceImpl.linkAccounts({
@@ -352,46 +347,32 @@ export default class Recipe extends RecipeModule {
         });
         if (result.status === "OK") {
             /**
-             * let's Ly belongs to P1 such that Ly equal to Lx.
-             * if LY verified, mark Lx as verified. If Lx is verfied,
-             * then mark all Ly as verified
+             * We now mark the same email of other linked recipes as verified if the new user's email
+             * is verified.
              */
-            let identitiesForPrimaryUser = this.getIdentitiesForUser(primaryUser);
-            let emailIdentityVerifiedForPrimaryUser = false;
-            if (info.email !== undefined) {
-                emailIdentityVerifiedForPrimaryUser = identitiesForPrimaryUser.verified.emails.includes(info.email);
-            }
-            if (info.email !== undefined && (emailIdentityVerifiedForPrimaryUser || infoVerified)) {
+
+            if (newUser.email !== undefined && newUserVerified) {
                 let recipeUserIdsForEmailVerificationUpdate = primaryUser.loginMethods
-                    .filter((u) => u.email === info.email && !u.verified)
-                    .map((l) => l.email);
-                if (!infoVerified) {
-                    recipeUserIdsForEmailVerificationUpdate.push(recipeUserId);
-                }
+                    .filter((u) => u.email === newUser.email && !u.verified)
+                    .map((l) => l.recipeUserId);
                 recipeUserIdsForEmailVerificationUpdate = Array.from(new Set(recipeUserIdsForEmailVerificationUpdate));
+
                 for (let i = 0; i < recipeUserIdsForEmailVerificationUpdate.length; i++) {
-                    let rUserId = recipeUserIdsForEmailVerificationUpdate[i];
-                    if (rUserId !== undefined) {
-                        await this.markEmailAsVerified({
-                            email: info.email,
-                            recipeUserId: rUserId,
-                            userContext,
-                        });
-                    }
+                    await this.markEmailAsVerified({
+                        email: newUser.email,
+                        recipeUserId: recipeUserIdsForEmailVerificationUpdate[i],
+                        userContext,
+                    });
                 }
             }
             return primaryUser.id;
-        }
-        if (result.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+        } else if (result.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             return result.primaryUserId;
-        }
-        if (result.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+        } else if (result.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             return result.primaryUserId;
-        }
-        if (result.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
+        } else {
             return primaryUser.id;
         }
-        throw Error("this error status shouldn't not be thrown");
     };
 
     accountLinkPostSignInViaSession = async ({
@@ -563,7 +544,7 @@ export default class Recipe extends RecipeModule {
             throw Error("this error should never be thrown");
         }
         let existingRecipeUsersForInputInfo = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-            info: identifier,
+            accountInfo: identifier,
             userContext,
         });
         let recipeUser = existingRecipeUsersForInputInfo.find((u) =>
@@ -596,7 +577,7 @@ export default class Recipe extends RecipeModule {
              * so the recipe will call back this function when the
              * recipe user is created
              */
-            let identitiesForPrimaryUser = this.getIdentitiesForUser(user);
+            let identitiesForPrimaryUser = this.transformUserInfoIntoVerifiedAndUnverifiedBucket(user);
             if (info.email !== undefined) {
                 let result =
                     identitiesForPrimaryUser.verified.emails.includes(info.email) ||
@@ -687,7 +668,7 @@ export default class Recipe extends RecipeModule {
             };
         }
 
-        let identitiesForPrimaryUser = this.getIdentitiesForUser(user);
+        let identitiesForPrimaryUser = this.transformUserInfoIntoVerifiedAndUnverifiedBucket(user);
         let recipeUserIdentifyingInfoIsAssociatedWithPrimaryUser = false;
         let emailIdentityVerifiedForPrimaryUser = false;
         let phoneNumberIdentityVerifiedForPrimaryUser = false;
@@ -793,7 +774,7 @@ export default class Recipe extends RecipeModule {
             throw Error("this error should never be thrown");
         }
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-            info: identifier,
+            accountInfo: identifier,
             userContext,
         });
         if (users === undefined || users.length === 0) {

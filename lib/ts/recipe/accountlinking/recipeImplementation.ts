@@ -191,7 +191,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 for (let j = 0; j < infos.length; j++) {
                     let info = infos[j];
                     let usersList = await this.listUsersByAccountInfo({
-                        info,
+                        accountInfo: info,
                         userContext,
                     });
                     if (usersList !== undefined) {
@@ -546,10 +546,10 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         },
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
-            { info }: { info: AccountInfo }
+            { accountInfo }: { accountInfo: AccountInfo }
         ): Promise<User[]> {
             let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
-                ...info,
+                ...accountInfo,
             });
             return result.users;
         },
