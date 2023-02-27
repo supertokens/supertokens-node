@@ -74,13 +74,13 @@ export default class Recipe extends RecipeModule {
     }) => Promise<string>;
     accountLinkPostSignInViaSession: ({
         session,
-        info,
-        infoVerified,
+        newUser,
+        newUserVerified,
         userContext,
     }: {
         session: SessionContainer;
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
+        newUser: AccountInfoAndEmailWithRecipeId;
+        newUserVerified: boolean;
         userContext: any;
     }) => Promise<
         | {
