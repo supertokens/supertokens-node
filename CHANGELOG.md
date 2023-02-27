@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.1.2] - 2023-02-27
+
+### Fixes
+
+-   Fixed request parsing issue during third-party (Apple) sign in in NextJS
+
 ## [13.1.1] - 2023-02-24
 
 -   Refactor dashboard recipe to use auth mode instead of manually checking for api key

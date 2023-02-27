@@ -15,17 +15,55 @@
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("./utils");
 let assert = require("assert");
-const httpMocks = require("node-mocks-http");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../lib/build/").default;
 let { middleware } = require("../framework/express");
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const ThirdPartyEmailPassword = require("../lib/build/recipe/thirdpartyemailpassword");
-const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
 const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
-let { verifySession } = require("../recipe/session/framework/express");
-let queryString = require("querystring");
+const { verifySession } = require("../recipe/session/framework/express");
+const { testApiHandler } = require("next-test-api-route-handler");
+
+let wrapperErr;
+
+async function nextApiHandlerWithMiddleware(req, res) {
+    try {
+        await superTokensNextWrapper(
+            async (next) => {
+                await middleware()(req, res, next);
+            },
+            req,
+            res
+        );
+    } catch (err) {
+        wrapperErr = err;
+        throw err;
+    }
+    if (!res.writableEnded) {
+        res.status(404).send("Not found");
+    }
+}
+
+async function nextApiHandlerWithVerifySession(req, res) {
+    await superTokensNextWrapper(
+        async (next) => {
+            await verifySession()(req, res, next);
+
+            if (req.session) {
+                res.status(200).send({
+                    status: "OK",
+                    userId: req.session.getUserId(),
+                });
+            }
+        },
+        req,
+        res
+    );
+    if (!res.writableEnded) {
+        res.status(404).send("Not found");
+    }
+}
 
 describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
@@ -48,7 +86,6 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 recipeList: [
                     EmailPassword.init(),
                     Session.init({
-                        getTokenTransferMethod: () => "cookie",
                         override: {
                             functions: (oI) => {
                                 return {
@@ -71,339 +108,295 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             await cleanST();
         });
 
-        it("Sign Up", function (done) {
-            const request = httpMocks.createRequest({
-                method: "POST",
-                headers: {
-                    rid: "emailpassword",
-                },
+        it("Sign Up", async function () {
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/signup/",
-                body: {
-                    formFields: [
-                        {
-                            id: "email",
-                            value: "john.doe@supertokens.io",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
                         },
-                        {
-                            id: "password",
-                            value: "P@sSW0rd",
-                        },
-                    ],
+                        body: JSON.stringify({
+                            formFields: [
+                                {
+                                    id: "email",
+                                    value: "john.doe@supertokens.io",
+                                },
+                                {
+                                    id: "password",
+                                    value: "P@sSW0rd",
+                                },
+                            ],
+                        }),
+                    });
+                    const respJson = await res.json();
+                    assert.deepStrictEqual(respJson.status, "OK");
+                    assert.deepStrictEqual(respJson.user.email, "john.doe@supertokens.io");
+                    assert.strictEqual(respJson.user.id, process.env.user);
+                    assert.notStrictEqual(res.headers.get("front-token"), undefined);
+                    const tokens = getSessionTokensFromResponse(res);
+                    assert.notEqual(tokens.access, undefined);
+                    assert.notEqual(tokens.refresh, undefined);
                 },
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getJSONData().status, "OK");
-                assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
-                assert.strictEqual(response._getJSONData().user.id, process.env.user);
-                assert(response._getHeaders()["front-token"] !== undefined);
-                assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
-                assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
-                },
-                request,
-                response
-            );
         });
 
-        it("Sign In", function (done) {
-            const loginRequest = httpMocks.createRequest({
-                method: "POST",
-                headers: {
-                    rid: "emailpassword",
-                },
+        it("Sign In", async function () {
+            let tokens;
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/signin/",
-                body: {
-                    formFields: [
-                        {
-                            id: "email",
-                            value: "john.doe@supertokens.io",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
                         },
-                        {
-                            id: "password",
-                            value: "P@sSW0rd",
+                        body: JSON.stringify({
+                            formFields: [
+                                {
+                                    id: "email",
+                                    value: "john.doe@supertokens.io",
+                                },
+                                {
+                                    id: "password",
+                                    value: "P@sSW0rd",
+                                },
+                            ],
+                        }),
+                    });
+                    const respJson = await res.json();
+
+                    assert.deepStrictEqual(respJson.status, "OK");
+                    assert.deepStrictEqual(respJson.user.email, "john.doe@supertokens.io");
+                    assert(res.headers.get("front-token") !== undefined);
+                    tokens = getSessionTokensFromResponse(res);
+                    assert.notEqual(tokens.access, undefined);
+                    assert.notEqual(tokens.refresh, undefined);
+                },
+            });
+            // Verify if session exists next middleware tests:
+
+            assert.notStrictEqual(tokens, undefined);
+
+            // Case 1: Successful => add session to request object.
+            await testApiHandler({
+                handler: nextApiHandlerWithVerifySession,
+                url: "/api/user/",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
                         },
-                    ],
+                        headers: {
+                            authorization: `Bearer ${tokens.access}`,
+                        },
+                        body: JSON.stringify({
+                            formFields: [
+                                {
+                                    id: "email",
+                                    value: "john.doe@supertokens.io",
+                                },
+                                {
+                                    id: "password",
+                                    value: "P@sSW0rd",
+                                },
+                            ],
+                        }),
+                    });
+                    assert.strictEqual(res.status, 200);
+                    const respJson = await res.json();
+                    assert.strictEqual(respJson.status, "OK");
+                    assert.strictEqual(respJson.userId, process.env.user);
                 },
             });
 
-            const loginResponse = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            loginResponse.on("end", async () => {
-                assert.deepStrictEqual(loginResponse._getJSONData().status, "OK");
-                assert.deepStrictEqual(loginResponse._getJSONData().user.email, "john.doe@supertokens.io");
-                assert(loginResponse._getHeaders()["front-token"] !== undefined);
-                assert(loginResponse._getHeaders()["set-cookie"][0].startsWith("sAccessToken=") !== undefined);
-                assert(loginResponse._getHeaders()["set-cookie"][1].startsWith("sRefreshToken=") !== undefined);
-
-                // Verify if session exists next middleware tests:
-
-                // Case 1: Successful => add session to request object.
-                const getUserRequestWithSession = httpMocks.createRequest({
-                    method: "GET",
-                    cookies: getSessionCookiesFromResponse(loginResponse),
-                    url: "/api/user/",
-                });
-                const getUserResponseWithSession = httpMocks.createResponse({});
-
-                await superTokensNextWrapper(
-                    (next) => {
-                        return verifySession()(getUserRequestWithSession, getUserResponseWithSession, next);
-                    },
-                    getUserRequestWithSession,
-                    getUserResponseWithSession
-                );
-
-                assert(getUserRequestWithSession.session !== undefined);
-
-                // Case 2: Unauthenticated => return 401.
-                const getUserRequestWithoutSession = httpMocks.createRequest({
-                    method: "GET",
-                    url: "/api/user/",
-                });
-
-                const getUserResponseWithoutSession = httpMocks.createResponse({
-                    eventEmitter: require("events").EventEmitter,
-                });
-
-                getUserResponseWithoutSession.on("end", () => {
-                    assert.strictEqual(getUserResponseWithoutSession.statusCode, 401);
-                    return done();
-                });
-
-                superTokensNextWrapper(
-                    (next) => {
-                        return verifySession()(getUserRequestWithoutSession, getUserResponseWithoutSession, next);
-                    },
-                    getUserRequestWithoutSession,
-                    getUserResponseWithoutSession
-                );
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(loginRequest, loginResponse, next);
+            // Case 2: Unauthenticated => return 401.
+            await testApiHandler({
+                handler: nextApiHandlerWithVerifySession,
+                url: "/api/user/",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
+                        },
+                        headers: {},
+                        body: JSON.stringify({
+                            formFields: [
+                                {
+                                    id: "email",
+                                    value: "john.doe@supertokens.io",
+                                },
+                                {
+                                    id: "password",
+                                    value: "P@sSW0rd",
+                                },
+                            ],
+                        }),
+                    });
+                    assert.strictEqual(res.status, 401);
+                    const respJson = await res.json();
+                    assert.strictEqual(respJson.message, "unauthorised");
                 },
-                loginRequest,
-                loginResponse
-            );
+            });
         });
 
-        it("Reset Password - Send Email", function (done) {
-            const request = httpMocks.createRequest({
-                method: "POST",
-                headers: {
-                    rid: "emailpassword",
-                },
+        it("Reset Password - Send Email", async function () {
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/user/password/reset/token",
-                body: {
-                    formFields: [
-                        {
-                            id: "email",
-                            value: "john.doe@supertokens.io",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
                         },
-                    ],
+                        body: JSON.stringify({
+                            formFields: [
+                                {
+                                    id: "email",
+                                    value: "john.doe@supertokens.io",
+                                },
+                            ],
+                        }),
+                    });
+                    const respJson = await res.json();
+
+                    assert.deepStrictEqual(respJson.status, "OK");
                 },
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getJSONData().status, "OK");
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
-                },
-                request,
-                response
-            );
         });
 
-        it("Reset Password - Create new password", function (done) {
-            const request = httpMocks.createRequest({
-                method: "POST",
-                headers: {
-                    rid: "emailpassword",
-                },
+        it("Reset Password - Create new password", async function () {
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/user/password/reset/",
-                body: {
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "NewP@sSW0rd",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
                         },
-                    ],
-                    token: "RandomToken",
+                        body: JSON.stringify({
+                            formFields: [
+                                {
+                                    id: "password",
+                                    value: "NewP@sSW0rd",
+                                },
+                            ],
+                            token: "RandomToken",
+                        }),
+                    });
+                    const respJson = await res.json();
+
+                    assert.deepStrictEqual(respJson.status, "RESET_PASSWORD_INVALID_TOKEN_ERROR");
                 },
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getJSONData().status, "RESET_PASSWORD_INVALID_TOKEN_ERROR");
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
-                },
-                request,
-                response
-            );
         });
 
-        it("does Email Exist with existing email", function (done) {
-            const request = httpMocks.createRequest({
-                method: "GET",
-                headers: {
-                    rid: "emailpassword",
-                },
+        it("does Email Exist with existing email", async function () {
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/signup/email/exists",
-                query: {
+                params: {
                     email: "john.doe@supertokens.io",
                 },
-            });
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "GET",
+                        headers: {
+                            rid: "emailpassword",
+                        },
+                    });
+                    const respJson = await res.json();
 
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getJSONData(), { status: "OK", exists: true });
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
+                    assert.deepStrictEqual(respJson, { status: "OK", exists: true });
                 },
-                request,
-                response
-            );
+            });
         });
 
-        it("does Email Exist with unknown email", function (done) {
-            const request = httpMocks.createRequest({
-                method: "GET",
-                headers: {
-                    rid: "emailpassword",
-                },
+        it("does Email Exist with unknown email", async function () {
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/signup/email/exists",
-                query: {
+                params: {
                     email: "unknown@supertokens.io",
                 },
-            });
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "GET",
+                        headers: {
+                            rid: "emailpassword",
+                        },
+                    });
+                    const respJson = await res.json();
 
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getJSONData().exists, false);
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
+                    assert.deepStrictEqual(respJson, { status: "OK", exists: false });
                 },
-                request,
-                response
-            );
-        });
-
-        it("Verify session successfully when session is present", function (done) {
-            const request = httpMocks.createRequest({
-                method: "GET",
-                url: "/api/auth/user/info",
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getStatusCode(), 401);
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return await verifySession()(request, response, next);
-                },
-                request,
-                response
-            );
         });
 
         it("Verify session successfully when session is present (check if it continues after)", function (done) {
-            const request = httpMocks.createRequest({
-                method: "GET",
-                url: "/api/auth/user/info",
-            });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                try {
-                    assert.deepStrictEqual(response._getStatusCode(), 401);
-                    return done();
-                } catch (err) {
-                    return done(err);
-                }
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return await verifySession()(request, response, next);
+            testApiHandler({
+                handler: async (request, response) => {
+                    await superTokensNextWrapper(
+                        async (next) => {
+                            await verifySession()(request, response, next);
+                        },
+                        request,
+                        response
+                    ).then(() => {
+                        return done(new Error("not come here"));
+                    });
                 },
-                request,
-                response
-            ).then(() => {
-                return done(new Error("not come here"));
+                url: "/api/auth/user/info",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "GET",
+                        headers: {
+                            rid: "emailpassword",
+                        },
+                        query: {
+                            email: "john.doe@supertokens.io",
+                        },
+                    });
+                    assert.strictEqual(res.status, 401);
+                    done();
+                },
             });
         });
 
         it("Create new session", async function () {
-            const request = httpMocks.createRequest({
-                method: "GET",
-                url: "/anything",
-            });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            const session = await superTokensNextWrapper(
-                async () => {
-                    return await Session.createNewSession(request, response, "1", {}, {});
+            await testApiHandler({
+                handler: async (request, response) => {
+                    const session = await superTokensNextWrapper(
+                        async () => {
+                            return await Session.createNewSession(request, response, "1", {}, {});
+                        },
+                        request,
+                        response
+                    );
+                    response.status(200).send({
+                        status: "OK",
+                        userId: session.getUserId(),
+                    });
                 },
-                request,
-                response
-            );
-            assert.notDeepStrictEqual(session, undefined);
-            assert.deepStrictEqual(session.userId, "1");
+                url: "/api/auth/user/info",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "GET",
+                    });
+                    assert.strictEqual(res.status, 200);
+                    assert.deepStrictEqual(await res.json(), {
+                        status: "OK",
+                        userId: "1",
+                    });
+                },
+            });
         });
     });
 
@@ -442,26 +435,20 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     }),
                     ThirdPartyEmailPassword.init({
                         providers: [
-                            ThirdPartyEmailPassword.Google({
-                                clientId: "",
-                                clientSecret: "",
+                            ThirdPartyEmailPassword.Apple({
+                                isDefault: true,
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
                             }),
                         ],
                     }),
                     Session.init({
                         getTokenTransferMethod: () => "cookie",
-                        override: {
-                            functions: (oI) => {
-                                return {
-                                    ...oI,
-                                    createNewSession: async (input) => {
-                                        let response = await oI.createNewSession(input);
-                                        process.env.user = response.getUserId();
-                                        return response;
-                                    },
-                                };
-                            },
-                        },
                     }),
                 ],
             });
@@ -472,74 +459,52 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             await cleanST();
         });
 
-        it("testing __supertokensFromNextJS flag", function (done) {
-            const request = httpMocks.createRequest({
-                method: "POST",
-                headers: {
-                    rid: "emailpassword",
-                },
+        it("testing __supertokensFromNextJS flag", async function () {
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/user/password/reset",
-                body: {
-                    token: "hello",
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "NewP@sSW0rd",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
                         },
-                    ],
+                        body: JSON.stringify({
+                            token: "hello",
+                            formFields: [
+                                {
+                                    id: "password",
+                                    value: "NewP@sSW0rd",
+                                },
+                            ],
+                        }),
+                    });
+                    const resJson = await res.json();
+
+                    assert.deepStrictEqual(resJson.status, "CUSTOM_RESPONSE");
+                    assert.deepStrictEqual(resJson.nextJS, true);
                 },
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getJSONData().status, "CUSTOM_RESPONSE");
-                assert.deepStrictEqual(response._getJSONData().nextJS, true);
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
-                },
-                request,
-                response
-            );
         });
 
-        it("testing __supertokensFromNextJS flag, apple redirect", function (done) {
-            const request = httpMocks.createRequest({
-                method: "POST",
-                headers: {
-                    rid: "thirdpartyemailpassword",
-                    "content-type": "application/x-www-form-urlencoded",
-                },
+        it("testing __supertokensFromNextJS flag, apple redirect", async () => {
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/callback/apple",
-                body: {
-                    state: "hello",
-                    code: "testing",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "thirdpartyemailpassword",
+                            "content-type": "application/x-www-form-urlencoded",
+                        },
+                        body: "state=hello&code=testing",
+                    });
+                    let expected = `<html><head><script>window.location.replace("https://supertokens.io/auth/callback/apple?state=hello&code=testing");</script></head></html>`;
+                    const respText = await res.text();
+                    assert.strictEqual(respText, expected);
                 },
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                let expected = `<html><head><script>window.location.replace("https://supertokens.io/auth/callback/apple?state=hello&code=testing");</script></head></html>`;
-                assert.deepStrictEqual(Buffer.from(response._getData()).toString(), expected);
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
-                },
-                request,
-                response
-            );
         });
     });
 
@@ -589,53 +554,41 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
         });
 
         it("Sign Up", async function () {
-            const request = httpMocks.createRequest({
-                method: "POST",
-                headers: {
-                    rid: "emailpassword",
-                },
+            await testApiHandler({
+                handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/signup/",
-                body: {
-                    formFields: [
-                        {
-                            id: "email",
-                            value: "john.doe@supertokens.io",
+                test: async ({ fetch }) => {
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "emailpassword",
                         },
-                        {
-                            id: "password",
-                            value: "P@sSW0rd",
-                        },
-                    ],
+                        body: JSON.stringify({
+                            formFields: [
+                                {
+                                    id: "email",
+                                    value: "john.doe2@supertokens.io",
+                                },
+                                {
+                                    id: "password",
+                                    value: "P@sSW0rd",
+                                },
+                            ],
+                        }),
+                    });
+                    const respJson = await res.text();
+                    assert.strictEqual(res.status, 500);
+                    assert.strictEqual(respJson, "Internal Server Error");
                 },
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            try {
-                await superTokensNextWrapper(
-                    async (next) => {
-                        return middleware()(request, response, next);
-                    },
-                    request,
-                    response
-                );
-                assert(false);
-            } catch (err) {
-                assert.deepStrictEqual(err, { error: "sign up error" });
-            }
+            assert.deepStrictEqual(wrapperErr, { error: "sign up error" });
         });
     });
 });
 
-function getSessionCookiesFromResponse(response) {
+function getSessionTokensFromResponse(response) {
     return {
-        sAccessToken: decodeURIComponent(
-            response._getHeaders()["set-cookie"][0].split("sAccessToken=")[1].split(";")[0]
-        ),
-        sRefreshToken: decodeURIComponent(
-            response._getHeaders()["set-cookie"][1].split("sRefreshToken=")[1].split(";")[0]
-        ),
+        access: response.headers.get("st-access-token"),
+        refresh: response.headers.get("st-refresh-token"),
     };
 }

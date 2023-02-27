@@ -136,29 +136,16 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             let jsonParser = json();
             let err = await new Promise((resolve) => {
                 let resolvedCalled = false;
-                /**
-                 * Nextjs allow users to disable the default parser.
-                 * To handle that scenario, we are still parsing the request body
-                 */
-                if (request.__supertokensFromNextJS === true) {
-                    /**
-                     * the setImmediate here is to counter the next.js issue
-                     * where the json parser would not resolve and thus the request
-                     * just hangs forever. Next.JS does json parsing on its own.
-                     */
-                    setImmediate(() => {
+                if (request.readable) {
+                    jsonParser(request, new ServerResponse(request), (e) => {
                         if (!resolvedCalled) {
                             resolvedCalled = true;
-                            resolve(undefined);
+                            resolve(e);
                         }
                     });
+                } else {
+                    resolve(undefined);
                 }
-                jsonParser(request, new ServerResponse(request), (e) => {
-                    if (!resolvedCalled) {
-                        resolvedCalled = true;
-                        resolve(e);
-                    }
-                });
             });
             if (err !== undefined) {
                 throw new STError({
@@ -174,7 +161,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             if (err !== undefined) {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass valid URL query params",
+                    message: "API input error: Please make sure to pass valid url encoded form in the request body",
                 });
             }
         }
@@ -186,35 +173,18 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
 ) {
     let parser = urlencoded({ extended: true });
     let err = await new Promise((resolve) => {
-        let resolvedCalled = false;
-        /**
-         * Nextjs allow users to disable the default parser.
-         * To handle that scenario, we are still parsing the request body
-         */
-        if (request.__supertokensFromNextJS === true) {
-            /**
-             * the setImmediate here is to counter the next.js issue
-             * where the json parser would not resolve and thus the request
-             * just hangs forever. Next.JS does json parsing on its own.
-             */
-            setImmediate(() => {
-                if (!resolvedCalled) {
-                    resolvedCalled = true;
-                    resolve(undefined);
-                }
-            });
-        }
-        parser(request, new ServerResponse(request), (e) => {
-            if (!resolvedCalled) {
-                resolvedCalled = true;
+        if (request.readable) {
+            parser(request, new ServerResponse(request), (e) => {
                 resolve(e);
-            }
-        });
+            });
+        } else {
+            resolve(undefined);
+        }
     });
     if (err !== undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "API input error: Please make sure to pass valid URL query params",
+            message: "API input error: Please make sure to pass valid url encoded form in the request body",
         });
     }
 }
