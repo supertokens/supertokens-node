@@ -55,7 +55,7 @@ export declare type RecipeInterface = {
     }) => Promise<{
         [primaryUserId: string]: string[];
     }>;
-    getPrimaryUserIdsforRecipeUserIds: (input: {
+    getPrimaryUserIdsForRecipeUserIds: (input: {
         recipeUserIds: string[];
         userContext: any;
     }) => Promise<{

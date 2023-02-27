@@ -25,8 +25,8 @@ export default class Wrapper {
         });
     }
 
-    static async getPrimaryUserIdsforRecipeUserIds(recipeUserIds: string[], userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdsforRecipeUserIds({
+    static async getPrimaryUserIdsForRecipeUserIds(recipeUserIds: string[], userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdsForRecipeUserIds({
             recipeUserIds,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -103,7 +103,7 @@ export default class Wrapper {
 
 export const init = Wrapper.init;
 export const getRecipeUserIdsForPrimaryUserIds = Wrapper.getRecipeUserIdsForPrimaryUserIds;
-export const getPrimaryUserIdsforRecipeUserIds = Wrapper.getPrimaryUserIdsforRecipeUserIds;
+export const getPrimaryUserIdsForRecipeUserIds = Wrapper.getPrimaryUserIdsForRecipeUserIds;
 export const addNewRecipeUserIdWithoutPrimaryUserId = Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
 export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
 export const createPrimaryUser = Wrapper.createPrimaryUser;

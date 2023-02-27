@@ -9,7 +9,7 @@ export default class Wrapper {
     ): Promise<{
         [primaryUserId: string]: string[];
     }>;
-    static getPrimaryUserIdsforRecipeUserIds(
+    static getPrimaryUserIdsForRecipeUserIds(
         recipeUserIds: string[],
         userContext?: any
     ): Promise<{
@@ -127,7 +127,7 @@ export default class Wrapper {
 }
 export declare const init: typeof Recipe.init;
 export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
-export declare const getPrimaryUserIdsforRecipeUserIds: typeof Wrapper.getPrimaryUserIdsforRecipeUserIds;
+export declare const getPrimaryUserIdsForRecipeUserIds: typeof Wrapper.getPrimaryUserIdsForRecipeUserIds;
 export declare const addNewRecipeUserIdWithoutPrimaryUserId: typeof Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
 export declare const canCreatePrimaryUserId: typeof Wrapper.canCreatePrimaryUserId;
 export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;

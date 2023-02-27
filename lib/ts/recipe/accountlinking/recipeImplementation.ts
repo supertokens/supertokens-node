@@ -18,7 +18,6 @@ import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
-import SuperTokens from "../../supertokens";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -37,7 +36,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             });
             return result.userIdMapping;
         },
-        getPrimaryUserIdsforRecipeUserIds: async function (
+        getPrimaryUserIdsForRecipeUserIds: async function (
             this: RecipeInterface,
             {
                 recipeUserIds,
@@ -131,7 +130,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
              * This is to know if the existing recipeUserId
              * is already associated with a primaryUserId
              */
-            let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsforRecipeUserIds({
+            let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsForRecipeUserIds({
                 recipeUserIds: [recipeUserId],
                 userContext,
             });
@@ -140,7 +139,11 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
              * checking if primaryUserId exists for the recipeUserId
              */
             let primaryUserId = recipeUserIdToPrimaryUserIdMapping[recipeUserId];
-            if (primaryUserId !== undefined && primaryUserId !== null) {
+            if (primaryUserId === undefined) {
+                // this means that the recipeUserId doesn't exist
+                throw new Error("The input recipeUserId does not exist");
+            }
+            if (primaryUserId !== null) {
                 return {
                     status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
                     primaryUserId,
@@ -164,7 +167,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
              * precautionary check
              */
             if (user === undefined) {
-                throw Error("this error should not be thrown");
+                throw new Error("The input recipeUserId does not exist");
             }
 
             /**
@@ -173,7 +176,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
              * From those users, we'll try to find if there already exists
              * a primaryUser which is associated with the identifying info
              */
-            let usersForAccountInfo = [];
+            let usersForAccountInfo: User[] = [];
 
             for (let i = 0; i < user.loginMethods.length; i++) {
                 let loginMethod = user.loginMethods[i];
@@ -186,6 +189,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 if (loginMethod.phoneNumber !== undefined) {
                     infos.push({
                         phoneNumber: loginMethod.phoneNumber,
+                    });
+                }
+                if (loginMethod.thirdParty !== undefined) {
+                    infos.push({
+                        thirdPartyId: loginMethod.thirdParty.id,
+                        thirdPartyUserId: loginMethod.thirdParty.userId,
                     });
                 }
                 for (let j = 0; j < infos.length; j++) {
@@ -455,14 +464,19 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 if (loginMethodInfo === undefined) {
                     throw Error("this error should never be thrown");
                 }
-                let recipeUser = await SuperTokens.getInstanceOrThrowError()._getUserForRecipeId(
-                    loginMethodInfo.recipeUserId,
-                    loginMethodInfo.recipeId
+                await config.onAccountLinked(
+                    user,
+                    {
+                        id: loginMethodInfo.id,
+                        recipeId: loginMethodInfo.recipeId,
+                        recipeUserId: loginMethodInfo.recipeUserId,
+                        timeJoined: loginMethodInfo.timeJoined,
+                        email: loginMethodInfo.email,
+                        phoneNumber: loginMethodInfo.phoneNumber,
+                        thirdParty: loginMethodInfo.thirdParty,
+                    },
+                    userContext
                 );
-                if (recipeUser.user === undefined) {
-                    throw Error("this error should never be thrown");
-                }
-                await config.onAccountLinked(user, recipeUser.user, userContext);
             } else {
                 throw Error(`error thrown from core while linking accounts: ${accountsLinkingResult.status}`);
             }
@@ -481,7 +495,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             status: "OK";
             wasRecipeUserDeleted: boolean;
         }> {
-            let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsforRecipeUserIds({
+            let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsForRecipeUserIds({
                 recipeUserIds: [recipeUserId],
                 userContext,
             });
