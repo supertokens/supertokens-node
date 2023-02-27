@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { AccountInfo, RecipeInterface, TypeNormalisedInput } from "./types";
+import { AccountInfo, RecipeInterface, TypeNormalisedInput, RecipeLevelUser } from "./types";
 import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -592,10 +592,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 };
             }
 
-            let recipeUsersToRemove: {
-                recipeId: string;
-                recipeUserId: string;
-            }[] = [];
+            let recipeUsersToRemove: RecipeLevelUser[] = [];
 
             /**
              * if true, the user should be treated as primaryUser
