@@ -74,7 +74,7 @@
         "lambda-tester": "^4.0.1",
         "loopback-datasource-juggler": "^4.26.0",
         "mocha": "6.1.4",
-        "next": "11.1.3",
+        "next": "13.2.1",
         "next-test-api-route-handler": "^3.1.8",
         "nock": "11.7.0",
         "prettier": "2.0.5",
