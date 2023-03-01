@@ -490,26 +490,6 @@ export default class Recipe extends RecipeModule {
                 };
             }
 
-            /**
-             * checking if primary user can be created for the existing recipe user
-             */
-            let canCreatePrimaryUserResult = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
-                recipeUserId: existingUser.loginMethods[0].recipeUserId,
-                userContext,
-            });
-            if (canCreatePrimaryUserResult.status !== "OK") {
-                // TODO: we need to think about the implications of the different
-                // reasons here - which is possible? and which is not?
-                return {
-                    createRecipeUser: false,
-                    accountsLinked: false,
-                    reason: canCreatePrimaryUserResult.status,
-                    primaryUserId: canCreatePrimaryUserResult.primaryUserId,
-                };
-            }
-            /**
-             * creating primary user for the recipe user
-             */
             let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
                 recipeUserId: existingUser.loginMethods[0].recipeUserId,
                 userContext,
