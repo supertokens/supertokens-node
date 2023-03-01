@@ -387,14 +387,21 @@ export default class Recipe extends RecipeModule {
     }): Promise<
         | {
               createRecipeUser: true;
-              updateVerificationClaim: boolean;
+
+              // if the value of updateAccountLinkingClaim is NO_CHANGE, it also means that the
+              // consumer of this function should call this function again.
+              updateAccountLinkingClaim: "ADD_CLAIM" | "NO_CHANGE";
           }
         | ({
               createRecipeUser: false;
           } & (
               | {
                     accountsLinked: true;
-                    updateVerificationClaim: boolean; // TODO: better name for this?
+                    updateAccountLinkingClaim: "REMOVE_CLAIM";
+                }
+              | {
+                    accountsLinked: false;
+                    updateAccountLinkingClaim: "ADD_CLAIM";
                 }
               | {
                     accountsLinked: false;
@@ -487,7 +494,7 @@ export default class Recipe extends RecipeModule {
              * checking if primary user can be created for the existing recipe user
              */
             let canCreatePrimaryUserResult = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
-                recipeUserId: existingUser.loginMethods[0].id,
+                recipeUserId: existingUser.loginMethods[0].recipeUserId,
                 userContext,
             });
             if (canCreatePrimaryUserResult.status !== "OK") {
@@ -504,20 +511,39 @@ export default class Recipe extends RecipeModule {
              * creating primary user for the recipe user
              */
             let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
-                recipeUserId: existingUser.loginMethods[0].id,
+                recipeUserId: existingUser.loginMethods[0].recipeUserId,
                 userContext,
             });
-            if (createPrimaryUserResult.status !== "OK") {
-                // TODO: we need to think about the implications of the different
-                // reasons here - which is possible? and which is not?
+
+            if (createPrimaryUserResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                // this can happen if there is a race condition in which the
+                // existing user becomes a primary user ID by the time the code
+                // execution comes into this block. So we call the function once again.
+                return await this.accountLinkPostSignInViaSession({
+                    session,
+                    newUser,
+                    newUserVerified,
+                    userContext,
+                });
+            } else if (
+                createPrimaryUserResult.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+            ) {
+                /* this can come here if in the following example: 
+                - User creates a primary account (P1) using email R
+                - User2 created another account (A2) with email R (but this is not yet linked to P1 cause maybe A2 is not a candidate for account linking)
+                - Now User2 is logged in with A2 account, and they are trying to link with another account.
+                - In this case, existingUser (A2 account), cannot become a primary user
+                - So we are in a stuck state, and must ask the end user to contact support*/
                 return {
                     createRecipeUser: false,
                     accountsLinked: false,
                     reason: createPrimaryUserResult.status,
                     primaryUserId: createPrimaryUserResult.primaryUserId,
                 };
+            } else if (createPrimaryUserResult.status === "OK") {
+                // this if condition is not needed, but for some reason TS complains if it's not there.
+                existingUser = createPrimaryUserResult.user;
             }
-            existingUser = createPrimaryUserResult.user;
 
             // at this point, the existingUser is a primary user. So we can
             // go ahead and attempt account linking for the new user and existingUser.
@@ -574,7 +600,6 @@ export default class Recipe extends RecipeModule {
 
         const userObjThatHasSameAccountInfoAndRecipeIdAsNewUser = usersArrayThatHaveSameAccountInfoAsNewUser.find((u) =>
             u.loginMethods.find((lU) => {
-                // TODO: this used to be lU.recipeId === newUser.recipeId -> was that a mistake?
                 if (lU.recipeId !== newUser.recipeId) {
                     return false;
                 }
@@ -617,7 +642,7 @@ export default class Recipe extends RecipeModule {
                 if (result) {
                     return {
                         createRecipeUser: true,
-                        updateVerificationClaim: false,
+                        updateAccountLinkingClaim: "NO_CHANGE",
                     };
                 }
             }
@@ -628,7 +653,7 @@ export default class Recipe extends RecipeModule {
                 if (result) {
                     return {
                         createRecipeUser: true,
-                        updateVerificationClaim: false,
+                        updateAccountLinkingClaim: "NO_CHANGE",
                     };
                 }
             }
@@ -663,12 +688,12 @@ export default class Recipe extends RecipeModule {
             if (!newUserVerified && shouldDoAccountLinking.shouldRequireVerification) {
                 return {
                     createRecipeUser: true,
-                    updateVerificationClaim: true,
+                    updateAccountLinkingClaim: "ADD_CLAIM",
                 };
             }
             return {
                 createRecipeUser: true,
-                updateVerificationClaim: false,
+                updateAccountLinkingClaim: "NO_CHANGE",
             };
         }
 
@@ -686,15 +711,28 @@ export default class Recipe extends RecipeModule {
             return {
                 createRecipeUser: false,
                 accountsLinked: true,
-                updateVerificationClaim: false,
+                updateAccountLinkingClaim: "REMOVE_CLAIM",
             };
         }
         if (
             canLinkAccounts.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
             canLinkAccounts.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         ) {
-            // TODO: we need to think about the implications of the different
-            // reasons here - which is possible? and which is not?
+            /* ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR can be possible if 
+            - existingUser has email E1
+            - you try and link an account with email E2
+            - there already exists another primary account with email E2
+            - so linking of existingUser and new account would fail
+            - this is a stuck state cause the user will have to contact support or login to their other account.*/
+
+            /**
+             * RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR can be possible if:
+                - existingUser has email E1
+                - you try and link an account with email E2
+                - there already exists another primary account with email E2 that is linked to new account (input to this function)
+                - so linking of existingUser and new account would fail
+                - this is a stuck state cause the user will have to contact support or login to their other account.
+             */
             return {
                 createRecipeUser: false,
                 accountsLinked: false,
@@ -721,12 +759,10 @@ export default class Recipe extends RecipeModule {
         }
         if (newUserAccountInfoIsAssociatedWithExistingUser) {
             /**
-             * let's Ly belongs to P1 such that Ly equal to Lx.
-             * if LY verified, mark Lx as verified. If Lx is verfied,
-             * then mark all Ly as verified
+             * let Ly belong to P1 such that Ly equal to Lx.
+             * if LY verified or if Lx is verfied,
+             * then mark all Ly and Lx as verified
              */
-            // TODO: this does not go exactly with the same sematic - here we mark all Ly as verified
-            // even if lx is NOT verified and just one of the Ly's is verified.
             if (newUser.email !== undefined && (newUsersEmailAlreadyVerifiedInExistingUser || newUserVerified)) {
                 let recipeUserIdsForEmailVerificationUpdate = existingUser.loginMethods
                     .filter((u) => u.email === newUser.email && !u.verified)
@@ -746,11 +782,10 @@ export default class Recipe extends RecipeModule {
             }
         } else {
             if (shouldDoAccountLinking.shouldRequireVerification && !newUserVerified) {
-                // TODO: this is wrong.. lucid chart has a sub text that says "we send email verification mail here".
                 return {
                     createRecipeUser: false,
                     accountsLinked: false,
-                    reason: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                    updateAccountLinkingClaim: "ADD_CLAIM",
                 };
             }
         }
@@ -760,21 +795,13 @@ export default class Recipe extends RecipeModule {
             primaryUserId: existingUser.id,
             userContext,
         });
-        if (linkAccountResponse.status === "OK") {
+        if (linkAccountResponse.status === "OK" || linkAccountResponse.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
             return {
                 createRecipeUser: false,
                 accountsLinked: true,
-                updateVerificationClaim: true,
-            };
-        } else if (linkAccountResponse.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
-            return {
-                createRecipeUser: false,
-                accountsLinked: true,
-                updateVerificationClaim: true,
+                updateAccountLinkingClaim: "REMOVE_CLAIM",
             };
         } else {
-            // TODO: we need to think about the implications of the different
-            // reasons here - which is possible? and which is not?
             return {
                 createRecipeUser: false,
                 accountsLinked: false,
@@ -828,7 +855,7 @@ export default class Recipe extends RecipeModule {
         return users.find((u) => u.isPrimaryUser);
     };
 
-    createPrimaryUserIdOrLinkAccounts = async ({
+    createPrimaryUserIdOrLinkAccountsAfterEmailVerification = async ({
         recipeUserId,
         session,
         userContext,
@@ -848,7 +875,7 @@ export default class Recipe extends RecipeModule {
             }
             if (user.isPrimaryUser) {
                 // this can come here cause of a race condition.
-                await this.createPrimaryUserIdOrLinkAccounts({
+                await this.createPrimaryUserIdOrLinkAccountsAfterEmailVerification({
                     recipeUserId,
                     session,
                     userContext,
@@ -866,7 +893,7 @@ export default class Recipe extends RecipeModule {
                 session,
                 userContext
             );
-            // TODO: why don't we care about email verification here?
+
             if (shouldDoAccountLinking.shouldAutomaticallyLink) {
                 let response = await this.recipeInterfaceImpl.createPrimaryUser({
                     recipeUserId: recipeUserId,
@@ -876,7 +903,7 @@ export default class Recipe extends RecipeModule {
                     // TODO: remove session claim
                 } else {
                     // it can come here cause of a race condition..
-                    await this.createPrimaryUserIdOrLinkAccounts({
+                    await this.createPrimaryUserIdOrLinkAccountsAfterEmailVerification({
                         recipeUserId,
                         session,
                         userContext,
@@ -887,7 +914,7 @@ export default class Recipe extends RecipeModule {
             /**
              * recipeUser already linked with primaryUser
              */
-            let recipeUser = primaryUser.loginMethods.find((u) => u.recipeId === recipeUserId);
+            let recipeUser = primaryUser.loginMethods.find((u) => u.recipeUserId === recipeUserId);
             if (recipeUser === undefined) {
                 let user = await getUser(recipeUserId, userContext);
                 if (user === undefined) {
@@ -895,7 +922,7 @@ export default class Recipe extends RecipeModule {
                 }
                 if (user.isPrimaryUser) {
                     // this can come here cause of a race condition.
-                    await this.createPrimaryUserIdOrLinkAccounts({
+                    await this.createPrimaryUserIdOrLinkAccountsAfterEmailVerification({
                         recipeUserId,
                         session,
                         userContext,
@@ -913,20 +940,25 @@ export default class Recipe extends RecipeModule {
                     session,
                     userContext
                 );
-                // TODO: why don't we care about email verification here?
+
                 if (shouldDoAccountLinking.shouldAutomaticallyLink) {
                     let linkAccountsResult = await this.recipeInterfaceImpl.linkAccounts({
                         recipeUserId: recipeUserId,
                         primaryUserId: primaryUser.id,
                         userContext,
                     });
-                    if (linkAccountsResult.status === "OK") {
-                        // TODO: remove session claim if session claim exists
-                        // else create a new session
-                    } else if (linkAccountsResult.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
-                        // TODO: Should we change the claim here as well?
+                    let primaryUserId = primaryUser.id;
+                    if (
+                        linkAccountsResult.status ===
+                            "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
+                        linkAccountsResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                    ) {
+                        primaryUserId = linkAccountsResult.primaryUserId;
                     }
-                    // other statuses for linkAccountsResult should be no-op.
+                    console.log(primaryUserId); // TODO: remove this
+
+                    // TODO: remove session claim if session claim exists
+                    // else create a new session
                 }
             }
         }

@@ -203,7 +203,6 @@ export type RecipeInterface = {
 
 export type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    id: string; // can be recipeUserId or primaryUserId
     timeJoined: number;
     recipeUserId: string;
     email?: string;

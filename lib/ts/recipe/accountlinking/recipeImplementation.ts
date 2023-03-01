@@ -467,7 +467,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 await config.onAccountLinked(
                     user,
                     {
-                        id: loginMethodInfo.id,
                         recipeId: loginMethodInfo.recipeId,
                         recipeUserId: loginMethodInfo.recipeUserId,
                         timeJoined: loginMethodInfo.timeJoined,

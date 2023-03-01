@@ -42,7 +42,6 @@ export declare type APIFunction = (apiImplementation: APIInterface, options: API
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 export declare type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    id: string;
     timeJoined: number;
     recipeUserId: string;
     email?: string;
