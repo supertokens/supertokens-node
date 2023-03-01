@@ -55,7 +55,7 @@ export declare type RecipeInterface = {
     }) => Promise<{
         [primaryUserId: string]: string[];
     }>;
-    getPrimaryUserIdsforRecipeUserIds: (input: {
+    getPrimaryUserIdsForRecipeUserIds: (input: {
         recipeUserIds: string[];
         userContext: any;
     }) => Promise<{
@@ -189,7 +189,6 @@ export declare type RecipeInterface = {
 };
 export declare type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    id: string;
     timeJoined: number;
     recipeUserId: string;
     email?: string;

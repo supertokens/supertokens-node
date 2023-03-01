@@ -74,25 +74,29 @@ export default class Recipe extends RecipeModule {
     }) => Promise<string>;
     accountLinkPostSignInViaSession: ({
         session,
-        info,
-        infoVerified,
+        newUser,
+        newUserVerified,
         userContext,
     }: {
         session: SessionContainer;
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
+        newUser: AccountInfoAndEmailWithRecipeId;
+        newUserVerified: boolean;
         userContext: any;
     }) => Promise<
         | {
               createRecipeUser: true;
-              updateVerificationClaim: boolean;
+              updateAccountLinkingClaim: "ADD_CLAIM" | "NO_CHANGE";
           }
         | ({
               createRecipeUser: false;
           } & (
               | {
                     accountsLinked: true;
-                    updateVerificationClaim: boolean;
+                    updateAccountLinkingClaim: "REMOVE_CLAIM";
+                }
+              | {
+                    accountsLinked: false;
+                    updateAccountLinkingClaim: "ADD_CLAIM";
                 }
               | {
                     accountsLinked: false;
@@ -117,7 +121,7 @@ export default class Recipe extends RecipeModule {
         recipeUserId: string;
         userContext: any;
     }) => Promise<User | undefined>;
-    createPrimaryUserIdOrLinkAccounts: ({
+    createPrimaryUserIdOrLinkAccountsAfterEmailVerification: ({
         recipeUserId,
         session,
         userContext,
