@@ -119,7 +119,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
               }
             | {
                   status:
-                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
                       | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
@@ -145,7 +145,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
             if (primaryUserId !== null) {
                 return {
-                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR",
                     primaryUserId,
                     description: "Recipe user is already linked with another primary user id",
                 };
@@ -234,10 +234,8 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             this: RecipeInterface,
             {
                 recipeUserId,
-                userContext,
             }: {
                 recipeUserId: string;
-                userContext: any;
             }
         ): Promise<
             | {
@@ -246,30 +244,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
               }
             | {
                   status:
-                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
                       | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
               }
         > {
-            let canCreatePrimaryUser:
-                | {
-                      status: "OK";
-                  }
-                | {
-                      status:
-                          | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                          | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                      primaryUserId: string;
-                      description: string;
-                  } = await this.canCreatePrimaryUserId({
-                recipeUserId,
-                userContext,
-            });
-            if (canCreatePrimaryUser.status !== "OK") {
-                return canCreatePrimaryUser;
-            }
-
             let primaryUser: {
                 status: "OK";
                 user: User;
@@ -354,7 +334,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   }
                 | {
                       status:
-                          | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                          | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
                           | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                       primaryUserId: string;
                       description: string;
@@ -362,14 +342,18 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId,
                 userContext,
             });
-            if (canCreatePrimaryUser.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            if (canCreatePrimaryUser.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
                 if (canCreatePrimaryUser.primaryUserId === primaryUserId) {
                     return {
                         status: "ACCOUNTS_ALREADY_LINKED_ERROR",
                         description: "accounts are already linked",
                     };
                 }
-                return canCreatePrimaryUser;
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: canCreatePrimaryUser.primaryUserId,
+                    description: canCreatePrimaryUser.description,
+                };
             }
             if (canCreatePrimaryUser.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
                 /**
@@ -382,7 +366,11 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                  * to be linked with the input primaryUserId
                  */
                 if (canCreatePrimaryUser.primaryUserId !== primaryUserId) {
-                    return canCreatePrimaryUser;
+                    return {
+                        status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                        description: canCreatePrimaryUser.description,
+                        primaryUserId: canCreatePrimaryUser.primaryUserId,
+                    };
                 }
             }
             return {
