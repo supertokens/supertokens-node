@@ -407,31 +407,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            let canLinkAccountsResult:
-                | {
-                      status: "OK";
-                  }
-                | {
-                      status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                      description: string;
-                      primaryUserId: string;
-                  }
-                | {
-                      status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-                      description: string;
-                  }
-                | {
-                      status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                      primaryUserId: string;
-                      description: string;
-                  } = await this.canLinkAccounts({
-                recipeUserId,
-                primaryUserId,
-                userContext,
-            });
-            if (canLinkAccountsResult.status !== "OK") {
-                return canLinkAccountsResult;
-            }
             let accountsLinkingResult = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/accountlinking/user/link"),
                 {
