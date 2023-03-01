@@ -495,7 +495,7 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
 
-            if (createPrimaryUserResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            if (createPrimaryUserResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
                 // this can happen if there is a race condition in which the
                 // existing user becomes a primary user ID by the time the code
                 // execution comes into this block. So we call the function once again.
