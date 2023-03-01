@@ -312,22 +312,23 @@ export default class Recipe extends RecipeModule {
         if (shouldDoAccountLinking.shouldRequireVerification && !newUserVerified) {
             return recipeUserId;
         }
-        let canCreatePrimaryUserId = await this.recipeInterfaceImpl.canCreatePrimaryUserId({
+
+        let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
             userContext,
         });
-        if (canCreatePrimaryUserId.status === "OK") {
-            let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
-                recipeUserId,
-                userContext,
-            });
-            if (createPrimaryUserResult.status === "OK") {
-                return createPrimaryUserResult.user.id;
-            }
-            // if it comes here, it means that that there is already a primary user for the
-            // account info, or that this recipeUserId is already linked. Either way, we proceed
-            // to the next step, cause that takes care of both these cases.
+        if (createPrimaryUserResult.status === "OK") {
+            return createPrimaryUserResult.user.id;
         }
+        if (
+            createPrimaryUserResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR" &&
+            createPrimaryUserResult.primaryUserId === recipeUserId
+        ) {
+            return createPrimaryUserResult.primaryUserId;
+        }
+        // if it comes here, it means that that there is already a primary user for the
+        // account info, or that this recipeUserId is already linked. Either way, we proceed
+        // to the next step, cause that takes care of both these cases.
 
         if (primaryUser === undefined) {
             // it can come here if there is a race condition. So we just try again

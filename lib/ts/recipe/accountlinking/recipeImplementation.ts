@@ -234,10 +234,8 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             this: RecipeInterface,
             {
                 recipeUserId,
-                userContext,
             }: {
                 recipeUserId: string;
-                userContext: any;
             }
         ): Promise<
             | {
@@ -252,24 +250,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            let canCreatePrimaryUser:
-                | {
-                      status: "OK";
-                  }
-                | {
-                      status:
-                          | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                          | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                      primaryUserId: string;
-                      description: string;
-                  } = await this.canCreatePrimaryUserId({
-                recipeUserId,
-                userContext,
-            });
-            if (canCreatePrimaryUser.status !== "OK") {
-                return canCreatePrimaryUser;
-            }
-
             let primaryUser: {
                 status: "OK";
                 user: User;
