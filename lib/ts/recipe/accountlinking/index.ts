@@ -34,7 +34,7 @@ export default class Wrapper {
 
     static async addNewRecipeUserIdWithoutPrimaryUserId(
         recipeUserId: string,
-        recipeId: string,
+        recipeId: "emailpassword" | "thirdparty" | "passwordless",
         timeJoined: number,
         userContext?: any
     ) {

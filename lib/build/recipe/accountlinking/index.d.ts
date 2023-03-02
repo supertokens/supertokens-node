@@ -17,7 +17,7 @@ export default class Wrapper {
     }>;
     static addNewRecipeUserIdWithoutPrimaryUserId(
         recipeUserId: string,
-        recipeId: string,
+        recipeId: "emailpassword" | "thirdparty" | "passwordless",
         timeJoined: number,
         userContext?: any
     ): Promise<{
@@ -121,9 +121,16 @@ export default class Wrapper {
         recipeUserId: string,
         primaryUserId: string,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              didInsertNewRow: boolean;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+    >;
 }
 export declare const init: typeof Recipe.init;
 export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
