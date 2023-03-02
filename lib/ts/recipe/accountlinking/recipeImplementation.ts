@@ -59,7 +59,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 timeJoined,
             }: {
                 recipeUserId: string;
-                recipeId: string;
+                recipeId:"emailpassword" | "thirdparty" | "passwordless";
                 timeJoined: number;
             }
         ): Promise<{
