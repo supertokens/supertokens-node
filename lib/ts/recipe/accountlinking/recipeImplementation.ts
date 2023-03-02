@@ -478,10 +478,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 });
 
                 if (user === undefined) {
-                    return {
-                        status: "OK",
-                        wasRecipeUserDeleted: false,
-                    };
+                    throw new Error("Seems like a race condition issue occurred. Please try again");
                 }
                 if (user.loginMethods.length > 1) {
                     await this.deleteUser({
