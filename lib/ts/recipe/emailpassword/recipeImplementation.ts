@@ -1,5 +1,5 @@
 import { RecipeInterface, User } from "./types";
-import AccountLinking from "../accountlinking";
+import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser, listUsersByAccountInfo } from "../..";
@@ -24,14 +24,16 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
             if (response.status === "OK") {
                 if (doAccountLinking) {
-                    let primaryUserId = await AccountLinking.doPostSignUpAccountLinkingOperations(
+                    let primaryUserId = await AccountLinking.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations(
                         {
-                            email,
-                            recipeId: "emailpassword",
-                        },
-                        false,
-                        response.user.id,
-                        userContext
+                            newUser: {
+                                email,
+                                recipeId: "emailpassword",
+                            },
+                            newUserVerified: false,
+                            recipeUserId: response.user.id,
+                            userContext,
+                        }
                     );
                     response.user.id = primaryUserId;
                 }

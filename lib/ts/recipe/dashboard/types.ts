@@ -62,26 +62,16 @@ export type APIFunction = (apiImplementation: APIInterface, options: APIOptions)
 
 export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 
-type CommonUserInformation = {
-    id: string;
+export type RecipeLevelUser = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
     timeJoined: number;
-    firstName: string;
-    lastName: string;
-};
-
-export type EmailPasswordUser = CommonUserInformation & {
-    email: string;
-};
-
-export type ThirdPartyUser = CommonUserInformation & {
-    email: string;
-    thirdParty: {
+    recipeUserId: string;
+    email?: string;
+    phoneNumber?: string;
+    thirdParty?: {
         id: string;
         userId: string;
     };
-};
-
-export type PasswordlessUser = CommonUserInformation & {
-    email?: string;
-    phone?: string;
+    firstName: string;
+    lastName: string;
 };

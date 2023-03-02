@@ -406,7 +406,8 @@ export default class SuperTokens {
         throw err;
     };
 
-    getUserForRecipeId = async (
+    // this is an internal use function, therefore it is prefixed with an `_`
+    _getUserForRecipeId = async (
         userId: string,
         recipeId: string
     ): Promise<{

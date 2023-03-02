@@ -4,9 +4,12 @@ import Session, { createNewSession } from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
-import AccountLinking from "../../accountlinking";
+import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
+import { linkAccounts } from "../../accountlinking";
+import { EmailVerificationClaim } from "../../emailverification/emailVerificationClaim";
+import { getEmailVerifyLink } from "../../emailverification/utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -53,15 +56,15 @@ export default function getAPIImplementation(): APIInterface {
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
-            let result = await AccountLinking.accountLinkPostSignInViaSession(
+            let result = await AccountLinking.getInstanceOrThrowError().accountLinkPostSignInViaSession({
                 session,
-                {
+                newUser: {
                     email,
                     recipeId: "emailpassword",
                 },
-                false,
-                userContext
-            );
+                newUserVerified: false,
+                userContext,
+            });
             let createdNewRecipeUser = false;
             if (result.createRecipeUser) {
                 let password = formFields.filter((f) => f.id === "password")[0].value;
@@ -78,7 +81,34 @@ export default function getAPIImplementation(): APIInterface {
                     );
                 }
                 createdNewRecipeUser = true;
-                if (result.updateVerificationClaim) {
+                if (result.updateAccountLinkingClaim === "ADD_CLAIM") {
+                    const emailVerificationInstance = EmailVerification.getInstance();
+                    if (emailVerificationInstance !== undefined) {
+                        let emailVerificationResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                userId: response.user.id,
+                                email,
+                                userContext,
+                            }
+                        );
+                        if (emailVerificationResponse.status !== "EMAIL_ALREADY_VERIFIED_ERROR") {
+                            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                            let emailVerifyLink = getEmailVerifyLink({
+                                appInfo: options.appInfo,
+                                token: emailVerificationResponse.token,
+                                recipeId: options.recipeId,
+                            });
+                            await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                                type: "EMAIL_VERIFICATION",
+                                user: {
+                                    id: response.user.id,
+                                    email,
+                                },
+                                emailVerifyLink,
+                                userContext,
+                            });
+                        }
+                    }
                     await session.setClaimValue(AccountLinkingClaim, response.user.id, userContext);
                     return {
                         status: "ACCOUNT_NOT_VERIFIED_ERROR",
@@ -86,15 +116,15 @@ export default function getAPIImplementation(): APIInterface {
                         description: "",
                     };
                 } else {
-                    result = await AccountLinking.accountLinkPostSignInViaSession(
+                    result = await AccountLinking.getInstanceOrThrowError().accountLinkPostSignInViaSession({
                         session,
-                        {
+                        newUser: {
                             email,
                             recipeId: "emailpassword",
                         },
-                        false,
-                        userContext
-                    );
+                        newUserVerified: false,
+                        userContext,
+                    });
                 }
             }
             if (result.createRecipeUser) {
@@ -102,7 +132,7 @@ export default function getAPIImplementation(): APIInterface {
                     `this error should never be thrown after creating a new user during accountLinkPostSignInViaSession flow`
                 );
             }
-            if (!result.accountsLinked) {
+            if (!result.accountsLinked && "reason" in result) {
                 if (result.reason === "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
                     return {
                         status: "ACCOUNT_NOT_VERIFIED_ERROR",
@@ -133,7 +163,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
             let wereAccountsAlreadyLinked = false;
-            if (result.updateVerificationClaim) {
+            if (result.updateAccountLinkingClaim === "REMOVE_CLAIM") {
                 await session.removeClaim(AccountLinkingClaim, userContext);
             } else {
                 wereAccountsAlreadyLinked = true;
@@ -157,7 +187,7 @@ export default function getAPIImplementation(): APIInterface {
                 status: "OK",
                 user: {
                     id: user.id,
-                    recipeUserId: recipeUser.id,
+                    recipeUserId: recipeUser.recipeUserId,
                     timeJoined: recipeUser.timeJoined,
                     email,
                 },
@@ -237,7 +267,7 @@ export default function getAPIImplementation(): APIInterface {
                              * this means that there is no emailpassword recipe user for the input email
                              * so we check is account linking is enabled for the given email and primaryUserId
                              */
-                            let shouldDoAccountLinking = await AccountLinking.shouldDoAutomaticAccountLinking(
+                            let shouldDoAccountLinking = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
                                 {
                                     email,
                                     recipeId: "emailpassword",
@@ -255,7 +285,9 @@ export default function getAPIImplementation(): APIInterface {
                                     status: "OK",
                                 };
                             }
-                            let identitiesForPrimaryUser = AccountLinking.getIdentitiesForUser(primaryUser);
+                            let identitiesForPrimaryUser = AccountLinking.getInstanceOrThrowError().transformUserInfoIntoVerifiedAndUnverifiedBucket(
+                                primaryUser
+                            );
                             /**
                              * if input email doens't belong to the verified indentity for the primaryUser,
                              * we need to check shouldRequireVerification boolean
@@ -290,7 +322,7 @@ export default function getAPIImplementation(): APIInterface {
                         /**
                          * checking for shouldDoAccountLinking
                          */
-                        let shouldDoAccountLinking = await AccountLinking.shouldDoAutomaticAccountLinking(
+                        let shouldDoAccountLinking = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
                             {
                                 email,
                                 recipeId: "emailpassword",
@@ -312,7 +344,9 @@ export default function getAPIImplementation(): APIInterface {
                                  * checking if the email belongs to the verified identities for the
                                  * primary user
                                  */
-                                let identitiesForPrimaryUser = AccountLinking.getIdentitiesForUser(primaryUser);
+                                let identitiesForPrimaryUser = AccountLinking.getInstanceOrThrowError().transformUserInfoIntoVerifiedAndUnverifiedBucket(
+                                    primaryUser
+                                );
                                 if (!identitiesForPrimaryUser.verified.emails.includes(email)) {
                                     /**
                                      * the email is not verified for any account linked to the primary user.
@@ -473,16 +507,16 @@ export default function getAPIImplementation(): APIInterface {
                         }
                         let recipeUser = response.user;
                         await verifyUser(response.user.id);
-                        await AccountLinking.linkAccounts(recipeUser.id, user.id, userContext);
+                        await linkAccounts(recipeUser.id, user.id, userContext);
                     } else if (!epUser.verified) {
-                        await verifyUser(epUser.id);
+                        await verifyUser(epUser.recipeUserId);
                     }
                 } else {
                     /**
                      * it's a recipe user
                      */
                     if (!user.loginMethods[0].verified) {
-                        await verifyUser(user.loginMethods[0].id);
+                        await verifyUser(user.loginMethods[0].recipeUserId);
                     }
                     const session = await Session.getSession(
                         options.req,
@@ -490,7 +524,13 @@ export default function getAPIImplementation(): APIInterface {
                         { overrideGlobalClaimValidators: () => [], sessionRequired: false },
                         userContext
                     );
-                    let result = await AccountLinking.createPrimaryUserIdOrLinkAccounts(user.id, session, userContext);
+                    let result = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccountsAfterEmailVerification(
+                        {
+                            recipeUserId: user.id,
+                            session,
+                            userContext,
+                        }
+                    );
                     if (result.createNewSession) {
                         await createNewSession(
                             options.req,
@@ -583,13 +623,13 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let isSignUpAllowed = await AccountLinking.isSignUpAllowed(
-                {
+            let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                newUser: {
                     recipeId: "emailpassword",
                     email,
                 },
-                userContext
-            );
+                userContext,
+            });
 
             if (!isSignUpAllowed) {
                 return {

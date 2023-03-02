@@ -25,9 +25,9 @@ type User = {
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
+    thirdParty: {
+        id: string;
+        userId: string;
     }[];
     firstName?: string;
     lastName?: string;

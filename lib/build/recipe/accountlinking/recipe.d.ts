@@ -25,13 +25,13 @@ export default class Recipe extends RecipeModule {
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    getIdentitiesForUser: (
+    transformUserInfoIntoVerifiedAndUnverifiedBucket: (
         user: User
     ) => {
         verified: {
             emails: string[];
             phoneNumbers: string[];
-            thirdpartyInfo: {
+            thirdParty: {
                 id: string;
                 userId: string;
             }[];
@@ -39,17 +39,17 @@ export default class Recipe extends RecipeModule {
         unverified: {
             emails: string[];
             phoneNumbers: string[];
-            thirdpartyInfo: {
+            thirdParty: {
                 id: string;
                 userId: string;
             }[];
         };
     };
     isSignUpAllowed: ({
-        info,
+        newUser,
         userContext,
     }: {
-        info: AccountInfoAndEmailWithRecipeId;
+        newUser: AccountInfoAndEmailWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
     markEmailAsVerified: ({
@@ -62,37 +62,41 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }) => Promise<void>;
     doPostSignUpAccountLinkingOperations: ({
-        info,
-        infoVerified,
+        newUser,
+        newUserVerified,
         recipeUserId,
         userContext,
     }: {
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
+        newUser: AccountInfoAndEmailWithRecipeId;
+        newUserVerified: boolean;
         recipeUserId: string;
         userContext: any;
     }) => Promise<string>;
     accountLinkPostSignInViaSession: ({
         session,
-        info,
-        infoVerified,
+        newUser,
+        newUserVerified,
         userContext,
     }: {
         session: SessionContainer;
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
+        newUser: AccountInfoAndEmailWithRecipeId;
+        newUserVerified: boolean;
         userContext: any;
     }) => Promise<
         | {
               createRecipeUser: true;
-              updateVerificationClaim: boolean;
+              updateAccountLinkingClaim: "ADD_CLAIM" | "NO_CHANGE";
           }
         | ({
               createRecipeUser: false;
           } & (
               | {
                     accountsLinked: true;
-                    updateVerificationClaim: boolean;
+                    updateAccountLinkingClaim: "REMOVE_CLAIM";
+                }
+              | {
+                    accountsLinked: false;
+                    updateAccountLinkingClaim: "ADD_CLAIM";
                 }
               | {
                     accountsLinked: false;
@@ -117,7 +121,7 @@ export default class Recipe extends RecipeModule {
         recipeUserId: string;
         userContext: any;
     }) => Promise<User | undefined>;
-    createPrimaryUserIdOrLinkAccounts: ({
+    createPrimaryUserIdOrLinkAccountsAfterEmailVerification: ({
         recipeUserId,
         session,
         userContext,

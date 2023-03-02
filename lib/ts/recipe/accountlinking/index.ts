@@ -13,10 +13,8 @@
  * under the License.
  */
 
-import { SessionContainer } from "../session";
 import Recipe from "./recipe";
-import type { AccountInfoAndEmailWithRecipeId, RecipeInterface, RecipeLevelUser } from "./types";
-import type { User } from "../../types";
+import type { RecipeInterface } from "./types";
 export default class Wrapper {
     static init = Recipe.init;
 
@@ -27,8 +25,8 @@ export default class Wrapper {
         });
     }
 
-    static async getPrimaryUserIdsforRecipeUserIds(recipeUserIds: string[], userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdsforRecipeUserIds({
+    static async getPrimaryUserIdsForRecipeUserIds(recipeUserIds: string[], userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPrimaryUserIdsForRecipeUserIds({
             recipeUserIds,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -36,7 +34,7 @@ export default class Wrapper {
 
     static async addNewRecipeUserIdWithoutPrimaryUserId(
         recipeUserId: string,
-        recipeId: string,
+        recipeId: "emailpassword" | "thirdparty" | "passwordless",
         timeJoined: number,
         userContext?: any
     ) {
@@ -85,84 +83,6 @@ export default class Wrapper {
         });
     }
 
-    static async getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId(recipeUserId: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
-            recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
-    static async isSignUpAllowed(info: AccountInfoAndEmailWithRecipeId, userContext: any) {
-        return await Recipe.getInstanceOrThrowError().isSignUpAllowed({
-            info,
-            userContext,
-        });
-    }
-
-    static async doPostSignUpAccountLinkingOperations(
-        info: AccountInfoAndEmailWithRecipeId,
-        infoVerified: boolean,
-        recipeUserId: string,
-        userContext: any
-    ) {
-        return await Recipe.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations({
-            info,
-            infoVerified,
-            recipeUserId,
-            userContext,
-        });
-    }
-
-    static async accountLinkPostSignInViaSession(
-        session: SessionContainer,
-        info: AccountInfoAndEmailWithRecipeId,
-        infoVerified: boolean,
-        userContext: any
-    ) {
-        return await Recipe.getInstanceOrThrowError().accountLinkPostSignInViaSession({
-            session,
-            info,
-            infoVerified,
-            userContext,
-        });
-    }
-
-    static async createPrimaryUserIdOrLinkAccounts(
-        recipeUserId: string,
-        session: SessionContainer | undefined,
-        userContext?: any
-    ) {
-        return await Recipe.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts({
-            recipeUserId,
-            session,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
-    static async onAccountLinked(user: User, newAccountInfo: RecipeLevelUser, userContext?: any) {
-        userContext = userContext === undefined ? {} : userContext;
-        return await Recipe.getInstanceOrThrowError().config.onAccountLinked(user, newAccountInfo, userContext);
-    }
-
-    static async shouldDoAutomaticAccountLinking(
-        newAccountInfo: AccountInfoAndEmailWithRecipeId,
-        user: User | undefined,
-        session: SessionContainer | undefined,
-        userContext?: any
-    ) {
-        userContext = userContext === undefined ? {} : userContext;
-        return await Recipe.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
-            newAccountInfo,
-            user,
-            session,
-            userContext
-        );
-    }
-
-    static getIdentitiesForUser(user: User) {
-        return Recipe.getInstanceOrThrowError().getIdentitiesForUser(user);
-    }
-
     static async fetchFromAccountToLinkTable(recipeUserId: string, userContext?: any) {
         userContext = userContext === undefined ? {} : userContext;
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchFromAccountToLinkTable({
@@ -183,22 +103,13 @@ export default class Wrapper {
 
 export const init = Wrapper.init;
 export const getRecipeUserIdsForPrimaryUserIds = Wrapper.getRecipeUserIdsForPrimaryUserIds;
-export const getPrimaryUserIdsforRecipeUserIds = Wrapper.getPrimaryUserIdsforRecipeUserIds;
+export const getPrimaryUserIdsForRecipeUserIds = Wrapper.getPrimaryUserIdsForRecipeUserIds;
 export const addNewRecipeUserIdWithoutPrimaryUserId = Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
 export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
 export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccounts = Wrapper.unlinkAccounts;
-export const getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId =
-    Wrapper.getPrimaryUserIdLinkedOrCanBeLinkedToRecipeUserId;
-export const isSignUpAllowed = Wrapper.isSignUpAllowed;
-export const doPostSignUpAccountLinkingOperations = Wrapper.doPostSignUpAccountLinkingOperations;
-export const accountLinkPostSignInViaSession = Wrapper.accountLinkPostSignInViaSession;
-export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
-export const onAccountLinked = Wrapper.onAccountLinked;
-export const shouldDoAutomaticAccountLinking = Wrapper.shouldDoAutomaticAccountLinking;
-export const getIdentitiesForUser = Wrapper.getIdentitiesForUser;
 export const fetchFromAccountToLinkTable = Wrapper.fetchFromAccountToLinkTable;
 export const storeIntoAccountToLinkTable = Wrapper.storeIntoAccountToLinkTable;
 
