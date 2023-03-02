@@ -198,7 +198,7 @@ export type RecipeInterface = {
         recipeUserId: string;
         primaryUserId: string;
         userContext: any;
-    }) => Promise<{ status: "OK" }>;
+    }) => Promise<{ status: "OK", didInsertNewRow: boolean } | {status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR", primaryUserId: string }}>;
 };
 
 export type RecipeLevelUser = {
