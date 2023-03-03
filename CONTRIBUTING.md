@@ -20,7 +20,7 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 ### Prerequisites
 
 -   OS: Linux or macOS
--   Nodejs & npm
+-   Nodejs & pnpm[installation guide](https://pnpm.js.org/en/installation)
 -   IDE: [VSCode](https://code.visualstudio.com/download)(recommended) or equivalent IDE
 
 ### Project Setup
