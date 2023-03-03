@@ -17,6 +17,7 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
+import { RecipeLevelUser } from "./recipe/accountlinking/types";
 
 export type AppInfo = {
     appName: string;
@@ -74,44 +75,17 @@ export type GeneralErrorResponse = {
     message: string;
 };
 
-export type AccountInfo =
-    | {
-          email: string;
-      }
-    | {
-          thirdpartyId: string;
-          thirdpartyUserId: string;
-      }
-    | {
-          phoneNumber: string;
-      };
-
-export type AccountInfoWithRecipeId =
-    | {
-          recipeId: "emailpassword" | "passwordless";
-          email: string;
-      }
-    | {
-          recipeId: "thirdparty";
-          thirdpartyId: string;
-          thirdpartyUserId: string;
-      }
-    | {
-          recipeId: "passwordless";
-          phoneNumber: string;
-      };
-
 export type User = {
-    id: string;
+    id: string; // primaryUserId or recipeUserId
+    timeJoined: number; // minimum timeJoined value from linkedRecipes
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
+    thirdParty: {
+        id: string;
+        userId: string;
     }[];
-    linkedRecipes: {
-        recipeId: string;
-        recipeUserId: string;
-    }[];
+    loginMethods: (RecipeLevelUser & {
+        verified: boolean;
+    })[];
 };

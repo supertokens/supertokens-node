@@ -1,20 +1,21 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../types";
+import { RecipeLevelUser } from "../../accountlinking/types";
 declare type User = {
     id: string;
+    timeJoined: number;
     isPrimaryUser: boolean;
-    firstName?: string;
-    lastName?: string;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
+    thirdParty: {
+        id: string;
+        userId: string;
     }[];
-    linkedRecipes: {
-        recipeId: string;
-        recipeUserId: string;
-    }[];
+    firstName?: string;
+    lastName?: string;
+    loginMethods: (RecipeLevelUser & {
+        verified: boolean;
+    })[];
 };
 export declare type Response = {
     status: "OK";

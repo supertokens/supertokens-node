@@ -4,7 +4,6 @@ import type { User } from "../../types";
 import { SessionContainer } from "../session";
 export declare type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
-    onAccountUnlinked?: (user: User, unlinkedAccount: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoAndEmailWithRecipeId,
         user: User | undefined,
@@ -28,7 +27,6 @@ export declare type TypeInput = {
 };
 export declare type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
-    onAccountUnlinked: (user: User, unlinkedAccount: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoAndEmailWithRecipeId,
         user: User | undefined,
@@ -57,7 +55,7 @@ export declare type RecipeInterface = {
     }) => Promise<{
         [primaryUserId: string]: string[];
     }>;
-    getPrimaryUserIdsforRecipeUserIds: (input: {
+    getPrimaryUserIdsForRecipeUserIds: (input: {
         recipeUserIds: string[];
         userContext: any;
     }) => Promise<{
@@ -65,18 +63,13 @@ export declare type RecipeInterface = {
     }>;
     addNewRecipeUserIdWithoutPrimaryUserId: (input: {
         recipeUserId: string;
-        recipeId: string;
+        recipeId: "emailpassword" | "thirdparty" | "passwordless";
         timeJoined: number;
         userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              createdNewEntry: boolean;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        createdNewEntry: boolean;
+    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
@@ -96,7 +89,7 @@ export declare type RecipeInterface = {
           }
         | {
               status:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
                   | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
@@ -112,7 +105,7 @@ export declare type RecipeInterface = {
           }
         | {
               status:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
                   | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
@@ -167,14 +160,42 @@ export declare type RecipeInterface = {
     unlinkAccounts: (input: {
         recipeUserId: string;
         userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+              wasRecipeUserDeleted: boolean;
+          }
+        | {
+              status: "NO_PRIMARY_USER_FOUND";
+          }
+    >;
+    getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
+    listUsersByAccountInfo: (input: { accountInfo: AccountInfo; userContext: any }) => Promise<User[]>;
+    deleteUser: (input: {
+        userId: string;
+        removeAllLinkedAccounts: boolean;
+        userContext: any;
     }) => Promise<{
         status: "OK";
-        wasRecipeUserDeleted: boolean;
     }>;
+    fetchFromAccountToLinkTable: (input: { recipeUserId: string; userContext: any }) => Promise<User | undefined>;
+    storeIntoAccountToLinkTable: (input: {
+        recipeUserId: string;
+        primaryUserId: string;
+        userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+              didInsertNewRow: boolean;
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+    >;
 };
 export declare type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    id: string;
     timeJoined: number;
     recipeUserId: string;
     email?: string;
@@ -193,3 +214,14 @@ export declare type AccountInfoAndEmailWithRecipeId = {
         userId: string;
     };
 };
+export declare type AccountInfo =
+    | {
+          email: string;
+      }
+    | {
+          phoneNumber: string;
+      }
+    | {
+          thirdPartyId: string;
+          thirdPartyUserId: string;
+      };

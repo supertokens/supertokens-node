@@ -30,6 +30,7 @@ export default class Session implements SessionContainerInterface {
         protected readonly req: BaseRequest,
         protected readonly transferMethod: TokenTransferMethod
     ) {}
+
     getRecipeUserId(_userContext?: any): string {
         return this.recipeUserId;
     }

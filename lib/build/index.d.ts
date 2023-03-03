@@ -1,7 +1,8 @@
 // @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
+import { User } from "./types";
+import { AccountInfo } from "./recipe/accountlinking/types";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
@@ -22,12 +23,6 @@ export default class SuperTokensWrapper {
     }): Promise<{
         users: User[];
         nextPaginationToken?: string;
-    }>;
-    static deleteUser(
-        userId: string,
-        removeAllLinkedAccounts?: boolean
-    ): Promise<{
-        status: "OK";
     }>;
     static createUserIdMapping(input: {
         superTokensUserId: string;
@@ -73,9 +68,15 @@ export default class SuperTokensWrapper {
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    static getUser(input: { userId: string }): Promise<User | undefined>;
-    static listUsersByAccountInfo(input: { info: AccountInfo }): Promise<User[] | undefined>;
-    static getUserByAccountInfo(input: { info: AccountInfoWithRecipeId }): Promise<User | undefined>;
+    static getUser(userId: string, userContext?: any): Promise<User | undefined>;
+    static listUsersByAccountInfo(accountInfo: AccountInfo, userContext?: any): Promise<User[]>;
+    static deleteUser(
+        userId: string,
+        removeAllLinkedAccounts?: boolean,
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+    }>;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -89,5 +90,4 @@ export declare let deleteUserIdMapping: typeof SuperTokensWrapper.deleteUserIdMa
 export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
 export declare let getUser: typeof SuperTokensWrapper.getUser;
 export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
-export declare let getUserByAccountInfo: typeof SuperTokensWrapper.getUserByAccountInfo;
 export declare let Error: typeof SuperTokensError;

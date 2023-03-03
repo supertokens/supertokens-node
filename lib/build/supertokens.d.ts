@@ -4,7 +4,7 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
-import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
+import { RecipeLevelUser } from "./recipe/accountlinking/types";
 export default class SuperTokens {
     private static instance;
     framework: TypeFramework;
@@ -27,21 +27,6 @@ export default class SuperTokens {
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
-    getUsers: (input: {
-        timeJoinedOrder: "ASC" | "DESC";
-        limit?: number;
-        paginationToken?: string;
-        includeRecipeIds?: string[];
-    }) => Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    deleteUser: (input: {
-        userId: string;
-        removeAllLinkedAccounts: boolean;
-    }) => Promise<{
-        status: "OK";
-    }>;
     createUserIdMapping: (input: {
         superTokensUserId: string;
         externalUserId: string;
@@ -88,7 +73,17 @@ export default class SuperTokens {
     }>;
     middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
-    getUser: (_input: { userId: string }) => Promise<User | undefined>;
-    listUsersByAccountInfo: (_input: { info: AccountInfo }) => Promise<User[] | undefined>;
-    getUserByAccountInfoAndRecipeId: (_input: { info: AccountInfoWithRecipeId }) => Promise<User | undefined>;
+    _getUserForRecipeId: (
+        userId: string,
+        recipeId: string
+    ) => Promise<{
+        user: RecipeLevelUser | undefined;
+        recipe:
+            | "emailpassword"
+            | "thirdparty"
+            | "passwordless"
+            | "thirdpartyemailpassword"
+            | "thirdpartypasswordless"
+            | undefined;
+    }>;
 }

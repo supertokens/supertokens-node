@@ -15,7 +15,9 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
+import { User } from "./types";
+import AccountLinking from "./recipe/accountlinking/recipe";
+import { AccountInfo } from "./recipe/accountlinking/types";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -39,9 +41,10 @@ export default class SuperTokensWrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
+        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
+            userContext: undefined,
         });
     }
 
@@ -53,16 +56,10 @@ export default class SuperTokensWrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
+        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "DESC",
             ...input,
-        });
-    }
-
-    static deleteUser(userId: string, removeAllLinkedAccounts: boolean = true) {
-        return SuperTokens.getInstanceOrThrowError().deleteUser({
-            userId,
-            removeAllLinkedAccounts,
+            userContext: undefined,
         });
     }
 
@@ -95,16 +92,24 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
 
-    static getUser(input: { userId: string }) {
-        return SuperTokens.getInstanceOrThrowError().getUser(input);
+    static async getUser(userId: string, userContext?: any) {
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+            userId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
-
-    static listUsersByAccountInfo(input: { info: AccountInfo }) {
-        return SuperTokens.getInstanceOrThrowError().listUsersByAccountInfo(input);
+    static async listUsersByAccountInfo(accountInfo: AccountInfo, userContext?: any) {
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+            accountInfo,
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
-
-    static getUserByAccountInfo(input: { info: AccountInfoWithRecipeId }) {
-        return SuperTokens.getInstanceOrThrowError().getUserByAccountInfoAndRecipeId(input);
+    static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = true, userContext?: any) {
+        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
+            userId,
+            removeAllLinkedAccounts,
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
 }
 
@@ -131,7 +136,5 @@ export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUs
 export let getUser = SuperTokensWrapper.getUser;
 
 export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
-
-export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
 
 export let Error = SuperTokensWrapper.Error;

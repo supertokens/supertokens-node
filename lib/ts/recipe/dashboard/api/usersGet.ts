@@ -14,25 +14,26 @@
  */
 import { APIInterface, APIOptions } from "../types";
 import STError from "../../../error";
-import SuperTokens from "../../../supertokens";
+import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
+import { RecipeLevelUser } from "../../accountlinking/types";
 
 type User = {
-    id: string;
+    id: string; // primaryUserId or recipeUserId
+    timeJoined: number; // minimum timeJoined value from linkedRecipes
     isPrimaryUser: boolean;
-    firstName?: string;
-    lastName?: string;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
+    thirdParty: {
+        id: string;
+        userId: string;
     }[];
-    linkedRecipes: {
-        recipeId: string;
-        recipeUserId: string;
-    }[];
+    firstName?: string;
+    lastName?: string;
+    loginMethods: (RecipeLevelUser & {
+        verified: boolean;
+    })[];
 };
 
 export type Response = {
@@ -67,11 +68,16 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
 
     let paginationToken = options.req.getKeyValueFromQuery("paginationToken");
 
-    let usersResponse = await SuperTokens.getInstanceOrThrowError().getUsers({
-        timeJoinedOrder: timeJoinedOrder,
-        limit: parseInt(limit),
-        paginationToken,
-    });
+    let usersResponse =
+        timeJoinedOrder === "DESC"
+            ? await getUsersNewestFirst({
+                  limit: parseInt(limit),
+                  paginationToken,
+              })
+            : await getUsersOldestFirst({
+                  limit: parseInt(limit),
+                  paginationToken,
+              });
 
     // If the UserMetaData recipe has been initialised, fetch first and last name
     try {
