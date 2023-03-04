@@ -13,44 +13,45 @@
  * under the License.
  */
 
-import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
-import { Transporter } from "nodemailer";
+import { Transporter } from 'nodemailer'
+import { TypeEmailVerificationEmailDeliveryInput } from '../../../types'
 import {
-    ServiceInterface,
-    TypeInputSendRawEmail,
-    GetContentResult,
-} from "../../../../../ingredients/emaildelivery/services/smtp";
-import getEmailVerifyEmailContent from "./emailVerify";
+  GetContentResult,
+  ServiceInterface,
+  TypeInputSendRawEmail,
+} from '../../../../../ingredients/emaildelivery/services/smtp'
+import getEmailVerifyEmailContent from './emailVerify'
 
 export function getServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+  transporter: Transporter,
+  from: {
+    name: string
+    email: string
+  },
 ): ServiceInterface<TypeEmailVerificationEmailDeliveryInput> {
-    return {
-        sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            if (input.isHtml) {
-                await transporter.sendMail({
-                    from: `${from.name} <${from.email}>`,
-                    to: input.toEmail,
-                    subject: input.subject,
-                    html: input.body,
-                });
-            } else {
-                await transporter.sendMail({
-                    from: `${from.name} <${from.email}>`,
-                    to: input.toEmail,
-                    subject: input.subject,
-                    text: input.body,
-                });
-            }
-        },
-        getContent: async function (
-            input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            return getEmailVerifyEmailContent(input);
-        },
-    };
+  return {
+    async sendRawEmail(input: TypeInputSendRawEmail) {
+      if (input.isHtml) {
+        await transporter.sendMail({
+          from: `${from.name} <${from.email}>`,
+          to: input.toEmail,
+          subject: input.subject,
+          html: input.body,
+        })
+      }
+      else {
+        await transporter.sendMail({
+          from: `${from.name} <${from.email}>`,
+          to: input.toEmail,
+          subject: input.subject,
+          text: input.body,
+        })
+      }
+    },
+    async getContent(
+      input: TypeEmailVerificationEmailDeliveryInput & { userContext: any },
+    ): Promise<GetContentResult> {
+      return getEmailVerifyEmailContent(input)
+    },
+  }
 }

@@ -13,31 +13,29 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
-export * from "./types";
-
+import Recipe from './recipe'
+import { APIInterface, APIOptions, JsonWebKey, RecipeInterface } from './types'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static async createJWT(payload: any, validitySeconds?: number, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
-            payload,
-            validitySeconds,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async createJWT(payload: any, validitySeconds?: number, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
+      payload,
+      validitySeconds,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async getJWKS(userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWKS({
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async getJWKS(userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWKS({
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 }
 
-export let init = Wrapper.init;
-export let createJWT = Wrapper.createJWT;
-export let getJWKS = Wrapper.getJWKS;
+export const init = Wrapper.init
+export const createJWT = Wrapper.createJWT
+export const getJWKS = Wrapper.getJWKS
 
-export type { APIInterface, APIOptions, RecipeInterface, JsonWebKey };
+export type { APIInterface, APIOptions, RecipeInterface, JsonWebKey }

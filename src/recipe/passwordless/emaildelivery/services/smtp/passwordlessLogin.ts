@@ -12,30 +12,30 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessEmailDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
-import Supertokens from "../../../../../supertokens";
-import { humaniseMilliseconds } from "../../../../../utils";
+import { TypePasswordlessEmailDeliveryInput } from '../../../types'
+import { GetContentResult } from '../../../../../ingredients/emaildelivery/services/smtp'
+import Supertokens from '../../../../../supertokens'
+import { humaniseMilliseconds } from '../../../../../utils'
 export default function getPasswordlessLoginEmailContent(input: TypePasswordlessEmailDeliveryInput): GetContentResult {
-    let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo.appName;
-    let body = getPasswordlessLoginEmailHTML(
-        appName,
-        input.email,
-        input.codeLifetime,
-        input.urlWithLinkCode,
-        input.userInputCode
-    );
-    return {
-        body,
-        toEmail: input.email,
-        subject: "Login to your account",
-        isHtml: true,
-    };
+  const supertokens = Supertokens.getInstanceOrThrowError()
+  const appName = supertokens.appInfo.appName
+  const body = getPasswordlessLoginEmailHTML(
+    appName,
+    input.email,
+    input.codeLifetime,
+    input.urlWithLinkCode,
+    input.userInputCode,
+  )
+  return {
+    body,
+    toEmail: input.email,
+    subject: 'Login to your account',
+    isHtml: true,
+  }
 }
 
 function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetime: string, userInputCode: string) {
-    return `
+  return `
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
             xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -940,16 +940,16 @@ function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetim
         </body>
         
         </html>
-    `;
+    `
 }
 
 function getPasswordlessLoginURLLinkBody(
-    appName: string,
-    email: string,
-    codeLifetime: string,
-    urlWithLinkCode: string
+  appName: string,
+  email: string,
+  codeLifetime: string,
+  urlWithLinkCode: string,
 ) {
-    return `
+  return `
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
             xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -1869,17 +1869,17 @@ function getPasswordlessLoginURLLinkBody(
         </body>
         
         </html>
-    `;
+    `
 }
 
 function getPasswordlessLoginOTPAndURLLinkBody(
-    appName: string,
-    email: string,
-    codeLifetime: string,
-    urlWithLinkCode: string,
-    userInputCode: string
+  appName: string,
+  email: string,
+  codeLifetime: string,
+  urlWithLinkCode: string,
+  userInputCode: string,
 ) {
-    return `
+  return `
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
             xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -2860,30 +2860,30 @@ function getPasswordlessLoginOTPAndURLLinkBody(
         </body>
 
         </html>
-    `;
+    `
 }
 
 export function getPasswordlessLoginEmailHTML(
-    appName: string,
-    email: string,
-    codeLifetime: number,
-    urlWithLinkCode?: string,
-    userInputCode?: string
+  appName: string,
+  email: string,
+  codeLifetime: number,
+  urlWithLinkCode?: string,
+  userInputCode?: string,
 ): string {
-    if (urlWithLinkCode !== undefined && userInputCode !== undefined) {
-        return getPasswordlessLoginOTPAndURLLinkBody(
-            appName,
-            email,
-            humaniseMilliseconds(codeLifetime),
-            urlWithLinkCode,
-            userInputCode
-        );
-    }
-    if (userInputCode !== undefined) {
-        return getPasswordlessLoginOTPBody(appName, email, humaniseMilliseconds(codeLifetime), userInputCode);
-    }
-    if (urlWithLinkCode !== undefined) {
-        return getPasswordlessLoginURLLinkBody(appName, email, humaniseMilliseconds(codeLifetime), urlWithLinkCode);
-    }
-    throw Error("this should never be thrown");
+  if (urlWithLinkCode !== undefined && userInputCode !== undefined) {
+    return getPasswordlessLoginOTPAndURLLinkBody(
+      appName,
+      email,
+      humaniseMilliseconds(codeLifetime),
+      urlWithLinkCode,
+      userInputCode,
+    )
+  }
+  if (userInputCode !== undefined)
+    return getPasswordlessLoginOTPBody(appName, email, humaniseMilliseconds(codeLifetime), userInputCode)
+
+  if (urlWithLinkCode !== undefined)
+    return getPasswordlessLoginURLLinkBody(appName, email, humaniseMilliseconds(codeLifetime), urlWithLinkCode)
+
+  throw new Error('this should never be thrown')
 }

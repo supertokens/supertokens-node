@@ -13,107 +13,106 @@
  * under the License.
  */
 
-import SuperTokensError from "../../error";
-import error from "../../error";
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import normalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
-import RecipeModule from "../../recipeModule";
-import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
+import OverrideableBuilder from 'overrideableBuilder'
+import SuperTokensError from '../../error'
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
+import normalisedURLPath from '../../normalisedURLPath'
+import { Querier } from '../../querier'
+import RecipeModule from '../../recipeModule'
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from '../../types'
 
-import RecipeImplementation from "./recipeImplementation";
-import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
-import { validateAndNormaliseUserInput } from "./utils";
-import OverrideableBuilder from "supertokens-js-override";
-import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import SessionRecipe from "../session/recipe";
-import { UserRoleClaim } from "./userRoleClaim";
-import { PermissionClaim } from "./permissionClaim";
+import { PostSuperTokensInitCallbacks } from '../../postSuperTokensInitCallbacks'
+import SessionRecipe from '../session/recipe'
+import RecipeImplementation from './recipeImplementation'
+import { RecipeInterface, TypeInput, TypeNormalisedInput } from './types'
+import { validateAndNormaliseUserInput } from './utils'
+import { UserRoleClaim } from './userRoleClaim'
+import { PermissionClaim } from './permissionClaim'
 
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID = "userroles";
-    private static instance: Recipe | undefined = undefined;
+  static RECIPE_ID = 'userroles'
+  private static instance: Recipe | undefined = undefined
 
-    config: TypeNormalisedInput;
-    recipeInterfaceImpl: RecipeInterface;
-    isInServerlessEnv: boolean;
+  config: TypeNormalisedInput
+  recipeInterfaceImpl: RecipeInterface
+  isInServerlessEnv: boolean
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo);
-        this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        this.isInServerlessEnv = isInServerlessEnv;
+  constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
+    super(recipeId, appInfo)
+    this.config = validateAndNormaliseUserInput(this, appInfo, config)
+    this.isInServerlessEnv = isInServerlessEnv
 
-        {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
-            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
-        }
-
-        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            if (!this.config.skipAddingRolesToAccessToken) {
-                SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(UserRoleClaim);
-            }
-            if (!this.config.skipAddingPermissionsToAccessToken) {
-                SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(PermissionClaim);
-            }
-        });
+    {
+      const builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)))
+      this.recipeInterfaceImpl = builder.override(this.config.override.functions).build()
     }
 
-    /* Init functions */
+    PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+      if (!this.config.skipAddingRolesToAccessToken)
+        SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(UserRoleClaim)
 
-    static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance !== undefined) {
-            return Recipe.instance;
-        }
-        throw new Error(
-            "Initialisation not done. Did you forget to call the UserRoles.init or SuperTokens.init functions?"
-        );
+      if (!this.config.skipAddingPermissionsToAccessToken)
+        SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(PermissionClaim)
+    })
+  }
+
+  /* Init functions */
+
+  static getInstanceOrThrowError(): Recipe {
+    if (Recipe.instance !== undefined)
+      return Recipe.instance
+
+    throw new Error(
+      'Initialisation not done. Did you forget to call the UserRoles.init or SuperTokens.init functions?',
+    )
+  }
+
+  static init(config?: TypeInput): RecipeListFunction {
+    return (appInfo, isInServerlessEnv) => {
+      if (Recipe.instance === undefined) {
+        Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config)
+        return Recipe.instance
+      }
+      else {
+        throw new Error('UserRoles recipe has already been initialised. Please check your code for bugs.')
+      }
     }
+  }
 
-    static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
-            if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
-                return Recipe.instance;
-            } else {
-                throw new Error("UserRoles recipe has already been initialised. Please check your code for bugs.");
-            }
-        };
-    }
+  static reset() {
+    if (process.env.TEST_MODE !== 'testing')
+      throw new Error('calling testing function in non testing env')
 
-    static reset() {
-        if (process.env.TEST_MODE !== "testing") {
-            throw new Error("calling testing function in non testing env");
-        }
-        Recipe.instance = undefined;
-    }
+    Recipe.instance = undefined
+  }
 
-    /* RecipeModule functions */
+  /* RecipeModule functions */
 
-    getAPIsHandled(): APIHandled[] {
-        return [];
-    }
+  getAPIsHandled(): APIHandled[] {
+    return []
+  }
 
-    // This stub is required to implement RecipeModule
-    handleAPIRequest = async (
-        _: string,
-        __: BaseRequest,
-        ___: BaseResponse,
-        ____: normalisedURLPath,
-        _____: HTTPMethod
-    ): Promise<boolean> => {
-        throw new Error("Should never come here");
-    };
+  // This stub is required to implement RecipeModule
+  handleAPIRequest = async (
+    _: string,
+    __: BaseRequest,
+    ___: BaseResponse,
+    ____: normalisedURLPath,
+    _____: HTTPMethod,
+  ): Promise<boolean> => {
+    throw new Error('Should never come here')
+  }
 
-    handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void> {
-        throw error;
-    }
+  handleError(error: SuperTokensError, _: BaseRequest, __: BaseResponse): Promise<void> {
+    throw error
+  }
 
-    getAllCORSHeaders(): string[] {
-        return [];
-    }
+  getAllCORSHeaders(): string[] {
+    return []
+  }
 
-    isErrorFromThisRecipe(err: any): err is error {
-        return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    }
+  isErrorFromThisRecipe(err: any): err is SuperTokensError {
+    return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID
+  }
 }

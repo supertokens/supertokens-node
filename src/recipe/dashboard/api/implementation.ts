@@ -13,33 +13,32 @@
  * under the License.
  */
 
-import NormalisedURLDomain from "../../../normalisedURLDomain";
-import NormalisedURLPath from "../../../normalisedURLPath";
-import SuperTokens from "../../../supertokens";
-import { DASHBOARD_API } from "../constants";
-import { APIInterface, AuthMode } from "../types";
+import NormalisedURLDomain from '../../../normalisedURLDomain'
+import NormalisedURLPath from '../../../normalisedURLPath'
+import SuperTokens from '../../../supertokens'
+import { DASHBOARD_API } from '../constants'
+import { APIInterface, AuthMode } from '../types'
 
 export default function getAPIImplementation(): APIInterface {
-    return {
-        dashboardGET: async function (input) {
-            const bundleBasePathString = await input.options.recipeImplementation.getDashboardBundleLocation({
-                userContext: input.userContext,
-            });
+  return {
+    async dashboardGET(input) {
+      const bundleBasePathString = await input.options.recipeImplementation.getDashboardBundleLocation({
+        userContext: input.userContext,
+      })
 
-            const bundleDomain =
-                new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous() +
-                new NormalisedURLPath(bundleBasePathString).getAsStringDangerous();
+      const bundleDomain
+                = new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous()
+                + new NormalisedURLPath(bundleBasePathString).getAsStringDangerous()
 
-            let connectionURI: string = "";
-            const superTokensInstance = SuperTokens.getInstanceOrThrowError();
+      let connectionURI = ''
+      const superTokensInstance = SuperTokens.getInstanceOrThrowError()
 
-            const authMode: AuthMode = input.options.config.authMode;
+      const authMode: AuthMode = input.options.config.authMode
 
-            if (superTokensInstance.supertokens !== undefined) {
-                connectionURI = superTokensInstance.supertokens.connectionURI;
-            }
+      if (superTokensInstance.supertokens !== undefined)
+        connectionURI = superTokensInstance.supertokens.connectionURI
 
-            return `
+      return `
             <html>
                 <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,7 +59,7 @@ export default function getAPIImplementation(): APIInterface {
                     <div id="root"></div>
                 </body>
             </html>
-            `;
-        },
-    };
+            `
+    },
+  }
 }

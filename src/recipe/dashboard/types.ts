@@ -13,79 +13,79 @@
  * under the License.
  */
 
-import OverrideableBuilder from "supertokens-js-override";
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import { NormalisedAppinfo } from "../../types";
+import OverrideableBuilder from 'overrideableBuilder'
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
+import { NormalisedAppinfo } from '../../types'
 
-export type TypeInput = {
-    apiKey?: string;
-    override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+export interface TypeInput {
+  apiKey?: string
+  override?: {
+    functions?: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
-export type TypeNormalisedInput = {
-    apiKey?: string;
-    authMode: AuthMode;
-    override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+export interface TypeNormalisedInput {
+  apiKey?: string
+  authMode: AuthMode
+  override: {
+    functions: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
-export type RecipeInterface = {
-    getDashboardBundleLocation(input: { userContext: any }): Promise<string>;
-    shouldAllowAccess(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }): Promise<boolean>;
-};
+export interface RecipeInterface {
+  getDashboardBundleLocation(input: { userContext: any }): Promise<string>
+  shouldAllowAccess(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }): Promise<boolean>
+}
 
-export type APIOptions = {
-    recipeImplementation: RecipeInterface;
-    config: TypeNormalisedInput;
-    recipeId: string;
-    req: BaseRequest;
-    res: BaseResponse;
-    isInServerlessEnv: boolean;
-    appInfo: NormalisedAppinfo;
-};
+export interface APIOptions {
+  recipeImplementation: RecipeInterface
+  config: TypeNormalisedInput
+  recipeId: string
+  req: BaseRequest
+  res: BaseResponse
+  isInServerlessEnv: boolean
+  appInfo: NormalisedAppinfo
+}
 
-export type APIInterface = {
-    dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
-};
+export interface APIInterface {
+  dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>)
+}
 
-export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
+export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>
 
-export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
+export type RecipeIdForUser = 'emailpassword' | 'thirdparty' | 'passwordless'
 
-export type AuthMode = "api-key" | "email-password";
+export type AuthMode = 'api-key' | 'email-password'
 
-type CommonUserInformation = {
-    id: string;
-    timeJoined: number;
-    firstName: string;
-    lastName: string;
-};
+interface CommonUserInformation {
+  id: string
+  timeJoined: number
+  firstName: string
+  lastName: string
+}
 
 export type EmailPasswordUser = CommonUserInformation & {
-    email: string;
-};
+  email: string
+}
 
 export type ThirdPartyUser = CommonUserInformation & {
-    email: string;
-    thirdParty: {
-        id: string;
-        userId: string;
-    };
-};
+  email: string
+  thirdParty: {
+    id: string
+    userId: string
+  }
+}
 
 export type PasswordlessUser = CommonUserInformation & {
-    email?: string;
-    phone?: string;
-};
+  email?: string
+  phone?: string
+}

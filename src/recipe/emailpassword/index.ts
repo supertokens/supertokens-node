@@ -13,96 +13,94 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import SuperTokensError from "./error";
-import { RecipeInterface, User, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
-export * from "./types";
-
+import Recipe from './recipe'
+import SuperTokensError from './error'
+import { APIInterface, APIOptions, RecipeInterface, TypeEmailPasswordEmailDeliveryInput, User } from './types'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static Error = SuperTokensError;
+  static Error = SuperTokensError
 
-    static signUp(email: string, password: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
-            email,
-            password,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static signUp(email: string, password: string, userContext?: any) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
+      email,
+      password,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static signIn(email: string, password: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
-            email,
-            password,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static signIn(email: string, password: string, userContext?: any) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
+      email,
+      password,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static getUserById(userId: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({
-            userId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static getUserById(userId: string, userContext?: any) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({
+      userId,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static getUserByEmail(email: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({
-            email,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static getUserByEmail(email: string, userContext?: any) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({
+      email,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static createResetPasswordToken(userId: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
-            userId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static createResetPasswordToken(userId: string, userContext?: any) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
+      userId,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
-            token,
-            newPassword,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
+      token,
+      newPassword,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
-            userContext: {},
-            ...input,
-        });
-    }
+  static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
+      userContext: {},
+      ...input,
+    })
+  }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
-        let recipeInstance = Recipe.getInstanceOrThrowError();
-        return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
-            ...input,
-        });
-    }
+  static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
+    const recipeInstance = Recipe.getInstanceOrThrowError()
+    return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+      userContext: {},
+      ...input,
+    })
+  }
 }
 
-export let init = Wrapper.init;
+export const init = Wrapper.init
 
-export let Error = Wrapper.Error;
+export const Error = Wrapper.Error
 
-export let signUp = Wrapper.signUp;
+export const signUp = Wrapper.signUp
 
-export let signIn = Wrapper.signIn;
+export const signIn = Wrapper.signIn
 
-export let getUserById = Wrapper.getUserById;
+export const getUserById = Wrapper.getUserById
 
-export let getUserByEmail = Wrapper.getUserByEmail;
+export const getUserByEmail = Wrapper.getUserByEmail
 
-export let createResetPasswordToken = Wrapper.createResetPasswordToken;
+export const createResetPasswordToken = Wrapper.createResetPasswordToken
 
-export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
+export const resetPasswordUsingToken = Wrapper.resetPasswordUsingToken
 
-export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
+export const updateEmailOrPassword = Wrapper.updateEmailOrPassword
 
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, User, APIOptions, APIInterface }
 
-export let sendEmail = Wrapper.sendEmail;
+export const sendEmail = Wrapper.sendEmail

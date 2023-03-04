@@ -12,35 +12,35 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import OverrideableBuilder from "supertokens-js-override";
+import OverrideableBuilder from 'overrideableBuilder'
 
 export interface SMTPServiceConfig {
-    host: string;
-    from: {
-        name: string;
-        email: string;
-    };
-    port: number;
-    secure?: boolean;
-    authUsername?: string;
-    password: string;
+  host: string
+  from: {
+    name: string
+    email: string
+  }
+  port: number
+  secure?: boolean
+  authUsername?: string
+  password: string
 }
 
 export interface GetContentResult {
-    body: string;
-    isHtml: boolean;
-    subject: string;
-    toEmail: string;
+  body: string
+  isHtml: boolean
+  subject: string
+  toEmail: string
 }
 
-export type TypeInputSendRawEmail = GetContentResult & { userContext: any };
+export type TypeInputSendRawEmail = GetContentResult & { userContext: any }
 
-export type ServiceInterface<T> = {
-    sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
-    getContent: (input: T & { userContext: any }) => Promise<GetContentResult>;
-};
+export interface ServiceInterface<T> {
+  sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>
+  getContent: (input: T & { userContext: any }) => Promise<GetContentResult>
+}
 
-export type TypeInput<T> = {
-    smtpSettings: SMTPServiceConfig;
-    override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
-};
+export interface TypeInput<T> {
+  smtpSettings: SMTPServiceConfig
+  override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>
+}

@@ -13,262 +13,261 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import SuperTokensError from "./error";
-import * as thirdPartyProviders from "../thirdparty/providers";
+import * as thirdPartyProviders from '../thirdparty/providers'
+import { TypeProvider } from '../thirdparty/types'
+import { TypePasswordlessSmsDeliveryInput } from '../passwordless/types'
+import Recipe from './recipe'
+import SuperTokensError from './error'
 import {
-    RecipeInterface,
-    User,
-    APIInterface,
-    PasswordlessAPIOptions,
-    ThirdPartyAPIOptions,
-    TypeThirdPartyPasswordlessEmailDeliveryInput,
-} from "./types";
-import { TypeProvider } from "../thirdparty/types";
-import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
-export * from "./types";
+  APIInterface,
+  PasswordlessAPIOptions,
+  RecipeInterface,
+  ThirdPartyAPIOptions,
+  TypeThirdPartyPasswordlessEmailDeliveryInput,
+  User,
+} from './types'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static Error = SuperTokensError;
+  static Error = SuperTokensError
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-            userContext,
-        });
-    }
+  static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
+      thirdPartyId,
+      thirdPartyUserId,
+      email,
+      userContext,
+    })
+  }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
-            userContext,
-        });
-    }
+  static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
+      thirdPartyId,
+      thirdPartyUserId,
+      userContext,
+    })
+  }
 
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
+  static getUserById(userId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext })
+  }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
+  static getUsersByEmail(email: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext })
+  }
 
-    static createCode(
-        input: (
+  static createCode(
+    input: (
+      | {
+        email: string
+      }
+      | {
+        phoneNumber: string
+      }
+    ) & { userInputCode?: string; userContext?: any },
+  ) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
+      userContext: {},
+      ...input,
+    })
+  }
+
+  static createNewCodeForDevice(input: { deviceId: string; userInputCode?: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewCodeForDevice({
+      userContext: {},
+      ...input,
+    })
+  }
+
+  static consumeCode(
+    input:
             | {
-                  email: string;
-              }
+              preAuthSessionId: string
+              userInputCode: string
+              deviceId: string
+              userContext?: any
+            }
             | {
-                  phoneNumber: string;
-              }
-        ) & { userInputCode?: string; userContext?: any }
-    ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
-            userContext: {},
-            ...input,
-        });
-    }
+              preAuthSessionId: string
+              linkCode: string
+              userContext?: any
+            },
+  ) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input })
+  }
 
-    static createNewCodeForDevice(input: { deviceId: string; userInputCode?: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewCodeForDevice({
-            userContext: {},
-            ...input,
-        });
-    }
+  static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({ userContext: {}, ...input })
+  }
 
-    static consumeCode(
-        input:
+  static updatePasswordlessUser(input: {
+    userId: string
+    email?: string | null
+    phoneNumber?: string | null
+    userContext?: any
+  }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updatePasswordlessUser({
+      userContext: {},
+      ...input,
+    })
+  }
+
+  static revokeAllCodes(
+    input:
             | {
-                  preAuthSessionId: string;
-                  userInputCode: string;
-                  deviceId: string;
-                  userContext?: any;
-              }
+              email: string
+              userContext?: any
+            }
             | {
-                  preAuthSessionId: string;
-                  linkCode: string;
-                  userContext?: any;
-              }
-    ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input });
-    }
+              phoneNumber: string
+              userContext?: any
+            },
+  ) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({ userContext: {}, ...input })
+  }
 
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({ userContext: {}, ...input });
-    }
+  static revokeCode(input: { codeId: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({ userContext: {}, ...input })
+  }
 
-    static updatePasswordlessUser(input: {
-        userId: string;
-        email?: string | null;
-        phoneNumber?: string | null;
-        userContext?: any;
-    }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updatePasswordlessUser({
-            userContext: {},
-            ...input,
-        });
-    }
+  static listCodesByEmail(input: { email: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail({ userContext: {}, ...input })
+  }
 
-    static revokeAllCodes(
-        input:
+  static listCodesByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPhoneNumber({
+      userContext: {},
+      ...input,
+    })
+  }
+
+  static listCodesByDeviceId(input: { deviceId: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId({ userContext: {}, ...input })
+  }
+
+  static listCodesByPreAuthSessionId(input: { preAuthSessionId: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPreAuthSessionId({
+      userContext: {},
+      ...input,
+    })
+  }
+
+  static createMagicLink(
+    input:
             | {
-                  email: string;
-                  userContext?: any;
-              }
+              email: string
+              userContext?: any
+            }
             | {
-                  phoneNumber: string;
-                  userContext?: any;
-              }
-    ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({ userContext: {}, ...input });
-    }
+              phoneNumber: string
+              userContext?: any
+            },
+  ) {
+    return Recipe.getInstanceOrThrowError().passwordlessRecipe.createMagicLink({ userContext: {}, ...input })
+  }
 
-    static revokeCode(input: { codeId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({ userContext: {}, ...input });
-    }
-
-    static listCodesByEmail(input: { email: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail({ userContext: {}, ...input });
-    }
-
-    static listCodesByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPhoneNumber({
-            userContext: {},
-            ...input,
-        });
-    }
-
-    static listCodesByDeviceId(input: { deviceId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId({ userContext: {}, ...input });
-    }
-
-    static listCodesByPreAuthSessionId(input: { preAuthSessionId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPreAuthSessionId({
-            userContext: {},
-            ...input,
-        });
-    }
-
-    static createMagicLink(
-        input:
+  static passwordlessSignInUp(
+    input:
             | {
-                  email: string;
-                  userContext?: any;
-              }
+              email: string
+              userContext?: any
+            }
             | {
-                  phoneNumber: string;
-                  userContext?: any;
-              }
-    ) {
-        return Recipe.getInstanceOrThrowError().passwordlessRecipe.createMagicLink({ userContext: {}, ...input });
-    }
+              phoneNumber: string
+              userContext?: any
+            },
+  ) {
+    return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({ userContext: {}, ...input })
+  }
 
-    static passwordlessSignInUp(
-        input:
-            | {
-                  email: string;
-                  userContext?: any;
-              }
-            | {
-                  phoneNumber: string;
-                  userContext?: any;
-              }
-    ) {
-        return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({ userContext: {}, ...input });
-    }
+  static Google = thirdPartyProviders.Google
 
-    static Google = thirdPartyProviders.Google;
+  static Github = thirdPartyProviders.Github
 
-    static Github = thirdPartyProviders.Github;
+  static Facebook = thirdPartyProviders.Facebook
 
-    static Facebook = thirdPartyProviders.Facebook;
+  static Apple = thirdPartyProviders.Apple
 
-    static Apple = thirdPartyProviders.Apple;
+  static Discord = thirdPartyProviders.Discord
 
-    static Discord = thirdPartyProviders.Discord;
+  static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces
 
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
+  // static Okta = thirdPartyProviders.Okta;
 
-    // static Okta = thirdPartyProviders.Okta;
+  // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
+  static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: any }) {
+    return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
+      userContext: {},
+      ...input,
+    })
+  }
 
-    static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: any }) {
-        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
-            ...input,
-        });
-    }
-
-    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: any }) {
-        return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
-            userContext: {},
-            ...input,
-        });
-    }
+  static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: any }) {
+    return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
+      userContext: {},
+      ...input,
+    })
+  }
 }
 
-export let init = Wrapper.init;
+export const init = Wrapper.init
 
-export let Error = Wrapper.Error;
+export const Error = Wrapper.Error
 
-export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
+export const thirdPartySignInUp = Wrapper.thirdPartySignInUp
 
-export let passwordlessSignInUp = Wrapper.passwordlessSignInUp;
+export const passwordlessSignInUp = Wrapper.passwordlessSignInUp
 
-export let getUserById = Wrapper.getUserById;
+export const getUserById = Wrapper.getUserById
 
-export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
+export const getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo
 
-export let getUsersByEmail = Wrapper.getUsersByEmail;
+export const getUsersByEmail = Wrapper.getUsersByEmail
 
-export let createCode = Wrapper.createCode;
+export const createCode = Wrapper.createCode
 
-export let consumeCode = Wrapper.consumeCode;
+export const consumeCode = Wrapper.consumeCode
 
-export let getUserByPhoneNumber = Wrapper.getUserByPhoneNumber;
+export const getUserByPhoneNumber = Wrapper.getUserByPhoneNumber
 
-export let listCodesByDeviceId = Wrapper.listCodesByDeviceId;
+export const listCodesByDeviceId = Wrapper.listCodesByDeviceId
 
-export let listCodesByEmail = Wrapper.listCodesByEmail;
+export const listCodesByEmail = Wrapper.listCodesByEmail
 
-export let listCodesByPhoneNumber = Wrapper.listCodesByPhoneNumber;
+export const listCodesByPhoneNumber = Wrapper.listCodesByPhoneNumber
 
-export let listCodesByPreAuthSessionId = Wrapper.listCodesByPreAuthSessionId;
+export const listCodesByPreAuthSessionId = Wrapper.listCodesByPreAuthSessionId
 
-export let createNewCodeForDevice = Wrapper.createNewCodeForDevice;
+export const createNewCodeForDevice = Wrapper.createNewCodeForDevice
 
-export let updatePasswordlessUser = Wrapper.updatePasswordlessUser;
+export const updatePasswordlessUser = Wrapper.updatePasswordlessUser
 
-export let revokeAllCodes = Wrapper.revokeAllCodes;
+export const revokeAllCodes = Wrapper.revokeAllCodes
 
-export let revokeCode = Wrapper.revokeCode;
+export const revokeCode = Wrapper.revokeCode
 
-export let createMagicLink = Wrapper.createMagicLink;
+export const createMagicLink = Wrapper.createMagicLink
 
-export let Google = Wrapper.Google;
+export const Google = Wrapper.Google
 
-export let Github = Wrapper.Github;
+export const Github = Wrapper.Github
 
-export let Facebook = Wrapper.Facebook;
+export const Facebook = Wrapper.Facebook
 
-export let Apple = Wrapper.Apple;
+export const Apple = Wrapper.Apple
 
-export let Discord = Wrapper.Discord;
+export const Discord = Wrapper.Discord
 
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+export const GoogleWorkspaces = Wrapper.GoogleWorkspaces
 
 // export let Okta = Wrapper.Okta;
 
 // export let ActiveDirectory = Wrapper.ActiveDirectory;
 
-export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
+export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions }
 
-export let sendEmail = Wrapper.sendEmail;
+export const sendEmail = Wrapper.sendEmail
 
-export let sendSms = Wrapper.sendSms;
+export const sendSms = Wrapper.sendSms

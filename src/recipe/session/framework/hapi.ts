@@ -12,17 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import Session from "../recipe";
-import { VerifySessionOptions } from "..";
-import { ResponseToolkit } from "@hapi/hapi";
-import { ExtendedResponseToolkit, HapiRequest, HapiResponse, SessionRequest } from "../../../framework/hapi/framework";
+import { ResponseToolkit } from '@hapi/hapi'
+import Session from '../recipe'
+import { VerifySessionOptions } from '..'
+import { ExtendedResponseToolkit, HapiRequest, HapiResponse, SessionRequest } from '../../../framework/hapi/framework'
 
 export function verifySession(options?: VerifySessionOptions) {
-    return async (req: SessionRequest, h: ResponseToolkit) => {
-        let sessionRecipe = Session.getInstanceOrThrowError();
-        let request = new HapiRequest(req);
-        let response = new HapiResponse(h as ExtendedResponseToolkit);
-        req.session = await sessionRecipe.verifySession(options, request, response);
-        return h.continue;
-    };
+  return async (req: SessionRequest, h: ResponseToolkit) => {
+    const sessionRecipe = Session.getInstanceOrThrowError()
+    const request = new HapiRequest(req)
+    const response = new HapiResponse(h as ExtendedResponseToolkit)
+    req.session = await sessionRecipe.verifySession(options, request, response)
+    return h.continue
+  }
 }

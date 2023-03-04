@@ -13,9 +13,9 @@
  * under the License.
  */
 
-import { HapiWrapper } from "./framework";
-export type { SessionRequest } from "./framework";
+import { HapiWrapper } from './framework'
+export type { SessionRequest } from './framework'
 
-export const plugin = HapiWrapper.plugin;
-export const wrapRequest = HapiWrapper.wrapRequest;
-export const wrapResponse = HapiWrapper.wrapResponse;
+export const plugin = HapiWrapper.plugin
+export const wrapRequest = HapiWrapper.wrapRequest
+export const wrapResponse = HapiWrapper.wrapResponse

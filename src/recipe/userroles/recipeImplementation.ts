@@ -13,53 +13,53 @@
  * under the License.
  */
 
-import { RecipeInterface } from "./types";
-import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
+import NormalisedURLPath from '../../normalisedURLPath'
+import { Querier } from '../../querier'
+import { RecipeInterface } from './types'
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
-    return {
-        addRoleToUser: function ({ userId, role }) {
-            return querier.sendPutRequest(new NormalisedURLPath("/recipe/user/role"), { userId, role });
-        },
+  return {
+    addRoleToUser({ userId, role }) {
+      return querier.sendPutRequest(new NormalisedURLPath('/recipe/user/role'), { userId, role })
+    },
 
-        removeUserRole: function ({ userId, role }) {
-            return querier.sendPostRequest(new NormalisedURLPath("/recipe/user/role/remove"), { userId, role });
-        },
+    removeUserRole({ userId, role }) {
+      return querier.sendPostRequest(new NormalisedURLPath('/recipe/user/role/remove'), { userId, role })
+    },
 
-        getRolesForUser: function ({ userId }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/roles"), { userId });
-        },
+    getRolesForUser({ userId }) {
+      return querier.sendGetRequest(new NormalisedURLPath('/recipe/user/roles'), { userId })
+    },
 
-        getUsersThatHaveRole: function ({ role }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/role/users"), { role });
-        },
+    getUsersThatHaveRole({ role }) {
+      return querier.sendGetRequest(new NormalisedURLPath('/recipe/role/users'), { role })
+    },
 
-        createNewRoleOrAddPermissions: function ({ role, permissions }) {
-            return querier.sendPutRequest(new NormalisedURLPath("/recipe/role"), { role, permissions });
-        },
+    createNewRoleOrAddPermissions({ role, permissions }) {
+      return querier.sendPutRequest(new NormalisedURLPath('/recipe/role'), { role, permissions })
+    },
 
-        getPermissionsForRole: function ({ role }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/role/permissions"), { role });
-        },
+    getPermissionsForRole({ role }) {
+      return querier.sendGetRequest(new NormalisedURLPath('/recipe/role/permissions'), { role })
+    },
 
-        removePermissionsFromRole: function ({ role, permissions }) {
-            return querier.sendPostRequest(new NormalisedURLPath("/recipe/role/permissions/remove"), {
-                role,
-                permissions,
-            });
-        },
+    removePermissionsFromRole({ role, permissions }) {
+      return querier.sendPostRequest(new NormalisedURLPath('/recipe/role/permissions/remove'), {
+        role,
+        permissions,
+      })
+    },
 
-        getRolesThatHavePermission: function ({ permission }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/permission/roles"), { permission });
-        },
+    getRolesThatHavePermission({ permission }) {
+      return querier.sendGetRequest(new NormalisedURLPath('/recipe/permission/roles'), { permission })
+    },
 
-        deleteRole: function ({ role }) {
-            return querier.sendPostRequest(new NormalisedURLPath("/recipe/role/remove"), { role });
-        },
+    deleteRole({ role }) {
+      return querier.sendPostRequest(new NormalisedURLPath('/recipe/role/remove'), { role })
+    },
 
-        getAllRoles: function () {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/roles"), {});
-        },
-    };
+    getAllRoles() {
+      return querier.sendGetRequest(new NormalisedURLPath('/recipe/roles'), {})
+    },
+  }
 }

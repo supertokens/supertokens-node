@@ -13,9 +13,9 @@
  * under the License.
  */
 
-import { KoaWrapper } from "./framework";
-export type { SessionContext } from "./framework";
+import { KoaWrapper } from './framework'
+export type { SessionContext } from './framework'
 
-export const middleware = KoaWrapper.middleware;
-export const wrapRequest = KoaWrapper.wrapRequest;
-export const wrapResponse = KoaWrapper.wrapResponse;
+export const middleware = KoaWrapper.middleware
+export const wrapRequest = KoaWrapper.wrapRequest
+export const wrapResponse = KoaWrapper.wrapResponse

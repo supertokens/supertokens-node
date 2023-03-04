@@ -12,17 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeInputWithService, EmailDeliveryInterface } from "./types";
-import OverrideableBuilder from "supertokens-js-override";
+import OverrideableBuilder from 'overrideableBuilder'
+import { EmailDeliveryInterface, TypeInputWithService } from './types'
 
-export default class EmailDelivery<T> {
-    ingredientInterfaceImpl: EmailDeliveryInterface<T>;
+export default class EmailDelivery<T extends Record<string, any>> {
+  ingredientInterfaceImpl: EmailDeliveryInterface<T>
 
-    constructor(config: TypeInputWithService<T>) {
-        let builder = new OverrideableBuilder(config.service);
-        if (config.override !== undefined) {
-            builder = builder.override(config.override);
-        }
-        this.ingredientInterfaceImpl = builder.build();
-    }
+  constructor(config: TypeInputWithService<T>) {
+    let builder = new OverrideableBuilder(config.service)
+    if (config.override !== undefined)
+      builder = builder.override(config.override)
+
+    this.ingredientInterfaceImpl = builder.build()
+  }
 }

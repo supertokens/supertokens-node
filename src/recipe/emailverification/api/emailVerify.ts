@@ -13,73 +13,70 @@
  * under the License.
  */
 
-import { send200Response, normaliseHttpMethod } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
-import Session from "../../session";
+import { makeDefaultUserContextFromAPI, normaliseHttpMethod, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '../'
+import Session from '../../session'
 
 export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    let result;
+  let result
 
-    const userContext = makeDefaultUserContextFromAPI(options.req);
+  const userContext = makeDefaultUserContextFromAPI(options.req)
 
-    if (normaliseHttpMethod(options.req.getMethod()) === "post") {
-        // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
+  if (normaliseHttpMethod(options.req.getMethod()) === 'post') {
+    // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
-        if (apiImplementation.verifyEmailPOST === undefined) {
-            return false;
-        }
+    if (apiImplementation.verifyEmailPOST === undefined)
+      return false
 
-        let token = (await options.req.getJSONBody()).token;
-        if (token === undefined || token === null) {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the email verification token",
-            });
-        }
-        if (typeof token !== "string") {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
-                message: "The email verification token must be a string",
-            });
-        }
-
-        const session = await Session.getSession(
-            options.req,
-            options.res,
-            { overrideGlobalClaimValidators: () => [], sessionRequired: false },
-            userContext
-        );
-
-        let response = await apiImplementation.verifyEmailPOST({
-            token,
-            options,
-            session,
-            userContext,
-        });
-        if (response.status === "OK") {
-            result = { status: "OK" };
-        } else {
-            result = response;
-        }
-    } else {
-        if (apiImplementation.isEmailVerifiedGET === undefined) {
-            return false;
-        }
-
-        const session = await Session.getSession(
-            options.req,
-            options.res,
-            { overrideGlobalClaimValidators: () => [] },
-            userContext
-        );
-        result = await apiImplementation.isEmailVerifiedGET({
-            options,
-            session: session!,
-            userContext,
-        });
+    const token = (await options.req.getJSONBody()).token
+    if (token === undefined || token === null) {
+      throw new STError({
+        type: STError.BAD_INPUT_ERROR,
+        message: 'Please provide the email verification token',
+      })
     }
-    send200Response(options.res, result);
-    return true;
+    if (typeof token !== 'string') {
+      throw new STError({
+        type: STError.BAD_INPUT_ERROR,
+        message: 'The email verification token must be a string',
+      })
+    }
+
+    const session = await Session.getSession(
+      options.req,
+      options.res,
+      { overrideGlobalClaimValidators: () => [], sessionRequired: false },
+      userContext,
+    )
+
+    const response = await apiImplementation.verifyEmailPOST({
+      token,
+      options,
+      session,
+      userContext,
+    })
+    if (response.status === 'OK')
+      result = { status: 'OK' }
+    else
+      result = response
+  }
+  else {
+    if (apiImplementation.isEmailVerifiedGET === undefined)
+      return false
+
+    const session = await Session.getSession(
+      options.req,
+      options.res,
+      { overrideGlobalClaimValidators: () => [] },
+      userContext,
+    )
+    result = await apiImplementation.isEmailVerifiedGET({
+      options,
+      session: session!,
+      userContext,
+    })
+  }
+  send200Response(options.res, result)
+  return true
 }

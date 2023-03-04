@@ -13,9 +13,9 @@
  * under the License.
  */
 
-import { AWSWrapper } from "./framework";
-export type { SessionEvent, SessionEventV2 } from "./framework";
+import { AWSWrapper } from './framework'
+export type { SessionEvent, SessionEventV2 } from './framework'
 
-export const middleware = AWSWrapper.middleware;
-export const wrapRequest = AWSWrapper.wrapRequest;
-export const wrapResponse = AWSWrapper.wrapResponse;
+export const middleware = AWSWrapper.middleware
+export const wrapRequest = AWSWrapper.wrapRequest
+export const wrapResponse = AWSWrapper.wrapResponse

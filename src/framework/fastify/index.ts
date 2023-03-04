@@ -13,10 +13,10 @@
  * under the License.
  */
 
-import { FastifyWrapper } from "./framework";
-export type { SessionRequest } from "./framework";
+import { FastifyWrapper } from './framework'
+export type { SessionRequest } from './framework'
 
-export const plugin = FastifyWrapper.plugin;
-export const errorHandler = FastifyWrapper.errorHandler;
-export const wrapRequest = FastifyWrapper.wrapRequest;
-export const wrapResponse = FastifyWrapper.wrapResponse;
+export const plugin = FastifyWrapper.plugin
+export const errorHandler = FastifyWrapper.errorHandler
+export const wrapRequest = FastifyWrapper.wrapRequest
+export const wrapResponse = FastifyWrapper.wrapResponse

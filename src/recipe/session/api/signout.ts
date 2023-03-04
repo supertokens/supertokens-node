@@ -13,35 +13,33 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import { APIInterface, APIOptions } from '../'
 
 export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
+  // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
-    if (apiImplementation.signOutPOST === undefined) {
-        return false;
-    }
+  if (apiImplementation.signOutPOST === undefined)
+    return false
 
-    let defaultUserContext = makeDefaultUserContextFromAPI(options.req);
+  const defaultUserContext = makeDefaultUserContextFromAPI(options.req)
 
-    const session = await options.recipeImplementation.getSession({
-        req: options.req,
-        res: options.res,
-        options: {
-            sessionRequired: false,
-            overrideGlobalClaimValidators: () => [],
-        },
-        userContext: defaultUserContext,
-    });
+  const session = await options.recipeImplementation.getSession({
+    req: options.req,
+    res: options.res,
+    options: {
+      sessionRequired: false,
+      overrideGlobalClaimValidators: () => [],
+    },
+    userContext: defaultUserContext,
+  })
 
-    let result = await apiImplementation.signOutPOST({
-        options,
-        session,
-        userContext: defaultUserContext,
-    });
+  const result = await apiImplementation.signOutPOST({
+    options,
+    session,
+    userContext: defaultUserContext,
+  })
 
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

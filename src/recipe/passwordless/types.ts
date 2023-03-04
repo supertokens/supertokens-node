@@ -13,403 +13,403 @@
  * under the License.
  */
 
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import OverrideableBuilder from "supertokens-js-override";
-import { SessionContainerInterface } from "../session/types";
+import OverrideableBuilder from 'overrideableBuilder'
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
+import { SessionContainerInterface } from '../session/types'
 import {
-    TypeInput as EmailDeliveryTypeInput,
-    TypeInputWithService as EmailDeliveryTypeInputWithService,
-} from "../../ingredients/emaildelivery/types";
-import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+  TypeInput as EmailDeliveryTypeInput,
+  TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from '../../ingredients/emaildelivery/types'
+import EmailDeliveryIngredient from '../../ingredients/emaildelivery'
 import {
-    TypeInput as SmsDeliveryTypeInput,
-    TypeInputWithService as SmsDeliveryTypeInputWithService,
-} from "../../ingredients/smsdelivery/types";
-import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
+  TypeInput as SmsDeliveryTypeInput,
+  TypeInputWithService as SmsDeliveryTypeInputWithService,
+} from '../../ingredients/smsdelivery/types'
+import SmsDeliveryIngredient from '../../ingredients/smsdelivery'
+import { GeneralErrorResponse, NormalisedAppinfo } from '../../types'
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
-export type User = {
-    id: string;
-    email?: string;
-    phoneNumber?: string;
-    timeJoined: number;
-};
+export interface User {
+  id: string
+  email?: string
+  phoneNumber?: string
+  timeJoined: number
+}
 
 export type TypeInput = (
-    | {
-          contactMethod: "PHONE";
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+  | {
+    contactMethod: 'PHONE'
+    validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined
 
-          // Override to use custom template/contact method
-          /**
+    // Override to use custom template/contact method
+    /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  // Where the message should be delivered.
-                  phoneNumber: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
-      }
-    | {
-          contactMethod: "EMAIL";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+    createAndSendCustomTextMessage?: (
+      input: {
+        // Where the message should be delivered.
+        phoneNumber: string
+        // This has to be entered on the starting device  to finish sign in/up
+        userInputCode?: string
+        // Full url that the end-user can click to finish sign in/up
+        urlWithLinkCode?: string
+        codeLifetime: number
+        // Unlikely, but someone could display this (or a derived thing) to identify the device
+        preAuthSessionId: string
+      },
+      userContext: any
+    ) => Promise<void>
+  }
+  | {
+    contactMethod: 'EMAIL'
+    validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined
 
-          // Override to use custom template/contact method
-          /**
+    // Override to use custom template/contact method
+    /**
            * @deprecated Please use emailDelivery config instead
            */
-          createAndSendCustomEmail?: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
-      }
-    | {
-          contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+    createAndSendCustomEmail?: (
+      input: {
+        // Where the message should be delivered.
+        email: string
+        // This has to be entered on the starting device  to finish sign in/up
+        userInputCode?: string
+        // Full url that the end-user can click to finish sign in/up
+        urlWithLinkCode?: string
+        codeLifetime: number
+        // Unlikely, but someone could display this (or a derived thing) to identify the device
+        preAuthSessionId: string
+      },
+      userContext: any
+    ) => Promise<void>
+  }
+  | {
+    contactMethod: 'EMAIL_OR_PHONE'
+    validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined
 
-          // Override to use custom template/contact method
-          /**
+    // Override to use custom template/contact method
+    /**
            * @deprecated Please use emailDelivery config instead
            */
-          createAndSendCustomEmail?: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+    createAndSendCustomEmail?: (
+      input: {
+        // Where the message should be delivered.
+        email: string
+        // This has to be entered on the starting device  to finish sign in/up
+        userInputCode?: string
+        // Full url that the end-user can click to finish sign in/up
+        urlWithLinkCode?: string
+        codeLifetime: number
+        // Unlikely, but someone could display this (or a derived thing) to identify the device
+        preAuthSessionId: string
+      },
+      userContext: any
+    ) => Promise<void>
+    validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined
 
-          // Override to use custom template/contact method
-          /**
+    // Override to use custom template/contact method
+    /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  // Where the message should be delivered.
-                  phoneNumber: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
-      }
+    createAndSendCustomTextMessage?: (
+      input: {
+        // Where the message should be delivered.
+        phoneNumber: string
+        // This has to be entered on the starting device  to finish sign in/up
+        userInputCode?: string
+        // Full url that the end-user can click to finish sign in/up
+        urlWithLinkCode?: string
+        codeLifetime: number
+        // Unlikely, but someone could display this (or a derived thing) to identify the device
+        preAuthSessionId: string
+      },
+      userContext: any
+    ) => Promise<void>
+  }
 ) & {
-    flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
+  flowType: 'USER_INPUT_CODE' | 'MAGIC_LINK' | 'USER_INPUT_CODE_AND_MAGIC_LINK'
 
-    emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
-    smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
+  emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>
+  smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>
 
-    // Override this to override how user input codes are generated
-    // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+  // Override this to override how user input codes are generated
+  // By default (=undefined) it is done in the Core
+  getCustomUserInputCode?: (userContext: any) => Promise<string> | string
 
-    override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+  override?: {
+    functions?: (
+      originalImplementation: RecipeInterface,
+      builder: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
 export type TypeNormalisedInput = (
-    | {
-          contactMethod: "PHONE";
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-      }
-    | {
-          contactMethod: "EMAIL";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
-      }
-    | {
-          contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+  | {
+    contactMethod: 'PHONE'
+    validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined
+  }
+  | {
+    contactMethod: 'EMAIL'
+    validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined
+  }
+  | {
+    contactMethod: 'EMAIL_OR_PHONE'
+    validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined
 
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-      }
+    validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined
+  }
 ) & {
-    flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
+  flowType: 'USER_INPUT_CODE' | 'MAGIC_LINK' | 'USER_INPUT_CODE_AND_MAGIC_LINK'
 
-    // Override this to override how user input codes are generated
-    // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+  // Override this to override how user input codes are generated
+  // By default (=undefined) it is done in the Core
+  getCustomUserInputCode?: (userContext: any) => Promise<string> | string
 
-    getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
-    getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
-    override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+  getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>
+  getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>
+  override: {
+    functions: (
+      originalImplementation: RecipeInterface,
+      builder: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
-export type RecipeInterface = {
-    createCode: (
-        input: (
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              }
-        ) & { userInputCode?: string; userContext: any }
-    ) => Promise<{
-        status: "OK";
-        preAuthSessionId: string;
-        codeId: string;
-        deviceId: string;
-        userInputCode: string;
-        linkCode: string;
-        codeLifetime: number;
-        timeCreated: number;
-    }>;
-    createNewCodeForDevice: (input: {
-        deviceId: string;
-        userInputCode?: string;
-        userContext: any;
-    }) => Promise<
+export interface RecipeInterface {
+  createCode: (
+    input: (
+      | {
+        email: string
+      }
+      | {
+        phoneNumber: string
+      }
+    ) & { userInputCode?: string; userContext: any }
+  ) => Promise<{
+    status: 'OK'
+    preAuthSessionId: string
+    codeId: string
+    deviceId: string
+    userInputCode: string
+    linkCode: string
+    codeLifetime: number
+    timeCreated: number
+  }>
+  createNewCodeForDevice: (input: {
+    deviceId: string
+    userInputCode?: string
+    userContext: any
+  }) => Promise<
         | {
-              status: "OK";
-              preAuthSessionId: string;
-              codeId: string;
-              deviceId: string;
-              userInputCode: string;
-              linkCode: string;
-              codeLifetime: number;
-              timeCreated: number;
-          }
-        | { status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR" }
-    >;
-    consumeCode: (
-        input:
-            | {
-                  userInputCode: string;
-                  deviceId: string;
-                  preAuthSessionId: string;
-                  userContext: any;
-              }
-            | {
-                  linkCode: string;
-                  preAuthSessionId: string;
-                  userContext: any;
-              }
-    ) => Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
-              failedCodeInputAttemptCount: number;
-              maximumCodeInputAttempts: number;
-          }
-        | { status: "RESTART_FLOW_ERROR" }
-    >;
-
-    getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>;
-    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
-
-    updateUser: (input: {
-        userId: string;
-        email?: string | null;
-        phoneNumber?: string | null;
-        userContext: any;
-    }) => Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
-    }>;
-
-    revokeAllCodes: (
-        input:
-            | {
-                  email: string;
-                  userContext: any;
-              }
-            | {
-                  phoneNumber: string;
-                  userContext: any;
-              }
-    ) => Promise<{
-        status: "OK";
-    }>;
-
-    revokeCode: (input: {
-        codeId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-    }>;
-
-    listCodesByEmail: (input: { email: string; userContext: any }) => Promise<DeviceType[]>;
-
-    listCodesByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<DeviceType[]>;
-
-    listCodesByDeviceId: (input: { deviceId: string; userContext: any }) => Promise<DeviceType | undefined>;
-
-    listCodesByPreAuthSessionId: (input: {
-        preAuthSessionId: string;
-        userContext: any;
-    }) => Promise<DeviceType | undefined>;
-};
-
-export type DeviceType = {
-    preAuthSessionId: string;
-
-    failedCodeInputAttemptCount: number;
-
-    email?: string;
-    phoneNumber?: string;
-
-    codes: {
-        codeId: string;
-        timeCreated: string;
-        codeLifetime: number;
-    }[];
-};
-
-export type APIOptions = {
-    recipeImplementation: RecipeInterface;
-    appInfo: NormalisedAppinfo;
-    config: TypeNormalisedInput;
-    recipeId: string;
-    isInServerlessEnv: boolean;
-    req: BaseRequest;
-    res: BaseResponse;
-    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
-    smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
-};
-
-export type APIInterface = {
-    createCodePOST?: (
-        input: ({ email: string } | { phoneNumber: string }) & {
-            options: APIOptions;
-            userContext: any;
+          status: 'OK'
+          preAuthSessionId: string
+          codeId: string
+          deviceId: string
+          userInputCode: string
+          linkCode: string
+          codeLifetime: number
+          timeCreated: number
         }
-    ) => Promise<
+        | { status: 'RESTART_FLOW_ERROR' | 'USER_INPUT_CODE_ALREADY_USED_ERROR' }
+    >
+  consumeCode: (
+    input:
+    | {
+      userInputCode: string
+      deviceId: string
+      preAuthSessionId: string
+      userContext: any
+    }
+    | {
+      linkCode: string
+      preAuthSessionId: string
+      userContext: any
+    }
+  ) => Promise<
         | {
-              status: "OK";
-              deviceId: string;
-              preAuthSessionId: string;
-              flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-          }
-        | GeneralErrorResponse
-    >;
-
-    resendCodePOST?: (
-        input: { deviceId: string; preAuthSessionId: string } & {
-            options: APIOptions;
-            userContext: any;
+          status: 'OK'
+          createdNewUser: boolean
+          user: User
         }
-    ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>;
-
-    consumeCodePOST?: (
-        input: (
-            | {
-                  userInputCode: string;
-                  deviceId: string;
-                  preAuthSessionId: string;
-              }
-            | {
-                  linkCode: string;
-                  preAuthSessionId: string;
-              }
-        ) & {
-            options: APIOptions;
-            userContext: any;
+        | {
+          status: 'INCORRECT_USER_INPUT_CODE_ERROR' | 'EXPIRED_USER_INPUT_CODE_ERROR'
+          failedCodeInputAttemptCount: number
+          maximumCodeInputAttempts: number
         }
-    ) => Promise<
+        | { status: 'RESTART_FLOW_ERROR' }
+    >
+
+  getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>
+  getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>
+  getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>
+
+  updateUser: (input: {
+    userId: string
+    email?: string | null
+    phoneNumber?: string | null
+    userContext: any
+  }) => Promise<{
+    status: 'OK' | 'UNKNOWN_USER_ID_ERROR' | 'EMAIL_ALREADY_EXISTS_ERROR' | 'PHONE_NUMBER_ALREADY_EXISTS_ERROR'
+  }>
+
+  revokeAllCodes: (
+    input:
+    | {
+      email: string
+      userContext: any
+    }
+    | {
+      phoneNumber: string
+      userContext: any
+    }
+  ) => Promise<{
+    status: 'OK'
+  }>
+
+  revokeCode: (input: {
+    codeId: string
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+  }>
+
+  listCodesByEmail: (input: { email: string; userContext: any }) => Promise<DeviceType[]>
+
+  listCodesByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<DeviceType[]>
+
+  listCodesByDeviceId: (input: { deviceId: string; userContext: any }) => Promise<DeviceType | undefined>
+
+  listCodesByPreAuthSessionId: (input: {
+    preAuthSessionId: string
+    userContext: any
+  }) => Promise<DeviceType | undefined>
+}
+
+export interface DeviceType {
+  preAuthSessionId: string
+
+  failedCodeInputAttemptCount: number
+
+  email?: string
+  phoneNumber?: string
+
+  codes: {
+    codeId: string
+    timeCreated: string
+    codeLifetime: number
+  }[]
+}
+
+export interface APIOptions {
+  recipeImplementation: RecipeInterface
+  appInfo: NormalisedAppinfo
+  config: TypeNormalisedInput
+  recipeId: string
+  isInServerlessEnv: boolean
+  req: BaseRequest
+  res: BaseResponse
+  emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>
+  smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>
+}
+
+export interface APIInterface {
+  createCodePOST?: (
+    input: ({ email: string } | { phoneNumber: string }) & {
+      options: APIOptions
+      userContext: any
+    }
+  ) => Promise<
         | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-              session: SessionContainerInterface;
-          }
-        | {
-              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
-              failedCodeInputAttemptCount: number;
-              maximumCodeInputAttempts: number;
-          }
+          status: 'OK'
+          deviceId: string
+          preAuthSessionId: string
+          flowType: 'USER_INPUT_CODE' | 'MAGIC_LINK' | 'USER_INPUT_CODE_AND_MAGIC_LINK'
+        }
         | GeneralErrorResponse
-        | { status: "RESTART_FLOW_ERROR" }
-    >;
+    >
 
-    emailExistsGET?: (input: {
-        email: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
+  resendCodePOST?: (
+    input: { deviceId: string; preAuthSessionId: string } & {
+      options: APIOptions
+      userContext: any
+    }
+  ) => Promise<GeneralErrorResponse | { status: 'RESTART_FLOW_ERROR' | 'OK' }>
+
+  consumeCodePOST?: (
+    input: (
+      | {
+        userInputCode: string
+        deviceId: string
+        preAuthSessionId: string
+      }
+      | {
+        linkCode: string
+        preAuthSessionId: string
+      }
+    ) & {
+      options: APIOptions
+      userContext: any
+    }
+  ) => Promise<
         | {
-              status: "OK";
-              exists: boolean;
-          }
-        | GeneralErrorResponse
-    >;
-
-    phoneNumberExistsGET?: (input: {
-        phoneNumber: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
+          status: 'OK'
+          createdNewUser: boolean
+          user: User
+          session: SessionContainerInterface
+        }
         | {
-              status: "OK";
-              exists: boolean;
-          }
+          status: 'INCORRECT_USER_INPUT_CODE_ERROR' | 'EXPIRED_USER_INPUT_CODE_ERROR'
+          failedCodeInputAttemptCount: number
+          maximumCodeInputAttempts: number
+        }
         | GeneralErrorResponse
-    >;
-};
+        | { status: 'RESTART_FLOW_ERROR' }
+    >
 
-export type TypePasswordlessEmailDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN";
-    email: string;
-    userInputCode?: string;
-    urlWithLinkCode?: string;
-    codeLifetime: number;
-    preAuthSessionId: string;
-};
+  emailExistsGET?: (input: {
+    email: string
+    options: APIOptions
+    userContext: any
+  }) => Promise<
+        | {
+          status: 'OK'
+          exists: boolean
+        }
+        | GeneralErrorResponse
+    >
 
-export type TypePasswordlessSmsDeliveryInput = {
-    type: "PASSWORDLESS_LOGIN";
-    phoneNumber: string;
-    userInputCode?: string;
-    urlWithLinkCode?: string;
-    codeLifetime: number;
-    preAuthSessionId: string;
-};
+  phoneNumberExistsGET?: (input: {
+    phoneNumber: string
+    options: APIOptions
+    userContext: any
+  }) => Promise<
+        | {
+          status: 'OK'
+          exists: boolean
+        }
+        | GeneralErrorResponse
+    >
+}
+
+export interface TypePasswordlessEmailDeliveryInput {
+  type: 'PASSWORDLESS_LOGIN'
+  email: string
+  userInputCode?: string
+  urlWithLinkCode?: string
+  codeLifetime: number
+  preAuthSessionId: string
+}
+
+export interface TypePasswordlessSmsDeliveryInput {
+  type: 'PASSWORDLESS_LOGIN'
+  phoneNumber: string
+  userInputCode?: string
+  urlWithLinkCode?: string
+  codeLifetime: number
+  preAuthSessionId: string
+}

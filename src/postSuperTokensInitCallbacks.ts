@@ -14,16 +14,16 @@
  */
 
 export class PostSuperTokensInitCallbacks {
-    static postInitCallbacks: (() => void)[] = [];
+  static postInitCallbacks: (() => void)[] = []
 
-    static addPostInitCallback(cb: () => void) {
-        PostSuperTokensInitCallbacks.postInitCallbacks.push(cb);
-    }
+  static addPostInitCallback(cb: () => void) {
+    PostSuperTokensInitCallbacks.postInitCallbacks.push(cb)
+  }
 
-    static runPostInitCallbacks() {
-        for (const cb of PostSuperTokensInitCallbacks.postInitCallbacks) {
-            cb();
-        }
-        PostSuperTokensInitCallbacks.postInitCallbacks = [];
-    }
+  static runPostInitCallbacks() {
+    for (const cb of PostSuperTokensInitCallbacks.postInitCallbacks)
+      cb()
+
+    PostSuperTokensInitCallbacks.postInitCallbacks = []
+  }
 }

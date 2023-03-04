@@ -13,41 +13,41 @@
  * under the License.
  */
 
-import OverrideableBuilder from "supertokens-js-override";
-import { JSONObject } from "../../types";
+import OverrideableBuilder from 'overrideableBuilder'
+import { JSONObject } from '../../types'
 
-export type TypeInput = {
-    override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+export interface TypeInput {
+  override?: {
+    functions?: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
-export type TypeNormalisedInput = {
-    override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+export interface TypeNormalisedInput {
+  override: {
+    functions: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
-export type APIInterface = {};
+export interface APIInterface {}
 
-export type RecipeInterface = {
-    getUserMetadata: (input: {
-        userId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        metadata: any;
-    }>;
+export interface RecipeInterface {
+  getUserMetadata: (input: {
+    userId: string
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+    metadata: any
+  }>
 
-    /**
+  /**
      * Updates the metadata object of the user by doing a shallow merge of the stored and the update JSONs
      * and removing properties set to null on the root level of the update object.
      * e.g.:
@@ -55,19 +55,20 @@ export type RecipeInterface = {
      *   - update: `{ "notifications": { "sms": true }, "todos": null }`
      *   - result: `{ "preferences": { "theme":"dark" }, "notifications": { "sms": true } }`
      */
-    updateUserMetadata: (input: {
-        userId: string;
-        metadataUpdate: JSONObject;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        metadata: JSONObject;
-    }>;
+  updateUserMetadata: (input: {
+    userId: string
+    metadataUpdate: JSONObject
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+    metadata: JSONObject
+  }>
 
-    clearUserMetadata: (input: {
-        userId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-    }>;
-};
+  clearUserMetadata: (input: {
+    userId: string
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+  }>
+
+}

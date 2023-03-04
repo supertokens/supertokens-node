@@ -12,36 +12,36 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../../ingredients/smsdelivery/services/twilio";
-import { humaniseMilliseconds } from "../../../../../utils";
-import Supertokens from "../../../../../supertokens";
+import { TypePasswordlessSmsDeliveryInput } from '../../../types'
+import { GetContentResult } from '../../../../../ingredients/smsdelivery/services/twilio'
+import { humaniseMilliseconds } from '../../../../../utils'
+import Supertokens from '../../../../../supertokens'
 
 export default function getPasswordlessLoginSmsContent(input: TypePasswordlessSmsDeliveryInput): GetContentResult {
-    let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo.appName;
-    let body = getPasswordlessLoginSmsBody(appName, input.codeLifetime, input.urlWithLinkCode, input.userInputCode);
-    return {
-        body,
-        toPhoneNumber: input.phoneNumber,
-    };
+  const supertokens = Supertokens.getInstanceOrThrowError()
+  const appName = supertokens.appInfo.appName
+  const body = getPasswordlessLoginSmsBody(appName, input.codeLifetime, input.urlWithLinkCode, input.userInputCode)
+  return {
+    body,
+    toPhoneNumber: input.phoneNumber,
+  }
 }
 
 function getPasswordlessLoginSmsBody(
-    appName: string,
-    codeLifetime: number,
-    urlWithLinkCode: string | undefined,
-    userInputCode: string | undefined
+  appName: string,
+  codeLifetime: number,
+  urlWithLinkCode: string | undefined,
+  userInputCode: string | undefined,
 ) {
-    let message = "";
-    if (urlWithLinkCode !== undefined && userInputCode !== undefined) {
-        message += `OTP to login is ${userInputCode} for ${appName}\n\nOR click ${urlWithLinkCode} to login.\n\n`;
-    } else if (urlWithLinkCode !== undefined) {
-        message += `Click ${urlWithLinkCode} to login to ${appName}\n\n`;
-    } else {
-        message += `OTP to login is ${userInputCode} for ${appName}\n\n`;
-    }
-    const humanisedCodeLifetime = humaniseMilliseconds(codeLifetime);
-    message += `This is valid for ${humanisedCodeLifetime}.`;
-    return message;
+  let message = ''
+  if (urlWithLinkCode !== undefined && userInputCode !== undefined)
+    message += `OTP to login is ${userInputCode} for ${appName}\n\nOR click ${urlWithLinkCode} to login.\n\n`
+  else if (urlWithLinkCode !== undefined)
+    message += `Click ${urlWithLinkCode} to login to ${appName}\n\n`
+  else
+    message += `OTP to login is ${userInputCode} for ${appName}\n\n`
+
+  const humanisedCodeLifetime = humaniseMilliseconds(codeLifetime)
+  message += `This is valid for ${humanisedCodeLifetime}.`
+  return message
 }

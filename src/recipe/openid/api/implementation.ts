@@ -12,19 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
-import { GeneralErrorResponse } from "../../../types";
+import { APIInterface, APIOptions } from '../types'
+import { GeneralErrorResponse } from '../../../types'
 
 export default function getAPIImplementation(): APIInterface {
-    return {
-        getOpenIdDiscoveryConfigurationGET: async function ({
-            options,
+  return {
+    async getOpenIdDiscoveryConfigurationGET({
+      options,
             userContext,
-        }: {
-            options: APIOptions;
-            userContext: any;
-        }): Promise<{ status: "OK"; issuer: string; jwks_uri: string } | GeneralErrorResponse> {
-            return await options.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext });
-        },
-    };
+    }: {
+      options: APIOptions
+      userContext: any
+    }): Promise<{ status: 'OK'; issuer: string; jwks_uri: string } | GeneralErrorResponse> {
+      return await options.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext })
+    },
+  }
 }

@@ -13,29 +13,28 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { APIInterface, APIOptions } from '../'
+import { makeDefaultUserContextFromAPI } from '../../../utils'
 
 export default async function appleRedirectHandler(
-    apiImplementation: APIInterface,
-    options: APIOptions
+  apiImplementation: APIInterface,
+  options: APIOptions,
 ): Promise<boolean> {
-    if (apiImplementation.appleRedirectHandlerPOST === undefined) {
-        return false;
-    }
+  if (apiImplementation.appleRedirectHandlerPOST === undefined)
+    return false
 
-    let body = await options.req.getFormData();
+  const body = await options.req.getFormData()
 
-    let state = body.state;
-    let code = body.code;
+  const state = body.state
+  const code = body.code
 
-    // this will redirect the user...
-    await apiImplementation.appleRedirectHandlerPOST({
-        code,
-        state,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  // this will redirect the user...
+  await apiImplementation.appleRedirectHandlerPOST({
+    code,
+    state,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    return true;
+  return true
 }

@@ -13,5 +13,5 @@
  * under the License.
  */
 
-export const HEADER_RID = "rid";
-export const HEADER_FDI = "fdi-version";
+export const HEADER_RID = 'rid'
+export const HEADER_FDI = 'fdi-version'

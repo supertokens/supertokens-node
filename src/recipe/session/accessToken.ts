@@ -13,96 +13,97 @@
  * under the License.
  */
 
-import STError from "./error";
-import { ParsedJWTInfo, verifyJWT } from "./jwt";
+import STError from './error'
+import { ParsedJWTInfo, verifyJWT } from './jwt'
 
 export async function getInfoFromAccessToken(
-    jwtInfo: ParsedJWTInfo,
-    jwtSigningPublicKey: string,
-    doAntiCsrfCheck: boolean
+  jwtInfo: ParsedJWTInfo,
+  jwtSigningPublicKey: string,
+  doAntiCsrfCheck: boolean,
 ): Promise<{
-    sessionHandle: string;
-    userId: string;
-    refreshTokenHash1: string;
-    parentRefreshTokenHash1: string | undefined;
-    userData: any;
-    antiCsrfToken: string | undefined;
-    expiryTime: number;
-    timeCreated: number;
+  sessionHandle: string
+  userId: string
+  refreshTokenHash1: string
+  parentRefreshTokenHash1: string | undefined
+  userData: any
+  antiCsrfToken: string | undefined
+  expiryTime: number
+  timeCreated: number
 }> {
-    try {
-        verifyJWT(jwtInfo, jwtSigningPublicKey);
-        const payload = jwtInfo.payload;
+  try {
+    verifyJWT(jwtInfo, jwtSigningPublicKey)
+    const payload = jwtInfo.payload
 
-        // This should be called before this function, but the check is very quick, so we can also do them here
-        validateAccessTokenStructure(payload);
+    // This should be called before this function, but the check is very quick, so we can also do them here
+    validateAccessTokenStructure(payload)
 
-        // We can mark these as defined (the ! after the calls), since validateAccessTokenPayload checks this
-        let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
-        let userId = sanitizeStringInput(payload.userId)!;
-        let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
-        let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
-        let userData = payload.userData;
-        let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
-        let expiryTime = sanitizeNumberInput(payload.expiryTime)!;
-        let timeCreated = sanitizeNumberInput(payload.timeCreated)!;
+    // We can mark these as defined (the ! after the calls), since validateAccessTokenPayload checks this
+    const sessionHandle = sanitizeStringInput(payload.sessionHandle)!
+    const userId = sanitizeStringInput(payload.userId)!
+    const refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!
+    const parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1)
+    const userData = payload.userData
+    const antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken)
+    const expiryTime = sanitizeNumberInput(payload.expiryTime)!
+    const timeCreated = sanitizeNumberInput(payload.timeCreated)!
 
-        if (antiCsrfToken === undefined && doAntiCsrfCheck) {
-            throw Error("Access token does not contain the anti-csrf token.");
-        }
+    if (antiCsrfToken === undefined && doAntiCsrfCheck)
+      throw new Error('Access token does not contain the anti-csrf token.')
 
-        if (expiryTime < Date.now()) {
-            throw Error("Access token expired");
-        }
-        return {
-            sessionHandle,
-            userId,
-            refreshTokenHash1,
-            parentRefreshTokenHash1,
-            userData,
-            antiCsrfToken,
-            expiryTime,
-            timeCreated,
-        };
-    } catch (err) {
-        throw new STError({
-            message: "Failed to verify access token",
-            type: STError.TRY_REFRESH_TOKEN,
-        });
+    if (expiryTime < Date.now())
+      throw new Error('Access token expired')
+
+    return {
+      sessionHandle,
+      userId,
+      refreshTokenHash1,
+      parentRefreshTokenHash1,
+      userData,
+      antiCsrfToken,
+      expiryTime,
+      timeCreated,
     }
+  }
+  catch (err) {
+    throw new STError({
+      message: 'Failed to verify access token',
+      type: STError.TRY_REFRESH_TOKEN,
+    })
+  }
 }
 
 export function validateAccessTokenStructure(payload: any) {
-    if (
-        typeof payload.sessionHandle !== "string" ||
-        typeof payload.userId !== "string" ||
-        typeof payload.refreshTokenHash1 !== "string" ||
-        payload.userData === undefined ||
-        typeof payload.expiryTime !== "number" ||
-        typeof payload.timeCreated !== "number"
-    ) {
-        // it would come here if we change the structure of the JWT.
-        throw Error("Access token does not contain all the information. Maybe the structure has changed?");
-    }
+  if (
+    typeof payload.sessionHandle !== 'string'
+        || typeof payload.userId !== 'string'
+        || typeof payload.refreshTokenHash1 !== 'string'
+        || payload.userData === undefined
+        || typeof payload.expiryTime !== 'number'
+        || typeof payload.timeCreated !== 'number'
+  ) {
+    // it would come here if we change the structure of the JWT.
+    throw new Error('Access token does not contain all the information. Maybe the structure has changed?')
+  }
 }
 
 function sanitizeStringInput(field: any): string | undefined {
-    if (field === "") {
-        return "";
-    }
-    if (typeof field !== "string") {
-        return undefined;
-    }
-    try {
-        let result = field.trim();
-        return result;
-    } catch (err) {}
-    return undefined;
+  if (field === '')
+    return ''
+
+  if (typeof field !== 'string')
+    return undefined
+
+  try {
+    const result = field.trim()
+    return result
+  }
+  catch (err) {}
+  return undefined
 }
 
 export function sanitizeNumberInput(field: any): number | undefined {
-    if (typeof field === "number") {
-        return field;
-    }
-    return undefined;
+  if (typeof field === 'number')
+    return field
+
+  return undefined
 }

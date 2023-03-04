@@ -13,414 +13,408 @@
  * under the License.
  */
 
-import SuperTokensError from "./error";
+import OpenIdRecipe from '../openid/recipe'
+import { JSONObject } from '../../types'
+import frameworks from '../../framework'
+import SuperTokens from '../../supertokens'
+import Recipe from './recipe'
 import {
-    VerifySessionOptions,
-    RecipeInterface,
-    SessionContainerInterface as SessionContainer,
-    SessionInformation,
-    APIInterface,
-    APIOptions,
-    SessionClaimValidator,
-    SessionClaim,
-    ClaimValidationError,
-} from "./types";
-import OpenIdRecipe from "../openid/recipe";
-import Recipe from "./recipe";
-import { JSONObject } from "../../types";
-import frameworks from "../../framework";
-import SuperTokens from "../../supertokens";
-import { getRequiredClaimValidators } from "./utils";
-export * from "./types";
-
+  APIInterface,
+  APIOptions,
+  ClaimValidationError,
+  RecipeInterface,
+  SessionClaim,
+  SessionClaimValidator,
+  SessionContainerInterface as SessionContainer,
+  SessionInformation,
+  VerifySessionOptions,
+} from './types'
+import SuperTokensError from './error'
+import { getRequiredClaimValidators } from './utils'
 
 // For Express
 export default class SessionWrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static Error = SuperTokensError;
+  static Error = SuperTokensError
 
-    static async createNewSession(
-        req: any,
-        res: any,
-        userId: string,
+  static async createNewSession(
+    req: any,
+    res: any,
+    userId: string,
         accessTokenPayload: any = {},
         sessionData: any = {},
-        userContext: any = {}
-    ) {
-        const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
+        userContext: any = {},
+  ) {
+    const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes()
 
-        let finalAccessTokenPayload = accessTokenPayload;
+    let finalAccessTokenPayload = accessTokenPayload
 
-        for (const claim of claimsAddedByOtherRecipes) {
-            const update = await claim.build(userId, userContext);
-            finalAccessTokenPayload = {
-                ...finalAccessTokenPayload,
-                ...update,
-            };
-        }
-
-        if (!req.wrapperUsed) {
-            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-        }
-
-        if (!res.wrapperUsed) {
-            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-        }
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
-            req,
-            res,
-            userId,
-            accessTokenPayload: finalAccessTokenPayload,
-            sessionData,
-            userContext,
-        });
+    for (const claim of claimsAddedByOtherRecipes) {
+      const update = await claim.build(userId, userContext)
+      finalAccessTokenPayload = {
+        ...finalAccessTokenPayload,
+        ...update,
+      }
     }
 
-    static async validateClaimsForSessionHandle(
-        sessionHandle: string,
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            sessionInfo: SessionInformation,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext: any = {}
-    ): Promise<
+    if (!req.wrapperUsed)
+      req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req)
+
+    if (!res.wrapperUsed)
+      res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res)
+
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
+      req,
+      res,
+      userId,
+      accessTokenPayload: finalAccessTokenPayload,
+      sessionData,
+      userContext,
+    })
+  }
+
+  static async validateClaimsForSessionHandle(
+    sessionHandle: string,
+    overrideGlobalClaimValidators?: (
+      globalClaimValidators: SessionClaimValidator[],
+      sessionInfo: SessionInformation,
+      userContext: any
+    ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        userContext: any = {},
+  ): Promise<
         | {
-              status: "SESSION_DOES_NOT_EXIST_ERROR";
-          }
+          status: 'SESSION_DOES_NOT_EXIST_ERROR'
+        }
         | {
-              status: "OK";
-              invalidClaims: ClaimValidationError[];
-          }
+          status: 'OK'
+          invalidClaims: ClaimValidationError[]
+        }
     > {
-        const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+    const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl
 
-        const sessionInfo = await recipeImpl.getSessionInformation({
-            sessionHandle,
-            userContext,
-        });
-        if (sessionInfo === undefined) {
-            return {
-                status: "SESSION_DOES_NOT_EXIST_ERROR",
-            };
-        }
+    const sessionInfo = await recipeImpl.getSessionInformation({
+      sessionHandle,
+      userContext,
+    })
+    if (sessionInfo === undefined) {
+      return {
+        status: 'SESSION_DOES_NOT_EXIST_ERROR',
+      }
+    }
 
-        const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
-        const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
-            userId: sessionInfo?.userId,
-            claimValidatorsAddedByOtherRecipes,
-            userContext,
-        });
+    const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes()
+    const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
+      userId: sessionInfo?.userId,
+      claimValidatorsAddedByOtherRecipes,
+      userContext,
+    })
 
-        const claimValidators =
-            overrideGlobalClaimValidators !== undefined
-                ? await overrideGlobalClaimValidators(globalClaimValidators, sessionInfo, userContext)
-                : globalClaimValidators;
+    const claimValidators
+            = overrideGlobalClaimValidators !== undefined
+              ? await overrideGlobalClaimValidators(globalClaimValidators, sessionInfo, userContext)
+              : globalClaimValidators
 
-        let claimValidationResponse = await recipeImpl.validateClaims({
-            userId: sessionInfo.userId,
-            accessTokenPayload: sessionInfo.accessTokenPayload,
-            claimValidators,
-            userContext,
-        });
+    const claimValidationResponse = await recipeImpl.validateClaims({
+      userId: sessionInfo.userId,
+      accessTokenPayload: sessionInfo.accessTokenPayload,
+      claimValidators,
+      userContext,
+    })
 
-        if (claimValidationResponse.accessTokenPayloadUpdate !== undefined) {
-            if (
-                !(await recipeImpl.mergeIntoAccessTokenPayload({
-                    sessionHandle,
-                    accessTokenPayloadUpdate: claimValidationResponse.accessTokenPayloadUpdate,
-                    userContext,
-                }))
-            ) {
-                return {
-                    status: "SESSION_DOES_NOT_EXIST_ERROR",
-                };
-            }
-        }
+    if (claimValidationResponse.accessTokenPayloadUpdate !== undefined) {
+      if (
+        !(await recipeImpl.mergeIntoAccessTokenPayload({
+          sessionHandle,
+          accessTokenPayloadUpdate: claimValidationResponse.accessTokenPayloadUpdate,
+          userContext,
+        }))
+      ) {
         return {
-            status: "OK",
-            invalidClaims: claimValidationResponse.invalidClaims,
-        };
-    }
-
-    static async validateClaimsInJWTPayload(
-        userId: string,
-        jwtPayload: JSONObject,
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            userId: string,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext: any = {}
-    ): Promise<{
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
-    }> {
-        const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-
-        const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
-        const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
-            userId,
-            claimValidatorsAddedByOtherRecipes,
-            userContext,
-        });
-
-        const claimValidators =
-            overrideGlobalClaimValidators !== undefined
-                ? await overrideGlobalClaimValidators(globalClaimValidators, userId, userContext)
-                : globalClaimValidators;
-        return recipeImpl.validateClaimsInJWTPayload({
-            userId,
-            jwtPayload,
-            claimValidators,
-            userContext,
-        });
-    }
-
-    static getSession(req: any, res: any): Promise<SessionContainer>;
-    static getSession(
-        req: any,
-        res: any,
-        options?: VerifySessionOptions & { sessionRequired?: true },
-        userContext?: any
-    ): Promise<SessionContainer>;
-    static getSession(
-        req: any,
-        res: any,
-        options?: VerifySessionOptions & { sessionRequired: false },
-        userContext?: any
-    ): Promise<SessionContainer | undefined>;
-    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
-        if (!res.wrapperUsed) {
-            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
+          status: 'SESSION_DOES_NOT_EXIST_ERROR',
         }
-        if (!req.wrapperUsed) {
-            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-        }
-        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const session = await recipeInterfaceImpl.getSession({ req, res, options, userContext });
-
-        if (session !== undefined) {
-            const claimValidators = await getRequiredClaimValidators(
-                session,
-                options?.overrideGlobalClaimValidators,
-                userContext
-            );
-            await session.assertClaims(claimValidators, userContext);
-        }
-        return session;
+      }
     }
-
-    static getSessionInformation(sessionHandle: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
-            sessionHandle,
-            userContext,
-        });
+    return {
+      status: 'OK',
+      invalidClaims: claimValidationResponse.invalidClaims,
     }
+  }
 
-    static refreshSession(req: any, res: any, userContext: any = {}) {
-        if (!res.wrapperUsed) {
-            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-        }
-        if (!req.wrapperUsed) {
-            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-        }
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res, userContext });
+  static async validateClaimsInJWTPayload(
+    userId: string,
+    jwtPayload: JSONObject,
+    overrideGlobalClaimValidators?: (
+      globalClaimValidators: SessionClaimValidator[],
+      userId: string,
+      userContext: any
+    ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        userContext: any = {},
+  ): Promise<{
+    status: 'OK'
+    invalidClaims: ClaimValidationError[]
+  }> {
+    const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl
+
+    const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes()
+    const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
+      userId,
+      claimValidatorsAddedByOtherRecipes,
+      userContext,
+    })
+
+    const claimValidators
+            = overrideGlobalClaimValidators !== undefined
+              ? await overrideGlobalClaimValidators(globalClaimValidators, userId, userContext)
+              : globalClaimValidators
+    return recipeImpl.validateClaimsInJWTPayload({
+      userId,
+      jwtPayload,
+      claimValidators,
+      userContext,
+    })
+  }
+
+  static getSession(req: any, res: any): Promise<SessionContainer>
+  static getSession(
+    req: any,
+    res: any,
+    options?: VerifySessionOptions & { sessionRequired?: true },
+    userContext?: any
+  ): Promise<SessionContainer>
+  static getSession(
+    req: any,
+    res: any,
+    options?: VerifySessionOptions & { sessionRequired: false },
+    userContext?: any
+  ): Promise<SessionContainer | undefined>
+  static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
+    if (!res.wrapperUsed)
+      res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res)
+
+    if (!req.wrapperUsed)
+      req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req)
+
+    const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl
+    const session = await recipeInterfaceImpl.getSession({ req, res, options, userContext })
+
+    if (session !== undefined) {
+      const claimValidators = await getRequiredClaimValidators(
+        session,
+        options?.overrideGlobalClaimValidators,
+        userContext,
+      )
+      await session.assertClaims(claimValidators, userContext)
     }
+    return session
+  }
 
-    static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
-    }
+  static getSessionInformation(sessionHandle: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
+      sessionHandle,
+      userContext,
+    })
+  }
 
-    static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
-            userId,
-            userContext,
-        });
-    }
+  static refreshSession(req: any, res: any, userContext: any = {}) {
+    if (!res.wrapperUsed)
+      res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res)
 
-    static revokeSession(sessionHandle: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle, userContext });
-    }
+    if (!req.wrapperUsed)
+      req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req)
 
-    static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({
-            sessionHandles,
-            userContext,
-        });
-    }
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res, userContext })
+  }
 
-    static updateSessionData(sessionHandle: string, newSessionData: any, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData({
-            sessionHandle,
-            newSessionData,
-            userContext,
-        });
-    }
+  static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext })
+  }
 
-    static regenerateAccessToken(accessToken: string, newAccessTokenPayload?: any, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.regenerateAccessToken({
-            accessToken,
-            newAccessTokenPayload,
-            userContext,
-        });
-    }
+  static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
+      userId,
+      userContext,
+    })
+  }
 
-    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateAccessTokenPayload({
-            sessionHandle,
-            newAccessTokenPayload,
-            userContext,
-        });
-    }
+  static revokeSession(sessionHandle: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle, userContext })
+  }
 
-    static mergeIntoAccessTokenPayload(
-        sessionHandle: string,
-        accessTokenPayloadUpdate: JSONObject,
-        userContext: any = {}
-    ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
-            sessionHandle,
-            accessTokenPayloadUpdate,
-            userContext,
-        });
-    }
+  static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({
+      sessionHandles,
+      userContext,
+    })
+  }
 
-    static createJWT(payload?: any, validitySeconds?: number, userContext: any = {}) {
-        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
+  static updateSessionData(sessionHandle: string, newSessionData: any, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData({
+      sessionHandle,
+      newSessionData,
+      userContext,
+    })
+  }
 
-        if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.createJWT({ payload, validitySeconds, userContext });
-        }
+  static regenerateAccessToken(accessToken: string, newAccessTokenPayload?: any, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.regenerateAccessToken({
+      accessToken,
+      newAccessTokenPayload,
+      userContext,
+    })
+  }
 
-        throw new global.Error(
-            "createJWT cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-        );
-    }
+  static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateAccessTokenPayload({
+      sessionHandle,
+      newAccessTokenPayload,
+      userContext,
+    })
+  }
 
-    static getJWKS(userContext: any = {}) {
-        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
+  static mergeIntoAccessTokenPayload(
+    sessionHandle: string,
+    accessTokenPayloadUpdate: JSONObject,
+        userContext: any = {},
+  ) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
+      sessionHandle,
+      accessTokenPayloadUpdate,
+      userContext,
+    })
+  }
 
-        if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.getJWKS({ userContext });
-        }
+  static createJWT(payload?: any, validitySeconds?: number, userContext: any = {}) {
+    const openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe
 
-        throw new global.Error(
-            "getJWKS cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-        );
-    }
+    if (openIdRecipe !== undefined)
+      return openIdRecipe.recipeImplementation.createJWT({ payload, validitySeconds, userContext })
 
-    static getOpenIdDiscoveryConfiguration(userContext: any = {}) {
-        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
+    throw new global.Error(
+      'createJWT cannot be used without enabling the JWT feature. Please set \'enableJWT: true\' when initialising the Session recipe',
+    )
+  }
 
-        if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext });
-        }
+  static getJWKS(userContext: any = {}) {
+    const openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe
 
-        throw new global.Error(
-            "getOpenIdDiscoveryConfiguration cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-        );
-    }
+    if (openIdRecipe !== undefined)
+      return openIdRecipe.recipeImplementation.getJWKS({ userContext })
 
-    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
-            sessionHandle,
-            claim,
-            userContext,
-        });
-    }
+    throw new global.Error(
+      'getJWKS cannot be used without enabling the JWT feature. Please set \'enableJWT: true\' when initialising the Session recipe',
+    )
+  }
 
-    static setClaimValue<T>(
-        sessionHandle: string,
-        claim: SessionClaim<T>,
-        value: T,
-        userContext: any = {}
-    ): Promise<boolean> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
-            sessionHandle,
-            claim,
-            value,
-            userContext,
-        });
-    }
+  static getOpenIdDiscoveryConfiguration(userContext: any = {}) {
+    const openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe
 
-    static getClaimValue<T>(
-        sessionHandle: string,
-        claim: SessionClaim<T>,
-        userContext: any = {}
-    ): Promise<
+    if (openIdRecipe !== undefined)
+      return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext })
+
+    throw new global.Error(
+      'getOpenIdDiscoveryConfiguration cannot be used without enabling the JWT feature. Please set \'enableJWT: true\' when initialising the Session recipe',
+    )
+  }
+
+  static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
+      sessionHandle,
+      claim,
+      userContext,
+    })
+  }
+
+  static setClaimValue<T>(
+    sessionHandle: string,
+    claim: SessionClaim<T>,
+    value: T,
+        userContext: any = {},
+  ): Promise<boolean> {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
+      sessionHandle,
+      claim,
+      value,
+      userContext,
+    })
+  }
+
+  static getClaimValue<T>(
+    sessionHandle: string,
+    claim: SessionClaim<T>,
+        userContext: any = {},
+  ): Promise<
         | {
-              status: "SESSION_DOES_NOT_EXIST_ERROR";
-          }
+          status: 'SESSION_DOES_NOT_EXIST_ERROR'
+        }
         | {
-              status: "OK";
-              value: T | undefined;
-          }
+          status: 'OK'
+          value: T | undefined
+        }
     > {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimValue({
-            sessionHandle,
-            claim,
-            userContext,
-        });
-    }
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimValue({
+      sessionHandle,
+      claim,
+      userContext,
+    })
+  }
 
-    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
-            sessionHandle,
-            claim,
-            userContext,
-        });
-    }
+  static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
+      sessionHandle,
+      claim,
+      userContext,
+    })
+  }
 }
 
-export let init = SessionWrapper.init;
+export const init = SessionWrapper.init
 
-export let createNewSession = SessionWrapper.createNewSession;
+export const createNewSession = SessionWrapper.createNewSession
 
-export let getSession = SessionWrapper.getSession;
+export const getSession = SessionWrapper.getSession
 
-export let getSessionInformation = SessionWrapper.getSessionInformation;
+export const getSessionInformation = SessionWrapper.getSessionInformation
 
-export let refreshSession = SessionWrapper.refreshSession;
+export const refreshSession = SessionWrapper.refreshSession
 
-export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
+export const revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser
 
-export let getAllSessionHandlesForUser = SessionWrapper.getAllSessionHandlesForUser;
+export const getAllSessionHandlesForUser = SessionWrapper.getAllSessionHandlesForUser
 
-export let revokeSession = SessionWrapper.revokeSession;
+export const revokeSession = SessionWrapper.revokeSession
 
-export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
+export const revokeMultipleSessions = SessionWrapper.revokeMultipleSessions
 
-export let updateSessionData = SessionWrapper.updateSessionData;
+export const updateSessionData = SessionWrapper.updateSessionData
 
-export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
-export let mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload;
+export const updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload
+export const mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload
 
-export let fetchAndSetClaim = SessionWrapper.fetchAndSetClaim;
-export let setClaimValue = SessionWrapper.setClaimValue;
-export let getClaimValue = SessionWrapper.getClaimValue;
-export let removeClaim = SessionWrapper.removeClaim;
-export let validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload;
-export let validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle;
+export const fetchAndSetClaim = SessionWrapper.fetchAndSetClaim
+export const setClaimValue = SessionWrapper.setClaimValue
+export const getClaimValue = SessionWrapper.getClaimValue
+export const removeClaim = SessionWrapper.removeClaim
+export const validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload
+export const validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle
 
-export let Error = SessionWrapper.Error;
+export const Error = SessionWrapper.Error
 
 // JWT Functions
-export let createJWT = SessionWrapper.createJWT;
+export const createJWT = SessionWrapper.createJWT
 
-export let getJWKS = SessionWrapper.getJWKS;
+export const getJWKS = SessionWrapper.getJWKS
 
 // Open id functions
 
-export let getOpenIdDiscoveryConfiguration = SessionWrapper.getOpenIdDiscoveryConfiguration;
+export const getOpenIdDiscoveryConfiguration = SessionWrapper.getOpenIdDiscoveryConfiguration
 
 export type {
-    VerifySessionOptions,
-    RecipeInterface,
-    SessionContainer,
-    APIInterface,
-    APIOptions,
-    SessionInformation,
-    SessionClaimValidator,
-};
+  VerifySessionOptions,
+  RecipeInterface,
+  SessionContainer,
+  APIInterface,
+  APIOptions,
+  SessionInformation,
+  SessionClaimValidator,
+}

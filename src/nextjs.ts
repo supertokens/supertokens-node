@@ -12,52 +12,51 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { errorHandler } from "./framework/express";
+import { errorHandler } from './framework/express'
 function next(
-    request: any,
-    response: any,
-    resolve: (value?: any) => void,
-    reject: (reason?: any) => void
+  request: any,
+  response: any,
+  resolve: (value?: any) => void,
+  reject: (reason?: any) => void,
 ): (middlewareError?: any) => Promise<any> {
-    return async function (middlewareError?: any) {
-        if (middlewareError === undefined) {
-            return resolve();
-        }
-        await errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
-            if (errorHandlerError !== undefined) {
-                return reject(errorHandlerError);
-            }
+  return async function (middlewareError?: any) {
+    if (middlewareError === undefined)
+      return resolve()
 
-            // do nothing, error handler does not resolve the promise.
-        });
-    };
+    await errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
+      if (errorHandlerError !== undefined)
+        return reject(errorHandlerError)
+
+      // do nothing, error handler does not resolve the promise.
+    })
+  }
 }
 export default class NextJS {
-    static async superTokensNextWrapper<T>(
-        middleware: (next: (middlewareError?: any) => void) => Promise<T>,
-        request: any,
-        response: any
-    ): Promise<T> {
-        return new Promise<T>(async (resolve: any, reject: any) => {
-            request.__supertokensFromNextJS = true;
-            try {
-                let callbackCalled = false;
-                const result = await middleware((err) => {
-                    callbackCalled = true;
-                    next(request, response, resolve, reject)(err);
-                });
-                if (!callbackCalled && !response.finished && !response.headersSent) {
-                    return resolve(result);
-                }
-            } catch (err) {
-                await errorHandler()(err, request, response, (errorHandlerError: any) => {
-                    if (errorHandlerError !== undefined) {
-                        return reject(errorHandlerError);
-                    }
-                    // do nothing, error handler does not resolve the promise.
-                });
-            }
-        });
-    }
+  static async superTokensNextWrapper<T>(
+    middleware: (next: (middlewareError?: any) => void) => Promise<T>,
+    request: any,
+    response: any,
+  ): Promise<T> {
+    return new Promise<T>((resolve: any, reject: any) => {
+      request.__supertokensFromNextJS = true
+      try {
+        let callbackCalled = false
+        const result = middleware((err) => {
+          callbackCalled = true
+          next(request, response, resolve, reject)(err)
+        })
+        if (!callbackCalled && !response.finished && !response.headersSent)
+          return resolve(result)
+      }
+      catch (err) {
+        errorHandler()(err, request, response, (errorHandlerError: any) => {
+          if (errorHandlerError !== undefined)
+            return reject(errorHandlerError)
+
+          // do nothing, error handler does not resolve the promise.
+        })
+      }
+    })
+  }
 }
-export let superTokensNextWrapper = NextJS.superTokensNextWrapper;
+export const superTokensNextWrapper = NextJS.superTokensNextWrapper

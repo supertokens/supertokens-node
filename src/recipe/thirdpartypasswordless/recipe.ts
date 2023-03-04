@@ -12,251 +12,253 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import PasswordlessRecipe from "../passwordless/recipe";
-import ThirdPartyRecipe from "../thirdparty/recipe";
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import STError from "./error";
+import OverrideableBuilder from 'overrideableBuilder'
+import RecipeModule from '../../recipeModule'
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from '../../types'
+import PasswordlessRecipe from '../passwordless/recipe'
+import ThirdPartyRecipe from '../thirdparty/recipe'
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
+import STErrorPasswordless from '../passwordless/error'
+import STErrorThirdParty from '../thirdparty/error'
+import NormalisedURLPath from '../../normalisedURLPath'
+import { Querier } from '../../querier'
+import EmailDeliveryIngredient from '../../ingredients/emaildelivery'
+import SmsDeliveryIngredient from '../../ingredients/smsdelivery'
+import STError from './error'
 import {
-    TypeInput,
-    TypeNormalisedInput,
-    RecipeInterface,
-    APIInterface,
-    TypeThirdPartyPasswordlessEmailDeliveryInput,
-    TypeThirdPartyPasswordlessSmsDeliveryInput,
-} from "./types";
-import { validateAndNormaliseUserInput } from "./utils";
-import STErrorPasswordless from "../passwordless/error";
-import STErrorThirdParty from "../thirdparty/error";
-import NormalisedURLPath from "../../normalisedURLPath";
-import RecipeImplementation from "./recipeImplementation";
-import PasswordlessRecipeImplementation from "./recipeImplementation/passwordlessRecipeImplementation";
-import ThirdPartyRecipeImplementation from "./recipeImplementation/thirdPartyRecipeImplementation";
-import getThirdPartyIterfaceImpl from "./api/thirdPartyAPIImplementation";
-import getPasswordlessInterfaceImpl from "./api/passwordlessAPIImplementation";
-import APIImplementation from "./api/implementation";
-import { Querier } from "../../querier";
-import OverrideableBuilder from "supertokens-js-override";
-import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+  APIInterface,
+  RecipeInterface,
+  TypeInput,
+  TypeNormalisedInput,
+  TypeThirdPartyPasswordlessEmailDeliveryInput,
+  TypeThirdPartyPasswordlessSmsDeliveryInput,
+} from './types'
+import { validateAndNormaliseUserInput } from './utils'
+import RecipeImplementation from './recipeImplementation'
+import PasswordlessRecipeImplementation from './recipeImplementation/passwordlessRecipeImplementation'
+import ThirdPartyRecipeImplementation from './recipeImplementation/thirdPartyRecipeImplementation'
+import getThirdPartyIterfaceImpl from './api/thirdPartyAPIImplementation'
+import getPasswordlessInterfaceImpl from './api/passwordlessAPIImplementation'
+import APIImplementation from './api/implementation'
 
 export default class Recipe extends RecipeModule {
-    private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "thirdpartypasswordless";
+  private static instance: Recipe | undefined = undefined
+  static RECIPE_ID = 'thirdpartypasswordless'
 
-    config: TypeNormalisedInput;
+  config: TypeNormalisedInput
 
-    passwordlessRecipe: PasswordlessRecipe;
+  passwordlessRecipe: PasswordlessRecipe
 
-    private thirdPartyRecipe: ThirdPartyRecipe | undefined;
+  private thirdPartyRecipe: ThirdPartyRecipe | undefined
 
-    recipeInterfaceImpl: RecipeInterface;
+  recipeInterfaceImpl: RecipeInterface
 
-    apiImpl: APIInterface;
+  apiImpl: APIInterface
 
-    emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+  emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput>
 
-    smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput>;
+  smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput>
 
-    isInServerlessEnv: boolean;
+  isInServerlessEnv: boolean
 
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config: TypeInput,
-        recipes: {
-            thirdPartyInstance: ThirdPartyRecipe | undefined;
-            passwordlessInstance: PasswordlessRecipe | undefined;
-        },
-        ingredients: {
-            emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput> | undefined;
-            smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput> | undefined;
-        }
-    ) {
-        super(recipeId, appInfo);
-        this.isInServerlessEnv = isInServerlessEnv;
-        this.config = validateAndNormaliseUserInput(appInfo, config);
+  constructor(
+    recipeId: string,
+    appInfo: NormalisedAppinfo,
+    isInServerlessEnv: boolean,
+    config: TypeInput,
+    recipes: {
+      thirdPartyInstance: ThirdPartyRecipe | undefined
+      passwordlessInstance: PasswordlessRecipe | undefined
+    },
+    ingredients: {
+      emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput> | undefined
+      smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput> | undefined
+    },
+  ) {
+    super(recipeId, appInfo)
+    this.isInServerlessEnv = isInServerlessEnv
+    this.config = validateAndNormaliseUserInput(appInfo, config)
 
-        {
-            let builder = new OverrideableBuilder(
-                RecipeImplementation(
-                    Querier.getNewInstanceOrThrowError(PasswordlessRecipe.RECIPE_ID),
-                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
-                )
-            );
-            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
-        }
-        {
-            let builder = new OverrideableBuilder(APIImplementation());
-            this.apiImpl = builder.override(this.config.override.apis).build();
-        }
-
-        this.emailDelivery =
-            ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(
-                      this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
-                  )
-                : ingredients.emailDelivery;
-
-        this.smsDelivery =
-            ingredients.smsDelivery === undefined
-                ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
-                : ingredients.smsDelivery;
-
-        this.passwordlessRecipe =
-            recipes.passwordlessInstance !== undefined
-                ? recipes.passwordlessInstance
-                : new PasswordlessRecipe(
-                      recipeId,
-                      appInfo,
-                      isInServerlessEnv,
-                      {
-                          ...this.config,
-                          override: {
-                              functions: (_) => {
-                                  return PasswordlessRecipeImplementation(this.recipeInterfaceImpl);
-                              },
-                              apis: (_) => {
-                                  return getPasswordlessInterfaceImpl(this.apiImpl);
-                              },
-                          },
-                      },
-                      {
-                          emailDelivery: this.emailDelivery,
-                          smsDelivery: this.smsDelivery,
-                      }
-                  );
-
-        if (this.config.providers.length !== 0) {
-            this.thirdPartyRecipe =
-                recipes.thirdPartyInstance !== undefined
-                    ? recipes.thirdPartyInstance
-                    : new ThirdPartyRecipe(
-                          recipeId,
-                          appInfo,
-                          isInServerlessEnv,
-                          {
-                              override: {
-                                  functions: (_) => {
-                                      return ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
-                                  },
-                                  apis: (_) => {
-                                      return getThirdPartyIterfaceImpl(this.apiImpl);
-                                  },
-                              },
-                              signInAndUpFeature: {
-                                  providers: this.config.providers,
-                              },
-                          },
-                          {},
-                          {
-                              emailDelivery: this.emailDelivery,
-                          }
-                      );
-        }
+    {
+      const builder = new OverrideableBuilder(
+        RecipeImplementation(
+          Querier.getNewInstanceOrThrowError(PasswordlessRecipe.RECIPE_ID),
+          Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID),
+        ),
+      )
+      this.recipeInterfaceImpl = builder.override(this.config.override.functions).build()
+    }
+    {
+      const builder = new OverrideableBuilder(APIImplementation())
+      this.apiImpl = builder.override(this.config.override.apis).build()
     }
 
-    static init(config: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
-            if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(
-                    Recipe.RECIPE_ID,
-                    appInfo,
-                    isInServerlessEnv,
-                    config,
-                    {
-                        passwordlessInstance: undefined,
-                        thirdPartyInstance: undefined,
-                    },
-                    {
-                        emailDelivery: undefined,
-                        smsDelivery: undefined,
-                    }
-                );
-                return Recipe.instance;
-            } else {
-                throw new Error(
-                    "ThirdPartyPasswordless recipe has already been initialised. Please check your code for bugs."
-                );
-            }
-        };
+    this.emailDelivery
+            = ingredients.emailDelivery === undefined
+        ? new EmailDeliveryIngredient(
+          this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv),
+        )
+        : ingredients.emailDelivery
+
+    this.smsDelivery
+            = ingredients.smsDelivery === undefined
+        ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
+        : ingredients.smsDelivery
+
+    this.passwordlessRecipe
+            = recipes.passwordlessInstance !== undefined
+        ? recipes.passwordlessInstance
+        : new PasswordlessRecipe(
+          recipeId,
+          appInfo,
+          isInServerlessEnv,
+          {
+            ...this.config,
+            override: {
+              functions: (_) => {
+                return PasswordlessRecipeImplementation(this.recipeInterfaceImpl)
+              },
+              apis: (_) => {
+                return getPasswordlessInterfaceImpl(this.apiImpl)
+              },
+            },
+          },
+          {
+            emailDelivery: this.emailDelivery,
+            smsDelivery: this.smsDelivery,
+          },
+        )
+
+    if (this.config.providers.length !== 0) {
+      this.thirdPartyRecipe
+                = recipes.thirdPartyInstance !== undefined
+          ? recipes.thirdPartyInstance
+          : new ThirdPartyRecipe(
+            recipeId,
+            appInfo,
+            isInServerlessEnv,
+            {
+              override: {
+                functions: (_) => {
+                  return ThirdPartyRecipeImplementation(this.recipeInterfaceImpl)
+                },
+                apis: (_) => {
+                  return getThirdPartyIterfaceImpl(this.apiImpl)
+                },
+              },
+              signInAndUpFeature: {
+                providers: this.config.providers,
+              },
+            },
+            {},
+            {
+              emailDelivery: this.emailDelivery,
+            },
+          )
     }
+  }
 
-    static reset() {
-        if (process.env.TEST_MODE !== "testing") {
-            throw new Error("calling testing function in non testing env");
-        }
-        Recipe.instance = undefined;
+  static init(config: TypeInput): RecipeListFunction {
+    return (appInfo, isInServerlessEnv) => {
+      if (Recipe.instance === undefined) {
+        Recipe.instance = new Recipe(
+          Recipe.RECIPE_ID,
+          appInfo,
+          isInServerlessEnv,
+          config,
+          {
+            passwordlessInstance: undefined,
+            thirdPartyInstance: undefined,
+          },
+          {
+            emailDelivery: undefined,
+            smsDelivery: undefined,
+          },
+        )
+        return Recipe.instance
+      }
+      else {
+        throw new Error(
+          'ThirdPartyPasswordless recipe has already been initialised. Please check your code for bugs.',
+        )
+      }
     }
+  }
 
-    static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance !== undefined) {
-            return Recipe.instance;
-        }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+  static reset() {
+    if (process.env.TEST_MODE !== 'testing')
+      throw new Error('calling testing function in non testing env')
+
+    Recipe.instance = undefined
+  }
+
+  static getInstanceOrThrowError(): Recipe {
+    if (Recipe.instance !== undefined)
+      return Recipe.instance
+
+    throw new Error('Initialisation not done. Did you forget to call the SuperTokens.init function?')
+  }
+
+  getAPIsHandled = (): APIHandled[] => {
+    const apisHandled = [...this.passwordlessRecipe.getAPIsHandled()]
+    if (this.thirdPartyRecipe !== undefined)
+      apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled())
+
+    return apisHandled
+  }
+
+  handleAPIRequest = async (
+    id: string,
+    req: BaseRequest,
+    res: BaseResponse,
+    path: NormalisedURLPath,
+    method: HTTPMethod,
+  ): Promise<boolean> => {
+    if (this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined)
+      return await this.passwordlessRecipe.handleAPIRequest(id, req, res, path, method)
+
+    if (
+      this.thirdPartyRecipe !== undefined
+            && this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
+    )
+      return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method)
+
+    return false
+  }
+
+  handleError = async (
+    err: STErrorPasswordless | STErrorThirdParty,
+    request: BaseRequest,
+    response: BaseResponse,
+  ): Promise<void> => {
+    if (err.fromRecipe === Recipe.RECIPE_ID) {
+      throw err
     }
+    else {
+      if (this.passwordlessRecipe.isErrorFromThisRecipe(err))
+        return await this.passwordlessRecipe.handleError(err, request, response)
+      else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err))
+        return await this.thirdPartyRecipe.handleError(err, request, response)
 
-    getAPIsHandled = (): APIHandled[] => {
-        let apisHandled = [...this.passwordlessRecipe.getAPIsHandled()];
-        if (this.thirdPartyRecipe !== undefined) {
-            apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
-        }
-        return apisHandled;
-    };
+      throw err
+    }
+  }
 
-    handleAPIRequest = async (
-        id: string,
-        req: BaseRequest,
-        res: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod
-    ): Promise<boolean> => {
-        if (this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
-            return await this.passwordlessRecipe.handleAPIRequest(id, req, res, path, method);
-        }
-        if (
-            this.thirdPartyRecipe !== undefined &&
-            this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
-        ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
-        }
-        return false;
-    };
+  getAllCORSHeaders = (): string[] => {
+    const corsHeaders = [...this.passwordlessRecipe.getAllCORSHeaders()]
+    if (this.thirdPartyRecipe !== undefined)
+      corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders())
 
-    handleError = async (
-        err: STErrorPasswordless | STErrorThirdParty,
-        request: BaseRequest,
-        response: BaseResponse
-    ): Promise<void> => {
-        if (err.fromRecipe === Recipe.RECIPE_ID) {
-            throw err;
-        } else {
-            if (this.passwordlessRecipe.isErrorFromThisRecipe(err)) {
-                return await this.passwordlessRecipe.handleError(err, request, response);
-            } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
-                return await this.thirdPartyRecipe.handleError(err, request, response);
-            }
-            throw err;
-        }
-    };
+    return corsHeaders
+  }
 
-    getAllCORSHeaders = (): string[] => {
-        let corsHeaders = [...this.passwordlessRecipe.getAllCORSHeaders()];
-        if (this.thirdPartyRecipe !== undefined) {
-            corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
-        }
-        return corsHeaders;
-    };
-
-    isErrorFromThisRecipe = (err: any): err is STError => {
-        return (
-            STError.isErrorFromSuperTokens(err) &&
-            (err.fromRecipe === Recipe.RECIPE_ID ||
-                this.passwordlessRecipe.isErrorFromThisRecipe(err) ||
-                (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
-        );
-    };
+  isErrorFromThisRecipe = (err: any): err is STError => {
+    return (
+      STError.isErrorFromSuperTokens(err)
+            && (err.fromRecipe === Recipe.RECIPE_ID
+                || this.passwordlessRecipe.isErrorFromThisRecipe(err)
+                || (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
+    )
+  }
 }

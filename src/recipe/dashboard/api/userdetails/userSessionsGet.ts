@@ -1,58 +1,59 @@
-import { APIFunction, APIInterface, APIOptions } from "../../types";
-import STError from "../../../../error";
-import Session from "../../../session";
+import { APIFunction, APIInterface, APIOptions } from '../../types'
+import STError from '../../../../error'
+import Session from '../../../session'
 
-type SessionType = {
-    sessionData: any;
-    accessTokenPayload: any;
-    userId: string;
-    expiry: number;
-    timeCreated: number;
-    sessionHandle: string;
-};
+interface SessionType {
+  sessionData: any
+  accessTokenPayload: any
+  userId: string
+  expiry: number
+  timeCreated: number
+  sessionHandle: string
+}
 
-type Response = {
-    status: "OK";
-    sessions: SessionType[];
-};
+interface Response {
+  status: 'OK'
+  sessions: SessionType[]
+}
 
 export const userSessionsGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
-    const userId = options.req.getKeyValueFromQuery("userId");
+  const userId = options.req.getKeyValueFromQuery('userId')
 
-    if (userId === undefined) {
-        throw new STError({
-            message: "Missing required parameter 'userId'",
-            type: STError.BAD_INPUT_ERROR,
-        });
-    }
+  if (userId === undefined) {
+    throw new STError({
+      message: 'Missing required parameter \'userId\'',
+      type: STError.BAD_INPUT_ERROR,
+    })
+  }
 
-    const response = await Session.getAllSessionHandlesForUser(userId);
+  const response = await Session.getAllSessionHandlesForUser(userId)
 
-    let sessions: SessionType[] = [];
-    let sessionInfoPromises: Promise<void>[] = [];
+  const sessions: SessionType[] = []
+  const sessionInfoPromises: Promise<void>[] = []
 
-    for (let i = 0; i < response.length; i++) {
-        sessionInfoPromises.push(
-            new Promise(async (res, rej) => {
-                try {
-                    const sessionResponse = await Session.getSessionInformation(response[i]);
+  for (let i = 0; i < response.length; i++) {
+    sessionInfoPromises.push(
+      new Promise((resolve, reject) => {
+        try {
+          Session.getSessionInformation(response[i]).then((session) => {
+            if (session !== undefined)
+              sessions[i] = session
+            resolve()
+          }).catch((err) => {
+            reject(err)
+          })
+        }
+        catch (e) {
+          reject(e)
+        }
+      }),
+    )
+  }
 
-                    if (sessionResponse !== undefined) {
-                        sessions[i] = sessionResponse;
-                    }
+  await Promise.all(sessionInfoPromises)
 
-                    res();
-                } catch (e) {
-                    rej(e);
-                }
-            })
-        );
-    }
-
-    await Promise.all(sessionInfoPromises);
-
-    return {
-        status: "OK",
-        sessions,
-    };
-};
+  return {
+    status: 'OK',
+    sessions,
+  }
+}

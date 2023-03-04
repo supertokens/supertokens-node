@@ -13,36 +13,37 @@
  * under the License.
  */
 
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import Twilio from "twilio/lib/rest/Twilio";
+import Twilio from 'twilio/lib/rest/Twilio'
+import { TypePasswordlessSmsDeliveryInput } from '../../../types'
 import {
-    ServiceInterface,
-    TypeInputSendRawSms,
-    GetContentResult,
-} from "../../../../../ingredients/smsdelivery/services/twilio";
-import getPasswordlessLoginSmsContent from "./passwordlessLogin";
+  GetContentResult,
+  ServiceInterface,
+  TypeInputSendRawSms,
+} from '../../../../../ingredients/smsdelivery/services/twilio'
+import getPasswordlessLoginSmsContent from './passwordlessLogin'
 
 export function getServiceImplementation(twilioClient: Twilio): ServiceInterface<TypePasswordlessSmsDeliveryInput> {
-    return {
-        sendRawSms: async function (input: TypeInputSendRawSms) {
-            if ("from" in input) {
-                await twilioClient.messages.create({
-                    to: input.toPhoneNumber,
-                    body: input.body,
-                    from: input.from,
-                });
-            } else {
-                await twilioClient.messages.create({
-                    to: input.toPhoneNumber,
-                    body: input.body,
-                    messagingServiceSid: input.messagingServiceSid,
-                });
-            }
-        },
-        getContent: async function (
-            input: TypePasswordlessSmsDeliveryInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            return getPasswordlessLoginSmsContent(input);
-        },
-    };
+  return {
+    async sendRawSms(input: TypeInputSendRawSms) {
+      if ('from' in input) {
+        await twilioClient.messages.create({
+          to: input.toPhoneNumber,
+          body: input.body,
+          from: input.from,
+        })
+      }
+      else {
+        await twilioClient.messages.create({
+          to: input.toPhoneNumber,
+          body: input.body,
+          messagingServiceSid: input.messagingServiceSid,
+        })
+      }
+    },
+    async getContent(
+      input: TypePasswordlessSmsDeliveryInput & { userContext: any },
+    ): Promise<GetContentResult> {
+      return getPasswordlessLoginSmsContent(input)
+    },
+  }
 }

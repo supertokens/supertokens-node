@@ -13,53 +13,51 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo } from "../../types";
-import parsePhoneNumber from "libphonenumber-js/max";
-import BackwardCompatibilityEmailService from "./emaildelivery/services/backwardCompatibility";
-import BackwardCompatibilitySmsService from "./smsdelivery/services/backwardCompatibility";
+import parsePhoneNumber from 'libphonenumber-js/max'
+import { NormalisedAppinfo } from '../../types'
+import Recipe from './recipe'
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from './types'
+import BackwardCompatibilityEmailService from './emaildelivery/services/backwardCompatibility'
+import BackwardCompatibilitySmsService from './smsdelivery/services/backwardCompatibility'
 
 export function validateAndNormaliseUserInput(
-    _: Recipe,
-    appInfo: NormalisedAppinfo,
-    config: TypeInput
+  _: Recipe,
+  appInfo: NormalisedAppinfo,
+  config: TypeInput,
 ): TypeNormalisedInput {
-    if (
-        config.contactMethod !== "PHONE" &&
-        config.contactMethod !== "EMAIL" &&
-        config.contactMethod !== "EMAIL_OR_PHONE"
-    ) {
-        throw new Error('Please pass one of "PHONE", "EMAIL" or "EMAIL_OR_PHONE" as the contactMethod');
-    }
+  if (
+    config.contactMethod !== 'PHONE'
+        && config.contactMethod !== 'EMAIL'
+        && config.contactMethod !== 'EMAIL_OR_PHONE'
+  )
+    throw new Error('Please pass one of "PHONE", "EMAIL" or "EMAIL_OR_PHONE" as the contactMethod')
 
-    if (config.flowType === undefined) {
-        throw new Error("Please pass flowType argument in the config");
-    }
+  if (config.flowType === undefined)
+    throw new Error('Please pass flowType argument in the config')
 
-    let override = {
-        functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
-    };
+  const override = {
+    functions: (originalImplementation: RecipeInterface) => originalImplementation,
+    apis: (originalImplementation: APIInterface) => originalImplementation,
+    ...config.override,
+  }
 
-    function getEmailDeliveryConfig() {
-        let emailService = config.emailDelivery?.service;
+  function getEmailDeliveryConfig() {
+    let emailService = config.emailDelivery?.service
 
-        let createAndSendCustomEmail = config.contactMethod === "PHONE" ? undefined : config.createAndSendCustomEmail;
-        /**
+    const createAndSendCustomEmail = config.contactMethod === 'PHONE' ? undefined : config.createAndSendCustomEmail
+    /**
          * following code is for backward compatibility.
          * if user has not passed emailDelivery config, we
          * use the createAndSendCustomEmail config. If the user
          * has not passed even that config, we use the default
          * createAndSendCustomEmail implementation
          */
-        if (emailService === undefined) {
-            emailService = new BackwardCompatibilityEmailService(appInfo, createAndSendCustomEmail);
-        }
-        let emailDelivery = {
-            ...config.emailDelivery,
-            /**
+    if (emailService === undefined)
+      emailService = new BackwardCompatibilityEmailService(appInfo, createAndSendCustomEmail)
+
+    const emailDelivery = {
+      ...config.emailDelivery,
+      /**
              * if we do
              * let emailDelivery = {
              *    service: emailService,
@@ -70,29 +68,29 @@ export function validateAndNormaliseUserInput(
              * it it again get set to undefined, so we
              * set service at the end
              */
-            service: emailService,
-        };
-        return emailDelivery;
+      service: emailService,
     }
+    return emailDelivery
+  }
 
-    function getSmsDeliveryConfig() {
-        let smsService = config.smsDelivery?.service;
+  function getSmsDeliveryConfig() {
+    let smsService = config.smsDelivery?.service
 
-        let createAndSendCustomTextMessage =
-            config.contactMethod === "EMAIL" ? undefined : config.createAndSendCustomTextMessage;
-        /**
+    const createAndSendCustomTextMessage
+            = config.contactMethod === 'EMAIL' ? undefined : config.createAndSendCustomTextMessage
+    /**
          * following code is for backward compatibility.
          * if user has not passed emailDelivery config, we
          * use the createAndSendCustomTextMessage config. If the user
          * has not passed even that config, we use the default
          * createAndSendCustomTextMessage implementation
          */
-        if (smsService === undefined) {
-            smsService = new BackwardCompatibilitySmsService(appInfo, createAndSendCustomTextMessage);
-        }
-        let smsDelivery = {
-            ...config.smsDelivery,
-            /**
+    if (smsService === undefined)
+      smsService = new BackwardCompatibilitySmsService(appInfo, createAndSendCustomTextMessage)
+
+    const smsDelivery = {
+      ...config.smsDelivery,
+      /**
              * if we do
              * let smsDelivery = {
              *    service: smsService,
@@ -103,79 +101,77 @@ export function validateAndNormaliseUserInput(
              * it it again get set to undefined, so we
              * set service at the end
              */
-            service: smsService,
-        };
-        return smsDelivery;
+      service: smsService,
     }
-    if (config.contactMethod === "EMAIL") {
-        return {
-            override,
-            getEmailDeliveryConfig,
-            getSmsDeliveryConfig,
-            flowType: config.flowType,
-            contactMethod: "EMAIL",
-            validateEmailAddress:
+    return smsDelivery
+  }
+  if (config.contactMethod === 'EMAIL') {
+    return {
+      override,
+      getEmailDeliveryConfig,
+      getSmsDeliveryConfig,
+      flowType: config.flowType,
+      contactMethod: 'EMAIL',
+      validateEmailAddress:
                 config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
-            getCustomUserInputCode: config.getCustomUserInputCode,
-        };
-    } else if (config.contactMethod === "PHONE") {
-        return {
-            override,
-            getEmailDeliveryConfig,
-            getSmsDeliveryConfig,
-            flowType: config.flowType,
-            contactMethod: "PHONE",
-            validatePhoneNumber:
-                config.validatePhoneNumber === undefined ? defaultValidatePhoneNumber : config.validatePhoneNumber,
-            getCustomUserInputCode: config.getCustomUserInputCode,
-        };
-    } else {
-        return {
-            override,
-            getEmailDeliveryConfig,
-            getSmsDeliveryConfig,
-            flowType: config.flowType,
-            contactMethod: "EMAIL_OR_PHONE",
-            validateEmailAddress:
-                config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
-            validatePhoneNumber:
-                config.validatePhoneNumber === undefined ? defaultValidatePhoneNumber : config.validatePhoneNumber,
-            getCustomUserInputCode: config.getCustomUserInputCode,
-        };
+      getCustomUserInputCode: config.getCustomUserInputCode,
     }
+  }
+  else if (config.contactMethod === 'PHONE') {
+    return {
+      override,
+      getEmailDeliveryConfig,
+      getSmsDeliveryConfig,
+      flowType: config.flowType,
+      contactMethod: 'PHONE',
+      validatePhoneNumber:
+                config.validatePhoneNumber === undefined ? defaultValidatePhoneNumber : config.validatePhoneNumber,
+      getCustomUserInputCode: config.getCustomUserInputCode,
+    }
+  }
+  else {
+    return {
+      override,
+      getEmailDeliveryConfig,
+      getSmsDeliveryConfig,
+      flowType: config.flowType,
+      contactMethod: 'EMAIL_OR_PHONE',
+      validateEmailAddress:
+                config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
+      validatePhoneNumber:
+                config.validatePhoneNumber === undefined ? defaultValidatePhoneNumber : config.validatePhoneNumber,
+      getCustomUserInputCode: config.getCustomUserInputCode,
+    }
+  }
 }
 
 export function defaultValidatePhoneNumber(value: string): Promise<string | undefined> | string | undefined {
-    if (typeof value !== "string") {
-        return "Development bug: Please make sure the phoneNumber field is a string";
-    }
+  if (typeof value !== 'string')
+    return 'Development bug: Please make sure the phoneNumber field is a string'
 
-    let parsedPhoneNumber = parsePhoneNumber(value);
-    if (parsedPhoneNumber === undefined || !parsedPhoneNumber.isValid()) {
-        return "Phone number is invalid";
-    }
+  const parsedPhoneNumber = parsePhoneNumber(value)
+  if (parsedPhoneNumber === undefined || !parsedPhoneNumber.isValid())
+    return 'Phone number is invalid'
 
-    // we can even use Twilio's phone number validity lookup service: https://www.twilio.com/docs/glossary/what-e164.
+  // we can even use Twilio's phone number validity lookup service: https://www.twilio.com/docs/glossary/what-e164.
 
-    return undefined;
+  return undefined
 }
 
 export function defaultValidateEmail(value: string): Promise<string | undefined> | string | undefined {
-    // We check if the email syntax is correct
-    // As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
-    // Regex from https://stackoverflow.com/a/46181/3867175
+  // We check if the email syntax is correct
+  // As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
+  // Regex from https://stackoverflow.com/a/46181/3867175
 
-    if (typeof value !== "string") {
-        return "Development bug: Please make sure the email field is a string";
-    }
+  if (typeof value !== 'string')
+    return 'Development bug: Please make sure the email field is a string'
 
-    if (
-        value.match(
-            /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        ) === null
-    ) {
-        return "Email is invalid";
-    }
+  if (
+    value.match(
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+    ) === null
+  )
+    return 'Email is invalid'
 
-    return undefined;
+  return undefined
 }

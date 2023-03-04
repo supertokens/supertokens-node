@@ -13,37 +13,37 @@
  * under the License.
  */
 
-import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../../types";
-import { Transporter } from "nodemailer";
+import { Transporter } from 'nodemailer'
+import { TypeThirdPartyPasswordlessEmailDeliveryInput } from '../../../../types'
 import {
-    ServiceInterface,
-    TypeInputSendRawEmail,
-    GetContentResult,
-} from "../../../../../../ingredients/emaildelivery/services/smtp";
-import { getServiceImplementation as getPasswordlessServiceImplementation } from "../../../../../passwordless/emaildelivery/services/smtp/serviceImplementation";
-import DerivedPwdless from "./passwordlessServiceImplementation";
+  GetContentResult,
+  ServiceInterface,
+  TypeInputSendRawEmail,
+} from '../../../../../../ingredients/emaildelivery/services/smtp'
+import { getServiceImplementation as getPasswordlessServiceImplementation } from '../../../../../passwordless/emaildelivery/services/smtp/serviceImplementation'
+import DerivedPwdless from './passwordlessServiceImplementation'
 
 export function getServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+  transporter: Transporter,
+  from: {
+    name: string
+    email: string
+  },
 ): ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
-    let passwordlessServiceImpl = getPasswordlessServiceImplementation(transporter, from);
-    return {
-        sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            await transporter.sendMail({
-                from: `${from.name} <${from.email}>`,
-                to: input.toEmail,
-                subject: input.subject,
-                html: input.body,
-            });
-        },
-        getContent: async function (
-            input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            return await passwordlessServiceImpl.getContent.bind(DerivedPwdless(this))(input);
-        },
-    };
+  const passwordlessServiceImpl = getPasswordlessServiceImplementation(transporter, from)
+  return {
+    async sendRawEmail(input: TypeInputSendRawEmail) {
+      await transporter.sendMail({
+        from: `${from.name} <${from.email}>`,
+        to: input.toEmail,
+        subject: input.subject,
+        html: input.body,
+      })
+    },
+    async getContent(
+      input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any },
+    ): Promise<GetContentResult> {
+      return await passwordlessServiceImpl.getContent.bind(DerivedPwdless(this))(input)
+    },
+  }
 }

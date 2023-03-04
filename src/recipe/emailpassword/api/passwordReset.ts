@@ -13,56 +13,54 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { validateFormFieldsOrThrowError } from "./utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '../'
+import { validateFormFieldsOrThrowError } from './utils'
 
 export default async function passwordReset(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
+  // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
-    if (apiImplementation.passwordResetPOST === undefined) {
-        return false;
-    }
+  if (apiImplementation.passwordResetPOST === undefined)
+    return false
 
-    // step 1
-    let formFields: {
-        id: string;
-        value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
-        (await options.req.getJSONBody()).formFields
-    );
+  // step 1
+  const formFields: {
+    id: string
+    value: string
+  }[] = await validateFormFieldsOrThrowError(
+    options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
+    (await options.req.getJSONBody()).formFields,
+  )
 
-    let token = (await options.req.getJSONBody()).token;
-    if (token === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the password reset token",
-        });
-    }
-    if (typeof token !== "string") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "The password reset token must be a string",
-        });
-    }
+  const token = (await options.req.getJSONBody()).token
+  if (token === undefined) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide the password reset token',
+    })
+  }
+  if (typeof token !== 'string') {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'The password reset token must be a string',
+    })
+  }
 
-    let result = await apiImplementation.passwordResetPOST({
-        formFields,
-        token,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const result = await apiImplementation.passwordResetPOST({
+    formFields,
+    token,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    send200Response(
-        options.res,
-        result.status === "OK"
-            ? {
-                  status: "OK",
-              }
-            : result
-    );
-    return true;
+  send200Response(
+    options.res,
+    result.status === 'OK'
+      ? {
+          status: 'OK',
+        }
+      : result,
+  )
+  return true
 }

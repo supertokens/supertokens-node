@@ -12,14 +12,13 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import Recipe from "./recipe";
-export * from "./types";
-import { RecipeInterface, APIOptions, APIInterface } from "./types";
+import Recipe from './recipe'
+import { APIInterface, APIOptions, RecipeInterface } from './types'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 }
 
-export let init = Wrapper.init;
+export const init = Wrapper.init
 
-export type { RecipeInterface, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface }

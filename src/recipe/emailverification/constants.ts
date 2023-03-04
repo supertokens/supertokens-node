@@ -13,6 +13,6 @@
  * under the License.
  */
 
-export const GENERATE_EMAIL_VERIFY_TOKEN_API = "/user/email/verify/token";
+export const GENERATE_EMAIL_VERIFY_TOKEN_API = '/user/email/verify/token'
 
-export const EMAIL_VERIFY_API = "/user/email/verify";
+export const EMAIL_VERIFY_API = '/user/email/verify'

@@ -13,41 +13,41 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo } from "../../types";
-import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import { NormalisedAppinfo } from '../../types'
+import Recipe from './recipe'
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from './types'
+import BackwardCompatibilityService from './emaildelivery/services/backwardCompatibility'
 
 export function validateAndNormaliseUserInput(
-    _: Recipe,
-    appInfo: NormalisedAppinfo,
-    config: TypeInput
+  _: Recipe,
+  appInfo: NormalisedAppinfo,
+  config: TypeInput,
 ): TypeNormalisedInput {
-    let override = {
-        functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
-    };
+  const override = {
+    functions: (originalImplementation: RecipeInterface) => originalImplementation,
+    apis: (originalImplementation: APIInterface) => originalImplementation,
+    ...config.override,
+  }
 
-    function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
-        let emailService = config.emailDelivery?.service;
-        /**
+  function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
+    let emailService = config.emailDelivery?.service
+    /**
          * following code is for backward compatibility.
          * if user has not passed emailDelivery config, we
          * use the createAndSendCustomEmail config. If the user
          * has not passed even that config, we use the default
          * createAndSendCustomEmail implementation which calls our supertokens API
          */
-        if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                appInfo,
-                isInServerlessEnv,
-                config.createAndSendCustomEmail
-            );
-        }
-        return {
-            ...config.emailDelivery,
-            /**
+    if (emailService === undefined) {
+      emailService = new BackwardCompatibilityService(
+        appInfo,
+        isInServerlessEnv,
+        config.createAndSendCustomEmail,
+      )
+    }
+    return {
+      ...config.emailDelivery,
+      /**
              * if we do
              * let emailDelivery = {
              *    service: emailService,
@@ -58,25 +58,25 @@ export function validateAndNormaliseUserInput(
              * it it again get set to undefined, so we
              * set service at the end
              */
-            service: emailService,
-        };
+      service: emailService,
     }
-    return {
-        mode: config.mode,
-        getEmailForUserId: config.getEmailForUserId,
-        override,
-        getEmailDeliveryConfig,
-    };
+  }
+  return {
+    mode: config.mode,
+    getEmailForUserId: config.getEmailForUserId,
+    override,
+    getEmailDeliveryConfig,
+  }
 }
 
 export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: string; recipeId: string }): string {
-    return (
-        input.appInfo.websiteDomain.getAsStringDangerous() +
-        input.appInfo.websiteBasePath.getAsStringDangerous() +
-        "/verify-email" +
-        "?token=" +
-        input.token +
-        "&rid=" +
-        input.recipeId
-    );
+  return (
+    `${input.appInfo.websiteDomain.getAsStringDangerous()
+        + input.appInfo.websiteBasePath.getAsStringDangerous()
+         }/verify-email`
+        + `?token=${
+         input.token
+         }&rid=${
+         input.recipeId}`
+  )
 }

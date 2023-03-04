@@ -12,39 +12,37 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User } from "../../../types";
-import { RecipeInterface as EmailPasswordRecipeInterface } from "../../../../emailpassword";
-import { NormalisedAppinfo } from "../../../../../types";
-import EmailPasswordBackwardCompatibilityService from "../../../../emailpassword/emaildelivery/services/backwardCompatibility";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User } from '../../../types'
+import { RecipeInterface as EmailPasswordRecipeInterface } from '../../../../emailpassword'
+import { NormalisedAppinfo } from '../../../../../types'
+import EmailPasswordBackwardCompatibilityService from '../../../../emailpassword/emaildelivery/services/backwardCompatibility'
+import { EmailDeliveryInterface } from '../../../../../ingredients/emaildelivery/types'
 
 export default class BackwardCompatibilityService
-    implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
-    private emailPasswordBackwardCompatibilityService: EmailPasswordBackwardCompatibilityService;
+implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
+  private emailPasswordBackwardCompatibilityService: EmailPasswordBackwardCompatibilityService
 
-    constructor(
-        emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        resetPasswordUsingTokenFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                passwordResetURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
-        {
-            this.emailPasswordBackwardCompatibilityService = new EmailPasswordBackwardCompatibilityService(
-                emailPasswordRecipeInterfaceImpl,
-                appInfo,
-                isInServerlessEnv,
-                resetPasswordUsingTokenFeature
-            );
-        }
-    }
+  constructor(
+    emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface,
+    appInfo: NormalisedAppinfo,
+    isInServerlessEnv: boolean,
+    resetPasswordUsingTokenFeature?: {
+      createAndSendCustomEmail?: (
+        user: User,
+        passwordResetURLWithToken: string,
+        userContext: any
+      ) => Promise<void>
+    },
+  ) {
+    this.emailPasswordBackwardCompatibilityService = new EmailPasswordBackwardCompatibilityService(
+      emailPasswordRecipeInterfaceImpl,
+      appInfo,
+      isInServerlessEnv,
+      resetPasswordUsingTokenFeature,
+    )
+  }
 
-    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        await this.emailPasswordBackwardCompatibilityService.sendEmail(input);
-    };
+  sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    await this.emailPasswordBackwardCompatibilityService.sendEmail(input)
+  }
 }

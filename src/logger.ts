@@ -13,41 +13,42 @@
  * under the License.
  */
 
-import debug from "debug";
-import { version } from "./version";
+import debug from 'debug'
+import { version } from './version'
 
-const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
+const SUPERTOKENS_DEBUG_NAMESPACE = 'com.supertokens'
+
+const getFileLocation = () => {
+  const errorObject = new Error('get file location')
+  if (errorObject.stack === undefined) {
+    // should not come here
+    return 'N/A'
+  }
+  // split the error stack into an array with new line as the separator
+  const errorStack = errorObject.stack.split('\n')
+
+  // find return the first trace which doesnt have the logger.js file
+  for (let i = 1; i < errorStack.length; i++) {
+    if (!errorStack[i].includes('logger.js')) {
+      // retrieve the string between the parenthesis
+      return errorStack[i].match(/(?<=\().+?(?=\))/g)
+    }
+  }
+  return 'N/A'
+}
+
 /*
  The debug logger below can be used to log debug messages in the following format
     com.supertokens {t: "2022-03-18T11:15:24.608Z", message: Your message, file: "/home/supertokens-node/lib/build/supertokens.js:231:18" sdkVer: "9.2.0"} +0m
 */
 
 function logDebugMessage(message: string) {
-    if (debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
-        debug(SUPERTOKENS_DEBUG_NAMESPACE)(
-            `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
-        );
-        console.log();
-    }
+  if (debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
+    debug(SUPERTOKENS_DEBUG_NAMESPACE)(
+      `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`,
+    )
+    console.log()
+  }
 }
 
-let getFileLocation = () => {
-    let errorObject = new Error();
-    if (errorObject.stack === undefined) {
-        // should not come here
-        return "N/A";
-    }
-    // split the error stack into an array with new line as the separator
-    let errorStack = errorObject.stack.split("\n");
-
-    // find return the first trace which doesnt have the logger.js file
-    for (let i = 1; i < errorStack.length; i++) {
-        if (!errorStack[i].includes("logger.js")) {
-            // retrieve the string between the parenthesis
-            return errorStack[i].match(/(?<=\().+?(?=\))/g);
-        }
-    }
-    return "N/A";
-};
-
-export { logDebugMessage };
+export { logDebugMessage }

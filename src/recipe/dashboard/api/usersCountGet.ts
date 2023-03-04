@@ -13,19 +13,19 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
-import SuperTokens from "../../../supertokens";
+import { APIInterface, APIOptions } from '../types'
+import SuperTokens from '../../../supertokens'
 
-export type Response = {
-    status: "OK";
-    count: number;
-};
+export interface Response {
+  status: 'OK'
+  count: number
+}
 
 export default async function usersCountGet(_: APIInterface, __: APIOptions): Promise<Response> {
-    const count = await SuperTokens.getInstanceOrThrowError().getUserCount();
+  const count = await SuperTokens.getInstanceOrThrowError().getUserCount()
 
-    return {
-        status: "OK",
-        count,
-    };
+  return {
+    status: 'OK',
+    count,
+  }
 }

@@ -12,25 +12,25 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailPasswordPasswordResetEmailDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
-import Supertokens from "../../../../../supertokens";
+import { TypeEmailPasswordPasswordResetEmailDeliveryInput } from '../../../types'
+import { GetContentResult } from '../../../../../ingredients/emaildelivery/services/smtp'
+import Supertokens from '../../../../../supertokens'
 export default function getPasswordResetEmailContent(
-    input: TypeEmailPasswordPasswordResetEmailDeliveryInput
+  input: TypeEmailPasswordPasswordResetEmailDeliveryInput,
 ): GetContentResult {
-    let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo.appName;
-    let body = getPasswordResetEmailHTML(appName, input.user.email, input.passwordResetLink);
-    return {
-        body,
-        toEmail: input.user.email,
-        subject: "Password reset instructions",
-        isHtml: true,
-    };
+  const supertokens = Supertokens.getInstanceOrThrowError()
+  const appName = supertokens.appInfo.appName
+  const body = getPasswordResetEmailHTML(appName, input.user.email, input.passwordResetLink)
+  return {
+    body,
+    toEmail: input.user.email,
+    subject: 'Password reset instructions',
+    isHtml: true,
+  }
 }
 
 export function getPasswordResetEmailHTML(appName: string, email: string, resetLink: string) {
-    return `
+  return `
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
             xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -937,5 +937,5 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
         </body>
         
         </html>
-    `;
+    `
 }

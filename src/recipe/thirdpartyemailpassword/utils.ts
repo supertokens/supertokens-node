@@ -13,56 +13,54 @@
  * under the License.
  */
 
-import { NormalisedAppinfo } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeInputSignUp, TypeNormalisedInputSignUp } from "./types";
-import { NormalisedFormField } from "../emailpassword/types";
-import Recipe from "./recipe";
-import { normaliseSignUpFormFields } from "../emailpassword/utils";
-import { RecipeInterface, APIInterface } from "./types";
-import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
-import { RecipeInterface as EPRecipeInterface } from "../emailpassword/types";
+import { NormalisedAppinfo } from '../../types'
+import { RecipeInterface as EPRecipeInterface, NormalisedFormField } from '../emailpassword/types'
+import { normaliseSignUpFormFields } from '../emailpassword/utils'
+import { APIInterface, RecipeInterface, TypeInput, TypeInputSignUp, TypeNormalisedInput, TypeNormalisedInputSignUp } from './types'
+import Recipe from './recipe'
+import BackwardCompatibilityService from './emaildelivery/services/backwardCompatibility'
 
 export function validateAndNormaliseUserInput(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
-    config?: TypeInput
+  recipeInstance: Recipe,
+  appInfo: NormalisedAppinfo,
+  config?: TypeInput,
 ): TypeNormalisedInput {
-    let signUpFeature = validateAndNormaliseSignUpConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signUpFeature
-    );
+  const signUpFeature = validateAndNormaliseSignUpConfig(
+    recipeInstance,
+    appInfo,
+    config === undefined ? undefined : config.signUpFeature,
+  )
 
-    let resetPasswordUsingTokenFeature = config === undefined ? undefined : config.resetPasswordUsingTokenFeature;
+  const resetPasswordUsingTokenFeature = config === undefined ? undefined : config.resetPasswordUsingTokenFeature
 
-    let providers = config === undefined || config.providers === undefined ? [] : config.providers;
+  const providers = ((config === undefined) || (config.providers === undefined)) ? [] : config.providers
 
-    let override = {
-        functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config?.override,
-    };
+  const override = {
+    functions: (originalImplementation: RecipeInterface) => originalImplementation,
+    apis: (originalImplementation: APIInterface) => originalImplementation,
+    ...config?.override,
+  }
 
-    function getEmailDeliveryConfig(emailPasswordRecipeImpl: EPRecipeInterface, isInServerlessEnv: boolean) {
-        let emailService = config?.emailDelivery?.service;
-        /**
+  function getEmailDeliveryConfig(emailPasswordRecipeImpl: EPRecipeInterface, isInServerlessEnv: boolean) {
+    let emailService = config?.emailDelivery?.service
+    /**
          * following code is for backward compatibility.
          * if user has not passed emailDelivery config, we
          * use the createAndSendCustomEmail config. If the user
          * has not passed even that config, we use the default
          * createAndSendCustomEmail implementation
          */
-        if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                emailPasswordRecipeImpl,
-                appInfo,
-                isInServerlessEnv,
-                config?.resetPasswordUsingTokenFeature
-            );
-        }
-        return {
-            ...config?.emailDelivery,
-            /**
+    if (emailService === undefined) {
+      emailService = new BackwardCompatibilityService(
+        emailPasswordRecipeImpl,
+        appInfo,
+        isInServerlessEnv,
+        config?.resetPasswordUsingTokenFeature,
+      )
+    }
+    return {
+      ...config?.emailDelivery,
+      /**
              * if we do
              * let emailDelivery = {
              *    service: emailService,
@@ -73,29 +71,29 @@ export function validateAndNormaliseUserInput(
              * it it again get set to undefined, so we
              * set service at the end
              */
-            service: emailService,
-        };
+      service: emailService,
     }
+  }
 
-    return {
-        override,
-        getEmailDeliveryConfig,
-        signUpFeature,
-        providers,
-        resetPasswordUsingTokenFeature,
-    };
+  return {
+    override,
+    getEmailDeliveryConfig,
+    signUpFeature,
+    providers,
+    resetPasswordUsingTokenFeature,
+  }
 }
 
 function validateAndNormaliseSignUpConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSignUp
+  _: Recipe,
+  __: NormalisedAppinfo,
+  config?: TypeInputSignUp,
 ): TypeNormalisedInputSignUp {
-    let formFields: NormalisedFormField[] = normaliseSignUpFormFields(
-        config === undefined ? undefined : config.formFields
-    );
+  const formFields: NormalisedFormField[] = normaliseSignUpFormFields(
+    config === undefined ? undefined : config.formFields,
+  )
 
-    return {
-        formFields,
-    };
+  return {
+    formFields,
+  }
 }

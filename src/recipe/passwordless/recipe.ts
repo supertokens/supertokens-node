@@ -13,319 +13,318 @@
  * under the License.
  */
 
-import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import STError from "./error";
-import { validateAndNormaliseUserInput } from "./utils";
-import NormalisedURLPath from "../../normalisedURLPath";
-import EmailVerificationRecipe from "../emailverification/recipe";
-import RecipeImplementation from "./recipeImplementation";
-import APIImplementation from "./api/implementation";
-import { Querier } from "../../querier";
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import OverrideableBuilder from "supertokens-js-override";
-import consumeCodeAPI from "./api/consumeCode";
-import createCodeAPI from "./api/createCode";
-import emailExistsAPI from "./api/emailExists";
-import phoneNumberExistsAPI from "./api/phoneNumberExists";
-import resendCodeAPI from "./api/resendCode";
+import OverrideableBuilder from 'overrideableBuilder'
+import RecipeModule from '../../recipeModule'
+import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from '../../types'
+import NormalisedURLPath from '../../normalisedURLPath'
+import EmailVerificationRecipe from '../emailverification/recipe'
+import { Querier } from '../../querier'
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
+import EmailDeliveryIngredient from '../../ingredients/emaildelivery'
+import SmsDeliveryIngredient from '../../ingredients/smsdelivery'
+import { GetEmailForUserIdFunc } from '../emailverification/types'
+import { PostSuperTokensInitCallbacks } from '../../postSuperTokensInitCallbacks'
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput, TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from './types'
+import STError from './error'
+import { validateAndNormaliseUserInput } from './utils'
+import RecipeImplementation from './recipeImplementation'
+import APIImplementation from './api/implementation'
+import consumeCodeAPI from './api/consumeCode'
+import createCodeAPI from './api/createCode'
+import emailExistsAPI from './api/emailExists'
+import phoneNumberExistsAPI from './api/phoneNumberExists'
+import resendCodeAPI from './api/resendCode'
 import {
-    CONSUME_CODE_API,
-    CREATE_CODE_API,
-    DOES_EMAIL_EXIST_API,
-    DOES_PHONE_NUMBER_EXIST_API,
-    RESEND_CODE_API,
-} from "./constants";
-import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
-import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+  CONSUME_CODE_API,
+  CREATE_CODE_API,
+  DOES_EMAIL_EXIST_API,
+  DOES_PHONE_NUMBER_EXIST_API,
+  RESEND_CODE_API,
+} from './constants'
 
 export default class Recipe extends RecipeModule {
-    private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "passwordless";
+  private static instance: Recipe | undefined = undefined
+  static RECIPE_ID = 'passwordless'
 
-    config: TypeNormalisedInput;
+  config: TypeNormalisedInput
 
-    recipeInterfaceImpl: RecipeInterface;
+  recipeInterfaceImpl: RecipeInterface
 
-    apiImpl: APIInterface;
+  apiImpl: APIInterface
 
-    isInServerlessEnv: boolean;
+  isInServerlessEnv: boolean
 
-    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
+  emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>
 
-    smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
+  smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>
 
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config: TypeInput,
-        ingredients: {
-            emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined;
-            smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined;
-        }
-    ) {
-        super(recipeId, appInfo);
-        this.isInServerlessEnv = isInServerlessEnv;
-        this.config = validateAndNormaliseUserInput(this, appInfo, config);
+  constructor(
+    recipeId: string,
+    appInfo: NormalisedAppinfo,
+    isInServerlessEnv: boolean,
+    config: TypeInput,
+    ingredients: {
+      emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined
+      smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined
+    },
+  ) {
+    super(recipeId, appInfo)
+    this.isInServerlessEnv = isInServerlessEnv
+    this.config = validateAndNormaliseUserInput(this, appInfo, config)
 
-        {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
-            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
-        }
-        {
-            let builder = new OverrideableBuilder(APIImplementation());
-            this.apiImpl = builder.override(this.config.override.apis).build();
-        }
+    {
+      const builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)))
+      this.recipeInterfaceImpl = builder.override(this.config.override.functions).build()
+    }
+    {
+      const builder = new OverrideableBuilder(APIImplementation())
+      this.apiImpl = builder.override(this.config.override.apis).build()
+    }
 
-        /**
+    /**
          * emailDelivery will always needs to be declared after isInServerlessEnv
          * and recipeInterfaceImpl values are set
          */
-        this.emailDelivery =
-            ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
-                : ingredients.emailDelivery;
+    this.emailDelivery
+            = ingredients.emailDelivery === undefined
+        ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
+        : ingredients.emailDelivery
 
-        this.smsDelivery =
-            ingredients.smsDelivery === undefined
-                ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
-                : ingredients.smsDelivery;
+    this.smsDelivery
+            = ingredients.smsDelivery === undefined
+        ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
+        : ingredients.smsDelivery
 
-        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
-            if (emailVerificationRecipe !== undefined) {
-                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
-            }
-        });
+    PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+      const emailVerificationRecipe = EmailVerificationRecipe.getInstance()
+      if (emailVerificationRecipe !== undefined)
+        emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this))
+    })
+  }
+
+  static getInstanceOrThrowError(): Recipe {
+    if (Recipe.instance !== undefined)
+      return Recipe.instance
+
+    throw new Error('Initialisation not done. Did you forget to call the SuperTokens.init function?')
+  }
+
+  static init(config: TypeInput): RecipeListFunction {
+    return (appInfo, isInServerlessEnv) => {
+      if (Recipe.instance === undefined) {
+        Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
+          emailDelivery: undefined,
+          smsDelivery: undefined,
+        })
+        return Recipe.instance
+      }
+      else {
+        throw new Error('Passwordless recipe has already been initialised. Please check your code for bugs.')
+      }
     }
+  }
 
-    static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance !== undefined) {
-            return Recipe.instance;
-        }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+  static reset() {
+    if (process.env.TEST_MODE !== 'testing')
+      throw new Error('calling testing function in non testing env')
+
+    Recipe.instance = undefined
+  }
+
+  // abstract instance functions below...............
+
+  getAPIsHandled = (): APIHandled[] => {
+    return [
+      {
+        id: CONSUME_CODE_API,
+        disabled: this.apiImpl.consumeCodePOST === undefined,
+        method: 'post',
+        pathWithoutApiBasePath: new NormalisedURLPath(CONSUME_CODE_API),
+      },
+      {
+        id: CREATE_CODE_API,
+        disabled: this.apiImpl.createCodePOST === undefined,
+        method: 'post',
+        pathWithoutApiBasePath: new NormalisedURLPath(CREATE_CODE_API),
+      },
+      {
+        id: DOES_EMAIL_EXIST_API,
+        disabled: this.apiImpl.emailExistsGET === undefined,
+        method: 'get',
+        pathWithoutApiBasePath: new NormalisedURLPath(DOES_EMAIL_EXIST_API),
+      },
+      {
+        id: DOES_PHONE_NUMBER_EXIST_API,
+        disabled: this.apiImpl.phoneNumberExistsGET === undefined,
+        method: 'get',
+        pathWithoutApiBasePath: new NormalisedURLPath(DOES_PHONE_NUMBER_EXIST_API),
+      },
+      {
+        id: RESEND_CODE_API,
+        disabled: this.apiImpl.resendCodePOST === undefined,
+        method: 'post',
+        pathWithoutApiBasePath: new NormalisedURLPath(RESEND_CODE_API),
+      },
+    ]
+  }
+
+  handleAPIRequest = async (
+    id: string,
+    req: BaseRequest,
+    res: BaseResponse,
+    _: NormalisedURLPath,
+    __: HTTPMethod,
+  ): Promise<boolean> => {
+    const options = {
+      config: this.config,
+      recipeId: this.getRecipeId(),
+      isInServerlessEnv: this.isInServerlessEnv,
+      recipeImplementation: this.recipeInterfaceImpl,
+      req,
+      res,
+      emailDelivery: this.emailDelivery,
+      smsDelivery: this.smsDelivery,
+      appInfo: this.getAppInfo(),
     }
+    if (id === CONSUME_CODE_API)
+      return await consumeCodeAPI(this.apiImpl, options)
+    else if (id === CREATE_CODE_API)
+      return await createCodeAPI(this.apiImpl, options)
+    else if (id === DOES_EMAIL_EXIST_API)
+      return await emailExistsAPI(this.apiImpl, options)
+    else if (id === DOES_PHONE_NUMBER_EXIST_API)
+      return await phoneNumberExistsAPI(this.apiImpl, options)
+    else
+      return await resendCodeAPI(this.apiImpl, options)
+  }
 
-    static init(config: TypeInput): RecipeListFunction {
-        return (appInfo, isInServerlessEnv) => {
-            if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
-                    emailDelivery: undefined,
-                    smsDelivery: undefined,
-                });
-                return Recipe.instance;
-            } else {
-                throw new Error("Passwordless recipe has already been initialised. Please check your code for bugs.");
-            }
-        };
+  handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {
+    throw err
+  }
+
+  getAllCORSHeaders = (): string[] => {
+    return []
+  }
+
+  isErrorFromThisRecipe = (err: any): err is STError => {
+    return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID
+  }
+
+  // helper functions below...
+
+  createMagicLink = async (
+    input:
+    | {
+      email: string
+      userContext?: any
     }
+    | {
+      phoneNumber: string
+      userContext?: any
+    },
+  ): Promise<string> => {
+    const userInputCode
+            = this.config.getCustomUserInputCode !== undefined
+              ? await this.config.getCustomUserInputCode(input.userContext)
+              : undefined
 
-    static reset() {
-        if (process.env.TEST_MODE !== "testing") {
-            throw new Error("calling testing function in non testing env");
-        }
-        Recipe.instance = undefined;
+    const codeInfo = await this.recipeInterfaceImpl.createCode(
+      'email' in input
+        ? {
+            email: input.email,
+            userInputCode,
+            userContext: input.userContext,
+          }
+        : {
+            phoneNumber: input.phoneNumber,
+            userInputCode,
+            userContext: input.userContext,
+          },
+    )
+
+    const appInfo = this.getAppInfo()
+
+    const magicLink
+            = `${appInfo.websiteDomain.getAsStringDangerous()
+            + appInfo.websiteBasePath.getAsStringDangerous()
+             }/verify`
+            + `?rid=${
+             this.getRecipeId()
+             }&preAuthSessionId=${
+             codeInfo.preAuthSessionId
+             }#${
+             codeInfo.linkCode}`
+
+    return magicLink
+  }
+
+  signInUp = async (
+    input:
+    | {
+      email: string
+      userContext?: any
     }
+    | {
+      phoneNumber: string
+      userContext?: any
+    },
+  ) => {
+    const codeInfo = await this.recipeInterfaceImpl.createCode(
+      'email' in input
+        ? {
+            email: input.email,
+            userContext: input.userContext,
+          }
+        : {
+            phoneNumber: input.phoneNumber,
+            userContext: input.userContext,
+          },
+    )
 
-    // abstract instance functions below...............
+    const consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
+      this.config.flowType === 'MAGIC_LINK'
+        ? {
+            preAuthSessionId: codeInfo.preAuthSessionId,
+            linkCode: codeInfo.linkCode,
+            userContext: input.userContext,
+          }
+        : {
+            preAuthSessionId: codeInfo.preAuthSessionId,
+            deviceId: codeInfo.deviceId,
+            userInputCode: codeInfo.userInputCode,
+            userContext: input.userContext,
+          },
+    )
 
-    getAPIsHandled = (): APIHandled[] => {
-        return [
-            {
-                id: CONSUME_CODE_API,
-                disabled: this.apiImpl.consumeCodePOST === undefined,
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(CONSUME_CODE_API),
-            },
-            {
-                id: CREATE_CODE_API,
-                disabled: this.apiImpl.createCodePOST === undefined,
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(CREATE_CODE_API),
-            },
-            {
-                id: DOES_EMAIL_EXIST_API,
-                disabled: this.apiImpl.emailExistsGET === undefined,
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(DOES_EMAIL_EXIST_API),
-            },
-            {
-                id: DOES_PHONE_NUMBER_EXIST_API,
-                disabled: this.apiImpl.phoneNumberExistsGET === undefined,
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(DOES_PHONE_NUMBER_EXIST_API),
-            },
-            {
-                id: RESEND_CODE_API,
-                disabled: this.apiImpl.resendCodePOST === undefined,
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(RESEND_CODE_API),
-            },
-        ];
-    };
+    if (consumeCodeResponse.status === 'OK') {
+      return {
+        status: 'OK',
+        createdNewUser: consumeCodeResponse.createdNewUser,
+        user: consumeCodeResponse.user,
+      }
+    }
+    else {
+      throw new Error('Failed to create user. Please retry')
+    }
+  }
 
-    handleAPIRequest = async (
-        id: string,
-        req: BaseRequest,
-        res: BaseResponse,
-        _: NormalisedURLPath,
-        __: HTTPMethod
-    ): Promise<boolean> => {
-        const options = {
-            config: this.config,
-            recipeId: this.getRecipeId(),
-            isInServerlessEnv: this.isInServerlessEnv,
-            recipeImplementation: this.recipeInterfaceImpl,
-            req,
-            res,
-            emailDelivery: this.emailDelivery,
-            smsDelivery: this.smsDelivery,
-            appInfo: this.getAppInfo(),
-        };
-        if (id === CONSUME_CODE_API) {
-            return await consumeCodeAPI(this.apiImpl, options);
-        } else if (id === CREATE_CODE_API) {
-            return await createCodeAPI(this.apiImpl, options);
-        } else if (id === DOES_EMAIL_EXIST_API) {
-            return await emailExistsAPI(this.apiImpl, options);
-        } else if (id === DOES_PHONE_NUMBER_EXIST_API) {
-            return await phoneNumberExistsAPI(this.apiImpl, options);
-        } else {
-            return await resendCodeAPI(this.apiImpl, options);
-        }
-    };
-
-    handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {
-        throw err;
-    };
-
-    getAllCORSHeaders = (): string[] => {
-        return [];
-    };
-
-    isErrorFromThisRecipe = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    // helper functions below...
-
-    createMagicLink = async (
-        input:
-            | {
-                  email: string;
-                  userContext?: any;
-              }
-            | {
-                  phoneNumber: string;
-                  userContext?: any;
-              }
-    ): Promise<string> => {
-        let userInputCode =
-            this.config.getCustomUserInputCode !== undefined
-                ? await this.config.getCustomUserInputCode(input.userContext)
-                : undefined;
-
-        const codeInfo = await this.recipeInterfaceImpl.createCode(
-            "email" in input
-                ? {
-                      email: input.email,
-                      userInputCode,
-                      userContext: input.userContext,
-                  }
-                : {
-                      phoneNumber: input.phoneNumber,
-                      userInputCode,
-                      userContext: input.userContext,
-                  }
-        );
-
-        const appInfo = this.getAppInfo();
-
-        let magicLink =
-            appInfo.websiteDomain.getAsStringDangerous() +
-            appInfo.websiteBasePath.getAsStringDangerous() +
-            "/verify" +
-            "?rid=" +
-            this.getRecipeId() +
-            "&preAuthSessionId=" +
-            codeInfo.preAuthSessionId +
-            "#" +
-            codeInfo.linkCode;
-
-        return magicLink;
-    };
-
-    signInUp = async (
-        input:
-            | {
-                  email: string;
-                  userContext?: any;
-              }
-            | {
-                  phoneNumber: string;
-                  userContext?: any;
-              }
-    ) => {
-        let codeInfo = await this.recipeInterfaceImpl.createCode(
-            "email" in input
-                ? {
-                      email: input.email,
-                      userContext: input.userContext,
-                  }
-                : {
-                      phoneNumber: input.phoneNumber,
-                      userContext: input.userContext,
-                  }
-        );
-
-        let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
-            this.config.flowType === "MAGIC_LINK"
-                ? {
-                      preAuthSessionId: codeInfo.preAuthSessionId,
-                      linkCode: codeInfo.linkCode,
-                      userContext: input.userContext,
-                  }
-                : {
-                      preAuthSessionId: codeInfo.preAuthSessionId,
-                      deviceId: codeInfo.deviceId,
-                      userInputCode: codeInfo.userInputCode,
-                      userContext: input.userContext,
-                  }
-        );
-
-        if (consumeCodeResponse.status === "OK") {
-            return {
-                status: "OK",
-                createdNewUser: consumeCodeResponse.createdNewUser,
-                user: consumeCodeResponse.user,
-            };
-        } else {
-            throw new Error("Failed to create user. Please retry");
-        }
-    };
-
-    // helper functions...
-    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            if (userInfo.email !== undefined) {
-                return {
-                    status: "OK",
-                    email: userInfo.email,
-                };
-            }
-            return {
-                status: "EMAIL_DOES_NOT_EXIST_ERROR",
-            };
-        }
+  // helper functions...
+  getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
+    const userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext })
+    if (userInfo !== undefined) {
+      if (userInfo.email !== undefined) {
         return {
-            status: "UNKNOWN_USER_ID_ERROR",
-        };
-    };
+          status: 'OK',
+          email: userInfo.email,
+        }
+      }
+      return {
+        status: 'EMAIL_DOES_NOT_EXIST_ERROR',
+      }
+    }
+    return {
+      status: 'UNKNOWN_USER_ID_ERROR',
+    }
+  }
 }

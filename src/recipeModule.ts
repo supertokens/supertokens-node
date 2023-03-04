@@ -13,58 +13,57 @@
  * under the License.
  */
 
-import STError from "./error";
-import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
-import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest } from "./framework/request";
-import { BaseResponse } from "./framework/response";
+import STError from './error'
+import { APIHandled, HTTPMethod, NormalisedAppinfo } from './types'
+import NormalisedURLPath from './normalisedURLPath'
+import { BaseRequest } from './framework/request'
+import { BaseResponse } from './framework/response'
 
 export default abstract class RecipeModule {
-    private recipeId: string;
+  private recipeId: string
 
-    private appInfo: NormalisedAppinfo;
+  private appInfo: NormalisedAppinfo
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo) {
-        this.recipeId = recipeId;
-        this.appInfo = appInfo;
+  constructor(recipeId: string, appInfo: NormalisedAppinfo) {
+    this.recipeId = recipeId
+    this.appInfo = appInfo
+  }
+
+  getRecipeId = (): string => {
+    return this.recipeId
+  }
+
+  getAppInfo = (): NormalisedAppinfo => {
+    return this.appInfo
+  }
+
+  returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
+    const apisHandled = this.getAPIsHandled()
+    for (let i = 0; i < apisHandled.length; i++) {
+      const currAPI = apisHandled[i]
+      if (
+        !currAPI.disabled
+                && currAPI.method === method
+                && this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)
+      )
+        return currAPI.id
     }
+    return undefined
+  }
 
-    getRecipeId = (): string => {
-        return this.recipeId;
-    };
+  abstract getAPIsHandled(): APIHandled[]
 
-    getAppInfo = (): NormalisedAppinfo => {
-        return this.appInfo;
-    };
+  abstract handleAPIRequest(
+    id: string,
+    req: BaseRequest,
+    response: BaseResponse,
+    path: NormalisedURLPath,
+    method: HTTPMethod
+  ): Promise<boolean>
 
-    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
-        let apisHandled = this.getAPIsHandled();
-        for (let i = 0; i < apisHandled.length; i++) {
-            let currAPI = apisHandled[i];
-            if (
-                !currAPI.disabled &&
-                currAPI.method === method &&
-                this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)
-            ) {
-                return currAPI.id;
-            }
-        }
-        return undefined;
-    };
+  abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>
 
-    abstract getAPIsHandled(): APIHandled[];
+  abstract getAllCORSHeaders(): string[]
 
-    abstract handleAPIRequest(
-        id: string,
-        req: BaseRequest,
-        response: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod
-    ): Promise<boolean>;
-
-    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>;
-
-    abstract getAllCORSHeaders(): string[];
-
-    abstract isErrorFromThisRecipe(err: any): err is STError;
+  abstract isErrorFromThisRecipe(err: any): err is STError
 }

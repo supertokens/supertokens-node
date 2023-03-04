@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import OverrideableBuilder from "supertokens-js-override";
-import { ClientOpts } from "twilio/lib/base/BaseTwilio";
+import OverrideableBuilder from 'overrideableBuilder'
+import { ClientOpts } from 'twilio/lib/base/BaseTwilio'
 
 /**
  * only one of "from" and "messagingServiceSid" should be passed.
@@ -25,51 +25,51 @@ import { ClientOpts } from "twilio/lib/base/BaseTwilio";
  */
 export type TwilioServiceConfig =
     | {
-          accountSid: string;
-          authToken: string;
-          from: string;
-          opts?: ClientOpts;
-      }
+      accountSid: string
+      authToken: string
+      from: string
+      opts?: ClientOpts
+    }
     | {
-          accountSid: string;
-          authToken: string;
-          messagingServiceSid: string;
-          opts?: ClientOpts;
-      };
+      accountSid: string
+      authToken: string
+      messagingServiceSid: string
+      opts?: ClientOpts
+    }
 
 export interface GetContentResult {
-    body: string;
-    toPhoneNumber: string;
+  body: string
+  toPhoneNumber: string
 }
 
 export type TypeInputSendRawSms = GetContentResult & { userContext: any } & (
-        | {
-              from: string;
-          }
-        | {
-              messagingServiceSid: string;
-          }
-    );
+  | {
+    from: string
+  }
+  | {
+    messagingServiceSid: string
+  }
+)
 
-export type ServiceInterface<T> = {
-    sendRawSms: (input: TypeInputSendRawSms) => Promise<void>;
-    getContent: (input: T & { userContext: any }) => Promise<GetContentResult>;
-};
+export interface ServiceInterface<T> {
+  sendRawSms: (input: TypeInputSendRawSms) => Promise<void>
+  getContent: (input: T & { userContext: any }) => Promise<GetContentResult>
+}
 
-export type TypeInput<T> = {
-    twilioSettings: TwilioServiceConfig;
-    override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
-};
+export interface TypeInput<T> {
+  twilioSettings: TwilioServiceConfig
+  override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>
+}
 
 export function normaliseUserInputConfig<T>(input: TypeInput<T>): TypeInput<T> {
-    let from = "from" in input.twilioSettings ? input.twilioSettings.from : undefined;
-    let messagingServiceSid =
-        "messagingServiceSid" in input.twilioSettings ? input.twilioSettings.messagingServiceSid : undefined;
-    if (
-        (from === undefined && messagingServiceSid === undefined) ||
-        (from !== undefined && messagingServiceSid !== undefined)
-    ) {
-        throw Error(`Please pass exactly one of "from" and "messagingServiceSid" config for twilioSettings.`);
-    }
-    return input;
+  const from = 'from' in input.twilioSettings ? input.twilioSettings.from : undefined
+  const messagingServiceSid
+        = 'messagingServiceSid' in input.twilioSettings ? input.twilioSettings.messagingServiceSid : undefined
+  if (
+    (from === undefined && messagingServiceSid === undefined)
+        || (from !== undefined && messagingServiceSid !== undefined)
+  )
+    throw new Error('Please pass exactly one of "from" and "messagingServiceSid" config for twilioSettings.')
+
+  return input
 }

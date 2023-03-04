@@ -13,54 +13,52 @@
  * under the License.
  */
 
-import { parse, serialize } from "cookie";
-import type { Request, Response } from "express";
-import { json, urlencoded } from "body-parser";
-import type { IncomingMessage } from "http";
-import { ServerResponse } from "http";
-import STError from "../error";
-import type { HTTPMethod } from "../types";
-import { NextApiRequest } from "next";
-import { COOKIE_HEADER } from "./constants";
+import type { IncomingMessage } from 'http'
+import { ServerResponse } from 'http'
+import { parse, serialize } from 'cookie'
+import type { Request, Response } from 'express'
+import { json, urlencoded } from 'body-parser'
+import { NextApiRequest } from 'next'
+import STError from '../error'
+import type { HTTPMethod } from '../types'
+import { COOKIE_HEADER } from './constants'
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
-    if (headers === undefined || headers === null) {
-        return undefined;
-    }
-    let cookies: any = headers.cookie || headers.Cookie;
+  if (headers === undefined || headers === null)
+    return undefined
 
-    if (cookies === undefined) {
-        return undefined;
-    }
+  let cookies: any = headers.cookie || headers.Cookie
 
-    cookies = parse(cookies);
+  if (cookies === undefined)
+    return undefined
 
-    // parse JSON cookies
-    cookies = JSONCookies(cookies);
+  cookies = parse(cookies)
 
-    return (cookies as any)[key];
+  // parse JSON cookies
+  cookies = JSONCookies(cookies)
+
+  return (cookies as any)[key]
 }
 
 export function getCookieValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined {
-    if ((request as any).cookies) {
-        return (request as any).cookies[key];
-    }
+  if ((request as any).cookies)
+    return (request as any).cookies[key]
 
-    return getCookieValueFromHeaders(request.headers, key);
+  return getCookieValueFromHeaders(request.headers, key)
 }
 
 export function getHeaderValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined {
-    return normalizeHeaderValue(request.headers[key]);
+  return normalizeHeaderValue(request.headers[key])
 }
 
 export function normalizeHeaderValue(value: string | string[] | undefined): string | undefined {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (Array.isArray(value)) {
-        return value[0];
-    }
-    return value;
+  if (value === undefined)
+    return undefined
+
+  if (Array.isArray(value))
+    return value[0]
+
+  return value
 }
 
 /**
@@ -72,15 +70,15 @@ export function normalizeHeaderValue(value: string | string[] | undefined): stri
  */
 
 function JSONCookie(str: string) {
-    if (typeof str !== "string" || str.substr(0, 2) !== "j:") {
-        return undefined;
-    }
+  if (typeof str !== 'string' || str.substr(0, 2) !== 'j:')
+    return undefined
 
-    try {
-        return JSON.parse(str.slice(2));
-    } catch (err) {
-        return undefined;
-    }
+  try {
+    return JSON.parse(str.slice(2))
+  }
+  catch (err) {
+    return undefined
+  }
 }
 
 /**
@@ -92,132 +90,137 @@ function JSONCookie(str: string) {
  */
 
 function JSONCookies(obj: any) {
-    let cookies = Object.keys(obj);
-    let key;
-    let val;
+  const cookies = Object.keys(obj)
+  let key
+  let val
 
-    for (let i = 0; i < cookies.length; i++) {
-        key = cookies[i];
-        val = JSONCookie(obj[key]);
+  for (let i = 0; i < cookies.length; i++) {
+    key = cookies[i]
+    val = JSONCookie(obj[key])
 
-        if (val) {
-            obj[key] = val;
-        }
-    }
+    if (val)
+      obj[key] = val
+  }
 
-    return obj;
+  return obj
 }
 
 export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
-    method: HTTPMethod,
-    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
+  method: HTTPMethod,
+  request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true },
 ) {
-    // according to https://github.com/supertokens/supertokens-node/issues/33
-    if (method === "post" || method === "put") {
-        if (typeof request.body === "string") {
-            try {
-                request.body = JSON.parse(request.body);
-            } catch (err) {
-                if (request.body === "") {
-                    request.body = {};
-                } else {
-                    throw new STError({
-                        type: STError.BAD_INPUT_ERROR,
-                        message: "API input error: Please make sure to pass a valid JSON input in the request body",
-                    });
-                }
-            }
-        } else if (
-            request.body === undefined ||
-            Buffer.isBuffer(request.body) ||
-            Object.keys(request.body).length === 0
-        ) {
-            // parsing it again to make sure that the request is parsed atleast once by a json parser
-            let jsonParser = json();
-            let err = await new Promise((resolve) => {
-                let resolvedCalled = false;
-                if (request.readable) {
-                    jsonParser(request, new ServerResponse(request), (e) => {
-                        if (!resolvedCalled) {
-                            resolvedCalled = true;
-                            resolve(e);
-                        }
-                    });
-                } else {
-                    resolve(undefined);
-                }
-            });
-            if (err !== undefined) {
-                throw new STError({
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass a valid JSON input in the request body",
-                });
-            }
+  // according to https://github.com/supertokens/supertokens-node/issues/33
+  if (method === 'post' || method === 'put') {
+    if (typeof request.body === 'string') {
+      try {
+        request.body = JSON.parse(request.body)
+      }
+      catch (err) {
+        if (request.body === '') {
+          request.body = {}
         }
-    } else if (method === "delete" || method === "get") {
-        if (request.query === undefined) {
-            let parser = urlencoded({ extended: true });
-            let err = await new Promise((resolve) => parser(request, new ServerResponse(request), resolve));
-            if (err !== undefined) {
-                throw new STError({
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass valid url encoded form in the request body",
-                });
-            }
+        else {
+          throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: 'API input error: Please make sure to pass a valid JSON input in the request body',
+          })
         }
+      }
     }
+    else if (
+      request.body === undefined
+            || Buffer.isBuffer(request.body)
+            || Object.keys(request.body).length === 0
+    ) {
+      // parsing it again to make sure that the request is parsed atleast once by a json parser
+      const jsonParser = json()
+      const err = await new Promise((resolve) => {
+        let resolvedCalled = false
+        if (request.readable) {
+          jsonParser(request, new ServerResponse(request), (e) => {
+            if (!resolvedCalled) {
+              resolvedCalled = true
+              resolve(e)
+            }
+          })
+        }
+        else {
+          resolve(undefined)
+        }
+      })
+      if (err !== undefined) {
+        throw new STError({
+          type: STError.BAD_INPUT_ERROR,
+          message: 'API input error: Please make sure to pass a valid JSON input in the request body',
+        })
+      }
+    }
+  }
+  else if (method === 'delete' || method === 'get') {
+    if (request.query === undefined) {
+      const parser = urlencoded({ extended: true })
+      const err = await new Promise(resolve => parser(request, new ServerResponse(request), resolve))
+      if (err !== undefined) {
+        throw new STError({
+          type: STError.BAD_INPUT_ERROR,
+          message: 'API input error: Please make sure to pass valid url encoded form in the request body',
+        })
+      }
+    }
+  }
 }
 
 export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
+  request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true },
 ) {
-    let parser = urlencoded({ extended: true });
-    let err = await new Promise((resolve) => {
-        if (request.readable) {
-            parser(request, new ServerResponse(request), (e) => {
-                resolve(e);
-            });
-        } else {
-            resolve(undefined);
-        }
-    });
-    if (err !== undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "API input error: Please make sure to pass valid url encoded form in the request body",
-        });
+  const parser = urlencoded({ extended: true })
+  const err = await new Promise((resolve) => {
+    if (request.readable) {
+      parser(request, new ServerResponse(request), (e) => {
+        resolve(e)
+      })
     }
+    else {
+      resolve(undefined)
+    }
+  })
+  if (err !== undefined) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'API input error: Please make sure to pass valid url encoded form in the request body',
+    })
+  }
 }
 
 export function setHeaderForExpressLikeResponse(res: Response, key: string, value: string, allowDuplicateKey: boolean) {
-    try {
-        let existingHeaders = res.getHeaders();
-        let existingValue = existingHeaders[key.toLowerCase()];
+  try {
+    const existingHeaders = res.getHeaders()
+    const existingValue = existingHeaders[key.toLowerCase()]
 
-        // we have the res.header for compatibility with nextJS
-        if (existingValue === undefined) {
-            if (res.header !== undefined) {
-                res.header(key, value);
-            } else {
-                res.setHeader(key, value);
-            }
-        } else if (allowDuplicateKey) {
-            if (res.header !== undefined) {
-                res.header(key, existingValue + ", " + value);
-            } else {
-                res.setHeader(key, existingValue + ", " + value);
-            }
-        } else {
-            // we overwrite the current one with the new one
-            if (res.header !== undefined) {
-                res.header(key, value);
-            } else {
-                res.setHeader(key, value);
-            }
-        }
-    } catch (err) {
-        throw new Error("Error while setting header with key: " + key + " and value: " + value);
+    // we have the res.header for compatibility with nextJS
+    if (existingValue === undefined) {
+      if (res.header !== undefined)
+        res.header(key, value)
+      else
+        res.setHeader(key, value)
     }
+    else if (allowDuplicateKey) {
+      if (res.header !== undefined)
+        res.header(key, `${existingValue}, ${value}`)
+      else
+        res.setHeader(key, `${existingValue}, ${value}`)
+    }
+    else {
+      // we overwrite the current one with the new one
+      if (res.header !== undefined)
+        res.header(key, value)
+      else
+        res.setHeader(key, value)
+    }
+  }
+  catch (err) {
+    throw new Error(`Error while setting header with key: ${key} and value: ${value}`)
+  }
 }
 
 /**
@@ -232,22 +235,22 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
  * @param path
  */
 export function setCookieForServerResponse(
-    res: ServerResponse,
-    key: string,
-    value: string,
-    domain: string | undefined,
-    secure: boolean,
-    httpOnly: boolean,
-    expires: number,
-    path: string,
-    sameSite: "strict" | "lax" | "none"
+  res: ServerResponse,
+  key: string,
+  value: string,
+  domain: string | undefined,
+  secure: boolean,
+  httpOnly: boolean,
+  expires: number,
+  path: string,
+  sameSite: 'strict' | 'lax' | 'none',
 ) {
-    return appendToServerResponse(
-        res,
-        COOKIE_HEADER,
-        serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite),
-        key
-    );
+  return appendToServerResponse(
+    res,
+    COOKIE_HEADER,
+    serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite),
+    key,
+  )
 }
 
 /**
@@ -262,61 +265,59 @@ export function setCookieForServerResponse(
  * @param {string| string[]} val
  */
 function appendToServerResponse(res: ServerResponse, field: string, val: string | string[], key: string) {
-    let prev: string | string[] | undefined = res.getHeader(field) as string | string[] | undefined;
-    res.setHeader(field, getCookieValueToSetInHeader(prev, val, key));
-    return res;
+  const prev: string | string[] | undefined = res.getHeader(field) as string | string[] | undefined
+  res.setHeader(field, getCookieValueToSetInHeader(prev, val, key))
+  return res
 }
 
 export function getCookieValueToSetInHeader(
-    prev: string | string[] | undefined,
-    val: string | string[],
-    key: string
+  prev: string | string[] | undefined,
+  val: string | string[],
+  key: string,
 ): string | string[] {
-    let value = val;
+  let value = val
 
-    if (prev !== undefined) {
-        // removing existing cookie with the same name
-        if (Array.isArray(prev)) {
-            let removedDuplicate = [];
-            for (let i = 0; i < prev.length; i++) {
-                let curr = prev[i];
-                if (!curr.startsWith(key)) {
-                    removedDuplicate.push(curr);
-                }
-            }
-            prev = removedDuplicate;
-        } else {
-            if (prev.startsWith(key)) {
-                prev = undefined;
-            }
-        }
-        if (prev !== undefined) {
-            value = Array.isArray(prev) ? prev.concat(val) : Array.isArray(val) ? [prev].concat(val) : [prev, val];
-        }
+  if (prev !== undefined) {
+    // removing existing cookie with the same name
+    if (Array.isArray(prev)) {
+      const removedDuplicate = []
+      for (let i = 0; i < prev.length; i++) {
+        const curr = prev[i]
+        if (!curr.startsWith(key))
+          removedDuplicate.push(curr)
+      }
+      prev = removedDuplicate
     }
+    else {
+      if (prev.startsWith(key))
+        prev = undefined
+    }
+    if (prev !== undefined)
+      value = Array.isArray(prev) ? prev.concat(val) : Array.isArray(val) ? [prev].concat(val) : [prev, val]
+  }
 
-    value = Array.isArray(value) ? value.map(String) : String(value);
-    return value;
+  value = Array.isArray(value) ? value.map(String) : String(value)
+  return value
 }
 
 export function serializeCookieValue(
-    key: string,
-    value: string,
-    domain: string | undefined,
-    secure: boolean,
-    httpOnly: boolean,
-    expires: number,
-    path: string,
-    sameSite: "strict" | "lax" | "none"
+  key: string,
+  value: string,
+  domain: string | undefined,
+  secure: boolean,
+  httpOnly: boolean,
+  expires: number,
+  path: string,
+  sameSite: 'strict' | 'lax' | 'none',
 ): string {
-    let opts = {
-        domain,
-        secure,
-        httpOnly,
-        expires: new Date(expires),
-        path,
-        sameSite,
-    };
+  const opts = {
+    domain,
+    secure,
+    httpOnly,
+    expires: new Date(expires),
+    path,
+    sameSite,
+  }
 
-    return serialize(key, value, opts);
+  return serialize(key, value, opts)
 }

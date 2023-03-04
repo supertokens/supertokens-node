@@ -13,163 +13,163 @@
  * under the License.
  */
 
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import OverrideableBuilder from "supertokens-js-override";
+import OverrideableBuilder from 'overrideableBuilder'
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
 import {
-    TypeInput as EmailDeliveryTypeInput,
-    TypeInputWithService as EmailDeliveryTypeInputWithService,
-} from "../../ingredients/emaildelivery/types";
-import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+  TypeInput as EmailDeliveryTypeInput,
+  TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from '../../ingredients/emaildelivery/types'
+import EmailDeliveryIngredient from '../../ingredients/emaildelivery'
+import { GeneralErrorResponse, NormalisedAppinfo } from '../../types'
+import { SessionContainerInterface } from '../session/types'
 
-export type TypeInput = {
-    mode: "REQUIRED" | "OPTIONAL";
-    emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
-        userId: string,
-        userContext: any
-    ) => Promise<
-        | {
-              status: "OK";
-              email: string;
-          }
-        | { status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
-    >;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-    override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
-
-export type TypeNormalisedInput = {
-    mode: "REQUIRED" | "OPTIONAL";
-    getEmailDeliveryConfig: (
-        isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
-        userId: string,
-        userContext: any
-    ) => Promise<
-        | {
-              status: "OK";
-              email: string;
-          }
-        | { status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
-    >;
-    override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
-
-export type User = {
-    id: string;
-    email: string;
-};
-
-export type RecipeInterface = {
-    createEmailVerificationToken(input: {
-        userId: string;
-        email: string;
-        userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
-    >;
-
-    verifyEmailUsingToken(input: {
-        token: string;
-        userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
-
-    isEmailVerified(input: { userId: string; email: string; userContext: any }): Promise<boolean>;
-
-    revokeEmailVerificationTokens(input: {
-        userId: string;
-        email: string;
-        userContext: any;
-    }): Promise<{ status: "OK" }>;
-
-    unverifyEmail(input: { userId: string; email: string; userContext: any }): Promise<{ status: "OK" }>;
-};
-
-export type APIOptions = {
-    recipeImplementation: RecipeInterface;
-    appInfo: NormalisedAppinfo;
-    config: TypeNormalisedInput;
-    recipeId: string;
-    isInServerlessEnv: boolean;
-    req: BaseRequest;
-    res: BaseResponse;
-    emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
-};
-
-export type APIInterface = {
-    verifyEmailPOST:
-        | undefined
-        | ((input: {
-              token: string;
-              options: APIOptions;
-              userContext: any;
-              session?: SessionContainerInterface;
-          }) => Promise<
-              { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
-          >);
-
-    isEmailVerifiedGET:
-        | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: any;
-              session: SessionContainerInterface;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    isVerified: boolean;
-                }
-              | GeneralErrorResponse
-          >);
-
-    generateEmailVerifyTokenPOST:
-        | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: any;
-              session: SessionContainerInterface;
-          }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | GeneralErrorResponse>);
-};
-
-export type TypeEmailVerificationEmailDeliveryInput = {
-    type: "EMAIL_VERIFICATION";
-    user: {
-        id: string;
-        email: string;
-    };
-    emailVerifyLink: string;
-};
-
-export type GetEmailForUserIdFunc = (
+export interface TypeInput {
+  mode: 'REQUIRED' | 'OPTIONAL'
+  emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>
+  getEmailForUserId?: (
     userId: string,
     userContext: any
+  ) => Promise<
+        | {
+          status: 'OK'
+          email: string
+        }
+        | { status: 'EMAIL_DOES_NOT_EXIST_ERROR' | 'UNKNOWN_USER_ID_ERROR' }
+    >
+  /**
+     * @deprecated Please use emailDelivery config instead
+     */
+  createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>
+  override?: {
+    functions?: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
+
+export interface TypeNormalisedInput {
+  mode: 'REQUIRED' | 'OPTIONAL'
+  getEmailDeliveryConfig: (
+    isInServerlessEnv: boolean
+  ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>
+  getEmailForUserId?: (
+    userId: string,
+    userContext: any
+  ) => Promise<
+        | {
+          status: 'OK'
+          email: string
+        }
+        | { status: 'EMAIL_DOES_NOT_EXIST_ERROR' | 'UNKNOWN_USER_ID_ERROR' }
+    >
+  override: {
+    functions: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
+
+export interface User {
+  id: string
+  email: string
+}
+
+export interface RecipeInterface {
+  createEmailVerificationToken(input: {
+    userId: string
+    email: string
+    userContext: any
+  }): Promise<
+        | {
+          status: 'OK'
+          token: string
+        }
+        | { status: 'EMAIL_ALREADY_VERIFIED_ERROR' }
+    >
+
+  verifyEmailUsingToken(input: {
+    token: string
+    userContext: any
+  }): Promise<{ status: 'OK'; user: User } | { status: 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR' }>
+
+  isEmailVerified(input: { userId: string; email: string; userContext: any }): Promise<boolean>
+
+  revokeEmailVerificationTokens(input: {
+    userId: string
+    email: string
+    userContext: any
+  }): Promise<{ status: 'OK' }>
+
+  unverifyEmail(input: { userId: string; email: string; userContext: any }): Promise<{ status: 'OK' }>
+}
+
+export interface APIOptions {
+  recipeImplementation: RecipeInterface
+  appInfo: NormalisedAppinfo
+  config: TypeNormalisedInput
+  recipeId: string
+  isInServerlessEnv: boolean
+  req: BaseRequest
+  res: BaseResponse
+  emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>
+}
+
+export interface APIInterface {
+  verifyEmailPOST:
+  | undefined
+  | ((input: {
+    token: string
+    options: APIOptions
+    userContext: any
+    session?: SessionContainerInterface
+  }) => Promise<
+              { status: 'OK'; user: User } | { status: 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR' } | GeneralErrorResponse
+          >)
+
+  isEmailVerifiedGET:
+  | undefined
+  | ((input: {
+    options: APIOptions
+    userContext: any
+    session: SessionContainerInterface
+  }) => Promise<
+              | {
+                status: 'OK'
+                isVerified: boolean
+              }
+              | GeneralErrorResponse
+          >)
+
+  generateEmailVerifyTokenPOST:
+  | undefined
+  | ((input: {
+    options: APIOptions
+    userContext: any
+    session: SessionContainerInterface
+  }) => Promise<{ status: 'EMAIL_ALREADY_VERIFIED_ERROR' | 'OK' } | GeneralErrorResponse>)
+}
+
+export interface TypeEmailVerificationEmailDeliveryInput {
+  type: 'EMAIL_VERIFICATION'
+  user: {
+    id: string
+    email: string
+  }
+  emailVerifyLink: string
+}
+
+export type GetEmailForUserIdFunc = (
+  userId: string,
+  userContext: any
 ) => Promise<
     | {
-          status: "OK";
-          email: string;
-      }
-    | { status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
->;
+      status: 'OK'
+      email: string
+    }
+    | { status: 'EMAIL_DOES_NOT_EXIST_ERROR' | 'UNKNOWN_USER_ID_ERROR' }
+>

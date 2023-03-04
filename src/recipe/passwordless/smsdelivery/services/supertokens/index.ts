@@ -12,71 +12,74 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import axios, { AxiosError } from "axios";
-import Supertokens from "../../../../../supertokens";
-import { logDebugMessage } from "../../../../../logger";
+import axios, { AxiosError } from 'axios'
+import { SUPERTOKENS_SMS_SERVICE_URL } from '../../../../../ingredients/smsdelivery/services/supertokens'
+import { SmsDeliveryInterface } from '../../../../../ingredients/smsdelivery/types'
+import { TypePasswordlessSmsDeliveryInput } from '../../../types'
+import Supertokens from '../../../../../supertokens'
+import { logDebugMessage } from '../../../../../logger'
 
 export default class SupertokensService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
-    private apiKey: string;
+  private apiKey: string
 
-    constructor(apiKey: string) {
-        this.apiKey = apiKey;
+  constructor(apiKey: string) {
+    this.apiKey = apiKey
+  }
+
+  sendSms = async (input: TypePasswordlessSmsDeliveryInput) => {
+    const supertokens = Supertokens.getInstanceOrThrowError()
+    const appName = supertokens.appInfo.appName
+    try {
+      await axios({
+        method: 'post',
+        url: SUPERTOKENS_SMS_SERVICE_URL,
+        data: {
+          apiKey: this.apiKey,
+          smsInput: {
+            type: input.type,
+            phoneNumber: input.phoneNumber,
+            userInputCode: input.userInputCode,
+            urlWithLinkCode: input.urlWithLinkCode,
+            codeLifetime: input.codeLifetime,
+            appName,
+          },
+        },
+        headers: {
+          'api-version': '0',
+        },
+      })
     }
-
-    sendSms = async (input: TypePasswordlessSmsDeliveryInput) => {
-        let supertokens = Supertokens.getInstanceOrThrowError();
-        let appName = supertokens.appInfo.appName;
-        try {
-            await axios({
-                method: "post",
-                url: SUPERTOKENS_SMS_SERVICE_URL,
-                data: {
-                    apiKey: this.apiKey,
-                    smsInput: {
-                        type: input.type,
-                        phoneNumber: input.phoneNumber,
-                        userInputCode: input.userInputCode,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        codeLifetime: input.codeLifetime,
-                        appName,
-                    },
-                },
-                headers: {
-                    "api-version": "0",
-                },
-            });
-        } catch (error) {
-            logDebugMessage("Error sending SMS");
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                if (err.response) {
-                    logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
-                } else {
-                    logDebugMessage(`Error: ${err.message}`);
-                }
-            } else {
-                logDebugMessage(`Error: ${JSON.stringify(error)}`);
-            }
-            logDebugMessage("Logging the input below:");
-            logDebugMessage(
-                JSON.stringify(
-                    {
-                        type: input.type,
-                        phoneNumber: input.phoneNumber,
-                        userInputCode: input.userInputCode,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        codeLifetime: input.codeLifetime,
-                        appName,
-                    },
-                    null,
-                    2
-                )
-            );
-            throw error;
+    catch (error) {
+      logDebugMessage('Error sending SMS')
+      if (axios.isAxiosError(error)) {
+        const err = error as AxiosError
+        if (err.response) {
+          logDebugMessage(`Error status: ${err.response.status}`)
+          logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`)
         }
-    };
+        else {
+          logDebugMessage(`Error: ${err.message}`)
+        }
+      }
+      else {
+        logDebugMessage(`Error: ${JSON.stringify(error)}`)
+      }
+      logDebugMessage('Logging the input below:')
+      logDebugMessage(
+        JSON.stringify(
+          {
+            type: input.type,
+            phoneNumber: input.phoneNumber,
+            userInputCode: input.userInputCode,
+            urlWithLinkCode: input.urlWithLinkCode,
+            codeLifetime: input.codeLifetime,
+            appName,
+          },
+          null,
+          2,
+        ),
+      )
+      throw error
+    }
+  }
 }

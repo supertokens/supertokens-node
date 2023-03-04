@@ -13,43 +13,41 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "../";
-import { findRightProvider } from "../utils";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '../'
+import { findRightProvider } from '../utils'
 
 export default async function authorisationUrlAPI(
-    apiImplementation: APIInterface,
-    options: APIOptions
+  apiImplementation: APIInterface,
+  options: APIOptions,
 ): Promise<boolean> {
-    if (apiImplementation.authorisationUrlGET === undefined) {
-        return false;
-    }
+  if (apiImplementation.authorisationUrlGET === undefined)
+    return false
 
-    let thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
+  const thirdPartyId = options.req.getKeyValueFromQuery('thirdPartyId')
 
-    if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the thirdPartyId as a GET param",
-        });
-    }
+  if (thirdPartyId === undefined || typeof thirdPartyId !== 'string') {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide the thirdPartyId as a GET param',
+    })
+  }
 
-    let provider = findRightProvider(options.providers, thirdPartyId, undefined);
-    if (provider === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "The third party provider " + thirdPartyId + ` seems to be missing from the backend configs.`,
-        });
-    }
+  const provider = findRightProvider(options.providers, thirdPartyId, undefined)
+  if (provider === undefined) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: `The third party provider ${thirdPartyId} seems to be missing from the backend configs.`,
+    })
+  }
 
-    let result = await apiImplementation.authorisationUrlGET({
-        provider,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const result = await apiImplementation.authorisationUrlGET({
+    provider,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

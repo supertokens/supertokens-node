@@ -12,56 +12,56 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
-import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
+import { RecipeInterface as OpenIdRecipeInterface } from '../../openid/types'
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from './constants'
 
 export async function addJWTToAccessTokenPayload({
-    accessTokenPayload,
-    jwtExpiry,
-    userId,
-    jwtPropertyName,
-    openIdRecipeImplementation,
-    userContext,
+  accessTokenPayload,
+  jwtExpiry,
+  userId,
+  jwtPropertyName,
+  openIdRecipeImplementation,
+  userContext,
 }: {
-    accessTokenPayload: any;
-    jwtExpiry: number;
-    userId: string;
-    jwtPropertyName: string;
-    openIdRecipeImplementation: OpenIdRecipeInterface;
-    userContext: any;
+  accessTokenPayload: any
+  jwtExpiry: number
+  userId: string
+  jwtPropertyName: string
+  openIdRecipeImplementation: OpenIdRecipeInterface
+  userContext: any
 }): Promise<any> {
-    // If jwtPropertyName is not undefined it means that the JWT was added to the access token payload already
-    let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+  // If jwtPropertyName is not undefined it means that the JWT was added to the access token payload already
+  const existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
-    if (existingJwtPropertyName !== undefined) {
-        // Delete the old JWT and the old property name
-        delete accessTokenPayload[existingJwtPropertyName];
-        delete accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
-    }
+  if (existingJwtPropertyName !== undefined) {
+    // Delete the old JWT and the old property name
+    delete accessTokenPayload[existingJwtPropertyName]
+    delete accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
+  }
 
-    // Create the JWT
-    let jwtResponse = await openIdRecipeImplementation.createJWT({
-        payload: {
-            /* 
+  // Create the JWT
+  const jwtResponse = await openIdRecipeImplementation.createJWT({
+    payload: {
+      /*
                 We add our claims before the user provided ones so that if they use the same claims
                 then the final payload will use the values they provide
             */
-            sub: userId,
-            ...accessTokenPayload,
-        },
-        validitySeconds: jwtExpiry,
-        userContext,
-    });
+      sub: userId,
+      ...accessTokenPayload,
+    },
+    validitySeconds: jwtExpiry,
+    userContext,
+  })
 
-    if (jwtResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
-        // Should never come here
-        throw new Error("JWT Signing algorithm not supported");
-    }
+  if (jwtResponse.status === 'UNSUPPORTED_ALGORITHM_ERROR') {
+    // Should never come here
+    throw new Error('JWT Signing algorithm not supported')
+  }
 
-    // Add the jwt and the property name to the access token payload
-    accessTokenPayload = {
-        ...accessTokenPayload,
-        /*
+  // Add the jwt and the property name to the access token payload
+  accessTokenPayload = {
+    ...accessTokenPayload,
+    /*
             We add the JWT after the user defined keys because we want to make sure that it never
             gets overwritten by a user defined key. Using the same key as the one configured (or defaulting)
             for the JWT should be considered a dev error
@@ -73,13 +73,13 @@ export async function addJWTToAccessTokenPayload({
             Note: If the user has multiple overrides each with a unique propertyNameInAccessTokenPayload, the logic
             for checking the existing JWT when refreshing the session or updating the access token payload will not work.
             This is because even though the jwt itself would be created with unique property names, the _jwtPName value would
-            always be overwritten by the override that runs last and when retrieving the jwt using that key name it cannot be 
+            always be overwritten by the override that runs last and when retrieving the jwt using that key name it cannot be
             guaranteed that the right JWT is returned. This case is considered to be a rare requirement and we assume
             that users will not need multiple JWT representations of their access token payload.
         */
-        [jwtPropertyName]: jwtResponse.jwt,
-        [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: jwtPropertyName,
-    };
+    [jwtPropertyName]: jwtResponse.jwt,
+    [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: jwtPropertyName,
+  }
 
-    return accessTokenPayload;
+  return accessTokenPayload
 }

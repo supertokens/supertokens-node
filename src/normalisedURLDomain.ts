@@ -13,66 +13,68 @@
  * under the License.
  */
 
-import { URL } from "url";
-import { isAnIpAddress } from "./utils";
+import { URL } from 'url'
+import { isAnIpAddress } from './utils'
 
 export default class NormalisedURLDomain {
-    private value: string;
+  private value: string
 
-    constructor(url: string) {
-        this.value = normaliseURLDomainOrThrowError(url);
-    }
+  constructor(url: string) {
+    this.value = normaliseURLDomainOrThrowError(url)
+  }
 
-    getAsStringDangerous = () => {
-        return this.value;
-    };
+  getAsStringDangerous = () => {
+    return this.value
+  }
 }
 
 function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): string {
-    input = input.trim().toLowerCase();
+  input = input.trim().toLowerCase()
 
+  try {
+    if (!input.startsWith('http://') && !input.startsWith('https://') && !input.startsWith('supertokens://'))
+      throw new Error('converting to proper URL')
+
+    const urlObj = new URL(input)
+    if (ignoreProtocol) {
+      if (urlObj.hostname.startsWith('localhost') || isAnIpAddress(urlObj.hostname))
+        input = `http://${urlObj.host}`
+      else
+        input = `https://${urlObj.host}`
+    }
+    else {
+      input = `${urlObj.protocol}//${urlObj.host}`
+    }
+
+    return input
+  }
+  catch (err) {}
+  // not a valid URL
+
+  if (input.startsWith('/'))
+    throw new Error('Please provide a valid domain name')
+
+  if (input.indexOf('.') === 0)
+    input = input.substr(1)
+
+  // If the input contains a . it means they have given a domain name.
+  // So we try assuming that they have given a domain name
+  if (
+    (input.includes('.') || input.startsWith('localhost'))
+        && !input.startsWith('http://')
+        && !input.startsWith('https://')
+  ) {
+    input = `https://${input}`
+
+    // at this point, it should be a valid URL. So we test that before doing a recursive call
     try {
-        if (!input.startsWith("http://") && !input.startsWith("https://") && !input.startsWith("supertokens://")) {
-            throw new Error("converting to proper URL");
-        }
-        let urlObj = new URL(input);
-        if (ignoreProtocol) {
-            if (urlObj.hostname.startsWith("localhost") || isAnIpAddress(urlObj.hostname)) {
-                input = "http://" + urlObj.host;
-            } else {
-                input = "https://" + urlObj.host;
-            }
-        } else {
-            input = urlObj.protocol + "//" + urlObj.host;
-        }
-
-        return input;
-    } catch (err) {}
-    // not a valid URL
-
-    if (input.startsWith("/")) {
-        throw Error("Please provide a valid domain name");
+      // TODO: eslint error fix
+      // eslint-disable-next-line no-new
+      new URL(input)
+      return normaliseURLDomainOrThrowError(input, true)
     }
+    catch (err) {}
+  }
 
-    if (input.indexOf(".") === 0) {
-        input = input.substr(1);
-    }
-
-    // If the input contains a . it means they have given a domain name.
-    // So we try assuming that they have given a domain name
-    if (
-        (input.indexOf(".") !== -1 || input.startsWith("localhost")) &&
-        !input.startsWith("http://") &&
-        !input.startsWith("https://")
-    ) {
-        input = "https://" + input;
-
-        // at this point, it should be a valid URL. So we test that before doing a recursive call
-        try {
-            new URL(input);
-            return normaliseURLDomainOrThrowError(input, true);
-        } catch (err) {}
-    }
-
-    throw Error("Please provide a valid domain name");
+  throw new Error('Please provide a valid domain name')
 }

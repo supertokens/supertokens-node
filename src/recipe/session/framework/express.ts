@@ -12,28 +12,30 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import Session from "../recipe";
-import type { VerifySessionOptions } from "..";
-import type { SessionRequest } from "../../../framework/express/framework";
-import { ExpressRequest, ExpressResponse } from "../../../framework/express/framework";
-import type { NextFunction, Response } from "express";
-import SuperTokens from "../../../supertokens";
+import type { NextFunction, Response } from 'express'
+import Session from '../recipe'
+import type { VerifySessionOptions } from '..'
+import type { SessionRequest } from '../../../framework/express/framework'
+import { ExpressRequest, ExpressResponse } from '../../../framework/express/framework'
+import SuperTokens from '../../../supertokens'
 
 export function verifySession(options?: VerifySessionOptions) {
-    return async (req: SessionRequest, res: Response, next: NextFunction) => {
-        const request = new ExpressRequest(req);
-        const response = new ExpressResponse(res);
-        try {
-            const sessionRecipe = Session.getInstanceOrThrowError();
-            req.session = await sessionRecipe.verifySession(options, request, response);
-            next();
-        } catch (err) {
-            try {
-                const supertokens = SuperTokens.getInstanceOrThrowError();
-                await supertokens.errorHandler(err, request, response);
-            } catch {
-                next(err);
-            }
-        }
-    };
+  return async (req: SessionRequest, res: Response, next: NextFunction) => {
+    const request = new ExpressRequest(req)
+    const response = new ExpressResponse(res)
+    try {
+      const sessionRecipe = Session.getInstanceOrThrowError()
+      req.session = await sessionRecipe.verifySession(options, request, response)
+      next()
+    }
+    catch (err) {
+      try {
+        const supertokens = SuperTokens.getInstanceOrThrowError()
+        await supertokens.errorHandler(err, request, response)
+      }
+      catch {
+        next(err)
+      }
+    }
+  }
 }

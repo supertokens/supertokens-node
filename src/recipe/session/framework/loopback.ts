@@ -12,20 +12,20 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import Session from "../recipe";
-import { VerifySessionOptions } from "..";
-import { InterceptorOrKey, InvocationContext, Next } from "@loopback/core";
-import { MiddlewareContext } from "@loopback/rest";
-import type { SessionContext as Context } from "../../../framework/loopback/framework";
-import { LoopbackRequest, LoopbackResponse } from "../../../framework/loopback/framework";
+import { InterceptorOrKey, InvocationContext, Next } from '@loopback/core'
+import { MiddlewareContext } from '@loopback/rest'
+import Session from '../recipe'
+import { VerifySessionOptions } from '..'
+import type { SessionContext as Context } from '../../../framework/loopback/framework'
+import { LoopbackRequest, LoopbackResponse } from '../../../framework/loopback/framework'
 
 export function verifySession(options?: VerifySessionOptions): InterceptorOrKey {
-    return async (ctx: InvocationContext, next: Next) => {
-        let sessionRecipe = Session.getInstanceOrThrowError();
-        let middlewareCtx = await ctx.get<MiddlewareContext>("middleware.http.context");
-        let request = new LoopbackRequest(middlewareCtx);
-        let response = new LoopbackResponse(middlewareCtx);
-        (middlewareCtx as Context).session = await sessionRecipe.verifySession(options, request, response);
-        return await next();
-    };
+  return async (ctx: InvocationContext, next: Next) => {
+    const sessionRecipe = Session.getInstanceOrThrowError()
+    const middlewareCtx = await ctx.get<MiddlewareContext>('middleware.http.context')
+    const request = new LoopbackRequest(middlewareCtx)
+    const response = new LoopbackResponse(middlewareCtx);
+    (middlewareCtx as Context).session = await sessionRecipe.verifySession(options, request, response)
+    return await next()
+  }
 }

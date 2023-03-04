@@ -13,16 +13,14 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import { APIInterface, APIOptions } from '../'
 
 export default async function handleRefreshAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.refreshPOST === undefined) {
-        return false;
-    }
+  if (apiImplementation.refreshPOST === undefined)
+    return false
 
-    await apiImplementation.refreshPOST({ options, userContext: makeDefaultUserContextFromAPI(options.req) });
-    send200Response(options.res, {});
-    return true;
+  await apiImplementation.refreshPOST({ options, userContext: makeDefaultUserContextFromAPI(options.req) })
+  send200Response(options.res, {})
+  return true
 }

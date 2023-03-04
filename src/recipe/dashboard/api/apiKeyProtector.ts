@@ -12,27 +12,27 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { makeDefaultUserContextFromAPI } from "../../../utils";
-import { APIFunction, APIInterface, APIOptions } from "../types";
-import { sendUnauthorisedAccess } from "../utils";
+import { makeDefaultUserContextFromAPI } from '../../../utils'
+import { APIFunction, APIInterface, APIOptions } from '../types'
+import { sendUnauthorisedAccess } from '../utils'
 
 export default async function apiKeyProtector(
-    apiImplementation: APIInterface,
-    options: APIOptions,
-    apiFunction: APIFunction
+  apiImplementation: APIInterface,
+  options: APIOptions,
+  apiFunction: APIFunction,
 ): Promise<boolean> {
-    const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
-        req: options.req,
-        config: options.config,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
+    req: options.req,
+    config: options.config,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    if (!shouldAllowAccess) {
-        sendUnauthorisedAccess(options.res);
-        return true;
-    }
+  if (!shouldAllowAccess) {
+    sendUnauthorisedAccess(options.res)
+    return true
+  }
 
-    const response = await apiFunction(apiImplementation, options);
-    options.res.sendJSONResponse(response);
-    return true;
+  const response = await apiFunction(apiImplementation, options)
+  options.res.sendJSONResponse(response)
+  return true
 }

@@ -12,97 +12,97 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import axios from 'axios'
+import { TypeProvider, TypeProviderGetResponse } from '../types'
 
-type TypeThirdPartyProviderDiscordConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: any) => string) };
-    };
-    isDefault?: boolean;
-};
+interface TypeThirdPartyProviderDiscordConfig {
+  clientId: string
+  clientSecret: string
+  scope?: string[]
+  authorisationRedirect?: {
+    params?: { [key: string]: string | ((request: any) => string) }
+  }
+  isDefault?: boolean
+}
 
 export default function Discord(config: TypeThirdPartyProviderDiscordConfig): TypeProvider {
-    const id = "discord";
+  const id = 'discord'
 
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://discord.com/api/oauth2/token";
-        let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
-            grant_type: "authorization_code",
-        };
-        if (authCodeFromRequest !== undefined) {
-            accessTokenAPIParams.code = authCodeFromRequest;
-        }
-        if (redirectURI !== undefined) {
-            accessTokenAPIParams.redirect_uri = redirectURI;
-        }
-        let authorisationRedirectURL = "https://discord.com/api/oauth2/authorize";
-        let scopes = ["email", "identify"];
-        if (config.scope !== undefined) {
-            scopes = config.scope;
-            scopes = Array.from(new Set(scopes));
-        }
-        let additionalParams =
-            config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
-                ? {}
-                : config.authorisationRedirect.params;
-        let authorizationRedirectParams: { [key: string]: string } = {
-            scope: scopes.join(" "),
-            client_id: config.clientId,
-            response_type: "code",
-            ...additionalParams,
-        };
+  function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
+    const accessTokenAPIURL = 'https://discord.com/api/oauth2/token'
+    const accessTokenAPIParams: { [key: string]: string } = {
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      grant_type: 'authorization_code',
+    }
+    if (authCodeFromRequest !== undefined)
+      accessTokenAPIParams.code = authCodeFromRequest
 
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
-                method: "get",
-                url: "https://discord.com/api/users/@me",
-                headers: {
-                    Authorization: authHeader,
-                },
-            });
-            let userInfo = response.data;
-            return {
-                id: userInfo.id,
-                email:
-                    userInfo.email === undefined
-                        ? undefined
-                        : {
-                              id: userInfo.email,
-                              isVerified: userInfo.verified,
-                          },
-            };
-        }
-        return {
-            accessTokenAPI: {
-                url: accessTokenAPIURL,
-                params: accessTokenAPIParams,
-            },
-            authorisationRedirect: {
-                url: authorisationRedirectURL,
-                params: authorizationRedirectParams,
-            },
-            getProfileInfo,
-            getClientId: () => {
-                return config.clientId;
-            },
-        };
+    if (redirectURI !== undefined)
+      accessTokenAPIParams.redirect_uri = redirectURI
+
+    const authorisationRedirectURL = 'https://discord.com/api/oauth2/authorize'
+    let scopes = ['email', 'identify']
+    if (config.scope !== undefined) {
+      scopes = config.scope
+      scopes = Array.from(new Set(scopes))
+    }
+    const additionalParams
+            = (config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined)
+              ? {}
+              : config.authorisationRedirect.params
+    const authorizationRedirectParams: { [key: string]: string } = {
+      scope: scopes.join(' '),
+      client_id: config.clientId,
+      response_type: 'code',
+      ...additionalParams,
     }
 
+    async function getProfileInfo(accessTokenAPIResponse: {
+      access_token: string
+      expires_in: number
+      token_type: string
+    }) {
+      const accessToken = accessTokenAPIResponse.access_token
+      const authHeader = `Bearer ${accessToken}`
+      const response = await axios({
+        method: 'get',
+        url: 'https://discord.com/api/users/@me',
+        headers: {
+          Authorization: authHeader,
+        },
+      })
+      const userInfo = response.data
+      return {
+        id: userInfo.id,
+        email:
+                    userInfo.email === undefined
+                      ? undefined
+                      : {
+                          id: userInfo.email,
+                          isVerified: userInfo.verified,
+                        },
+      }
+    }
     return {
-        id,
-        get,
-        isDefault: config.isDefault,
-    };
+      accessTokenAPI: {
+        url: accessTokenAPIURL,
+        params: accessTokenAPIParams,
+      },
+      authorisationRedirect: {
+        url: authorisationRedirectURL,
+        params: authorizationRedirectParams,
+      },
+      getProfileInfo,
+      getClientId: () => {
+        return config.clientId
+      },
+    }
+  }
+
+  return {
+    id,
+    get,
+    isDefault: config.isDefault,
+  }
 }

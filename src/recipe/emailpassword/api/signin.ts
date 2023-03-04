@@ -13,39 +13,38 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { validateFormFieldsOrThrowError } from "./utils";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import { APIInterface, APIOptions } from '../'
+import { validateFormFieldsOrThrowError } from './utils'
 
 export default async function signInAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
-    if (apiImplementation.signInPOST === undefined) {
-        return false;
-    }
+  // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
+  if (apiImplementation.signInPOST === undefined)
+    return false
 
-    // step 1
-    let formFields: {
-        id: string;
-        value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        options.config.signInFeature.formFields,
-        (await options.req.getJSONBody()).formFields
-    );
+  // step 1
+  const formFields: {
+    id: string
+    value: string
+  }[] = await validateFormFieldsOrThrowError(
+    options.config.signInFeature.formFields,
+    (await options.req.getJSONBody()).formFields,
+  )
 
-    let result = await apiImplementation.signInPOST({
-        formFields,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const result = await apiImplementation.signInPOST({
+    formFields,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    if (result.status === "OK") {
-        send200Response(options.res, {
-            status: "OK",
-            user: result.user,
-        });
-    } else {
-        send200Response(options.res, result);
-    }
-    return true;
+  if (result.status === 'OK') {
+    send200Response(options.res, {
+      status: 'OK',
+      user: result.user,
+    })
+  }
+  else {
+    send200Response(options.res, result)
+  }
+  return true
 }

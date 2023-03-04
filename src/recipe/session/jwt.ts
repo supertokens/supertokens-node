@@ -12,67 +12,64 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import * as crypto from "crypto";
+import * as crypto from 'crypto'
 
 const HEADERS = new Set([
-    Buffer.from(
-        JSON.stringify({
-            alg: "RS256",
-            typ: "JWT",
-            version: "1",
-        })
-    ).toString("base64"),
-    Buffer.from(
-        JSON.stringify({
-            alg: "RS256",
-            typ: "JWT",
-            version: "2",
-        })
-    ).toString("base64"),
-]);
+  Buffer.from(
+    JSON.stringify({
+      alg: 'RS256',
+      typ: 'JWT',
+      version: '1',
+    }),
+  ).toString('base64'),
+  Buffer.from(
+    JSON.stringify({
+      alg: 'RS256',
+      typ: 'JWT',
+      version: '2',
+    }),
+  ).toString('base64'),
+])
 
-export type ParsedJWTInfo = {
-    rawTokenString: string;
-    rawPayload: string;
-    header: string;
-    payload: any;
-    signature: string;
-};
+export interface ParsedJWTInfo {
+  rawTokenString: string
+  rawPayload: string
+  header: string
+  payload: any
+  signature: string
+}
 
 export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo {
-    const splittedInput = jwt.split(".");
-    if (splittedInput.length !== 3) {
-        throw new Error("Invalid JWT");
-    }
+  const splittedInput = jwt.split('.')
+  if (splittedInput.length !== 3)
+    throw new Error('Invalid JWT')
 
-    // checking header
-    if (!HEADERS.has(splittedInput[0])) {
-        throw new Error("JWT header mismatch");
-    }
+  // checking header
+  if (!HEADERS.has(splittedInput[0]))
+    throw new Error('JWT header mismatch')
 
-    return {
-        rawTokenString: jwt,
-        rawPayload: splittedInput[1],
-        header: splittedInput[0],
-        // Ideally we would only parse this after the signature verification is done.
-        // We do this at the start, since we want to check if a token can be a supertokens access token or not
-        payload: JSON.parse(Buffer.from(splittedInput[1], "base64").toString()),
-        signature: splittedInput[2],
-    };
+  return {
+    rawTokenString: jwt,
+    rawPayload: splittedInput[1],
+    header: splittedInput[0],
+    // Ideally we would only parse this after the signature verification is done.
+    // We do this at the start, since we want to check if a token can be a supertokens access token or not
+    payload: JSON.parse(Buffer.from(splittedInput[1], 'base64').toString()),
+    signature: splittedInput[2],
+  }
 }
 
 export function verifyJWT({ header, rawPayload, signature }: ParsedJWTInfo, jwtSigningPublicKey: string): void {
-    let verifier = crypto.createVerify("sha256");
-    // convert the jwtSigningPublicKey into .pem format
+  const verifier = crypto.createVerify('sha256')
+  // convert the jwtSigningPublicKey into .pem format
 
-    verifier.update(header + "." + rawPayload);
-    if (
-        !verifier.verify(
-            "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----",
-            signature,
-            "base64"
-        )
-    ) {
-        throw new Error("JWT verification failed");
-    }
+  verifier.update(`${header}.${rawPayload}`)
+  if (
+    !verifier.verify(
+      `-----BEGIN PUBLIC KEY-----\n${jwtSigningPublicKey}\n-----END PUBLIC KEY-----`,
+      signature,
+      'base64',
+    )
+  )
+    throw new Error('JWT verification failed')
 }

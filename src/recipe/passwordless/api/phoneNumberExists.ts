@@ -13,34 +13,32 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "..";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '..'
 
 export default async function phoneNumberExists(
-    apiImplementation: APIInterface,
-    options: APIOptions
+  apiImplementation: APIInterface,
+  options: APIOptions,
 ): Promise<boolean> {
-    if (apiImplementation.phoneNumberExistsGET === undefined) {
-        return false;
-    }
+  if (apiImplementation.phoneNumberExistsGET === undefined)
+    return false
 
-    let phoneNumber = options.req.getKeyValueFromQuery("phoneNumber");
+  const phoneNumber = options.req.getKeyValueFromQuery('phoneNumber')
 
-    if (phoneNumber === undefined || typeof phoneNumber !== "string") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the phoneNumber as a GET param",
-        });
-    }
+  if (phoneNumber === undefined || typeof phoneNumber !== 'string') {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide the phoneNumber as a GET param',
+    })
+  }
 
-    let result = await apiImplementation.phoneNumberExistsGET({
-        phoneNumber,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const result = await apiImplementation.phoneNumberExistsGET({
+    phoneNumber,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

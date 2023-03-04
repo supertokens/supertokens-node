@@ -34,5 +34,5 @@
     When trying to refresh the session or updating the access token payload, this key is used to determine and retrieve
     the exsiting JWT from the access token payload.
 */
-export const ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY = "_jwtPName";
-export const JWT_RESERVED_KEY_USE_ERROR_MESSAGE = `${ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY} is a reserved property name, please use a different key name for the jwt`;
+export const ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY = '_jwtPName'
+export const JWT_RESERVED_KEY_USE_ERROR_MESSAGE = `${ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY} is a reserved property name, please use a different key name for the jwt`

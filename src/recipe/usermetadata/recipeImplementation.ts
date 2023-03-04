@@ -13,27 +13,27 @@
  * under the License.
  */
 
-import { RecipeInterface } from ".";
-import NormalisedURLPath from "../../normalisedURLPath";
-import { Querier } from "../../querier";
+import NormalisedURLPath from '../../normalisedURLPath'
+import { Querier } from '../../querier'
+import { RecipeInterface } from '.'
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
-    return {
-        getUserMetadata: function ({ userId }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/metadata"), { userId });
-        },
+  return {
+    getUserMetadata({ userId }) {
+      return querier.sendGetRequest(new NormalisedURLPath('/recipe/user/metadata'), { userId })
+    },
 
-        updateUserMetadata: function ({ userId, metadataUpdate }) {
-            return querier.sendPutRequest(new NormalisedURLPath("/recipe/user/metadata"), {
-                userId,
-                metadataUpdate,
-            });
-        },
+    updateUserMetadata({ userId, metadataUpdate }) {
+      return querier.sendPutRequest(new NormalisedURLPath('/recipe/user/metadata'), {
+        userId,
+        metadataUpdate,
+      })
+    },
 
-        clearUserMetadata: function ({ userId }) {
-            return querier.sendPostRequest(new NormalisedURLPath("/recipe/user/metadata/remove"), {
-                userId,
-            });
-        },
-    };
+    clearUserMetadata({ userId }) {
+      return querier.sendPostRequest(new NormalisedURLPath('/recipe/user/metadata/remove'), {
+        userId,
+      })
+    },
+  }
 }

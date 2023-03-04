@@ -12,108 +12,105 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, TypeProviderGetResponse } from "../types";
-import { verifyIdTokenFromJWKSEndpoint } from "./utils";
-import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
+import { TypeProvider, TypeProviderGetResponse } from '../types'
+import { getActualClientIdFromDevelopmentClientId } from '../api/implementation'
+import { verifyIdTokenFromJWKSEndpoint } from './utils'
 
-type TypeThirdPartyProviderGoogleWorkspacesConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    domain?: string;
-    authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: any) => string) };
-    };
-    isDefault?: boolean;
-};
+interface TypeThirdPartyProviderGoogleWorkspacesConfig {
+  clientId: string
+  clientSecret: string
+  scope?: string[]
+  domain?: string
+  authorisationRedirect?: {
+    params?: { [key: string]: string | ((request: any) => string) }
+  }
+  isDefault?: boolean
+}
 
 export default function GW(config: TypeThirdPartyProviderGoogleWorkspacesConfig): TypeProvider {
-    const id = "google-workspaces";
-    let domain: string = config.domain === undefined ? "*" : config.domain;
+  const id = 'google-workspaces'
+  const domain: string = config.domain === undefined ? '*' : config.domain
 
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://oauth2.googleapis.com/token";
-        let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
-            grant_type: "authorization_code",
-        };
-        if (authCodeFromRequest !== undefined) {
-            accessTokenAPIParams.code = authCodeFromRequest;
-        }
-        if (redirectURI !== undefined) {
-            accessTokenAPIParams.redirect_uri = redirectURI;
-        }
-        let authorisationRedirectURL = "https://accounts.google.com/o/oauth2/v2/auth";
-        let scopes = ["https://www.googleapis.com/auth/userinfo.email"];
-        if (config.scope !== undefined) {
-            scopes = config.scope;
-            scopes = Array.from(new Set(scopes));
-        }
-        let additionalParams =
-            config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
-                ? {}
-                : config.authorisationRedirect.params;
-        let authorizationRedirectParams: { [key: string]: string } = {
-            scope: scopes.join(" "),
-            access_type: "offline",
-            include_granted_scopes: "true",
-            response_type: "code",
-            client_id: config.clientId,
-            hd: domain,
-            ...additionalParams,
-        };
+  function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
+    const accessTokenAPIURL = 'https://oauth2.googleapis.com/token'
+    const accessTokenAPIParams: { [key: string]: string } = {
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      grant_type: 'authorization_code',
+    }
+    if (authCodeFromRequest !== undefined)
+      accessTokenAPIParams.code = authCodeFromRequest
 
-        async function getProfileInfo(authCodeResponse: { id_token: string }) {
-            let payload: any = await verifyIdTokenFromJWKSEndpoint(
-                authCodeResponse.id_token,
-                "https://www.googleapis.com/oauth2/v3/certs",
-                {
-                    audience: getActualClientIdFromDevelopmentClientId(config.clientId),
-                    issuer: ["https://accounts.google.com", "accounts.google.com"],
-                }
-            );
+    if (redirectURI !== undefined)
+      accessTokenAPIParams.redirect_uri = redirectURI
 
-            if (payload.email === undefined) {
-                throw new Error("Could not get email. Please use a different login method");
-            }
-
-            if (payload.hd === undefined) {
-                throw new Error("Please use a Google Workspace ID to login");
-            }
-
-            // if the domain is "*" in it, it means that any workspace email is allowed.
-            if (!domain.includes("*") && payload.hd !== domain) {
-                throw new Error("Please use emails from " + domain + " to login");
-            }
-
-            return {
-                id: payload.sub,
-                email: {
-                    id: payload.email,
-                    isVerified: payload.email_verified,
-                },
-            };
-        }
-        return {
-            accessTokenAPI: {
-                url: accessTokenAPIURL,
-                params: accessTokenAPIParams,
-            },
-            authorisationRedirect: {
-                url: authorisationRedirectURL,
-                params: authorizationRedirectParams,
-            },
-            getProfileInfo,
-            getClientId: () => {
-                return config.clientId;
-            },
-        };
+    const authorisationRedirectURL = 'https://accounts.google.com/o/oauth2/v2/auth'
+    let scopes = ['https://www.googleapis.com/auth/userinfo.email']
+    if (config.scope !== undefined) {
+      scopes = config.scope
+      scopes = Array.from(new Set(scopes))
+    }
+    const additionalParams
+            = (config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined)
+              ? {}
+              : config.authorisationRedirect.params
+    const authorizationRedirectParams: { [key: string]: string } = {
+      scope: scopes.join(' '),
+      access_type: 'offline',
+      include_granted_scopes: 'true',
+      response_type: 'code',
+      client_id: config.clientId,
+      hd: domain,
+      ...additionalParams,
     }
 
+    async function getProfileInfo(authCodeResponse: { id_token: string }) {
+      const payload: any = await verifyIdTokenFromJWKSEndpoint(
+        authCodeResponse.id_token,
+        'https://www.googleapis.com/oauth2/v3/certs',
+        {
+          audience: getActualClientIdFromDevelopmentClientId(config.clientId),
+          issuer: ['https://accounts.google.com', 'accounts.google.com'],
+        },
+      )
+
+      if (payload.email === undefined)
+        throw new Error('Could not get email. Please use a different login method')
+
+      if (payload.hd === undefined)
+        throw new Error('Please use a Google Workspace ID to login')
+
+      // if the domain is "*" in it, it means that any workspace email is allowed.
+      if (!domain.includes('*') && payload.hd !== domain)
+        throw new Error(`Please use emails from ${domain} to login`)
+
+      return {
+        id: payload.sub,
+        email: {
+          id: payload.email,
+          isVerified: payload.email_verified,
+        },
+      }
+    }
     return {
-        id,
-        get,
-        isDefault: config.isDefault,
-    };
+      accessTokenAPI: {
+        url: accessTokenAPIURL,
+        params: accessTokenAPIParams,
+      },
+      authorisationRedirect: {
+        url: authorisationRedirectURL,
+        params: authorizationRedirectParams,
+      },
+      getProfileInfo,
+      getClientId: () => {
+        return config.clientId
+      },
+    }
+  }
+
+  return {
+    id,
+    get,
+    isDefault: config.isDefault,
+  }
 }

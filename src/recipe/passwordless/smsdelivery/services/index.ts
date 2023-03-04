@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import Twilio from "./twilio";
-import Supertokens from "./supertokens";
+import Twilio from './twilio'
+import Supertokens from './supertokens'
 
-export let TwilioService = Twilio;
-export let SupertokensService = Supertokens;
+export const TwilioService = Twilio
+export const SupertokensService = Supertokens

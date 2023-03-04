@@ -246,7 +246,9 @@
         "build-pretty": "npm run build && npm run pretty && npm run pretty",
         "pretty-check": "npx pretty-quick --check .",
         "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
-        "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./lib/tsconfig.json ./lib/ts/index.ts ./lib/ts/**/index.ts ./lib/ts/**/*/index.ts"
+        "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./tsconfig.json ./src/index.ts ./src/**/index.ts ./src/**/*/index.ts",
+        "lint": "eslint --ext .ts,.tsx,.js,.jsx .",
+        "lint:fix": "eslint --ext .ts,.tsx,.js,.jsx . --fix"
     },
     "keywords": [
         "auth",
@@ -284,6 +286,7 @@
         "verify-apple-id-token": "^3.0.1"
     },
     "devDependencies": {
+        "@antfu/eslint-config": "^0.35.3",
         "@hapi/hapi": "^20.2.0",
         "@koa/router": "^10.1.1",
         "@loopback/core": "2.16.2",
@@ -304,6 +307,7 @@
         "@types/validator": "10.11.0",
         "aws-sdk-mock": "^5.4.0",
         "cookie-parser": "^1.4.5",
+        "eslint": "^8.35.0",
         "express": "^4.18.2",
         "fastify": "3.18.1",
         "glob": "7.1.7",
@@ -314,7 +318,6 @@
         "next": "11.1.3",
         "next-test-api-route-handler": "^3.1.8",
         "nock": "11.7.0",
-        "prettier": "2.0.5",
         "pretty-quick": "^3.1.1",
         "react": "^17.0.2",
         "sinon": "^14.0.0",

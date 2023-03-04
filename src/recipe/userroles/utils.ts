@@ -13,24 +13,24 @@
  * under the License.
  */
 
-import { NormalisedAppinfo } from "../../types";
-import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { NormalisedAppinfo } from '../../types'
+import Recipe from './recipe'
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from './types'
 
 export function validateAndNormaliseUserInput(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInput
+  _: Recipe,
+  __: NormalisedAppinfo,
+  config?: TypeInput,
 ): TypeNormalisedInput {
-    let override = {
-        functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config?.override,
-    };
+  const override = {
+    functions: (originalImplementation: RecipeInterface) => originalImplementation,
+    apis: (originalImplementation: APIInterface) => originalImplementation,
+    ...config?.override,
+  }
 
-    return {
-        skipAddingRolesToAccessToken: config?.skipAddingRolesToAccessToken === true,
-        skipAddingPermissionsToAccessToken: config?.skipAddingPermissionsToAccessToken === true,
-        override,
-    };
+  return {
+    skipAddingRolesToAccessToken: config?.skipAddingRolesToAccessToken === true,
+    skipAddingPermissionsToAccessToken: config?.skipAddingPermissionsToAccessToken === true,
+    override,
+  }
 }

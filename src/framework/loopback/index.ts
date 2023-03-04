@@ -13,9 +13,9 @@
  * under the License.
  */
 
-import { LoopbackWrapper } from "./framework";
-export type { SessionContext } from "./framework";
+import { LoopbackWrapper } from './framework'
+export type { SessionContext } from './framework'
 
-export const middleware = LoopbackWrapper.middleware;
-export const wrapRequest = LoopbackWrapper.wrapRequest;
-export const wrapResponse = LoopbackWrapper.wrapResponse;
+export const middleware = LoopbackWrapper.middleware
+export const wrapRequest = LoopbackWrapper.wrapRequest
+export const wrapResponse = LoopbackWrapper.wrapResponse

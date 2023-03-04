@@ -13,18 +13,18 @@
  * under the License.
  */
 
-import { BaseRequest } from "./request";
-import { BaseResponse } from "./response";
+import { BaseRequest } from './request'
+import { BaseResponse } from './response'
 
-export type TypeFramework = "express" | "fastify" | "hapi" | "loopback" | "koa" | "awsLambda";
+export type TypeFramework = 'express' | 'fastify' | 'hapi' | 'loopback' | 'koa' | 'awsLambda'
 
-export let SchemaFramework = {
-    type: "string",
-    enum: ["express", "fastify", "hapi", "loopback", "koa", "awsLambda"],
-};
+export const SchemaFramework = {
+  type: 'string',
+  enum: ['express', 'fastify', 'hapi', 'loopback', 'koa', 'awsLambda'],
+}
 
 export interface Framework {
-    wrapRequest: (unwrapped: any) => BaseRequest;
+  wrapRequest: (unwrapped: any) => BaseRequest
 
-    wrapResponse: (unwrapped: any) => BaseResponse;
+  wrapResponse: (unwrapped: any) => BaseResponse
 }

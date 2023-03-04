@@ -12,6 +12,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import OriginalImplementation from "./recipeImplementation";
+import OriginalImplementation from './recipeImplementation'
 
-export default OriginalImplementation;
+export default OriginalImplementation

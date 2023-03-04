@@ -12,4 +12,4 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export const COOKIE_HEADER = "Set-Cookie";
+export const COOKIE_HEADER = 'Set-Cookie'

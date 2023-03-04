@@ -13,85 +13,84 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import SuperTokensError from "./error";
-import * as thirdPartyProviders from "./providers";
-import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
-export * from "./types";
+import Recipe from './recipe'
+import SuperTokensError from './error'
+import * as thirdPartyProviders from './providers'
+import { APIInterface, APIOptions, RecipeInterface, TypeProvider, User } from './types'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static Error = SuperTokensError;
+  static Error = SuperTokensError
 
-    static async signInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-            userContext,
-        });
-    }
+  static async signInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+      thirdPartyId,
+      thirdPartyUserId,
+      email,
+      userContext,
+    })
+  }
 
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
+  static getUserById(userId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext })
+  }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
+  static getUsersByEmail(email: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext })
+  }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
-            userContext,
-        });
-    }
+  static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
+      thirdPartyId,
+      thirdPartyUserId,
+      userContext,
+    })
+  }
 
-    static Google = thirdPartyProviders.Google;
+  static Google = thirdPartyProviders.Google
 
-    static Github = thirdPartyProviders.Github;
+  static Github = thirdPartyProviders.Github
 
-    static Facebook = thirdPartyProviders.Facebook;
+  static Facebook = thirdPartyProviders.Facebook
 
-    static Apple = thirdPartyProviders.Apple;
+  static Apple = thirdPartyProviders.Apple
 
-    static Discord = thirdPartyProviders.Discord;
+  static Discord = thirdPartyProviders.Discord
 
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
+  static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces
 
-    // static Okta = thirdPartyProviders.Okta;
+  // static Okta = thirdPartyProviders.Okta;
 
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
+  // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 }
 
-export let init = Wrapper.init;
+export const init = Wrapper.init
 
-export let Error = Wrapper.Error;
+export const Error = Wrapper.Error
 
-export let signInUp = Wrapper.signInUp;
+export const signInUp = Wrapper.signInUp
 
-export let getUserById = Wrapper.getUserById;
+export const getUserById = Wrapper.getUserById
 
-export let getUsersByEmail = Wrapper.getUsersByEmail;
+export const getUsersByEmail = Wrapper.getUsersByEmail
 
-export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
+export const getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo
 
-export let Google = Wrapper.Google;
+export const Google = Wrapper.Google
 
-export let Github = Wrapper.Github;
+export const Github = Wrapper.Github
 
-export let Facebook = Wrapper.Facebook;
+export const Facebook = Wrapper.Facebook
 
-export let Apple = Wrapper.Apple;
+export const Apple = Wrapper.Apple
 
-export let Discord = Wrapper.Discord;
+export const Discord = Wrapper.Discord
 
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+export const GoogleWorkspaces = Wrapper.GoogleWorkspaces
 
 // export let Okta = Wrapper.Okta;
 
 // export let ActiveDirectory = Wrapper.ActiveDirectory;
 
-export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };
+export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider }

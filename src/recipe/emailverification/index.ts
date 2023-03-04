@@ -13,157 +13,160 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
-import { EmailVerificationClaim } from "./emailVerificationClaim";
-export * from "./types";
-
+import Recipe from './recipe'
+import SuperTokensError from './error'
+import { APIInterface, APIOptions, RecipeInterface, TypeEmailVerificationEmailDeliveryInput, User } from './types'
+import { EmailVerificationClaim } from './emailVerificationClaim'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static Error = SuperTokensError;
+  static Error = SuperTokensError
 
-    static EmailVerificationClaim = EmailVerificationClaim;
+  static EmailVerificationClaim = EmailVerificationClaim
 
-    static async createEmailVerificationToken(
-        userId: string,
-        email?: string,
-        userContext?: any
-    ): Promise<
+  static async createEmailVerificationToken(
+    userId: string,
+    email?: string,
+    userContext?: any,
+  ): Promise<
         | {
-              status: "OK";
-              token: string;
-          }
-        | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
+          status: 'OK'
+          token: string
+        }
+        | { status: 'EMAIL_ALREADY_VERIFIED_ERROR' }
     > {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
+    const recipeInstance = Recipe.getInstanceOrThrowError()
 
-        if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
-            if (emailInfo.status === "OK") {
-                email = emailInfo.email;
-            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
-                return {
-                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
-                };
-            } else {
-                throw new global.Error("Unknown User ID provided without email");
-            }
+    if (email === undefined) {
+      const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext)
+      if (emailInfo.status === 'OK') {
+        email = emailInfo.email
+      }
+      else if (emailInfo.status === 'EMAIL_DOES_NOT_EXIST_ERROR') {
+        return {
+          status: 'EMAIL_ALREADY_VERIFIED_ERROR',
         }
-
-        return await recipeInstance.recipeInterfaceImpl.createEmailVerificationToken({
-            userId,
-            email: email!,
-            userContext: userContext === undefined ? {} : userContext,
-        });
+      }
+      else {
+        throw new global.Error('Unknown User ID provided without email')
+      }
     }
 
-    static async verifyEmailUsingToken(token: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
-            token,
-            userContext: userContext === undefined ? {} : userContext,
-        });
+    return await recipeInstance.recipeInterfaceImpl.createEmailVerificationToken({
+      userId,
+      email: email!,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
+
+  static async verifyEmailUsingToken(token: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
+      token,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
+
+  static async isEmailVerified(userId: string, email?: string, userContext?: any) {
+    const recipeInstance = Recipe.getInstanceOrThrowError()
+    if (email === undefined) {
+      const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext)
+
+      if (emailInfo.status === 'OK')
+        email = emailInfo.email
+      else if (emailInfo.status === 'EMAIL_DOES_NOT_EXIST_ERROR')
+        return true
+      else
+        throw new global.Error('Unknown User ID provided without email')
     }
 
-    static async isEmailVerified(userId: string, email?: string, userContext?: any) {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
+    return await recipeInstance.recipeInterfaceImpl.isEmailVerified({
+      userId,
+      email: email!,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-            if (emailInfo.status === "OK") {
-                email = emailInfo.email;
-            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
-                return true;
-            } else {
-                throw new global.Error("Unknown User ID provided without email");
-            }
+  static async revokeEmailVerificationTokens(userId: string, email?: string, userContext?: any) {
+    const recipeInstance = Recipe.getInstanceOrThrowError()
+
+    // If the dev wants to delete the tokens for an old email address of the user they can pass the address
+    // but redeeming those tokens would have no effect on isEmailVerified called without the old address
+    // so in general that is not necessary either.
+    if (email === undefined) {
+      const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext)
+      if (emailInfo.status === 'OK') {
+        email = emailInfo.email
+      }
+      else if (emailInfo.status === 'EMAIL_DOES_NOT_EXIST_ERROR') {
+        // This only happens for phone based passwordless users (or if the user added a custom getEmailForUserId)
+        // We can return OK here, since there is no way to create an email verification token
+        // if getEmailForUserId returns EMAIL_DOES_NOT_EXIST_ERROR.
+        return {
+          status: 'OK',
         }
-
-        return await recipeInstance.recipeInterfaceImpl.isEmailVerified({
-            userId,
-            email: email!,
-            userContext: userContext === undefined ? {} : userContext,
-        });
+      }
+      else {
+        throw new global.Error('Unknown User ID provided without email')
+      }
     }
 
-    static async revokeEmailVerificationTokens(userId: string, email?: string, userContext?: any) {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
+    return await recipeInstance.recipeInterfaceImpl.revokeEmailVerificationTokens({
+      userId,
+      email: email!,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-        // If the dev wants to delete the tokens for an old email address of the user they can pass the address
-        // but redeeming those tokens would have no effect on isEmailVerified called without the old address
-        // so in general that is not necessary either.
-        if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
-            if (emailInfo.status === "OK") {
-                email = emailInfo.email;
-            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
-                // This only happens for phone based passwordless users (or if the user added a custom getEmailForUserId)
-                // We can return OK here, since there is no way to create an email verification token
-                // if getEmailForUserId returns EMAIL_DOES_NOT_EXIST_ERROR.
-                return {
-                    status: "OK",
-                };
-            } else {
-                throw new global.Error("Unknown User ID provided without email");
-            }
+  static async unverifyEmail(userId: string, email?: string, userContext?: any) {
+    const recipeInstance = Recipe.getInstanceOrThrowError()
+    if (email === undefined) {
+      const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext)
+      if (emailInfo.status === 'OK') {
+        email = emailInfo.email
+      }
+      else if (emailInfo.status === 'EMAIL_DOES_NOT_EXIST_ERROR') {
+        // Here we are returning OK since that's how it used to work, but a later call to isVerified will still return true
+        return {
+          status: 'OK',
         }
-
-        return await recipeInstance.recipeInterfaceImpl.revokeEmailVerificationTokens({
-            userId,
-            email: email!,
-            userContext: userContext === undefined ? {} : userContext,
-        });
+      }
+      else {
+        throw new global.Error('Unknown User ID provided without email')
+      }
     }
+    return await recipeInstance.recipeInterfaceImpl.unverifyEmail({
+      userId,
+      email: email!,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async unverifyEmail(userId: string, email?: string, userContext?: any) {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
-            if (emailInfo.status === "OK") {
-                email = emailInfo.email;
-            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
-                // Here we are returning OK since that's how it used to work, but a later call to isVerified will still return true
-                return {
-                    status: "OK",
-                };
-            } else {
-                throw new global.Error("Unknown User ID provided without email");
-            }
-        }
-        return await recipeInstance.recipeInterfaceImpl.unverifyEmail({
-            userId,
-            email: email!,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
-    static async sendEmail(input: TypeEmailVerificationEmailDeliveryInput & { userContext?: any }) {
-        let recipeInstance = Recipe.getInstanceOrThrowError();
-        return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
-            ...input,
-        });
-    }
+  static async sendEmail(input: TypeEmailVerificationEmailDeliveryInput & { userContext?: any }) {
+    const recipeInstance = Recipe.getInstanceOrThrowError()
+    return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+      userContext: {},
+      ...input,
+    })
+  }
 }
 
-export let init = Wrapper.init;
+export const init = Wrapper.init
 
-export let Error = Wrapper.Error;
+export const Error = Wrapper.Error
 
-export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
+export const createEmailVerificationToken = Wrapper.createEmailVerificationToken
 
-export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
+export const verifyEmailUsingToken = Wrapper.verifyEmailUsingToken
 
-export let isEmailVerified = Wrapper.isEmailVerified;
+export const isEmailVerified = Wrapper.isEmailVerified
 
-export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
+export const revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens
 
-export let unverifyEmail = Wrapper.unverifyEmail;
+export const unverifyEmail = Wrapper.unverifyEmail
 
-export type { RecipeInterface, APIOptions, APIInterface, User };
+export type { RecipeInterface, APIOptions, APIInterface, User }
 
-export let sendEmail = Wrapper.sendEmail;
+export const sendEmail = Wrapper.sendEmail
 
-export { EmailVerificationClaim } from "./emailVerificationClaim";
+export { EmailVerificationClaim } from './emailVerificationClaim'

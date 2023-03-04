@@ -13,19 +13,19 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions, JsonWebKey } from "../types";
-import { GeneralErrorResponse } from "../../../types";
+import { APIInterface, APIOptions, JsonWebKey } from '../types'
+import { GeneralErrorResponse } from '../../../types'
 
 export default function getAPIImplementation(): APIInterface {
-    return {
-        getJWKSGET: async function ({
-            options,
+  return {
+    async getJWKSGET({
+      options,
             userContext,
-        }: {
-            options: APIOptions;
-            userContext: any;
-        }): Promise<{ status: "OK"; keys: JsonWebKey[] } | GeneralErrorResponse> {
-            return await options.recipeImplementation.getJWKS({ userContext });
-        },
-    };
+    }: {
+      options: APIOptions
+      userContext: any
+    }): Promise<{ status: 'OK'; keys: JsonWebKey[] } | GeneralErrorResponse> {
+      return await options.recipeImplementation.getJWKS({ userContext })
+    },
+  }
 }

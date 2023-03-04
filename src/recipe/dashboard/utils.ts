@@ -13,352 +13,354 @@
  * under the License.
  */
 
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import NormalisedURLPath from "../../normalisedURLPath";
-import { HTTPMethod, NormalisedAppinfo } from "../../types";
-import { sendNon200ResponseWithMessage } from "../../utils";
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
+import NormalisedURLPath from '../../normalisedURLPath'
+import { HTTPMethod, NormalisedAppinfo } from '../../types'
+import { sendNon200ResponseWithMessage } from '../../utils'
+import EmailPasswordRecipe from '../emailpassword/recipe'
+import ThirdPartyRecipe from '../thirdparty/recipe'
+import PasswordlessRecipe from '../passwordless/recipe'
+import EmailPassword from '../emailpassword'
+import ThirdParty from '../thirdparty'
+import Passwordless from '../passwordless'
+import ThirdPartyEmailPassword from '../thirdpartyemailpassword'
+import ThirdPartyEmailPasswordRecipe from '../thirdpartyemailpassword/recipe'
+import ThirdPartyPasswordless from '../thirdpartypasswordless'
+import ThirdPartyPasswordlessRecipe from '../thirdpartypasswordless/recipe'
 import {
-    DASHBOARD_API,
-    SIGN_IN_API,
-    SIGN_OUT_API,
-    USERS_COUNT_API,
-    USERS_LIST_GET_API,
-    USER_API,
-    USER_EMAIL_VERIFY_API,
-    USER_EMAIL_VERIFY_TOKEN_API,
-    USER_METADATA_API,
-    USER_PASSWORD_API,
-    USER_SESSIONS_API,
-    VALIDATE_KEY_API,
-} from "./constants";
+  APIInterface,
+  EmailPasswordUser,
+  PasswordlessUser,
+  RecipeIdForUser,
+  RecipeInterface,
+  ThirdPartyUser,
+  TypeInput,
+  TypeNormalisedInput,
+} from './types'
 import {
-    APIInterface,
-    EmailPasswordUser,
-    PasswordlessUser,
-    RecipeIdForUser,
-    RecipeInterface,
-    ThirdPartyUser,
-    TypeInput,
-    TypeNormalisedInput,
-} from "./types";
-import EmailPasswordRecipe from "../emailpassword/recipe";
-import ThirdPartyRecipe from "../thirdparty/recipe";
-import PasswordlessRecipe from "../passwordless/recipe";
-import EmailPassword from "../emailpassword";
-import ThirdParty from "../thirdparty";
-import Passwordless from "../passwordless";
-import ThirdPartyEmailPassword from "../thirdpartyemailpassword";
-import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
-import ThirdPartyPasswordless from "../thirdpartypasswordless";
-import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
+  DASHBOARD_API,
+  SIGN_IN_API,
+  SIGN_OUT_API,
+  USERS_COUNT_API,
+  USERS_LIST_GET_API,
+  USER_API,
+  USER_EMAIL_VERIFY_API,
+  USER_EMAIL_VERIFY_TOKEN_API,
+  USER_METADATA_API,
+  USER_PASSWORD_API,
+  USER_SESSIONS_API,
+  VALIDATE_KEY_API,
+} from './constants'
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
-    let override = {
-        functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...(config === undefined ? {} : config.override),
-    };
+  const override = {
+    functions: (originalImplementation: RecipeInterface) => originalImplementation,
+    apis: (originalImplementation: APIInterface) => originalImplementation,
+    ...(config === undefined ? {} : config.override),
+  }
 
-    return {
-        apiKey: config === undefined ? undefined : config.apiKey,
-        override,
-        authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
-    };
+  return {
+    apiKey: config === undefined ? undefined : config.apiKey,
+    override,
+    authMode: (config !== undefined && config.apiKey) ? 'api-key' : 'email-password',
+  }
 }
 
 export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): boolean {
-    const dashboardRecipeBasePath = appInfo.apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
-    if (!path.startsWith(dashboardRecipeBasePath)) {
-        return false;
-    }
+  const dashboardRecipeBasePath = appInfo.apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API))
+  if (!path.startsWith(dashboardRecipeBasePath))
+    return false
 
-    let pathWithoutDashboardPath = path.getAsStringDangerous().split(DASHBOARD_API)[1];
+  let pathWithoutDashboardPath = path.getAsStringDangerous().split(DASHBOARD_API)[1]
 
-    if (pathWithoutDashboardPath.charAt(0) === "/") {
-        pathWithoutDashboardPath = pathWithoutDashboardPath.substring(1, pathWithoutDashboardPath.length);
-    }
+  if (pathWithoutDashboardPath.charAt(0) === '/')
+    pathWithoutDashboardPath = pathWithoutDashboardPath.substring(1, pathWithoutDashboardPath.length)
 
-    if (pathWithoutDashboardPath.split("/")[0] === "api") {
-        return true;
-    }
+  if (pathWithoutDashboardPath.split('/')[0] === 'api')
+    return true
 
-    return false;
+  return false
 }
 
 export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined {
-    if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === "post") {
-        return VALIDATE_KEY_API;
-    }
+  if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === 'post')
+    return VALIDATE_KEY_API
 
-    if (path.getAsStringDangerous().endsWith(SIGN_IN_API) && method === "post") {
-        return SIGN_IN_API;
-    }
+  if (path.getAsStringDangerous().endsWith(SIGN_IN_API) && method === 'post')
+    return SIGN_IN_API
 
-    if (path.getAsStringDangerous().endsWith(SIGN_OUT_API) && method === "post") {
-        return SIGN_OUT_API;
-    }
+  if (path.getAsStringDangerous().endsWith(SIGN_OUT_API) && method === 'post')
+    return SIGN_OUT_API
 
-    if (path.getAsStringDangerous().endsWith(USERS_LIST_GET_API) && method === "get") {
-        return USERS_LIST_GET_API;
-    }
+  if (path.getAsStringDangerous().endsWith(USERS_LIST_GET_API) && method === 'get')
+    return USERS_LIST_GET_API
 
-    if (path.getAsStringDangerous().endsWith(USERS_COUNT_API) && method === "get") {
-        return USERS_COUNT_API;
-    }
+  if (path.getAsStringDangerous().endsWith(USERS_COUNT_API) && method === 'get')
+    return USERS_COUNT_API
 
-    if (path.getAsStringDangerous().endsWith(USER_API)) {
-        if (method === "get" || method === "delete" || method === "put") {
-            return USER_API;
-        }
-    }
+  if (path.getAsStringDangerous().endsWith(USER_API)) {
+    if (method === 'get' || method === 'delete' || method === 'put')
+      return USER_API
+  }
 
-    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_API)) {
-        if (method === "get" || method === "put") {
-            return USER_EMAIL_VERIFY_API;
-        }
-    }
+  if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_API)) {
+    if (method === 'get' || method === 'put')
+      return USER_EMAIL_VERIFY_API
+  }
 
-    if (path.getAsStringDangerous().endsWith(USER_METADATA_API)) {
-        if (method === "get" || method === "put") {
-            return USER_METADATA_API;
-        }
-    }
+  if (path.getAsStringDangerous().endsWith(USER_METADATA_API)) {
+    if (method === 'get' || method === 'put')
+      return USER_METADATA_API
+  }
 
-    if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API)) {
-        if (method === "get" || method === "post") {
-            return USER_SESSIONS_API;
-        }
-    }
+  if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API)) {
+    if (method === 'get' || method === 'post')
+      return USER_SESSIONS_API
+  }
 
-    if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
-        return USER_PASSWORD_API;
-    }
+  if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === 'put')
+    return USER_PASSWORD_API
 
-    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_TOKEN_API) && method === "post") {
-        return USER_EMAIL_VERIFY_TOKEN_API;
-    }
+  if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_TOKEN_API) && method === 'post')
+    return USER_EMAIL_VERIFY_TOKEN_API
 
-    if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
-        return USER_PASSWORD_API;
-    }
+  if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === 'put')
+    return USER_PASSWORD_API
 
-    return undefined;
+  return undefined
 }
 
 export function sendUnauthorisedAccess(res: BaseResponse) {
-    sendNon200ResponseWithMessage(res, "Unauthorised access", 401);
+  sendNon200ResponseWithMessage(res, 'Unauthorised access', 401)
 }
 
 export function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser {
-    return recipeId === "emailpassword" || recipeId === "thirdparty" || recipeId === "passwordless";
+  return recipeId === 'emailpassword' || recipeId === 'thirdparty' || recipeId === 'passwordless'
 }
 
 export async function getUserForRecipeId(
-    userId: string,
-    recipeId: string
+  userId: string,
+  recipeId: string,
 ): Promise<{
-    user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined;
-    recipe:
-        | "emailpassword"
-        | "thirdparty"
-        | "passwordless"
-        | "thirdpartyemailpassword"
-        | "thirdpartypasswordless"
-        | undefined;
+  user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined
+  recipe:
+  | 'emailpassword'
+  | 'thirdparty'
+  | 'passwordless'
+  | 'thirdpartyemailpassword'
+  | 'thirdpartypasswordless'
+  | undefined
 }> {
-    let user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined;
-    let recipe:
-        | "emailpassword"
-        | "thirdparty"
-        | "passwordless"
-        | "thirdpartyemailpassword"
-        | "thirdpartypasswordless"
-        | undefined;
+  let user: EmailPasswordUser | ThirdPartyUser | PasswordlessUser | undefined
+  let recipe:
+  | 'emailpassword'
+  | 'thirdparty'
+  | 'passwordless'
+  | 'thirdpartyemailpassword'
+  | 'thirdpartypasswordless'
+  | undefined
 
-    if (recipeId === EmailPasswordRecipe.RECIPE_ID) {
-        try {
-            const userResponse = await EmailPassword.getUserById(userId);
+  if (recipeId === EmailPasswordRecipe.RECIPE_ID) {
+    try {
+      const userResponse = await EmailPassword.getUserById(userId)
 
-            if (userResponse !== undefined) {
-                user = {
-                    ...userResponse,
-                    firstName: "",
-                    lastName: "",
-                };
-                recipe = "emailpassword";
-            }
-        } catch (e) {
-            // No - op
+      if (userResponse !== undefined) {
+        user = {
+          ...userResponse,
+          firstName: '',
+          lastName: '',
         }
-
-        if (user === undefined) {
-            try {
-                const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartyemailpassword";
-                }
-            } catch (e) {
-                // No - op
-            }
-        }
-    } else if (recipeId === ThirdPartyRecipe.RECIPE_ID) {
-        try {
-            const userResponse = await ThirdParty.getUserById(userId);
-
-            if (userResponse !== undefined) {
-                user = {
-                    ...userResponse,
-                    firstName: "",
-                    lastName: "",
-                };
-                recipe = "thirdparty";
-            }
-        } catch (e) {
-            // No - op
-        }
-
-        if (user === undefined) {
-            try {
-                const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartyemailpassword";
-                }
-            } catch (e) {
-                // No - op
-            }
-        }
-
-        if (user === undefined) {
-            try {
-                const userResponse = await ThirdPartyPasswordless.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartypasswordless";
-                }
-            } catch (e) {
-                // No - op
-            }
-        }
-    } else if (recipeId === PasswordlessRecipe.RECIPE_ID) {
-        try {
-            const userResponse = await Passwordless.getUserById({
-                userId,
-            });
-
-            if (userResponse !== undefined) {
-                user = {
-                    ...userResponse,
-                    firstName: "",
-                    lastName: "",
-                };
-                recipe = "passwordless";
-            }
-        } catch (e) {
-            // No - op
-        }
-
-        if (user === undefined) {
-            try {
-                const userResponse = await ThirdPartyPasswordless.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        firstName: "",
-                        lastName: "",
-                    };
-                    recipe = "thirdpartypasswordless";
-                }
-            } catch (e) {
-                // No - op
-            }
-        }
+        recipe = 'emailpassword'
+      }
+    }
+    catch (e) {
+      // No - op
     }
 
-    return {
-        user,
-        recipe,
-    };
+    if (user === undefined) {
+      try {
+        const userResponse = await ThirdPartyEmailPassword.getUserById(userId)
+
+        if (userResponse !== undefined) {
+          user = {
+            ...userResponse,
+            firstName: '',
+            lastName: '',
+          }
+          recipe = 'thirdpartyemailpassword'
+        }
+      }
+      catch (e) {
+        // No - op
+      }
+    }
+  }
+  else if (recipeId === ThirdPartyRecipe.RECIPE_ID) {
+    try {
+      const userResponse = await ThirdParty.getUserById(userId)
+
+      if (userResponse !== undefined) {
+        user = {
+          ...userResponse,
+          firstName: '',
+          lastName: '',
+        }
+        recipe = 'thirdparty'
+      }
+    }
+    catch (e) {
+      // No - op
+    }
+
+    if (user === undefined) {
+      try {
+        const userResponse = await ThirdPartyEmailPassword.getUserById(userId)
+
+        if (userResponse !== undefined) {
+          user = {
+            ...userResponse,
+            firstName: '',
+            lastName: '',
+          }
+          recipe = 'thirdpartyemailpassword'
+        }
+      }
+      catch (e) {
+        // No - op
+      }
+    }
+
+    if (user === undefined) {
+      try {
+        const userResponse = await ThirdPartyPasswordless.getUserById(userId)
+
+        if (userResponse !== undefined) {
+          user = {
+            ...userResponse,
+            firstName: '',
+            lastName: '',
+          }
+          recipe = 'thirdpartypasswordless'
+        }
+      }
+      catch (e) {
+        // No - op
+      }
+    }
+  }
+  else if (recipeId === PasswordlessRecipe.RECIPE_ID) {
+    try {
+      const userResponse = await Passwordless.getUserById({
+        userId,
+      })
+
+      if (userResponse !== undefined) {
+        user = {
+          ...userResponse,
+          firstName: '',
+          lastName: '',
+        }
+        recipe = 'passwordless'
+      }
+    }
+    catch (e) {
+      // No - op
+    }
+
+    if (user === undefined) {
+      try {
+        const userResponse = await ThirdPartyPasswordless.getUserById(userId)
+
+        if (userResponse !== undefined) {
+          user = {
+            ...userResponse,
+            firstName: '',
+            lastName: '',
+          }
+          recipe = 'thirdpartypasswordless'
+        }
+      }
+      catch (e) {
+        // No - op
+      }
+    }
+  }
+
+  return {
+    user,
+    recipe,
+  }
 }
 
 export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
-    let isRecipeInitialised = false;
+  let isRecipeInitialised = false
 
-    if (recipeId === "emailpassword") {
-        try {
-            EmailPasswordRecipe.getInstanceOrThrowError();
-            isRecipeInitialised = true;
-        } catch (_) {}
+  if (recipeId === 'emailpassword') {
+    try {
+      EmailPasswordRecipe.getInstanceOrThrowError()
+      isRecipeInitialised = true
+    }
+    catch (_) {}
 
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
-    } else if (recipeId === "passwordless") {
-        try {
-            PasswordlessRecipe.getInstanceOrThrowError();
-            isRecipeInitialised = true;
-        } catch (_) {}
+    if (!isRecipeInitialised) {
+      try {
+        ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError()
+        isRecipeInitialised = true
+      }
+      catch (_) {}
+    }
+  }
+  else if (recipeId === 'passwordless') {
+    try {
+      PasswordlessRecipe.getInstanceOrThrowError()
+      isRecipeInitialised = true
+    }
+    catch (_) {}
 
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
-    } else if (recipeId === "thirdparty") {
-        try {
-            ThirdPartyRecipe.getInstanceOrThrowError();
-            isRecipeInitialised = true;
-        } catch (_) {}
+    if (!isRecipeInitialised) {
+      try {
+        ThirdPartyPasswordlessRecipe.getInstanceOrThrowError()
+        isRecipeInitialised = true
+      }
+      catch (_) {}
+    }
+  }
+  else if (recipeId === 'thirdparty') {
+    try {
+      ThirdPartyRecipe.getInstanceOrThrowError()
+      isRecipeInitialised = true
+    }
+    catch (_) {}
 
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
-
-        if (!isRecipeInitialised) {
-            try {
-                ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-                isRecipeInitialised = true;
-            } catch (_) {}
-        }
+    if (!isRecipeInitialised) {
+      try {
+        ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError()
+        isRecipeInitialised = true
+      }
+      catch (_) {}
     }
 
-    return isRecipeInitialised;
+    if (!isRecipeInitialised) {
+      try {
+        ThirdPartyPasswordlessRecipe.getInstanceOrThrowError()
+        isRecipeInitialised = true
+      }
+      catch (_) {}
+    }
+  }
+
+  return isRecipeInitialised
 }
 
 export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
-    let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
+  let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue('authorization')
 
-    // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
-    apiKeyHeaderValue = apiKeyHeaderValue?.split(" ")[1];
+  // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+  apiKeyHeaderValue = apiKeyHeaderValue?.split(' ')[1]
 
-    if (apiKeyHeaderValue === undefined) {
-        return false;
-    }
+  if (apiKeyHeaderValue === undefined)
+    return false
 
-    return apiKeyHeaderValue === input.config.apiKey;
+  return apiKeyHeaderValue === input.config.apiKey
 }

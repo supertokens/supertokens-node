@@ -13,36 +13,34 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { validateFormFieldsOrThrowError } from "./utils";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import { APIInterface, APIOptions } from '../'
+import { validateFormFieldsOrThrowError } from './utils'
 
 export default async function generatePasswordResetToken(
-    apiImplementation: APIInterface,
-    options: APIOptions
+  apiImplementation: APIInterface,
+  options: APIOptions,
 ): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
+  // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
-    if (apiImplementation.generatePasswordResetTokenPOST === undefined) {
-        return false;
-    }
+  if (apiImplementation.generatePasswordResetTokenPOST === undefined)
+    return false
 
-    // step 1
-    let formFields: {
-        id: string;
-        value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        options.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
-        (await options.req.getJSONBody()).formFields
-    );
+  // step 1
+  const formFields: {
+    id: string
+    value: string
+  }[] = await validateFormFieldsOrThrowError(
+    options.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
+    (await options.req.getJSONBody()).formFields,
+  )
 
-    let result = await apiImplementation.generatePasswordResetTokenPOST({
-        formFields,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const result = await apiImplementation.generatePasswordResetTokenPOST({
+    formFields,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

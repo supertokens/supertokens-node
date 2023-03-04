@@ -12,41 +12,41 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import { NormalisedAppinfo } from "../../../../../types";
-import PasswordlessBackwardCompatibilityService from "../../../../passwordless/smsdelivery/services/backwardCompatibility";
+import { TypeThirdPartyPasswordlessSmsDeliveryInput } from '../../../types'
+import { SmsDeliveryInterface } from '../../../../../ingredients/smsdelivery/types'
+import { NormalisedAppinfo } from '../../../../../types'
+import PasswordlessBackwardCompatibilityService from '../../../../passwordless/smsdelivery/services/backwardCompatibility'
 
 export default class BackwardCompatibilityService
-    implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
-    private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService;
+implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
+  private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        passwordlessFeature?: {
-            createAndSendCustomTextMessage?: (
-                input: {
-                    // Where the message should be delivered.
-                    phoneNumber: string;
-                    // This has to be entered on the starting device  to finish sign in/up
-                    userInputCode?: string;
-                    // Full url that the end-user can click to finish sign in/up
-                    urlWithLinkCode?: string;
-                    codeLifetime: number;
-                    // Unlikely, but someone could display this (or a derived thing) to identify the device
-                    preAuthSessionId: string;
-                },
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
-        this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(
-            appInfo,
-            passwordlessFeature?.createAndSendCustomTextMessage
-        );
-    }
+  constructor(
+    appInfo: NormalisedAppinfo,
+    passwordlessFeature?: {
+      createAndSendCustomTextMessage?: (
+        input: {
+          // Where the message should be delivered.
+          phoneNumber: string
+          // This has to be entered on the starting device  to finish sign in/up
+          userInputCode?: string
+          // Full url that the end-user can click to finish sign in/up
+          urlWithLinkCode?: string
+          codeLifetime: number
+          // Unlikely, but someone could display this (or a derived thing) to identify the device
+          preAuthSessionId: string
+        },
+        userContext: any
+      ) => Promise<void>
+    },
+  ) {
+    this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(
+      appInfo,
+      passwordlessFeature?.createAndSendCustomTextMessage,
+    )
+  }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
-        await this.passwordlessBackwardCompatibilityService.sendSms(input);
-    };
+  sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    await this.passwordlessBackwardCompatibilityService.sendSms(input)
+  }
 }

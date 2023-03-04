@@ -12,27 +12,27 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import OverrideableBuilder from "supertokens-js-override";
+import OverrideableBuilder from 'overrideableBuilder'
 
-export type SmsDeliveryInterface<T> = {
-    sendSms: (input: T & { userContext: any }) => Promise<void>;
-};
+export interface SmsDeliveryInterface<T> {
+  sendSms: (input: T & { userContext: any }) => Promise<void>
+}
 
 /**
  * config class parameter when parent Recipe create a new SmsDeliveryIngredient object via constructor
  */
 export interface TypeInput<T> {
-    service?: SmsDeliveryInterface<T>;
-    override?: (
-        originalImplementation: SmsDeliveryInterface<T>,
-        builder: OverrideableBuilder<SmsDeliveryInterface<T>>
-    ) => SmsDeliveryInterface<T>;
+  service?: SmsDeliveryInterface<T>
+  override?: (
+    originalImplementation: SmsDeliveryInterface<T>,
+    builder: OverrideableBuilder<SmsDeliveryInterface<T>>
+  ) => SmsDeliveryInterface<T>
 }
 
 export interface TypeInputWithService<T> {
-    service: SmsDeliveryInterface<T>;
-    override?: (
-        originalImplementation: SmsDeliveryInterface<T>,
-        builder: OverrideableBuilder<SmsDeliveryInterface<T>>
-    ) => SmsDeliveryInterface<T>;
+  service: SmsDeliveryInterface<T>
+  override?: (
+    originalImplementation: SmsDeliveryInterface<T>,
+    builder: OverrideableBuilder<SmsDeliveryInterface<T>>
+  ) => SmsDeliveryInterface<T>
 }

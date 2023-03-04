@@ -13,141 +13,140 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
-import SuperTokensError from "./error";
-import * as thirdPartyProviders from "../thirdparty/providers";
-import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
-import { TypeProvider } from "../thirdparty/types";
-import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
-export * from "./types";
+import * as thirdPartyProviders from '../thirdparty/providers'
+import { TypeProvider } from '../thirdparty/types'
+import { TypeEmailPasswordEmailDeliveryInput } from '../emailpassword/types'
+import Recipe from './recipe'
+import SuperTokensError from './error'
+import { APIInterface, EmailPasswordAPIOptions, RecipeInterface, ThirdPartyAPIOptions, User } from './types'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static Error = SuperTokensError;
+  static Error = SuperTokensError
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-            userContext,
-        });
-    }
+  static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
+      thirdPartyId,
+      thirdPartyUserId,
+      email,
+      userContext,
+    })
+  }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
-            userContext,
-        });
-    }
+  static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
+      thirdPartyId,
+      thirdPartyUserId,
+      userContext,
+    })
+  }
 
-    static emailPasswordSignUp(email: string, password: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
-            email,
-            password,
-            userContext,
-        });
-    }
+  static emailPasswordSignUp(email: string, password: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
+      email,
+      password,
+      userContext,
+    })
+  }
 
-    static emailPasswordSignIn(email: string, password: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
-            email,
-            password,
-            userContext,
-        });
-    }
+  static emailPasswordSignIn(email: string, password: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
+      email,
+      password,
+      userContext,
+    })
+  }
 
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
+  static getUserById(userId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext })
+  }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
+  static getUsersByEmail(email: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext })
+  }
 
-    static createResetPasswordToken(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId, userContext });
-    }
+  static createResetPasswordToken(userId: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId, userContext })
+  }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
-            token,
-            newPassword,
-            userContext,
-        });
-    }
+  static resetPasswordUsingToken(token: string, newPassword: string, userContext: any = {}) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
+      token,
+      newPassword,
+      userContext,
+    })
+  }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
-            userContext: {},
-            ...input,
-        });
-    }
+  static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
+    return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
+      userContext: {},
+      ...input,
+    })
+  }
 
-    static Google = thirdPartyProviders.Google;
+  static Google = thirdPartyProviders.Google
 
-    static Github = thirdPartyProviders.Github;
+  static Github = thirdPartyProviders.Github
 
-    static Facebook = thirdPartyProviders.Facebook;
+  static Facebook = thirdPartyProviders.Facebook
 
-    static Apple = thirdPartyProviders.Apple;
+  static Apple = thirdPartyProviders.Apple
 
-    static Discord = thirdPartyProviders.Discord;
+  static Discord = thirdPartyProviders.Discord
 
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
+  static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces
 
-    // static Okta = thirdPartyProviders.Okta;
+  // static Okta = thirdPartyProviders.Okta;
 
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
+  // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
-        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
-            ...input,
-        });
-    }
+  static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
+    return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
+      userContext: {},
+      ...input,
+    })
+  }
 }
 
-export let init = Wrapper.init;
+export const init = Wrapper.init
 
-export let Error = Wrapper.Error;
+export const Error = Wrapper.Error
 
-export let emailPasswordSignUp = Wrapper.emailPasswordSignUp;
+export const emailPasswordSignUp = Wrapper.emailPasswordSignUp
 
-export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
+export const emailPasswordSignIn = Wrapper.emailPasswordSignIn
 
-export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
+export const thirdPartySignInUp = Wrapper.thirdPartySignInUp
 
-export let getUserById = Wrapper.getUserById;
+export const getUserById = Wrapper.getUserById
 
-export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
+export const getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo
 
-export let getUsersByEmail = Wrapper.getUsersByEmail;
+export const getUsersByEmail = Wrapper.getUsersByEmail
 
-export let createResetPasswordToken = Wrapper.createResetPasswordToken;
+export const createResetPasswordToken = Wrapper.createResetPasswordToken
 
-export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
+export const resetPasswordUsingToken = Wrapper.resetPasswordUsingToken
 
-export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
+export const updateEmailOrPassword = Wrapper.updateEmailOrPassword
 
-export let Google = Wrapper.Google;
+export const Google = Wrapper.Google
 
-export let Github = Wrapper.Github;
+export const Github = Wrapper.Github
 
-export let Facebook = Wrapper.Facebook;
+export const Facebook = Wrapper.Facebook
 
-export let Apple = Wrapper.Apple;
+export const Apple = Wrapper.Apple
 
-export let Discord = Wrapper.Discord;
+export const Discord = Wrapper.Discord
 
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+export const GoogleWorkspaces = Wrapper.GoogleWorkspaces
 
 // export let Okta = Wrapper.Okta;
 
 // export let ActiveDirectory = Wrapper.ActiveDirectory;
 
-export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions }
 
-export let sendEmail = Wrapper.sendEmail;
+export const sendEmail = Wrapper.sendEmail

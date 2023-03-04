@@ -13,103 +13,102 @@
  * under the License.
  */
 
-import { PermissionClaim } from "./permissionClaim";
-import Recipe from "./recipe";
-import { RecipeInterface } from "./types";
-import { UserRoleClaim } from "./userRoleClaim";
-export * from "./types";
+import { PermissionClaim } from './permissionClaim'
+import Recipe from './recipe'
+import { RecipeInterface } from './types'
+import { UserRoleClaim } from './userRoleClaim'
 
 export default class Wrapper {
-    static init = Recipe.init;
-    static PermissionClaim = PermissionClaim;
-    static UserRoleClaim = UserRoleClaim;
+  static init = Recipe.init
+  static PermissionClaim = PermissionClaim
+  static UserRoleClaim = UserRoleClaim
 
-    static async addRoleToUser(userId: string, role: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addRoleToUser({
-            userId,
-            role,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async addRoleToUser(userId: string, role: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addRoleToUser({
+      userId,
+      role,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async removeUserRole(userId: string, role: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeUserRole({
-            userId,
-            role,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async removeUserRole(userId: string, role: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeUserRole({
+      userId,
+      role,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async getRolesForUser(userId: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesForUser({
-            userId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async getRolesForUser(userId: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesForUser({
+      userId,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async getUsersThatHaveRole(role: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersThatHaveRole({
-            role,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async getUsersThatHaveRole(role: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersThatHaveRole({
+      role,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async createNewRoleOrAddPermissions(role: string, permissions: string[], userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewRoleOrAddPermissions({
-            role,
-            permissions,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async createNewRoleOrAddPermissions(role: string, permissions: string[], userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewRoleOrAddPermissions({
+      role,
+      permissions,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async getPermissionsForRole(role: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPermissionsForRole({
-            role,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async getPermissionsForRole(role: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPermissionsForRole({
+      role,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async removePermissionsFromRole(role: string, permissions: string[], userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removePermissionsFromRole({
-            role,
-            permissions,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async removePermissionsFromRole(role: string, permissions: string[], userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removePermissionsFromRole({
+      role,
+      permissions,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async getRolesThatHavePermission(permission: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesThatHavePermission({
-            permission,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async getRolesThatHavePermission(permission: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesThatHavePermission({
+      permission,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async deleteRole(role: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteRole({
-            role,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async deleteRole(role: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteRole({
+      role,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async getAllRoles(userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllRoles({
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async getAllRoles(userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllRoles({
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 }
 
-export const init = Wrapper.init;
-export const addRoleToUser = Wrapper.addRoleToUser;
-export const removeUserRole = Wrapper.removeUserRole;
-export const getRolesForUser = Wrapper.getRolesForUser;
-export const getUsersThatHaveRole = Wrapper.getUsersThatHaveRole;
-export const createNewRoleOrAddPermissions = Wrapper.createNewRoleOrAddPermissions;
-export const getPermissionsForRole = Wrapper.getPermissionsForRole;
-export const removePermissionsFromRole = Wrapper.removePermissionsFromRole;
-export const getRolesThatHavePermission = Wrapper.getRolesThatHavePermission;
-export const deleteRole = Wrapper.deleteRole;
-export const getAllRoles = Wrapper.getAllRoles;
-export { UserRoleClaim } from "./userRoleClaim";
-export { PermissionClaim } from "./permissionClaim";
+export const init = Wrapper.init
+export const addRoleToUser = Wrapper.addRoleToUser
+export const removeUserRole = Wrapper.removeUserRole
+export const getRolesForUser = Wrapper.getRolesForUser
+export const getUsersThatHaveRole = Wrapper.getUsersThatHaveRole
+export const createNewRoleOrAddPermissions = Wrapper.createNewRoleOrAddPermissions
+export const getPermissionsForRole = Wrapper.getPermissionsForRole
+export const removePermissionsFromRole = Wrapper.removePermissionsFromRole
+export const getRolesThatHavePermission = Wrapper.getRolesThatHavePermission
+export const deleteRole = Wrapper.deleteRole
+export const getAllRoles = Wrapper.getAllRoles
+export { UserRoleClaim } from './userRoleClaim'
+export { PermissionClaim } from './permissionClaim'
 
-export type { RecipeInterface };
+export type { RecipeInterface }

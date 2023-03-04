@@ -13,71 +13,69 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "..";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '..'
 
 export default async function consumeCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.consumeCodePOST === undefined) {
-        return false;
+  if (apiImplementation.consumeCodePOST === undefined)
+    return false
+
+  const body = await options.req.getJSONBody()
+  const preAuthSessionId = body.preAuthSessionId
+  const linkCode = body.linkCode
+  const deviceId = body.deviceId
+  const userInputCode = body.userInputCode
+
+  if (preAuthSessionId === undefined) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide preAuthSessionId',
+    })
+  }
+
+  if (deviceId !== undefined || userInputCode !== undefined) {
+    if (linkCode !== undefined) {
+      throw new STError({
+        type: STError.BAD_INPUT_ERROR,
+        message: 'Please provide one of (linkCode) or (deviceId+userInputCode) and not both',
+      })
     }
-
-    const body = await options.req.getJSONBody();
-    const preAuthSessionId = body.preAuthSessionId;
-    const linkCode = body.linkCode;
-    const deviceId = body.deviceId;
-    const userInputCode = body.userInputCode;
-
-    if (preAuthSessionId === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide preAuthSessionId",
-        });
+    if (deviceId === undefined || userInputCode === undefined) {
+      throw new STError({
+        type: STError.BAD_INPUT_ERROR,
+        message: 'Please provide both deviceId and userInputCode',
+      })
     }
+  }
+  else if (linkCode === undefined) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide one of (linkCode) or (deviceId+userInputCode) and not both',
+    })
+  }
 
-    if (deviceId !== undefined || userInputCode !== undefined) {
-        if (linkCode !== undefined) {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide one of (linkCode) or (deviceId+userInputCode) and not both",
-            });
+  const userContext = makeDefaultUserContextFromAPI(options.req)
+  const result = await apiImplementation.consumeCodePOST(
+    deviceId !== undefined
+      ? {
+          deviceId,
+          userInputCode,
+          preAuthSessionId,
+          options,
+          userContext,
         }
-        if (deviceId === undefined || userInputCode === undefined) {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide both deviceId and userInputCode",
-            });
-        }
-    } else if (linkCode === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide one of (linkCode) or (deviceId+userInputCode) and not both",
-        });
-    }
+      : {
+          linkCode,
+          options,
+          preAuthSessionId,
+          userContext,
+        },
+  )
 
-    const userContext = makeDefaultUserContextFromAPI(options.req);
-    let result = await apiImplementation.consumeCodePOST(
-        deviceId !== undefined
-            ? {
-                  deviceId,
-                  userInputCode,
-                  preAuthSessionId,
-                  options,
-                  userContext,
-              }
-            : {
-                  linkCode,
-                  options,
-                  preAuthSessionId,
-                  userContext,
-              }
-    );
+  if (result.status === 'OK')
+    delete (result as any).session
 
-    if (result.status === "OK") {
-        delete (result as any).session;
-    }
-
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

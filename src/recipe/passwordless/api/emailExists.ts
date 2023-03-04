@@ -13,31 +13,29 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '../'
 
 export default async function emailExists(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.emailExistsGET === undefined) {
-        return false;
-    }
+  if (apiImplementation.emailExistsGET === undefined)
+    return false
 
-    let email = options.req.getKeyValueFromQuery("email");
+  const email = options.req.getKeyValueFromQuery('email')
 
-    if (email === undefined || typeof email !== "string") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the email as a GET param",
-        });
-    }
+  if (email === undefined || typeof email !== 'string') {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide the email as a GET param',
+    })
+  }
 
-    let result = await apiImplementation.emailExistsGET({
-        email,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const result = await apiImplementation.emailExistsGET({
+    email,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

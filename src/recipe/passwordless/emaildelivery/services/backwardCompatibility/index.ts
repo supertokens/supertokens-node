@@ -12,135 +12,137 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessEmailDeliveryInput } from "../../../types";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import axios, { AxiosError } from "axios";
-import { NormalisedAppinfo } from "../../../../../types";
-import { logDebugMessage } from "../../../../../logger";
+import axios, { AxiosError } from 'axios'
+import { TypePasswordlessEmailDeliveryInput } from '../../../types'
+import { EmailDeliveryInterface } from '../../../../../ingredients/emaildelivery/types'
+import { NormalisedAppinfo } from '../../../../../types'
+import { logDebugMessage } from '../../../../../logger'
 
 function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
-    return async (
-        input: {
-            // Where the message should be delivered.
-            email: string;
-            // This has to be entered on the starting device  to finish sign in/up
-            userInputCode?: string;
-            // Full url that the end-user can click to finish sign in/up
-            urlWithLinkCode?: string;
-            codeLifetime: number;
+  return async (
+    input: {
+      // Where the message should be delivered.
+      email: string
+      // This has to be entered on the starting device  to finish sign in/up
+      userInputCode?: string
+      // Full url that the end-user can click to finish sign in/up
+      urlWithLinkCode?: string
+      codeLifetime: number
+    },
+    _: any,
+  ): Promise<void> => {
+    if (process.env.TEST_MODE === 'testing')
+      return
+
+    try {
+      await axios({
+        method: 'POST',
+        url: 'https://api.supertokens.io/0/st/auth/passwordless/login',
+        data: {
+          email: input.email,
+          appName: appInfo.appName,
+          codeLifetime: input.codeLifetime,
+          urlWithLinkCode: input.urlWithLinkCode,
+          userInputCode: input.userInputCode,
         },
-        _: any
-    ): Promise<void> => {
-        if (process.env.TEST_MODE === "testing") {
-            return;
+        headers: {
+          'api-version': 0,
+        },
+      })
+      logDebugMessage(`Email sent to ${input.email}`)
+    }
+    catch (error) {
+      logDebugMessage('Error sending passwordless login email')
+      if (axios.isAxiosError(error)) {
+        const err = error as AxiosError
+        if (err.response) {
+          logDebugMessage(`Error status: ${err.response.status}`)
+          logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`)
         }
-        try {
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.io/0/st/auth/passwordless/login",
-                data: {
-                    email: input.email,
-                    appName: appInfo.appName,
-                    codeLifetime: input.codeLifetime,
-                    urlWithLinkCode: input.urlWithLinkCode,
-                    userInputCode: input.userInputCode,
-                },
-                headers: {
-                    "api-version": 0,
-                },
-            });
-            logDebugMessage(`Email sent to ${input.email}`);
-        } catch (error) {
-            logDebugMessage("Error sending passwordless login email");
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                if (err.response) {
-                    logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
-                } else {
-                    logDebugMessage(`Error: ${err.message}`);
-                }
-            } else {
-                logDebugMessage(`Error: ${JSON.stringify(error)}`);
-            }
-            logDebugMessage("Logging the input below:");
-            logDebugMessage(
-                JSON.stringify(
-                    {
-                        email: input.email,
-                        appName: appInfo.appName,
-                        codeLifetime: input.codeLifetime,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        userInputCode: input.userInputCode,
-                    },
-                    null,
-                    2
-                )
-            );
-            /**
+        else {
+          logDebugMessage(`Error: ${err.message}`)
+        }
+      }
+      else {
+        logDebugMessage(`Error: ${JSON.stringify(error)}`)
+      }
+      logDebugMessage('Logging the input below:')
+      logDebugMessage(
+        JSON.stringify(
+          {
+            email: input.email,
+            appName: appInfo.appName,
+            codeLifetime: input.codeLifetime,
+            urlWithLinkCode: input.urlWithLinkCode,
+            userInputCode: input.userInputCode,
+          },
+          null,
+          2,
+        ),
+      )
+      /**
              * if the error is thrown from API, the response object
              * will be of type `{err: string}`
              */
-            if (axios.isAxiosError(error) && error.response !== undefined) {
-                if (error.response.data.err !== undefined) {
-                    throw Error(error.response.data.err);
-                }
-            }
-            throw error;
-        }
-    };
+      if (axios.isAxiosError(error) && error.response !== undefined) {
+        if (error.response.data.err !== undefined)
+          throw new Error(error.response.data.err)
+      }
+      throw error
+    }
+  }
 }
 
 export default class BackwardCompatibilityService
-    implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
-    private createAndSendCustomEmail: (
-        input: {
-            // Where the message should be delivered.
-            email: string;
-            // This has to be entered on the starting device  to finish sign in/up
-            userInputCode?: string;
-            // Full url that the end-user can click to finish sign in/up
-            urlWithLinkCode?: string;
-            codeLifetime: number;
-            // Unlikely, but someone could display this (or a derived thing) to identify the device
-            preAuthSessionId: string;
-        },
-        userContext: any
-    ) => Promise<void>;
+implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
+  private createAndSendCustomEmail: (
+    input: {
+      // Where the message should be delivered.
+      email: string
+      // This has to be entered on the starting device  to finish sign in/up
+      userInputCode?: string
+      // Full url that the end-user can click to finish sign in/up
+      urlWithLinkCode?: string
+      codeLifetime: number
+      // Unlikely, but someone could display this (or a derived thing) to identify the device
+      preAuthSessionId: string
+    },
+    userContext: any
+  ) => Promise<void>
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        createAndSendCustomEmail?: (
-            input: {
-                // Where the message should be delivered.
-                email: string;
-                // This has to be entered on the starting device  to finish sign in/up
-                userInputCode?: string;
-                // Full url that the end-user can click to finish sign in/up
-                urlWithLinkCode?: string;
-                codeLifetime: number;
-                // Unlikely, but someone could display this (or a derived thing) to identify the device
-                preAuthSessionId: string;
-            },
-            userContext: any
-        ) => Promise<void>
-    ) {
-        this.createAndSendCustomEmail =
-            createAndSendCustomEmail === undefined
-                ? defaultCreateAndSendCustomEmail(appInfo)
-                : createAndSendCustomEmail;
-    }
+  constructor(
+    appInfo: NormalisedAppinfo,
+    createAndSendCustomEmail?: (
+      input: {
+        // Where the message should be delivered.
+        email: string
+        // This has to be entered on the starting device  to finish sign in/up
+        userInputCode?: string
+        // Full url that the end-user can click to finish sign in/up
+        urlWithLinkCode?: string
+        codeLifetime: number
+        // Unlikely, but someone could display this (or a derived thing) to identify the device
+        preAuthSessionId: string
+      },
+      userContext: any
+    ) => Promise<void>,
+  ) {
+    this.createAndSendCustomEmail
+            = createAndSendCustomEmail === undefined
+        ? defaultCreateAndSendCustomEmail(appInfo)
+        : createAndSendCustomEmail
+  }
 
-    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
-        await this.createAndSendCustomEmail(
-            {
-                email: input.email,
-                userInputCode: input.userInputCode,
-                urlWithLinkCode: input.urlWithLinkCode,
-                preAuthSessionId: input.preAuthSessionId,
-                codeLifetime: input.codeLifetime,
-            },
-            input.userContext
-        );
-    };
+  sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
+    await this.createAndSendCustomEmail(
+      {
+        email: input.email,
+        userInputCode: input.userInputCode,
+        urlWithLinkCode: input.urlWithLinkCode,
+        preAuthSessionId: input.preAuthSessionId,
+        codeLifetime: input.codeLifetime,
+      },
+      input.userContext,
+    )
+  }
 }

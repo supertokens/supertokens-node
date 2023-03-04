@@ -12,19 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";
-import EmailPasswordSMTPService from "../../../../emailpassword/emaildelivery/services/smtp";
+import { TypeInput } from '../../../../../ingredients/emaildelivery/services/smtp'
+import { EmailDeliveryInterface } from '../../../../../ingredients/emaildelivery/types'
+import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from '../../../types'
+import EmailPasswordSMTPService from '../../../../emailpassword/emaildelivery/services/smtp'
 
 export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
-    private emailPasswordSMTPService: EmailPasswordSMTPService;
+  private emailPasswordSMTPService: EmailPasswordSMTPService
 
-    constructor(config: TypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>) {
-        this.emailPasswordSMTPService = new EmailPasswordSMTPService(config);
-    }
+  constructor(config: TypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>) {
+    this.emailPasswordSMTPService = new EmailPasswordSMTPService(config)
+  }
 
-    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        await this.emailPasswordSMTPService.sendEmail(input);
-    };
+  sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    await this.emailPasswordSMTPService.sendEmail(input)
+  }
 }

@@ -12,18 +12,18 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
-import PasswordlessSupertokensService from "../../../../passwordless/smsdelivery/services/supertokens";
+import { SmsDeliveryInterface } from '../../../../../ingredients/smsdelivery/types'
+import { TypeThirdPartyPasswordlessSmsDeliveryInput } from '../../../types'
+import PasswordlessSupertokensService from '../../../../passwordless/smsdelivery/services/supertokens'
 
 export default class SupertokensService implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
-    private passwordlessSupertokensService: PasswordlessSupertokensService;
+  private passwordlessSupertokensService: PasswordlessSupertokensService
 
-    constructor(apiKey: string) {
-        this.passwordlessSupertokensService = new PasswordlessSupertokensService(apiKey);
-    }
+  constructor(apiKey: string) {
+    this.passwordlessSupertokensService = new PasswordlessSupertokensService(apiKey)
+  }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
-        await this.passwordlessSupertokensService.sendSms(input);
-    };
+  sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    await this.passwordlessSupertokensService.sendSms(input)
+  }
 }

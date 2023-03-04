@@ -12,206 +12,204 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseRequest } from "../../framework/request";
-import { BaseResponse } from "../../framework/response";
-import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
-import STError from "./error";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
-import { Helpers } from "./recipeImplementation";
+import { BaseRequest } from '../../framework/request'
+import { BaseResponse } from '../../framework/response'
+import { clearSession, setFrontTokenInHeaders, setToken } from './cookieAndHeaders'
+import STError from './error'
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from './types'
+import { Helpers } from './recipeImplementation'
 
 export default class Session implements SessionContainerInterface {
-    constructor(
-        protected helpers: Helpers,
-        protected accessToken: string,
-        protected sessionHandle: string,
-        protected userId: string,
-        protected userDataInAccessToken: any,
-        protected res: BaseResponse,
-        protected readonly req: BaseRequest,
-        protected readonly transferMethod: TokenTransferMethod
-    ) {}
+  constructor(
+    protected helpers: Helpers,
+    protected accessToken: string,
+    protected sessionHandle: string,
+    protected userId: string,
+    protected userDataInAccessToken: any,
+    protected res: BaseResponse,
+    protected readonly req: BaseRequest,
+    protected readonly transferMethod: TokenTransferMethod,
+  ) {}
 
-    async revokeSession(userContext?: any) {
-        await this.helpers.getRecipeImpl().revokeSession({
-            sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
-        });
+  async revokeSession(userContext?: any) {
+    await this.helpers.getRecipeImpl().revokeSession({
+      sessionHandle: this.sessionHandle,
+      userContext: userContext === undefined ? {} : userContext,
+    })
 
-        // we do not check the output of calling revokeSession
-        // before clearing the cookies because we are revoking the
-        // current API request's session.
-        // If we instead clear the cookies only when revokeSession
-        // returns true, it can cause this kind of a bug:
-        // https://github.com/supertokens/supertokens-node/issues/343
-        clearSession(this.helpers.config, this.res, this.transferMethod);
+    // we do not check the output of calling revokeSession
+    // before clearing the cookies because we are revoking the
+    // current API request's session.
+    // If we instead clear the cookies only when revokeSession
+    // returns true, it can cause this kind of a bug:
+    // https://github.com/supertokens/supertokens-node/issues/343
+    clearSession(this.helpers.config, this.res, this.transferMethod)
+  }
+
+  async getSessionData(userContext?: any): Promise<any> {
+    const sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
+      sessionHandle: this.sessionHandle,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+    if (sessionInfo === undefined) {
+      throw new STError({
+        message: 'Session does not exist anymore',
+        type: STError.UNAUTHORISED,
+      })
+    }
+    return sessionInfo.sessionData
+  }
+
+  async updateSessionData(newSessionData: any, userContext?: any) {
+    if (
+      !(await this.helpers.getRecipeImpl().updateSessionData({
+        sessionHandle: this.sessionHandle,
+        newSessionData,
+        userContext: userContext === undefined ? {} : userContext,
+      }))
+    ) {
+      throw new STError({
+        message: 'Session does not exist anymore',
+        type: STError.UNAUTHORISED,
+      })
+    }
+  }
+
+  getUserId(_userContext?: any) {
+    return this.userId
+  }
+
+  getAccessTokenPayload(_userContext?: any) {
+    return this.userDataInAccessToken
+  }
+
+  getHandle() {
+    return this.sessionHandle
+  }
+
+  getAccessToken() {
+    return this.accessToken
+  }
+
+  // Any update to this function should also be reflected in the respective JWT version
+  async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
+    const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate }
+    for (const key of Object.keys(accessTokenPayloadUpdate)) {
+      if (accessTokenPayloadUpdate[key] === null)
+        delete updatedPayload[key]
     }
 
-    async getSessionData(userContext?: any): Promise<any> {
-        let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
-            sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (sessionInfo === undefined) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
-        return sessionInfo.sessionData;
+    await this.updateAccessTokenPayload(updatedPayload, userContext)
+  }
+
+  async getTimeCreated(userContext?: any): Promise<number> {
+    const sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
+      sessionHandle: this.sessionHandle,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+    if (sessionInfo === undefined) {
+      throw new STError({
+        message: 'Session does not exist anymore',
+        type: STError.UNAUTHORISED,
+      })
     }
+    return sessionInfo.timeCreated
+  }
 
-    async updateSessionData(newSessionData: any, userContext?: any) {
-        if (
-            !(await this.helpers.getRecipeImpl().updateSessionData({
-                sessionHandle: this.sessionHandle,
-                newSessionData,
-                userContext: userContext === undefined ? {} : userContext,
-            }))
-        ) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
+  async getExpiry(userContext?: any): Promise<number> {
+    const sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
+      sessionHandle: this.sessionHandle,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+    if (sessionInfo === undefined) {
+      throw new STError({
+        message: 'Session does not exist anymore',
+        type: STError.UNAUTHORISED,
+      })
     }
+    return sessionInfo.expiry
+  }
 
-    getUserId(_userContext?: any) {
-        return this.userId;
+  // Any update to this function should also be reflected in the respective JWT version
+  async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+    const validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
+      accessTokenPayload: this.getAccessTokenPayload(userContext),
+      userId: this.getUserId(userContext),
+      claimValidators,
+      userContext,
+    })
+
+    if (validateClaimResponse.accessTokenPayloadUpdate !== undefined)
+      await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext)
+
+    if (validateClaimResponse.invalidClaims.length !== 0) {
+      throw new STError({
+        type: 'INVALID_CLAIMS',
+        message: 'INVALID_CLAIMS',
+        payload: validateClaimResponse.invalidClaims,
+      })
     }
+  }
 
-    getAccessTokenPayload(_userContext?: any) {
-        return this.userDataInAccessToken;
-    }
+  // Any update to this function should also be reflected in the respective JWT version
+  async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
+    const update = await claim.build(this.getUserId(userContext), userContext)
+    return this.mergeIntoAccessTokenPayload(update, userContext)
+  }
 
-    getHandle() {
-        return this.sessionHandle;
-    }
+  // Any update to this function should also be reflected in the respective JWT version
+  setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
+    const update = claim.addToPayload_internal({}, value, userContext)
+    return this.mergeIntoAccessTokenPayload(update, userContext)
+  }
 
-    getAccessToken() {
-        return this.accessToken;
-    }
+  // Any update to this function should also be reflected in the respective JWT version
+  async getClaimValue<T>(claim: SessionClaim<T>, userContext?: any) {
+    return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext)
+  }
 
-    // Any update to this function should also be reflected in the respective JWT version
-    async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
-        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
-        for (const key of Object.keys(accessTokenPayloadUpdate)) {
-            if (accessTokenPayloadUpdate[key] === null) {
-                delete updatedPayload[key];
-            }
-        }
+  // Any update to this function should also be reflected in the respective JWT version
+  removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
+    const update = claim.removeFromPayloadByMerge_internal({}, userContext)
+    return this.mergeIntoAccessTokenPayload(update, userContext)
+  }
 
-        await this.updateAccessTokenPayload(updatedPayload, userContext);
-    }
-
-    async getTimeCreated(userContext?: any): Promise<number> {
-        let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
-            sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (sessionInfo === undefined) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
-        return sessionInfo.timeCreated;
-    }
-
-    async getExpiry(userContext?: any): Promise<number> {
-        let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
-            sessionHandle: this.sessionHandle,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (sessionInfo === undefined) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
-        return sessionInfo.expiry;
-    }
-
-    // Any update to this function should also be reflected in the respective JWT version
-    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
-        let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
-            accessTokenPayload: this.getAccessTokenPayload(userContext),
-            userId: this.getUserId(userContext),
-            claimValidators,
-            userContext,
-        });
-
-        if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
-            await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
-        }
-
-        if (validateClaimResponse.invalidClaims.length !== 0) {
-            throw new STError({
-                type: "INVALID_CLAIMS",
-                message: "INVALID_CLAIMS",
-                payload: validateClaimResponse.invalidClaims,
-            });
-        }
-    }
-
-    // Any update to this function should also be reflected in the respective JWT version
-    async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        const update = await claim.build(this.getUserId(userContext), userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    // Any update to this function should also be reflected in the respective JWT version
-    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
-        const update = claim.addToPayload_internal({}, value, userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    // Any update to this function should also be reflected in the respective JWT version
-    async getClaimValue<T>(claim: SessionClaim<T>, userContext?: any) {
-        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
-    }
-
-    // Any update to this function should also be reflected in the respective JWT version
-    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
-        const update = claim.removeFromPayloadByMerge_internal({}, userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    /**
+  /**
      * @deprecated Use mergeIntoAccessTokenPayload
      */
-    async updateAccessTokenPayload(newAccessTokenPayload: any, userContext: any): Promise<void> {
-        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
-            accessToken: this.getAccessToken(),
-            newAccessTokenPayload,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (response === undefined) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
-        this.userDataInAccessToken = response.session.userDataInJWT;
-        if (response.accessToken !== undefined) {
-            this.accessToken = response.accessToken.token;
-            setFrontTokenInHeaders(
-                this.res,
-                response.session.userId,
-                response.accessToken.expiry,
-                response.session.userDataInJWT
-            );
-            setToken(
-                this.helpers.config,
-                this.res,
-                "access",
-                response.accessToken.token,
-                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                Date.now() + 3153600000000,
-                this.transferMethod
-            );
-        }
+  async updateAccessTokenPayload(newAccessTokenPayload: any, userContext: any): Promise<void> {
+    const response = await this.helpers.getRecipeImpl().regenerateAccessToken({
+      accessToken: this.getAccessToken(),
+      newAccessTokenPayload,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+    if (response === undefined) {
+      throw new STError({
+        message: 'Session does not exist anymore',
+        type: STError.UNAUTHORISED,
+      })
     }
+    this.userDataInAccessToken = response.session.userDataInJWT
+    if (response.accessToken !== undefined) {
+      this.accessToken = response.accessToken.token
+      setFrontTokenInHeaders(
+        this.res,
+        response.session.userId,
+        response.accessToken.expiry,
+        response.session.userDataInJWT,
+      )
+      setToken(
+        this.helpers.config,
+        this.res,
+        'access',
+        response.accessToken.token,
+        // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+        // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+        // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+        // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+        Date.now() + 3153600000000,
+        this.transferMethod,
+      )
+    }
+  }
 }

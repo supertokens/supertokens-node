@@ -13,52 +13,52 @@
  * under the License.
  */
 
-import STError from "../../error";
-import { ClaimValidationError } from "./types";
+import STError from '../../error'
+import { ClaimValidationError } from './types'
 
 export default class SessionError extends STError {
-    static UNAUTHORISED: "UNAUTHORISED" = "UNAUTHORISED";
-    static TRY_REFRESH_TOKEN: "TRY_REFRESH_TOKEN" = "TRY_REFRESH_TOKEN";
-    static TOKEN_THEFT_DETECTED: "TOKEN_THEFT_DETECTED" = "TOKEN_THEFT_DETECTED";
-    static INVALID_CLAIMS: "INVALID_CLAIMS" = "INVALID_CLAIMS";
+  static UNAUTHORISED = 'UNAUTHORISED' as const
+  static TRY_REFRESH_TOKEN = 'TRY_REFRESH_TOKEN' as const
+  static TOKEN_THEFT_DETECTED = 'TOKEN_THEFT_DETECTED' as const
+  static INVALID_CLAIMS = 'INVALID_CLAIMS' as const
 
-    constructor(
-        options:
+  constructor(
+    options:
             | {
-                  message: string;
-                  type: "UNAUTHORISED";
-                  payload?: {
-                      clearTokens: boolean;
-                  };
+              message: string
+              type: 'UNAUTHORISED'
+              payload?: {
+                clearTokens: boolean
               }
+            }
             | {
-                  message: string;
-                  type: "TRY_REFRESH_TOKEN";
-              }
+              message: string
+              type: 'TRY_REFRESH_TOKEN'
+            }
             | {
-                  message: string;
-                  type: "TOKEN_THEFT_DETECTED";
-                  payload: {
-                      userId: string;
-                      sessionHandle: string;
-                  };
+              message: string
+              type: 'TOKEN_THEFT_DETECTED'
+              payload: {
+                userId: string
+                sessionHandle: string
               }
+            }
             | {
-                  message: string;
-                  type: "INVALID_CLAIMS";
-                  payload: ClaimValidationError[];
-              }
-    ) {
-        super(
-            options.type === "UNAUTHORISED" && options.payload === undefined
-                ? {
-                      ...options,
-                      payload: {
-                          clearTokens: true,
-                      },
-                  }
-                : { ...options }
-        );
-        this.fromRecipe = "session";
-    }
+              message: string
+              type: 'INVALID_CLAIMS'
+              payload: ClaimValidationError[]
+            },
+  ) {
+    super(
+      (options.type === 'UNAUTHORISED' && options.payload === undefined)
+        ? {
+            ...options,
+            payload: {
+              clearTokens: true,
+            },
+          }
+        : { ...options },
+    )
+    this.fromRecipe = 'session'
+  }
 }

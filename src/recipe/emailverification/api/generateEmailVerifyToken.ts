@@ -13,34 +13,33 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
-import Session from "../../session";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import { APIInterface, APIOptions } from '../'
+import Session from '../../session'
 
 export default async function generateEmailVerifyToken(
-    apiImplementation: APIInterface,
-    options: APIOptions
+  apiImplementation: APIInterface,
+  options: APIOptions,
 ): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
+  // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
-    if (apiImplementation.generateEmailVerifyTokenPOST === undefined) {
-        return false;
-    }
-    const userContext = makeDefaultUserContextFromAPI(options.req);
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        { overrideGlobalClaimValidators: () => [] },
-        userContext
-    );
+  if (apiImplementation.generateEmailVerifyTokenPOST === undefined)
+    return false
 
-    const result = await apiImplementation.generateEmailVerifyTokenPOST({
-        options,
-        session: session!,
-        userContext,
-    });
+  const userContext = makeDefaultUserContextFromAPI(options.req)
+  const session = await Session.getSession(
+    options.req,
+    options.res,
+    { overrideGlobalClaimValidators: () => [] },
+    userContext,
+  )
 
-    send200Response(options.res, result);
-    return true;
+  const result = await apiImplementation.generateEmailVerifyTokenPOST({
+    options,
+    session: session!,
+    userContext,
+  })
+
+  send200Response(options.res, result)
+  return true
 }

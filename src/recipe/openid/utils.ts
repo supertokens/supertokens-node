@@ -12,36 +12,35 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import NormalisedURLDomain from "../../normalisedURLDomain";
-import NormalisedURLPath from "../../normalisedURLPath";
-import { NormalisedAppinfo } from "../../types";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import NormalisedURLDomain from '../../normalisedURLDomain'
+import NormalisedURLPath from '../../normalisedURLPath'
+import { NormalisedAppinfo } from '../../types'
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from './types'
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
-    let issuerDomain = appInfo.apiDomain;
-    let issuerPath = appInfo.apiBasePath;
+  let issuerDomain = appInfo.apiDomain
+  let issuerPath = appInfo.apiBasePath
 
-    if (config !== undefined) {
-        if (config.issuer !== undefined) {
-            issuerDomain = new NormalisedURLDomain(config.issuer);
-            issuerPath = new NormalisedURLPath(config.issuer);
-        }
-
-        if (!issuerPath.equals(appInfo.apiBasePath)) {
-            throw new Error("The path of the issuer URL must be equal to the apiBasePath. The default value is /auth");
-        }
+  if (config !== undefined) {
+    if (config.issuer !== undefined) {
+      issuerDomain = new NormalisedURLDomain(config.issuer)
+      issuerPath = new NormalisedURLPath(config.issuer)
     }
 
-    let override = {
-        functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config?.override,
-    };
+    if (!issuerPath.equals(appInfo.apiBasePath))
+      throw new Error('The path of the issuer URL must be equal to the apiBasePath. The default value is /auth')
+  }
 
-    return {
-        issuerDomain,
-        issuerPath,
-        jwtValiditySeconds: config?.jwtValiditySeconds,
-        override,
-    };
+  const override = {
+    functions: (originalImplementation: RecipeInterface) => originalImplementation,
+    apis: (originalImplementation: APIInterface) => originalImplementation,
+    ...config?.override,
+  }
+
+  return {
+    issuerDomain,
+    issuerPath,
+    jwtValiditySeconds: config?.jwtValiditySeconds,
+    override,
+  }
 }

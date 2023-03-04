@@ -12,43 +12,41 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../types";
-import { NormalisedAppinfo } from "../../../../../types";
-import PasswordlessBackwardCompatibilityService from "../../../../passwordless/emaildelivery/services/backwardCompatibility";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import { TypeThirdPartyPasswordlessEmailDeliveryInput } from '../../../types'
+import { NormalisedAppinfo } from '../../../../../types'
+import PasswordlessBackwardCompatibilityService from '../../../../passwordless/emaildelivery/services/backwardCompatibility'
+import { EmailDeliveryInterface } from '../../../../../ingredients/emaildelivery/types'
 
 export default class BackwardCompatibilityService
-    implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
-    private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService;
+implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
+  private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        passwordlessFeature?: {
-            createAndSendCustomEmail?: (
-                input: {
-                    // Where the message should be delivered.
-                    email: string;
-                    // This has to be entered on the starting device  to finish sign in/up
-                    userInputCode?: string;
-                    // Full url that the end-user can click to finish sign in/up
-                    urlWithLinkCode?: string;
-                    codeLifetime: number;
-                    // Unlikely, but someone could display this (or a derived thing) to identify the device
-                    preAuthSessionId: string;
-                },
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
-        {
-            this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(
-                appInfo,
-                passwordlessFeature?.createAndSendCustomEmail
-            );
-        }
-    }
+  constructor(
+    appInfo: NormalisedAppinfo,
+    passwordlessFeature?: {
+      createAndSendCustomEmail?: (
+        input: {
+          // Where the message should be delivered.
+          email: string
+          // This has to be entered on the starting device  to finish sign in/up
+          userInputCode?: string
+          // Full url that the end-user can click to finish sign in/up
+          urlWithLinkCode?: string
+          codeLifetime: number
+          // Unlikely, but someone could display this (or a derived thing) to identify the device
+          preAuthSessionId: string
+        },
+        userContext: any
+      ) => Promise<void>
+    },
+  ) {
+    this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(
+      appInfo,
+      passwordlessFeature?.createAndSendCustomEmail,
+    )
+  }
 
-    sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
-        await this.passwordlessBackwardCompatibilityService.sendEmail(input);
-    };
+  sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
+    await this.passwordlessBackwardCompatibilityService.sendEmail(input)
+  }
 }

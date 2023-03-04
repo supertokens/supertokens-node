@@ -13,15 +13,15 @@
  * under the License.
  */
 
-export const DASHBOARD_API = "/dashboard";
-export const SIGN_IN_API = "/api/signin";
-export const SIGN_OUT_API = "/api/signout";
-export const VALIDATE_KEY_API = "/api/key/validate";
-export const USERS_LIST_GET_API = "/api/users";
-export const USERS_COUNT_API = "/api/users/count";
-export const USER_API = "/api/user";
-export const USER_EMAIL_VERIFY_API = "/api/user/email/verify";
-export const USER_METADATA_API = "/api/user/metadata";
-export const USER_SESSIONS_API = "/api/user/sessions";
-export const USER_PASSWORD_API = "/api/user/password";
-export const USER_EMAIL_VERIFY_TOKEN_API = "/api/user/email/verify/token";
+export const DASHBOARD_API = '/dashboard'
+export const SIGN_IN_API = '/api/signin'
+export const SIGN_OUT_API = '/api/signout'
+export const VALIDATE_KEY_API = '/api/key/validate'
+export const USERS_LIST_GET_API = '/api/users'
+export const USERS_COUNT_API = '/api/users/count'
+export const USER_API = '/api/user'
+export const USER_EMAIL_VERIFY_API = '/api/user/email/verify'
+export const USER_METADATA_API = '/api/user/metadata'
+export const USER_SESSIONS_API = '/api/user/sessions'
+export const USER_PASSWORD_API = '/api/user/password'
+export const USER_EMAIL_VERIFY_TOKEN_API = '/api/user/email/verify/token'

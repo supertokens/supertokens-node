@@ -13,106 +13,105 @@
  * under the License.
  */
 
-import SuperTokens from "./supertokens";
-import SuperTokensError from "./error";
-export * from "./types";
+import SuperTokens from './supertokens'
+import SuperTokensError from './error'
 
 // For Express
 export default class SuperTokensWrapper {
-    static init = SuperTokens.init;
+  static init = SuperTokens.init
 
-    static Error = SuperTokensError;
+  static Error = SuperTokensError
 
-    static getAllCORSHeaders() {
-        return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
-    }
+  static getAllCORSHeaders() {
+    return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders()
+  }
 
-    static getUserCount(includeRecipeIds?: string[]) {
-        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds);
-    }
+  static getUserCount(includeRecipeIds?: string[]) {
+    return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds)
+  }
 
-    static getUsersOldestFirst(input?: {
-        limit?: number;
-        paginationToken?: string;
-        includeRecipeIds?: string[];
-    }): Promise<{
-        users: { recipeId: string; user: any }[];
-        nextPaginationToken?: string;
-    }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
-            timeJoinedOrder: "ASC",
-            ...input,
-        });
-    }
+  static getUsersOldestFirst(input?: {
+    limit?: number
+    paginationToken?: string
+    includeRecipeIds?: string[]
+  }): Promise<{
+    users: { recipeId: string; user: any }[]
+    nextPaginationToken?: string
+  }> {
+    return SuperTokens.getInstanceOrThrowError().getUsers({
+      timeJoinedOrder: 'ASC',
+      ...input,
+    })
+  }
 
-    static getUsersNewestFirst(input?: {
-        limit?: number;
-        paginationToken?: string;
-        includeRecipeIds?: string[];
-    }): Promise<{
-        users: { recipeId: string; user: any }[];
-        nextPaginationToken?: string;
-    }> {
-        return SuperTokens.getInstanceOrThrowError().getUsers({
-            timeJoinedOrder: "DESC",
-            ...input,
-        });
-    }
+  static getUsersNewestFirst(input?: {
+    limit?: number
+    paginationToken?: string
+    includeRecipeIds?: string[]
+  }): Promise<{
+    users: { recipeId: string; user: any }[]
+    nextPaginationToken?: string
+  }> {
+    return SuperTokens.getInstanceOrThrowError().getUsers({
+      timeJoinedOrder: 'DESC',
+      ...input,
+    })
+  }
 
-    static deleteUser(userId: string) {
-        return SuperTokens.getInstanceOrThrowError().deleteUser({
-            userId,
-        });
-    }
+  static deleteUser(userId: string) {
+    return SuperTokens.getInstanceOrThrowError().deleteUser({
+      userId,
+    })
+  }
 
-    static createUserIdMapping(input: {
-        superTokensUserId: string;
-        externalUserId: string;
-        externalUserIdInfo?: string;
-        force?: boolean;
-    }) {
-        return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
-    }
+  static createUserIdMapping(input: {
+    superTokensUserId: string
+    externalUserId: string
+    externalUserIdInfo?: string
+    force?: boolean
+  }) {
+    return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input)
+  }
 
-    static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
-        return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
-    }
+  static getUserIdMapping(input: { userId: string; userIdType?: 'SUPERTOKENS' | 'EXTERNAL' | 'ANY' }) {
+    return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input)
+  }
 
-    static deleteUserIdMapping(input: {
-        userId: string;
-        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-        force?: boolean;
-    }) {
-        return SuperTokens.getInstanceOrThrowError().deleteUserIdMapping(input);
-    }
+  static deleteUserIdMapping(input: {
+    userId: string
+    userIdType?: 'SUPERTOKENS' | 'EXTERNAL' | 'ANY'
+    force?: boolean
+  }) {
+    return SuperTokens.getInstanceOrThrowError().deleteUserIdMapping(input)
+  }
 
-    static updateOrDeleteUserIdMappingInfo(input: {
-        userId: string;
-        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-        externalUserIdInfo?: string;
-    }) {
-        return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
-    }
+  static updateOrDeleteUserIdMappingInfo(input: {
+    userId: string
+    userIdType?: 'SUPERTOKENS' | 'EXTERNAL' | 'ANY'
+    externalUserIdInfo?: string
+  }) {
+    return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input)
+  }
 }
 
-export let init = SuperTokensWrapper.init;
+export const init = SuperTokensWrapper.init
 
-export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;
+export const getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders
 
-export let getUserCount = SuperTokensWrapper.getUserCount;
+export const getUserCount = SuperTokensWrapper.getUserCount
 
-export let getUsersOldestFirst = SuperTokensWrapper.getUsersOldestFirst;
+export const getUsersOldestFirst = SuperTokensWrapper.getUsersOldestFirst
 
-export let getUsersNewestFirst = SuperTokensWrapper.getUsersNewestFirst;
+export const getUsersNewestFirst = SuperTokensWrapper.getUsersNewestFirst
 
-export let deleteUser = SuperTokensWrapper.deleteUser;
+export const deleteUser = SuperTokensWrapper.deleteUser
 
-export let createUserIdMapping = SuperTokensWrapper.createUserIdMapping;
+export const createUserIdMapping = SuperTokensWrapper.createUserIdMapping
 
-export let getUserIdMapping = SuperTokensWrapper.getUserIdMapping;
+export const getUserIdMapping = SuperTokensWrapper.getUserIdMapping
 
-export let deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping;
+export const deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping
 
-export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
+export const updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo
 
-export let Error = SuperTokensWrapper.Error;
+export const Error = SuperTokensWrapper.Error

@@ -13,13 +13,13 @@
  * under the License.
  */
 
-import STError from "../../error";
+import STError from '../../error'
 
 export default class ThirdPartyEmailPasswordError extends STError {
-    constructor(options: { type: "BAD_INPUT_ERROR"; message: string }) {
-        super({
-            ...options,
-        });
-        this.fromRecipe = "thirdpartypasswordless";
-    }
+  constructor(options: { type: 'BAD_INPUT_ERROR'; message: string }) {
+    super({
+      ...options,
+    })
+    this.fromRecipe = 'thirdpartypasswordless'
+  }
 }

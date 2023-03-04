@@ -13,19 +13,20 @@
  * under the License.
  */
 
-import { HTTPMethod } from "../types";
+import { HTTPMethod } from '../types'
 
 export abstract class BaseRequest {
-    wrapperUsed: boolean;
-    original: any;
-    constructor() {
-        this.wrapperUsed = true;
-    }
-    abstract getKeyValueFromQuery: (key: string) => string | undefined;
-    abstract getJSONBody: () => Promise<any>;
-    abstract getMethod: () => HTTPMethod;
-    abstract getCookieValue: (key_: string) => string | undefined;
-    abstract getHeaderValue: (key: string) => string | undefined;
-    abstract getOriginalURL: () => string;
-    abstract getFormData: () => Promise<any>;
+  wrapperUsed: boolean
+  original: any
+  constructor() {
+    this.wrapperUsed = true
+  }
+
+  abstract getKeyValueFromQuery: (key: string) => string | undefined
+  abstract getJSONBody: () => Promise<any>
+  abstract getMethod: () => HTTPMethod
+  abstract getCookieValue: (key_: string) => string | undefined
+  abstract getHeaderValue: (key: string) => string | undefined
+  abstract getOriginalURL: () => string
+  abstract getFormData: () => Promise<any>
 }

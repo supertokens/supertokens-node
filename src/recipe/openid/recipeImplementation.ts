@@ -12,62 +12,62 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { RecipeInterface, TypeNormalisedInput } from "./types";
-import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
-import NormalisedURLPath from "../../normalisedURLPath";
-import { GET_JWKS_API } from "../jwt/constants";
+import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from '../jwt/types'
+import NormalisedURLPath from '../../normalisedURLPath'
+import { GET_JWKS_API } from '../jwt/constants'
+import { RecipeInterface, TypeNormalisedInput } from './types'
 
 export default function getRecipeInterface(
-    config: TypeNormalisedInput,
-    jwtRecipeImplementation: JWTRecipeInterface
+  config: TypeNormalisedInput,
+  jwtRecipeImplementation: JWTRecipeInterface,
 ): RecipeInterface {
-    return {
-        getOpenIdDiscoveryConfiguration: async function (): Promise<{
-            status: "OK";
-            issuer: string;
-            jwks_uri: string;
-        }> {
-            let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
-            let jwks_uri =
-                config.issuerDomain.getAsStringDangerous() +
-                config.issuerPath.appendPath(new NormalisedURLPath(GET_JWKS_API)).getAsStringDangerous();
-            return {
-                status: "OK",
-                issuer,
-                jwks_uri,
-            };
-        },
-        createJWT: async function ({
-            payload,
+  return {
+    async getOpenIdDiscoveryConfiguration(): Promise<{
+      status: 'OK'
+      issuer: string
+      jwks_uri: string
+    }> {
+      const issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous()
+      const jwks_uri
+                = config.issuerDomain.getAsStringDangerous()
+                + config.issuerPath.appendPath(new NormalisedURLPath(GET_JWKS_API)).getAsStringDangerous()
+      return {
+        status: 'OK',
+        issuer,
+        jwks_uri,
+      }
+    },
+    async createJWT({
+      payload,
             validitySeconds,
             userContext,
-        }: {
-            payload?: any;
-            validitySeconds?: number;
-            userContext: any;
-        }): Promise<
+    }: {
+      payload?: any
+      validitySeconds?: number
+      userContext: any
+    }): Promise<
             | {
-                  status: "OK";
-                  jwt: string;
-              }
+              status: 'OK'
+              jwt: string
+            }
             | {
-                  status: "UNSUPPORTED_ALGORITHM_ERROR";
-              }
+              status: 'UNSUPPORTED_ALGORITHM_ERROR'
+            }
         > {
-            payload = payload === undefined || payload === null ? {} : payload;
+      payload = (payload === undefined || payload === null) ? {} : payload
 
-            let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
-            return await jwtRecipeImplementation.createJWT({
-                payload: {
-                    iss: issuer,
-                    ...payload,
-                },
-                validitySeconds,
-                userContext,
-            });
+      const issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous()
+      return await jwtRecipeImplementation.createJWT({
+        payload: {
+          iss: issuer,
+          ...payload,
         },
-        getJWKS: async function (input): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
-            return await jwtRecipeImplementation.getJWKS(input);
-        },
-    };
+        validitySeconds,
+        userContext,
+      })
+    },
+    async getJWKS(input): Promise<{ status: 'OK'; keys: JsonWebKey[] }> {
+      return await jwtRecipeImplementation.getJWKS(input)
+    },
+  }
 }

@@ -13,134 +13,134 @@
  * under the License.
  */
 
-import OverrideableBuilder from "supertokens-js-override";
+import OverrideableBuilder from 'overrideableBuilder'
 
-export type TypeInput = {
-    skipAddingRolesToAccessToken?: boolean;
-    skipAddingPermissionsToAccessToken?: boolean;
-    override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+export interface TypeInput {
+  skipAddingRolesToAccessToken?: boolean
+  skipAddingPermissionsToAccessToken?: boolean
+  override?: {
+    functions?: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
-export type TypeNormalisedInput = {
-    skipAddingRolesToAccessToken: boolean;
-    skipAddingPermissionsToAccessToken: boolean;
-    override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-    };
-};
+export interface TypeNormalisedInput {
+  skipAddingRolesToAccessToken: boolean
+  skipAddingPermissionsToAccessToken: boolean
+  override: {
+    functions: (
+      originalImplementation: RecipeInterface,
+      builder?: OverrideableBuilder<RecipeInterface>
+    ) => RecipeInterface
+    apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface
+  }
+}
 
-export type APIInterface = {};
+export interface APIInterface {}
 
-export type RecipeInterface = {
-    addRoleToUser: (input: {
-        userId: string;
-        role: string;
-        userContext: any;
-    }) => Promise<
+export interface RecipeInterface {
+  addRoleToUser: (input: {
+    userId: string
+    role: string
+    userContext: any
+  }) => Promise<
         | {
-              status: "OK";
-              didUserAlreadyHaveRole: boolean;
-          }
+          status: 'OK'
+          didUserAlreadyHaveRole: boolean
+        }
         | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+          status: 'UNKNOWN_ROLE_ERROR'
+        }
+    >
 
-    removeUserRole: (input: {
-        userId: string;
-        role: string;
-        userContext: any;
-    }) => Promise<
+  removeUserRole: (input: {
+    userId: string
+    role: string
+    userContext: any
+  }) => Promise<
         | {
-              status: "OK";
-              didUserHaveRole: boolean;
-          }
+          status: 'OK'
+          didUserHaveRole: boolean
+        }
         | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+          status: 'UNKNOWN_ROLE_ERROR'
+        }
+    >
 
-    getRolesForUser: (input: {
-        userId: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        roles: string[];
-    }>;
+  getRolesForUser: (input: {
+    userId: string
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+    roles: string[]
+  }>
 
-    getUsersThatHaveRole: (input: {
-        role: string;
-        userContext: any;
-    }) => Promise<
+  getUsersThatHaveRole: (input: {
+    role: string
+    userContext: any
+  }) => Promise<
         | {
-              status: "OK";
-              users: string[];
-          }
+          status: 'OK'
+          users: string[]
+        }
         | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+          status: 'UNKNOWN_ROLE_ERROR'
+        }
+    >
 
-    createNewRoleOrAddPermissions: (input: {
-        role: string;
-        permissions: string[];
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        createdNewRole: boolean;
-    }>;
+  createNewRoleOrAddPermissions: (input: {
+    role: string
+    permissions: string[]
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+    createdNewRole: boolean
+  }>
 
-    getPermissionsForRole: (input: {
-        role: string;
-        userContext: any;
-    }) => Promise<
+  getPermissionsForRole: (input: {
+    role: string
+    userContext: any
+  }) => Promise<
         | {
-              status: "OK";
-              permissions: string[];
-          }
+          status: 'OK'
+          permissions: string[]
+        }
         | {
-              status: "UNKNOWN_ROLE_ERROR";
-          }
-    >;
+          status: 'UNKNOWN_ROLE_ERROR'
+        }
+    >
 
-    removePermissionsFromRole: (input: {
-        role: string;
-        permissions: string[];
-        userContext: any;
-    }) => Promise<{
-        status: "OK" | "UNKNOWN_ROLE_ERROR";
-    }>;
+  removePermissionsFromRole: (input: {
+    role: string
+    permissions: string[]
+    userContext: any
+  }) => Promise<{
+    status: 'OK' | 'UNKNOWN_ROLE_ERROR'
+  }>
 
-    getRolesThatHavePermission: (input: {
-        permission: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        roles: string[];
-    }>;
+  getRolesThatHavePermission: (input: {
+    permission: string
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+    roles: string[]
+  }>
 
-    deleteRole: (input: {
-        role: string;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        didRoleExist: boolean;
-    }>;
+  deleteRole: (input: {
+    role: string
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+    didRoleExist: boolean
+  }>
 
-    getAllRoles: (input: {
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        roles: string[];
-    }>;
-};
+  getAllRoles: (input: {
+    userContext: any
+  }) => Promise<{
+    status: 'OK'
+    roles: string[]
+  }>
+}

@@ -13,4 +13,4 @@
  * under the License.
  */
 
-export const GET_JWKS_API = "/jwt/jwks.json";
+export const GET_JWKS_API = '/jwt/jwks.json'

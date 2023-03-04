@@ -12,44 +12,44 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
-import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../types";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import { createTransport } from "nodemailer";
-import OverrideableBuilder from "supertokens-js-override";
-import { getServiceImplementation } from "./serviceImplementation";
-import PasswordlessSMTPService from "../../../../passwordless/emaildelivery/services/smtp";
-import getPasswordlessServiceImplementation from "./serviceImplementation/passwordlessServiceImplementation";
+import { createTransport } from 'nodemailer'
+import OverrideableBuilder from 'overrideableBuilder'
+import { ServiceInterface, TypeInput } from '../../../../../ingredients/emaildelivery/services/smtp'
+import { TypeThirdPartyPasswordlessEmailDeliveryInput } from '../../../types'
+import { EmailDeliveryInterface } from '../../../../../ingredients/emaildelivery/types'
+import PasswordlessSMTPService from '../../../../passwordless/emaildelivery/services/smtp'
+import { getServiceImplementation } from './serviceImplementation'
+import getPasswordlessServiceImplementation from './serviceImplementation/passwordlessServiceImplementation'
 
 export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
-    serviceImpl: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>;
-    private passwordlessSMTPService: PasswordlessSMTPService;
+  serviceImpl: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>
+  private passwordlessSMTPService: PasswordlessSMTPService
 
-    constructor(config: TypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>) {
-        const transporter = createTransport({
-            host: config.smtpSettings.host,
-            port: config.smtpSettings.port,
-            auth: {
-                user: config.smtpSettings.authUsername || config.smtpSettings.from.email,
-                pass: config.smtpSettings.password,
-            },
-            secure: config.smtpSettings.secure,
-        });
-        let builder = new OverrideableBuilder(getServiceImplementation(transporter, config.smtpSettings.from));
-        if (config.override !== undefined) {
-            builder = builder.override(config.override);
-        }
-        this.serviceImpl = builder.build();
+  constructor(config: TypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>) {
+    const transporter = createTransport({
+      host: config.smtpSettings.host,
+      port: config.smtpSettings.port,
+      auth: {
+        user: config.smtpSettings.authUsername || config.smtpSettings.from.email,
+        pass: config.smtpSettings.password,
+      },
+      secure: config.smtpSettings.secure,
+    })
+    let builder = new OverrideableBuilder(getServiceImplementation(transporter, config.smtpSettings.from))
+    if (config.override !== undefined)
+      builder = builder.override(config.override)
 
-        this.passwordlessSMTPService = new PasswordlessSMTPService({
-            smtpSettings: config.smtpSettings,
-            override: (_) => {
-                return getPasswordlessServiceImplementation(this.serviceImpl);
-            },
-        });
-    }
+    this.serviceImpl = builder.build()
 
-    sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
-        return await this.passwordlessSMTPService.sendEmail(input);
-    };
+    this.passwordlessSMTPService = new PasswordlessSMTPService({
+      smtpSettings: config.smtpSettings,
+      override: (_) => {
+        return getPasswordlessServiceImplementation(this.serviceImpl)
+      },
+    })
+  }
+
+  sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
+    return await this.passwordlessSMTPService.sendEmail(input)
+  }
 }

@@ -12,274 +12,276 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import axios from "axios";
+import axios from 'axios'
 
-import { getLargestVersionFromIntersection } from "./utils";
-import { cdiSupported } from "./version";
-import NormalisedURLDomain from "./normalisedURLDomain";
-import NormalisedURLPath from "./normalisedURLPath";
-import { PROCESS_STATE, ProcessState } from "./processState";
+import { getLargestVersionFromIntersection } from './utils'
+import { cdiSupported } from './version'
+import NormalisedURLDomain from './normalisedURLDomain'
+import NormalisedURLPath from './normalisedURLPath'
+import { PROCESS_STATE, ProcessState } from './processState'
 
 export class Querier {
-    private static initCalled = false;
-    private static hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined = undefined;
-    private static apiKey: string | undefined = undefined;
-    private static apiVersion: string | undefined = undefined;
+  private static initCalled = false
+  private static hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined = undefined
+  private static apiKey: string | undefined = undefined
+  private static apiVersion: string | undefined = undefined
 
-    private static lastTriedIndex = 0;
-    private static hostsAliveForTesting: Set<string> = new Set<string>();
+  private static lastTriedIndex = 0
+  private static hostsAliveForTesting: Set<string> = new Set<string>()
 
-    private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined;
-    private rIdToCore: string | undefined;
+  private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined
+  private rIdToCore: string | undefined
 
-    // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
-    // to support multiple rIds per API
-    private constructor(
-        hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined,
-        rIdToCore?: string
-    ) {
-        this.__hosts = hosts;
-        this.rIdToCore = rIdToCore;
+  // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
+  // to support multiple rIds per API
+  private constructor(
+    hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined,
+    rIdToCore?: string,
+  ) {
+    this.__hosts = hosts
+    this.rIdToCore = rIdToCore
+  }
+
+  getAPIVersion = async (): Promise<string> => {
+    if (Querier.apiVersion !== undefined)
+      return Querier.apiVersion
+
+    ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION)
+    const response = await this.sendRequestHelper(
+      new NormalisedURLPath('/apiversion'),
+      'GET',
+      (url: string) => {
+        let headers: any = {}
+        if (Querier.apiKey !== undefined) {
+          headers = {
+            'api-key': Querier.apiKey,
+          }
+        }
+        return axios.get(url, {
+          headers,
+        })
+      },
+      this.__hosts?.length || 0,
+    )
+    const cdiSupportedByServer: string[] = response.versions
+    const supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported)
+    if (supportedVersion === undefined) {
+      throw new Error(
+        'The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions',
+      )
     }
+    Querier.apiVersion = supportedVersion
+    return Querier.apiVersion
+  }
 
-    getAPIVersion = async (): Promise<string> => {
-        if (Querier.apiVersion !== undefined) {
-            return Querier.apiVersion;
-        }
-        ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
-        let response = await this.sendRequestHelper(
-            new NormalisedURLPath("/apiversion"),
-            "GET",
-            (url: string) => {
-                let headers: any = {};
-                if (Querier.apiKey !== undefined) {
-                    headers = {
-                        "api-key": Querier.apiKey,
-                    };
-                }
-                return axios.get(url, {
-                    headers,
-                });
-            },
-            this.__hosts?.length || 0
-        );
-        let cdiSupportedByServer: string[] = response.versions;
-        let supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported);
-        if (supportedVersion === undefined) {
-            throw Error(
-                "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
-            );
-        }
-        Querier.apiVersion = supportedVersion;
-        return Querier.apiVersion;
-    };
+  static reset() {
+    if (process.env.TEST_MODE !== 'testing')
+      throw new Error('calling testing function in non testing env')
 
-    static reset() {
-        if (process.env.TEST_MODE !== "testing") {
-            throw Error("calling testing function in non testing env");
-        }
-        Querier.initCalled = false;
+    Querier.initCalled = false
+  }
+
+  getHostsAliveForTesting = () => {
+    if (process.env.TEST_MODE !== 'testing')
+      throw new Error('calling testing function in non testing env')
+
+    return Querier.hostsAliveForTesting
+  }
+
+  static getNewInstanceOrThrowError(rIdToCore?: string): Querier {
+    if (!Querier.initCalled)
+      throw new Error('Please call the supertokens.init function before using SuperTokens')
+
+    return new Querier(Querier.hosts, rIdToCore)
+  }
+
+  static init(hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[], apiKey?: string) {
+    if (!Querier.initCalled) {
+      Querier.initCalled = true
+      Querier.hosts = hosts
+      Querier.apiKey = apiKey
+      Querier.apiVersion = undefined
+      Querier.lastTriedIndex = 0
+      Querier.hostsAliveForTesting = new Set<string>()
     }
+  }
 
-    getHostsAliveForTesting = () => {
-        if (process.env.TEST_MODE !== "testing") {
-            throw Error("calling testing function in non testing env");
+  // path should start with "/"
+  sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any): Promise<T> => {
+    return this.sendRequestHelper(
+      path,
+      'POST',
+      async (url: string) => {
+        const apiVersion = await this.getAPIVersion()
+        let headers: any = {
+          'cdi-version': apiVersion,
+          'content-type': 'application/json; charset=utf-8',
         }
-        return Querier.hostsAliveForTesting;
-    };
+        if (Querier.apiKey !== undefined) {
+          headers = {
+            ...headers,
+            'api-key': Querier.apiKey,
+          }
+        }
+        if (path.isARecipePath() && this.rIdToCore !== undefined) {
+          headers = {
+            ...headers,
+            rid: this.rIdToCore,
+          }
+        }
+        return await axios({
+          method: 'POST',
+          url,
+          data: body,
+          headers,
+        })
+      },
+      this.__hosts?.length || 0,
+    )
+  }
 
-    static getNewInstanceOrThrowError(rIdToCore?: string): Querier {
-        if (!Querier.initCalled) {
-            throw Error("Please call the supertokens.init function before using SuperTokens");
+  // path should start with "/"
+  sendDeleteRequest = async (path: NormalisedURLPath, body: any, params?: any): Promise<any> => {
+    return this.sendRequestHelper(
+      path,
+      'DELETE',
+      async (url: string) => {
+        const apiVersion = await this.getAPIVersion()
+        let headers: any = { 'cdi-version': apiVersion }
+        if (Querier.apiKey !== undefined) {
+          headers = {
+            ...headers,
+            'api-key': Querier.apiKey,
+            'content-type': 'application/json; charset=utf-8',
+          }
         }
-        return new Querier(Querier.hosts, rIdToCore);
+        if (path.isARecipePath() && this.rIdToCore !== undefined) {
+          headers = {
+            ...headers,
+            rid: this.rIdToCore,
+          }
+        }
+        return await axios({
+          method: 'DELETE',
+          url,
+          data: body,
+          headers,
+          params,
+        })
+      },
+      this.__hosts?.length || 0,
+    )
+  }
+
+  // path should start with "/"
+  sendGetRequest = async (path: NormalisedURLPath, params: any): Promise<any> => {
+    return this.sendRequestHelper(
+      path,
+      'GET',
+      async (url: string) => {
+        const apiVersion = await this.getAPIVersion()
+        let headers: any = { 'cdi-version': apiVersion }
+        if (Querier.apiKey !== undefined) {
+          headers = {
+            ...headers,
+            'api-key': Querier.apiKey,
+          }
+        }
+        if (path.isARecipePath() && this.rIdToCore !== undefined) {
+          headers = {
+            ...headers,
+            rid: this.rIdToCore,
+          }
+        }
+        return await axios.get(url, {
+          params,
+          headers,
+        })
+      },
+      this.__hosts?.length || 0,
+    )
+  }
+
+  // path should start with "/"
+  sendPutRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
+    return this.sendRequestHelper(
+      path,
+      'PUT',
+      async (url: string) => {
+        const apiVersion = await this.getAPIVersion()
+        let headers: any = { 'cdi-version': apiVersion, 'content-type': 'application/json; charset=utf-8' }
+        if (Querier.apiKey !== undefined) {
+          headers = {
+            ...headers,
+            'api-key': Querier.apiKey,
+          }
+        }
+        if (path.isARecipePath() && this.rIdToCore !== undefined) {
+          headers = {
+            ...headers,
+            rid: this.rIdToCore,
+          }
+        }
+        return await axios({
+          method: 'PUT',
+          url,
+          data: body,
+          headers,
+        })
+      },
+      this.__hosts?.length || 0,
+    )
+  }
+
+  // path should start with "/"
+  private sendRequestHelper = async (
+    path: NormalisedURLPath,
+    method: string,
+    axiosFunction: (url: string) => Promise<any>,
+    numberOfTries: number,
+  ): Promise<any> => {
+    if (this.__hosts === undefined) {
+      throw new Error(
+        'No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using.',
+      )
     }
+    if (numberOfTries === 0)
+      throw new Error('No SuperTokens core available to query')
 
-    static init(hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[], apiKey?: string) {
-        if (!Querier.initCalled) {
-            Querier.initCalled = true;
-            Querier.hosts = hosts;
-            Querier.apiKey = apiKey;
-            Querier.apiVersion = undefined;
-            Querier.lastTriedIndex = 0;
-            Querier.hostsAliveForTesting = new Set<string>();
-        }
+    const currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous()
+    const currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous()
+    Querier.lastTriedIndex++
+    Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length
+    try {
+      ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER)
+      const response = await axiosFunction(currentDomain + currentBasePath + path.getAsStringDangerous())
+      if (process.env.TEST_MODE === 'testing')
+        Querier.hostsAliveForTesting.add(currentDomain + currentBasePath)
+
+      if (response.status !== 200)
+        throw response
+
+      return response.data
     }
+    catch (err) {
+      if (err.message !== undefined && err.message.includes('ECONNREFUSED'))
+        return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1)
 
-    // path should start with "/"
-    sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any): Promise<T> => {
-        return this.sendRequestHelper(
-            path,
-            "POST",
-            async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
-                let headers: any = {
-                    "cdi-version": apiVersion,
-                    "content-type": "application/json; charset=utf-8",
-                };
-                if (Querier.apiKey !== undefined) {
-                    headers = {
-                        ...headers,
-                        "api-key": Querier.apiKey,
-                    };
-                }
-                if (path.isARecipePath() && this.rIdToCore !== undefined) {
-                    headers = {
-                        ...headers,
-                        rid: this.rIdToCore,
-                    };
-                }
-                return await axios({
-                    method: "POST",
-                    url,
-                    data: body,
-                    headers,
-                });
-            },
-            this.__hosts?.length || 0
-        );
-    };
-
-    // path should start with "/"
-    sendDeleteRequest = async (path: NormalisedURLPath, body: any, params?: any): Promise<any> => {
-        return this.sendRequestHelper(
-            path,
-            "DELETE",
-            async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion };
-                if (Querier.apiKey !== undefined) {
-                    headers = {
-                        ...headers,
-                        "api-key": Querier.apiKey,
-                        "content-type": "application/json; charset=utf-8",
-                    };
-                }
-                if (path.isARecipePath() && this.rIdToCore !== undefined) {
-                    headers = {
-                        ...headers,
-                        rid: this.rIdToCore,
-                    };
-                }
-                return await axios({
-                    method: "DELETE",
-                    url,
-                    data: body,
-                    headers,
-                    params,
-                });
-            },
-            this.__hosts?.length || 0
-        );
-    };
-
-    // path should start with "/"
-    sendGetRequest = async (path: NormalisedURLPath, params: any): Promise<any> => {
-        return this.sendRequestHelper(
-            path,
-            "GET",
-            async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion };
-                if (Querier.apiKey !== undefined) {
-                    headers = {
-                        ...headers,
-                        "api-key": Querier.apiKey,
-                    };
-                }
-                if (path.isARecipePath() && this.rIdToCore !== undefined) {
-                    headers = {
-                        ...headers,
-                        rid: this.rIdToCore,
-                    };
-                }
-                return await axios.get(url, {
-                    params,
-                    headers,
-                });
-            },
-            this.__hosts?.length || 0
-        );
-    };
-
-    // path should start with "/"
-    sendPutRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
-        return this.sendRequestHelper(
-            path,
-            "PUT",
-            async (url: string) => {
-                let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
-                if (Querier.apiKey !== undefined) {
-                    headers = {
-                        ...headers,
-                        "api-key": Querier.apiKey,
-                    };
-                }
-                if (path.isARecipePath() && this.rIdToCore !== undefined) {
-                    headers = {
-                        ...headers,
-                        rid: this.rIdToCore,
-                    };
-                }
-                return await axios({
-                    method: "PUT",
-                    url,
-                    data: body,
-                    headers,
-                });
-            },
-            this.__hosts?.length || 0
-        );
-    };
-
-    // path should start with "/"
-    private sendRequestHelper = async (
-        path: NormalisedURLPath,
-        method: string,
-        axiosFunction: (url: string) => Promise<any>,
-        numberOfTries: number
-    ): Promise<any> => {
-        if (this.__hosts === undefined) {
-            throw Error(
-                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
-            );
-        }
-        if (numberOfTries === 0) {
-            throw Error("No SuperTokens core available to query");
-        }
-        let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
-        let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
-        Querier.lastTriedIndex++;
-        Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
-        try {
-            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
-            let response = await axiosFunction(currentDomain + currentBasePath + path.getAsStringDangerous());
-            if (process.env.TEST_MODE === "testing") {
-                Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
-            }
-            if (response.status !== 200) {
-                throw response;
-            }
-            return response.data;
-        } catch (err) {
-            if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
-                return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
-            }
-            if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
-                throw new Error(
-                    "SuperTokens core threw an error for a " +
-                        method +
-                        " request to path: '" +
-                        path.getAsStringDangerous() +
-                        "' with status code: " +
-                        err.response.status +
-                        " and message: " +
-                        err.response.data
-                );
-            } else {
-                throw err;
-            }
-        }
-    };
+      if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
+        throw new Error(
+          `SuperTokens core threw an error for a ${
+                         method
+                         } request to path: '${
+                         path.getAsStringDangerous()
+                         }' with status code: ${
+                         err.response.status
+                         } and message: ${
+                         err.response.data}`,
+        )
+      }
+      else {
+        throw err
+      }
+    }
+  }
 }

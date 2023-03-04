@@ -12,25 +12,25 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import * as expressFramework from "./express";
-import * as fastifyFramework from "./fastify";
-import * as hapiFramework from "./hapi";
-import * as loopbackFramework from "./loopback";
-import * as koaFramework from "./koa";
-import * as awsLambdaFramework from "./awsLambda";
+import * as expressFramework from './express'
+import * as fastifyFramework from './fastify'
+import * as hapiFramework from './hapi'
+import * as loopbackFramework from './loopback'
+import * as koaFramework from './koa'
+import * as awsLambdaFramework from './awsLambda'
 
 export default {
-    express: expressFramework,
-    fastify: fastifyFramework,
-    hapi: hapiFramework,
-    loopback: loopbackFramework,
-    koa: koaFramework,
-    awsLambda: awsLambdaFramework,
-};
+  express: expressFramework,
+  fastify: fastifyFramework,
+  hapi: hapiFramework,
+  loopback: loopbackFramework,
+  koa: koaFramework,
+  awsLambda: awsLambdaFramework,
+}
 
-export let express = expressFramework;
-export let fastify = fastifyFramework;
-export let hapi = hapiFramework;
-export let loopback = loopbackFramework;
-export let koa = koaFramework;
-export let awsLambda = awsLambdaFramework;
+export const express = expressFramework
+export const fastify = fastifyFramework
+export const hapi = hapiFramework
+export const loopback = loopbackFramework
+export const koa = koaFramework
+export const awsLambda = awsLambdaFramework

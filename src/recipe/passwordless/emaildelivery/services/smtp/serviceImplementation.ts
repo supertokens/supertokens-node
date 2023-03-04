@@ -13,44 +13,45 @@
  * under the License.
  */
 
-import { TypePasswordlessEmailDeliveryInput } from "../../../types";
-import { Transporter } from "nodemailer";
+import { Transporter } from 'nodemailer'
+import { TypePasswordlessEmailDeliveryInput } from '../../../types'
 import {
-    ServiceInterface,
-    TypeInputSendRawEmail,
-    GetContentResult,
-} from "../../../../../ingredients/emaildelivery/services/smtp";
-import getPasswordlessLoginEmailContent from "./passwordlessLogin";
+  GetContentResult,
+  ServiceInterface,
+  TypeInputSendRawEmail,
+} from '../../../../../ingredients/emaildelivery/services/smtp'
+import getPasswordlessLoginEmailContent from './passwordlessLogin'
 
 export function getServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+  transporter: Transporter,
+  from: {
+    name: string
+    email: string
+  },
 ): ServiceInterface<TypePasswordlessEmailDeliveryInput> {
-    return {
-        sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            if (input.isHtml) {
-                await transporter.sendMail({
-                    from: `${from.name} <${from.email}>`,
-                    to: input.toEmail,
-                    subject: input.subject,
-                    html: input.body,
-                });
-            } else {
-                await transporter.sendMail({
-                    from: `${from.name} <${from.email}>`,
-                    to: input.toEmail,
-                    subject: input.subject,
-                    text: input.body,
-                });
-            }
-        },
-        getContent: async function (
-            input: TypePasswordlessEmailDeliveryInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            return getPasswordlessLoginEmailContent(input);
-        },
-    };
+  return {
+    async sendRawEmail(input: TypeInputSendRawEmail) {
+      if (input.isHtml) {
+        await transporter.sendMail({
+          from: `${from.name} <${from.email}>`,
+          to: input.toEmail,
+          subject: input.subject,
+          html: input.body,
+        })
+      }
+      else {
+        await transporter.sendMail({
+          from: `${from.name} <${from.email}>`,
+          to: input.toEmail,
+          subject: input.subject,
+          text: input.body,
+        })
+      }
+    },
+    async getContent(
+      input: TypePasswordlessEmailDeliveryInput & { userContext: any },
+    ): Promise<GetContentResult> {
+      return getPasswordlessLoginEmailContent(input)
+    },
+  }
 }

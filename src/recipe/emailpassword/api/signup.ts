@@ -13,51 +13,51 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { validateFormFieldsOrThrowError } from "./utils";
-import { APIInterface, APIOptions } from "../";
-import STError from "../error";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import { APIInterface, APIOptions } from '../'
+import STError from '../error'
+import { validateFormFieldsOrThrowError } from './utils'
 
 export default async function signUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
+  // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
 
-    if (apiImplementation.signUpPOST === undefined) {
-        return false;
-    }
+  if (apiImplementation.signUpPOST === undefined)
+    return false
 
-    // step 1
-    let formFields: {
-        id: string;
-        value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        options.config.signUpFeature.formFields,
-        (await options.req.getJSONBody()).formFields
-    );
+  // step 1
+  const formFields: {
+    id: string
+    value: string
+  }[] = await validateFormFieldsOrThrowError(
+    options.config.signUpFeature.formFields,
+    (await options.req.getJSONBody()).formFields,
+  )
 
-    let result = await apiImplementation.signUpPOST({
-        formFields,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
-    if (result.status === "OK") {
-        send200Response(options.res, {
-            status: "OK",
-            user: result.user,
-        });
-    } else if (result.status === "GENERAL_ERROR") {
-        send200Response(options.res, result);
-    } else {
-        throw new STError({
-            type: STError.FIELD_ERROR,
-            payload: [
-                {
-                    id: "email",
-                    error: "This email already exists. Please sign in instead.",
-                },
-            ],
-            message: "Error in input formFields",
-        });
-    }
-    return true;
+  const result = await apiImplementation.signUpPOST({
+    formFields,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
+  if (result.status === 'OK') {
+    send200Response(options.res, {
+      status: 'OK',
+      user: result.user,
+    })
+  }
+  else if (result.status === 'GENERAL_ERROR') {
+    send200Response(options.res, result)
+  }
+  else {
+    throw new STError({
+      type: STError.FIELD_ERROR,
+      payload: [
+        {
+          id: 'email',
+          error: 'This email already exists. Please sign in instead.',
+        },
+      ],
+      message: 'Error in input formFields',
+    })
+  }
+  return true
 }

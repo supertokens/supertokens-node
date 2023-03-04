@@ -1,69 +1,71 @@
-import { RecipeInterface, User } from "./types";
-import { Querier } from "../../querier";
-import NormalisedURLPath from "../../normalisedURLPath";
+import { Querier } from '../../querier'
+import NormalisedURLPath from '../../normalisedURLPath'
+import { RecipeInterface, User } from './types'
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
-    return {
-        signInUp: async function ({
-            thirdPartyId,
+  return {
+    async signInUp({
+      thirdPartyId,
             thirdPartyUserId,
             email,
-        }: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-            email: string;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
-                thirdPartyId,
-                thirdPartyUserId,
-                email: { id: email },
-            });
-            return {
-                status: "OK",
-                createdNewUser: response.createdNewUser,
-                user: response.user,
-            };
-        },
+    }: {
+      thirdPartyId: string
+      thirdPartyUserId: string
+      email: string
+    }): Promise<{ status: 'OK'; createdNewUser: boolean; user: User }> {
+      const response = await querier.sendPostRequest(new NormalisedURLPath('/recipe/signinup'), {
+        thirdPartyId,
+        thirdPartyUserId,
+        email: { id: email },
+      })
+      return {
+        status: 'OK',
+        createdNewUser: response.createdNewUser,
+        user: response.user,
+      }
+    },
 
-        getUserById: async function ({ userId }: { userId: string }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                userId,
-            });
-            if (response.status === "OK") {
-                return {
-                    ...response.user,
-                };
-            } else {
-                return undefined;
-            }
-        },
+    async getUserById({ userId }: { userId: string }): Promise<User | undefined> {
+      const response = await querier.sendGetRequest(new NormalisedURLPath('/recipe/user'), {
+        userId,
+      })
+      if (response.status === 'OK') {
+        return {
+          ...response.user,
+        }
+      }
+      else {
+        return undefined
+      }
+    },
 
-        getUsersByEmail: async function ({ email }: { email: string }): Promise<User[]> {
-            const { users } = await querier.sendGetRequest(new NormalisedURLPath("/recipe/users/by-email"), {
-                email,
-            });
+    async getUsersByEmail({ email }: { email: string }): Promise<User[]> {
+      const { users } = await querier.sendGetRequest(new NormalisedURLPath('/recipe/users/by-email'), {
+        email,
+      })
 
-            return users;
-        },
+      return users
+    },
 
-        getUserByThirdPartyInfo: async function ({
-            thirdPartyId,
+    async getUserByThirdPartyInfo({
+      thirdPartyId,
             thirdPartyUserId,
-        }: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-        }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                thirdPartyId,
-                thirdPartyUserId,
-            });
-            if (response.status === "OK") {
-                return {
-                    ...response.user,
-                };
-            } else {
-                return undefined;
-            }
-        },
-    };
+    }: {
+      thirdPartyId: string
+      thirdPartyUserId: string
+    }): Promise<User | undefined> {
+      const response = await querier.sendGetRequest(new NormalisedURLPath('/recipe/user'), {
+        thirdPartyId,
+        thirdPartyUserId,
+      })
+      if (response.status === 'OK') {
+        return {
+          ...response.user,
+        }
+      }
+      else {
+        return undefined
+      }
+    },
+  }
 }

@@ -13,86 +13,85 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "..";
-import parsePhoneNumber from "libphonenumber-js/max";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import parsePhoneNumber from 'libphonenumber-js/max'
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '..'
 
 export default async function createCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.createCodePOST === undefined) {
-        return false;
+  if (apiImplementation.createCodePOST === undefined)
+    return false
+
+  const body = await options.req.getJSONBody()
+  let email: string | undefined = body.email
+  let phoneNumber: string | undefined = body.phoneNumber
+
+  if ((email !== undefined && phoneNumber !== undefined) || (email === undefined && phoneNumber === undefined)) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide exactly one of email or phoneNumber',
+    })
+  }
+
+  if (email === undefined && options.config.contactMethod === 'EMAIL') {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide an email since you have set the contactMethod to "EMAIL"',
+    })
+  }
+
+  if (phoneNumber === undefined && options.config.contactMethod === 'PHONE') {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide a phoneNumber since you have set the contactMethod to "PHONE"',
+    })
+  }
+
+  // normalise and validate format of input
+  if (
+    email !== undefined
+        && (options.config.contactMethod === 'EMAIL' || options.config.contactMethod === 'EMAIL_OR_PHONE')
+  ) {
+    email = email.trim()
+    const validateError = await options.config.validateEmailAddress(email)
+    if (validateError !== undefined) {
+      send200Response(options.res, {
+        status: 'GENERAL_ERROR',
+        message: validateError,
+      })
+      return true
     }
+  }
 
-    const body = await options.req.getJSONBody();
-    let email: string | undefined = body.email;
-    let phoneNumber: string | undefined = body.phoneNumber;
-
-    if ((email !== undefined && phoneNumber !== undefined) || (email === undefined && phoneNumber === undefined)) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide exactly one of email or phoneNumber",
-        });
+  if (
+    phoneNumber !== undefined
+        && (options.config.contactMethod === 'PHONE' || options.config.contactMethod === 'EMAIL_OR_PHONE')
+  ) {
+    const validateError = await options.config.validatePhoneNumber(phoneNumber)
+    if (validateError !== undefined) {
+      send200Response(options.res, {
+        status: 'GENERAL_ERROR',
+        message: validateError,
+      })
+      return true
     }
-
-    if (email === undefined && options.config.contactMethod === "EMAIL") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: 'Please provide an email since you have set the contactMethod to "EMAIL"',
-        });
+    const parsedPhoneNumber = parsePhoneNumber(phoneNumber)
+    if (parsedPhoneNumber === undefined) {
+      // this can come here if the user has provided their own impl of validatePhoneNumber and
+      // the phone number is valid according to their impl, but not according to the libphonenumber-js lib.
+      phoneNumber = phoneNumber.trim()
     }
-
-    if (phoneNumber === undefined && options.config.contactMethod === "PHONE") {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: 'Please provide a phoneNumber since you have set the contactMethod to "PHONE"',
-        });
+    else {
+      phoneNumber = parsedPhoneNumber.format('E.164')
     }
+  }
 
-    // normalise and validate format of input
-    if (
-        email !== undefined &&
-        (options.config.contactMethod === "EMAIL" || options.config.contactMethod === "EMAIL_OR_PHONE")
-    ) {
-        email = email.trim();
-        const validateError = await options.config.validateEmailAddress(email);
-        if (validateError !== undefined) {
-            send200Response(options.res, {
-                status: "GENERAL_ERROR",
-                message: validateError,
-            });
-            return true;
-        }
-    }
+  const result = await apiImplementation.createCodePOST(
+    email !== undefined
+      ? { email, options, userContext: makeDefaultUserContextFromAPI(options.req) }
+      : { phoneNumber: phoneNumber!, options, userContext: makeDefaultUserContextFromAPI(options.req) },
+  )
 
-    if (
-        phoneNumber !== undefined &&
-        (options.config.contactMethod === "PHONE" || options.config.contactMethod === "EMAIL_OR_PHONE")
-    ) {
-        const validateError = await options.config.validatePhoneNumber(phoneNumber);
-        if (validateError !== undefined) {
-            send200Response(options.res, {
-                status: "GENERAL_ERROR",
-                message: validateError,
-            });
-            return true;
-        }
-        const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
-        if (parsedPhoneNumber === undefined) {
-            // this can come here if the user has provided their own impl of validatePhoneNumber and
-            // the phone number is valid according to their impl, but not according to the libphonenumber-js lib.
-            phoneNumber = phoneNumber.trim();
-        } else {
-            phoneNumber = parsedPhoneNumber.format("E.164");
-        }
-    }
-
-    let result = await apiImplementation.createCodePOST(
-        email !== undefined
-            ? { email, options, userContext: makeDefaultUserContextFromAPI(options.req) }
-            : { phoneNumber: phoneNumber!, options, userContext: makeDefaultUserContextFromAPI(options.req) }
-    );
-
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

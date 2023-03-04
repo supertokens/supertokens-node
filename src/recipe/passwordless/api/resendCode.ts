@@ -13,41 +13,39 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import STError from "../error";
-import { APIInterface, APIOptions } from "..";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { makeDefaultUserContextFromAPI, send200Response } from '../../../utils'
+import STError from '../error'
+import { APIInterface, APIOptions } from '..'
 
 export default async function resendCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.resendCodePOST === undefined) {
-        return false;
-    }
+  if (apiImplementation.resendCodePOST === undefined)
+    return false
 
-    const body = await options.req.getJSONBody();
-    const preAuthSessionId = body.preAuthSessionId;
-    const deviceId = body.deviceId;
+  const body = await options.req.getJSONBody()
+  const preAuthSessionId = body.preAuthSessionId
+  const deviceId = body.deviceId
 
-    if (preAuthSessionId === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide preAuthSessionId",
-        });
-    }
+  if (preAuthSessionId === undefined) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide preAuthSessionId',
+    })
+  }
 
-    if (deviceId === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide a deviceId",
-        });
-    }
+  if (deviceId === undefined) {
+    throw new STError({
+      type: STError.BAD_INPUT_ERROR,
+      message: 'Please provide a deviceId',
+    })
+  }
 
-    let result = await apiImplementation.resendCodePOST({
-        deviceId,
-        preAuthSessionId,
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+  const result = await apiImplementation.resendCodePOST({
+    deviceId,
+    preAuthSessionId,
+    options,
+    userContext: makeDefaultUserContextFromAPI(options.req),
+  })
 
-    send200Response(options.res, result);
-    return true;
+  send200Response(options.res, result)
+  return true
 }

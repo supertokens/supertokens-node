@@ -14,42 +14,42 @@
  */
 
 export default class SuperTokensError extends Error {
-    private static errMagic = "ndskajfasndlfkj435234krjdsa";
-    static BAD_INPUT_ERROR: "BAD_INPUT_ERROR" = "BAD_INPUT_ERROR";
+  private static errMagic = 'ndskajfasndlfkj435234krjdsa'
+  static BAD_INPUT_ERROR = 'BAD_INPUT_ERROR' as const
 
-    public type: string;
-    public payload: any;
+  public type: string
+  public payload: any
 
-    // this variable is used to identify which
-    // recipe initiated this error. If no recipe
-    // initiated it, it will be undefined, else it
-    // will be the "actual" rid of that recipe. By actual,
-    // I mean that it will not be influenced by the
-    // parent's RID.
-    public fromRecipe: string | undefined;
-    // @ts-ignore
-    private errMagic: string;
+  // this variable is used to identify which
+  // recipe initiated this error. If no recipe
+  // initiated it, it will be undefined, else it
+  // will be the "actual" rid of that recipe. By actual,
+  // I mean that it will not be influenced by the
+  // parent's RID.
+  public fromRecipe: string | undefined
 
-    constructor(
-        options:
+  private errMagic: string
+
+  constructor(
+    options:
             | {
-                  message: string;
-                  payload?: any;
-                  type: string;
-              }
+              message: string
+              payload?: any
+              type: string
+            }
             | {
-                  message: string;
-                  type: "BAD_INPUT_ERROR";
-                  payload: undefined;
-              }
-    ) {
-        super(options.message);
-        this.type = options.type;
-        this.payload = options.payload;
-        this.errMagic = SuperTokensError.errMagic;
-    }
+              message: string
+              type: 'BAD_INPUT_ERROR'
+              payload: undefined
+            },
+  ) {
+    super(options.message)
+    this.type = options.type
+    this.payload = options.payload
+    this.errMagic = SuperTokensError.errMagic
+  }
 
-    static isErrorFromSuperTokens(obj: any): obj is SuperTokensError {
-        return obj.errMagic === SuperTokensError.errMagic;
-    }
+  static isErrorFromSuperTokens(obj: any): obj is SuperTokensError {
+    return obj.errMagic === SuperTokensError.errMagic
+  }
 }

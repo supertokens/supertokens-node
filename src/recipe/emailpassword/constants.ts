@@ -13,16 +13,16 @@
  * under the License.
  */
 
-export const FORM_FIELD_PASSWORD_ID = "password";
+export const FORM_FIELD_PASSWORD_ID = 'password'
 
-export const FORM_FIELD_EMAIL_ID = "email";
+export const FORM_FIELD_EMAIL_ID = 'email'
 
-export const SIGN_UP_API = "/signup";
+export const SIGN_UP_API = '/signup'
 
-export const SIGN_IN_API = "/signin";
+export const SIGN_IN_API = '/signin'
 
-export const GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
+export const GENERATE_PASSWORD_RESET_TOKEN_API = '/user/password/reset/token'
 
-export const PASSWORD_RESET_API = "/user/password/reset";
+export const PASSWORD_RESET_API = '/user/password/reset'
 
-export const SIGNUP_EMAIL_EXISTS_API = "/signup/email/exists";
+export const SIGNUP_EMAIL_EXISTS_API = '/signup/email/exists'

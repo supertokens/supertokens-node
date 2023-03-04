@@ -13,5 +13,5 @@
  * under the License.
  */
 
-import SMTP from "./smtp";
-export let SMTPService = SMTP;
+import SMTP from './smtp'
+export const SMTPService = SMTP

@@ -12,159 +12,163 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { decode } from "jsonwebtoken";
-import * as assert from "assert";
+import * as assert from 'assert'
+import { decode } from 'jsonwebtoken'
 
-import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
-import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
-import { addJWTToAccessTokenPayload } from "./utils";
-import STError from "../error";
-import SessionRecipe from "../recipe";
+import { RecipeInterface as OpenIdRecipeInterface } from '../../openid/types'
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from '../types'
+import STError from '../error'
+import SessionRecipe from '../recipe'
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from './constants'
+import { addJWTToAccessTokenPayload } from './utils'
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
-    constructor(
-        private readonly originalSessionClass: SessionContainerInterface,
-        private readonly openIdRecipeImplementation: OpenIdRecipeInterface
-    ) {}
+  constructor(
+    private readonly originalSessionClass: SessionContainerInterface,
+    private readonly openIdRecipeImplementation: OpenIdRecipeInterface,
+  ) {}
 
-    revokeSession(userContext?: any): Promise<void> {
-        return this.originalSessionClass.revokeSession(userContext);
+  revokeSession(userContext?: any): Promise<void> {
+    return this.originalSessionClass.revokeSession(userContext)
+  }
+
+  getSessionData(userContext?: any): Promise<any> {
+    return this.originalSessionClass.getSessionData(userContext)
+  }
+
+  updateSessionData(newSessionData: any, userContext?: any): Promise<any> {
+    return this.originalSessionClass.updateSessionData(newSessionData, userContext)
+  }
+
+  getUserId(userContext?: any): string {
+    return this.originalSessionClass.getUserId(userContext)
+  }
+
+  getAccessTokenPayload(userContext?: any) {
+    return this.originalSessionClass.getAccessTokenPayload(userContext)
+  }
+
+  getHandle(userContext?: any): string {
+    return this.originalSessionClass.getHandle(userContext)
+  }
+
+  getAccessToken(userContext?: any): string {
+    return this.originalSessionClass.getAccessToken(userContext)
+  }
+
+  getTimeCreated(userContext?: any): Promise<number> {
+    return this.originalSessionClass.getTimeCreated(userContext)
+  }
+
+  getExpiry(userContext?: any): Promise<number> {
+    return this.originalSessionClass.getExpiry(userContext)
+  }
+
+  // We copy the implementation here, since we want to override updateAccessTokenPayload
+  async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+    const validateClaimResponse = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateClaims({
+      accessTokenPayload: this.getAccessTokenPayload(userContext),
+      userId: this.getUserId(userContext),
+      claimValidators,
+      userContext,
+    })
+
+    if (validateClaimResponse.accessTokenPayloadUpdate !== undefined)
+      await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext)
+
+    if (validateClaimResponse.invalidClaims.length !== 0) {
+      throw new STError({
+        type: 'INVALID_CLAIMS',
+        message: 'INVALID_CLAIMS',
+        payload: validateClaimResponse.invalidClaims,
+      })
     }
-    getSessionData(userContext?: any): Promise<any> {
-        return this.originalSessionClass.getSessionData(userContext);
-    }
-    updateSessionData(newSessionData: any, userContext?: any): Promise<any> {
-        return this.originalSessionClass.updateSessionData(newSessionData, userContext);
-    }
-    getUserId(userContext?: any): string {
-        return this.originalSessionClass.getUserId(userContext);
-    }
-    getAccessTokenPayload(userContext?: any) {
-        return this.originalSessionClass.getAccessTokenPayload(userContext);
-    }
-    getHandle(userContext?: any): string {
-        return this.originalSessionClass.getHandle(userContext);
-    }
-    getAccessToken(userContext?: any): string {
-        return this.originalSessionClass.getAccessToken(userContext);
-    }
-    getTimeCreated(userContext?: any): Promise<number> {
-        return this.originalSessionClass.getTimeCreated(userContext);
-    }
-    getExpiry(userContext?: any): Promise<number> {
-        return this.originalSessionClass.getExpiry(userContext);
+  }
+
+  // We copy the implementation here, since we want to override updateAccessTokenPayload
+  async fetchAndSetClaim<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, userContext?: any) {
+    const update = await claim.build(this.getUserId(userContext), userContext)
+    return this.mergeIntoAccessTokenPayload(update, userContext)
+  }
+
+  // We copy the implementation here, since we want to override updateAccessTokenPayload
+  setClaimValue<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, value: T, userContext?: any) {
+    const update = claim.addToPayload_internal({}, value, userContext)
+    return this.mergeIntoAccessTokenPayload(update, userContext)
+  }
+
+  // We copy the implementation here, since we want to override updateAccessTokenPayload
+  async getClaimValue<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, userContext?: any) {
+    return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext)
+  }
+
+  // We copy the implementation here, since we want to override updateAccessTokenPayload
+  removeClaim(this: SessionClassWithJWT, claim: SessionClaim<any>, userContext?: any) {
+    const update = claim.removeFromPayloadByMerge_internal({}, userContext)
+    return this.mergeIntoAccessTokenPayload(update, userContext)
+  }
+
+  // We copy the implementation here, since we want to override updateAccessTokenPayload
+  async mergeIntoAccessTokenPayload(
+    this: SessionClassWithJWT,
+    accessTokenPayloadUpdate: any,
+    userContext?: any,
+  ): Promise<void> {
+    const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate }
+    for (const key of Object.keys(accessTokenPayloadUpdate)) {
+      if (accessTokenPayloadUpdate[key] === null)
+        delete updatedPayload[key]
     }
 
-    // We copy the implementation here, since we want to override updateAccessTokenPayload
-    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
-        let validateClaimResponse = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateClaims({
-            accessTokenPayload: this.getAccessTokenPayload(userContext),
-            userId: this.getUserId(userContext),
-            claimValidators,
-            userContext,
-        });
+    await this.updateAccessTokenPayload(updatedPayload, userContext)
+  }
 
-        if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
-            await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
-        }
-
-        if (validateClaimResponse.invalidClaims.length !== 0) {
-            throw new STError({
-                type: "INVALID_CLAIMS",
-                message: "INVALID_CLAIMS",
-                payload: validateClaimResponse.invalidClaims,
-            });
-        }
-    }
-
-    // We copy the implementation here, since we want to override updateAccessTokenPayload
-    async fetchAndSetClaim<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, userContext?: any) {
-        const update = await claim.build(this.getUserId(userContext), userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    // We copy the implementation here, since we want to override updateAccessTokenPayload
-    setClaimValue<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, value: T, userContext?: any) {
-        const update = claim.addToPayload_internal({}, value, userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    // We copy the implementation here, since we want to override updateAccessTokenPayload
-    async getClaimValue<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, userContext?: any) {
-        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
-    }
-
-    // We copy the implementation here, since we want to override updateAccessTokenPayload
-    removeClaim(this: SessionClassWithJWT, claim: SessionClaim<any>, userContext?: any) {
-        const update = claim.removeFromPayloadByMerge_internal({}, userContext);
-        return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    // We copy the implementation here, since we want to override updateAccessTokenPayload
-    async mergeIntoAccessTokenPayload(
-        this: SessionClassWithJWT,
-        accessTokenPayloadUpdate: any,
-        userContext?: any
-    ): Promise<void> {
-        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
-        for (const key of Object.keys(accessTokenPayloadUpdate)) {
-            if (accessTokenPayloadUpdate[key] === null) {
-                delete updatedPayload[key];
-            }
-        }
-
-        await this.updateAccessTokenPayload(updatedPayload, userContext);
-    }
-
-    // TODO: figure out a proper way to override just this function
-    /**
+  // TODO: figure out a proper way to override just this function
+  /**
      * @deprecated use mergeIntoAccessTokenPayload instead
      */
-    async updateAccessTokenPayload(
-        this: SessionClassWithJWT,
-        newAccessTokenPayload: any | undefined,
-        userContext?: any
-    ): Promise<void> {
-        newAccessTokenPayload =
-            newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-        let accessTokenPayload = this.getAccessTokenPayload(userContext);
-        let jwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+  async updateAccessTokenPayload(
+    this: SessionClassWithJWT,
+    newAccessTokenPayload: any | undefined,
+    userContext?: any,
+  ): Promise<void> {
+    newAccessTokenPayload
+            = (newAccessTokenPayload === null || newAccessTokenPayload === undefined) ? {} : newAccessTokenPayload
+    const accessTokenPayload = this.getAccessTokenPayload(userContext)
+    const jwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]
 
-        if (jwtPropertyName === undefined) {
-            return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload, userContext);
-        }
+    if (jwtPropertyName === undefined)
+      return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload, userContext)
 
-        let existingJWT = accessTokenPayload[jwtPropertyName];
-        assert.notStrictEqual(existingJWT, undefined);
+    const existingJWT = accessTokenPayload[jwtPropertyName]
+    assert.notStrictEqual(existingJWT, undefined)
 
-        let currentTimeInSeconds = Date.now() / 1000;
-        let decodedPayload = decode(existingJWT, { json: true });
+    const currentTimeInSeconds = Date.now() / 1000
+    const decodedPayload = decode(existingJWT, { json: true })
 
-        // JsonWebToken.decode possibly returns null
-        if (decodedPayload === null || decodedPayload.exp === undefined) {
-            throw new Error("Error reading JWT from session");
-        }
+    // JsonWebToken.decode possibly returns null
+    if (decodedPayload === null || decodedPayload.exp === undefined)
+      throw new Error('Error reading JWT from session')
 
-        let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
+    let jwtExpiry = decodedPayload.exp - currentTimeInSeconds
 
-        if (jwtExpiry <= 0) {
-            // it can come here if someone calls this function well after
-            // the access token and the jwt payload have expired (which can happen if an API takes a VERY long time). In this case, we still want the jwt payload to update, but the resulting JWT should
-            // not be alive for too long (since it's expired already). So we set it to
-            // 1 second lifetime.
-            jwtExpiry = 1;
-        }
-
-        newAccessTokenPayload = await addJWTToAccessTokenPayload({
-            accessTokenPayload: newAccessTokenPayload,
-            jwtExpiry,
-            userId: this.getUserId(),
-            jwtPropertyName,
-            openIdRecipeImplementation: this.openIdRecipeImplementation,
-            userContext,
-        });
-
-        await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload, userContext);
+    if (jwtExpiry <= 0) {
+      // it can come here if someone calls this function well after
+      // the access token and the jwt payload have expired (which can happen if an API takes a VERY long time). In this case, we still want the jwt payload to update, but the resulting JWT should
+      // not be alive for too long (since it's expired already). So we set it to
+      // 1 second lifetime.
+      jwtExpiry = 1
     }
+
+    newAccessTokenPayload = await addJWTToAccessTokenPayload({
+      accessTokenPayload: newAccessTokenPayload,
+      jwtExpiry,
+      userId: this.getUserId(),
+      jwtPropertyName,
+      openIdRecipeImplementation: this.openIdRecipeImplementation,
+      userContext,
+    })
+
+    await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload, userContext)
+  }
 }

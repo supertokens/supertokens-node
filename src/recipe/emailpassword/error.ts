@@ -13,29 +13,29 @@
  * under the License.
  */
 
-import STError from "../../error";
+import STError from '../../error'
 
 export default class SessionError extends STError {
-    static FIELD_ERROR: "FIELD_ERROR" = "FIELD_ERROR";
+  static FIELD_ERROR = 'FIELD_ERROR' as const
 
-    constructor(
-        options:
+  constructor(
+    options:
             | {
-                  type: "FIELD_ERROR";
-                  payload: {
-                      id: string;
-                      error: string;
-                  }[];
-                  message: string;
-              }
+              type: 'FIELD_ERROR'
+              payload: {
+                id: string
+                error: string
+              }[]
+              message: string
+            }
             | {
-                  type: "BAD_INPUT_ERROR";
-                  message: string;
-              }
-    ) {
-        super({
-            ...options,
-        });
-        this.fromRecipe = "emailpassword";
-    }
+              type: 'BAD_INPUT_ERROR'
+              message: string
+            },
+  ) {
+    super({
+      ...options,
+    })
+    this.fromRecipe = 'emailpassword'
+  }
 }

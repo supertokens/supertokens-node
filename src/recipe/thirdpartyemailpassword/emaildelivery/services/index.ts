@@ -12,5 +12,5 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import SMTP from "./smtp";
-export let SMTPService = SMTP;
+import SMTP from './smtp'
+export const SMTPService = SMTP

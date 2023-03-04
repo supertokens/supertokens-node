@@ -13,95 +13,98 @@
  * under the License.
  */
 
-import { URL } from "url";
+import { URL } from 'url'
 
 export default class NormalisedURLPath {
-    private value: string;
+  private value: string
 
-    constructor(url: string) {
-        this.value = normaliseURLPathOrThrowError(url);
-    }
+  constructor(url: string) {
+    this.value = normaliseURLPathOrThrowError(url)
+  }
 
-    startsWith = (other: NormalisedURLPath) => {
-        return this.value.startsWith(other.value);
-    };
+  startsWith = (other: NormalisedURLPath) => {
+    return this.value.startsWith(other.value)
+  }
 
-    appendPath = (other: NormalisedURLPath) => {
-        return new NormalisedURLPath(this.value + other.value);
-    };
+  appendPath = (other: NormalisedURLPath) => {
+    return new NormalisedURLPath(this.value + other.value)
+  }
 
-    getAsStringDangerous = () => {
-        return this.value;
-    };
+  getAsStringDangerous = () => {
+    return this.value
+  }
 
-    equals = (other: NormalisedURLPath) => {
-        return this.value === other.value;
-    };
+  equals = (other: NormalisedURLPath) => {
+    return this.value === other.value
+  }
 
-    isARecipePath = () => {
-        return this.value === "/recipe" || this.value.startsWith("/recipe/");
-    };
+  isARecipePath = () => {
+    return this.value === '/recipe' || this.value.startsWith('/recipe/')
+  }
 }
 
 function normaliseURLPathOrThrowError(input: string): string {
-    input = input.trim().toLowerCase();
+  input = input.trim().toLowerCase()
 
-    try {
-        if (!input.startsWith("http://") && !input.startsWith("https://")) {
-            throw new Error("converting to proper URL");
-        }
-        let urlObj = new URL(input);
-        input = urlObj.pathname;
+  try {
+    if (!input.startsWith('http://') && !input.startsWith('https://'))
+      throw new Error('converting to proper URL')
 
-        if (input.charAt(input.length - 1) === "/") {
-            return input.substr(0, input.length - 1);
-        }
+    const urlObj = new URL(input)
+    input = urlObj.pathname
 
-        return input;
-    } catch (err) {}
-    // not a valid URL
+    if (input.charAt(input.length - 1) === '/')
+      return input.substr(0, input.length - 1)
 
-    // If the input contains a . it means they have given a domain name.
-    // So we try assuming that they have given a domain name + path
-    if (
-        (domainGiven(input) || input.startsWith("localhost")) &&
-        !input.startsWith("http://") &&
-        !input.startsWith("https://")
-    ) {
-        input = "http://" + input;
-        return normaliseURLPathOrThrowError(input);
-    }
+    return input
+  }
+  catch (err) {}
+  // not a valid URL
 
-    if (input.charAt(0) !== "/") {
-        input = "/" + input;
-    }
+  // If the input contains a . it means they have given a domain name.
+  // So we try assuming that they have given a domain name + path
+  if (
+    (domainGiven(input) || input.startsWith('localhost'))
+        && !input.startsWith('http://')
+        && !input.startsWith('https://')
+  ) {
+    input = `http://${input}`
+    return normaliseURLPathOrThrowError(input)
+  }
 
-    // at this point, we should be able to convert it into a fake URL and recursively call this function.
-    try {
-        // test that we can convert this to prevent an infinite loop
-        new URL("http://example.com" + input);
+  if (input.charAt(0) !== '/')
+    input = `/${input}`
 
-        return normaliseURLPathOrThrowError("http://example.com" + input);
-    } catch (err) {
-        throw Error("Please provide a valid URL path");
-    }
+  // at this point, we should be able to convert it into a fake URL and recursively call this function.
+  try {
+    // test that we can convert this to prevent an infinite loop
+    // TODO: Do not use 'new' for side effects.eslintno-new
+    // eslint-disable-next-line no-new
+    new URL(`http://example.com${input}`)
+
+    return normaliseURLPathOrThrowError(`http://example.com${input}`)
+  }
+  catch (err) {
+    throw new Error('Please provide a valid URL path')
+  }
 }
 
 function domainGiven(input: string): boolean {
-    // If no dot, return false.
-    if (input.indexOf(".") === -1 || input.startsWith("/")) {
-        return false;
-    }
+  // If no dot, return false.
+  if (!input.includes('.') || input.startsWith('/'))
+    return false
 
-    try {
-        let url = new URL(input);
-        return url.hostname.indexOf(".") !== -1;
-    } catch (ignored) {}
+  try {
+    const url = new URL(input)
+    return url.hostname.includes('.')
+  }
+  catch (ignored) {}
 
-    try {
-        let url = new URL("http://" + input);
-        return url.hostname.indexOf(".") !== -1;
-    } catch (ignored) {}
+  try {
+    const url = new URL(`http://${input}`)
+    return url.hostname.includes('.')
+  }
+  catch (ignored) {}
 
-    return false;
+  return false
 }

@@ -12,19 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeInput } from "../../../../../ingredients/smsdelivery/services/twilio";
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
-import PasswordlessTwilioService from "../../../../passwordless/smsdelivery/services/twilio/index";
+import { TypeInput } from '../../../../../ingredients/smsdelivery/services/twilio'
+import { SmsDeliveryInterface } from '../../../../../ingredients/smsdelivery/types'
+import { TypeThirdPartyPasswordlessSmsDeliveryInput } from '../../../types'
+import PasswordlessTwilioService from '../../../../passwordless/smsdelivery/services/twilio/index'
 
 export default class TwilioService implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
-    private passwordlessTwilioService: PasswordlessTwilioService;
+  private passwordlessTwilioService: PasswordlessTwilioService
 
-    constructor(config: TypeInput<TypeThirdPartyPasswordlessSmsDeliveryInput>) {
-        this.passwordlessTwilioService = new PasswordlessTwilioService(config);
-    }
+  constructor(config: TypeInput<TypeThirdPartyPasswordlessSmsDeliveryInput>) {
+    this.passwordlessTwilioService = new PasswordlessTwilioService(config)
+  }
 
-    sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
-        await this.passwordlessTwilioService.sendSms(input);
-    };
+  sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {
+    await this.passwordlessTwilioService.sendSms(input)
+  }
 }

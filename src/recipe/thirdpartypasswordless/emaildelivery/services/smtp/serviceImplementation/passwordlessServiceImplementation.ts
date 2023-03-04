@@ -13,25 +13,25 @@
  * under the License.
  */
 
-import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../../types";
+import { TypeThirdPartyPasswordlessEmailDeliveryInput } from '../../../../types'
 import {
-    ServiceInterface,
-    TypeInputSendRawEmail,
-    GetContentResult,
-} from "../../../../../../ingredients/emaildelivery/services/smtp";
-import { TypePasswordlessEmailDeliveryInput } from "../../../../../passwordless/types";
+  GetContentResult,
+  ServiceInterface,
+  TypeInputSendRawEmail,
+} from '../../../../../../ingredients/emaildelivery/services/smtp'
+import { TypePasswordlessEmailDeliveryInput } from '../../../../../passwordless/types'
 
 export default function getServiceInterface(
-    thirdpartyPasswordlessServiceImplementation: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>
+  thirdpartyPasswordlessServiceImplementation: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>,
 ): ServiceInterface<TypePasswordlessEmailDeliveryInput> {
-    return {
-        sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            return thirdpartyPasswordlessServiceImplementation.sendRawEmail(input);
-        },
-        getContent: async function (
-            input: TypePasswordlessEmailDeliveryInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            return await thirdpartyPasswordlessServiceImplementation.getContent(input);
-        },
-    };
+  return {
+    async sendRawEmail(input: TypeInputSendRawEmail) {
+      return thirdpartyPasswordlessServiceImplementation.sendRawEmail(input)
+    },
+    async getContent(
+      input: TypePasswordlessEmailDeliveryInput & { userContext: any },
+    ): Promise<GetContentResult> {
+      return await thirdpartyPasswordlessServiceImplementation.getContent(input)
+    },
+  }
 }

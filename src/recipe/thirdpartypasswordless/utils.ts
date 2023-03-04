@@ -13,39 +13,38 @@
  * under the License.
  */
 
-import { NormalisedAppinfo } from "../../types";
-import { TypeInput, TypeNormalisedInput } from "./types";
-import { RecipeInterface, APIInterface } from "./types";
-import BackwardCompatibilityEmailService from "./emaildelivery/services/backwardCompatibility";
-import BackwardCompatibilitySmsService from "./smsdelivery/services/backwardCompatibility";
+import { NormalisedAppinfo } from '../../types'
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from './types'
+import BackwardCompatibilityEmailService from './emaildelivery/services/backwardCompatibility'
+import BackwardCompatibilitySmsService from './smsdelivery/services/backwardCompatibility'
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
-    let providers = config.providers === undefined ? [] : config.providers;
+  const providers = config.providers === undefined ? [] : config.providers
 
-    let override = {
-        functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config?.override,
-    };
+  const override = {
+    functions: (originalImplementation: RecipeInterface) => originalImplementation,
+    apis: (originalImplementation: APIInterface) => originalImplementation,
+    ...config?.override,
+  }
 
-    function getEmailDeliveryConfig() {
-        let emailService = config?.emailDelivery?.service;
-        /**
+  function getEmailDeliveryConfig() {
+    let emailService = config?.emailDelivery?.service
+    /**
          * following code is for backward compatibility.
          * if user has not passed emailDelivery config, we
          * use the createAndSendCustomEmail config. If the user
          * has not passed even that config, we use the default
          * createAndSendCustomEmail implementation
          */
-        if (emailService === undefined) {
-            emailService = new BackwardCompatibilityEmailService(appInfo, {
-                createAndSendCustomEmail:
-                    config?.contactMethod !== "PHONE" ? config?.createAndSendCustomEmail : undefined,
-            });
-        }
-        return {
-            ...config?.emailDelivery,
-            /**
+    if (emailService === undefined) {
+      emailService = new BackwardCompatibilityEmailService(appInfo, {
+        createAndSendCustomEmail:
+                    config?.contactMethod !== 'PHONE' ? config?.createAndSendCustomEmail : undefined,
+      })
+    }
+    return {
+      ...config?.emailDelivery,
+      /**
              * if we do
              * let emailDelivery = {
              *    service: emailService,
@@ -56,28 +55,28 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
              * it it again get set to undefined, so we
              * set service at the end
              */
-            service: emailService,
-        };
+      service: emailService,
     }
+  }
 
-    function getSmsDeliveryConfig() {
-        let smsService = config?.smsDelivery?.service;
-        /**
+  function getSmsDeliveryConfig() {
+    let smsService = config?.smsDelivery?.service
+    /**
          * following code is for backward compatibility.
          * if user has not passed smsDelivery config, we
          * use the createAndSendCustomTextMessage config. If the user
          * has not passed even that config, we use the default
          * createAndSendCustomTextMessage implementation
          */
-        if (smsService === undefined) {
-            smsService = new BackwardCompatibilitySmsService(appInfo, {
-                createAndSendCustomTextMessage:
-                    config?.contactMethod !== "EMAIL" ? config?.createAndSendCustomTextMessage : undefined,
-            });
-        }
-        return {
-            ...config?.smsDelivery,
-            /**
+    if (smsService === undefined) {
+      smsService = new BackwardCompatibilitySmsService(appInfo, {
+        createAndSendCustomTextMessage:
+                    config?.contactMethod !== 'EMAIL' ? config?.createAndSendCustomTextMessage : undefined,
+      })
+    }
+    return {
+      ...config?.smsDelivery,
+      /**
              * if we do
              * let smsDelivery = {
              *    service: smsService,
@@ -88,15 +87,15 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
              * it it again get set to undefined, so we
              * set service at the end
              */
-            service: smsService,
-        };
+      service: smsService,
     }
+  }
 
-    return {
-        ...config,
-        providers,
-        override,
-        getEmailDeliveryConfig,
-        getSmsDeliveryConfig,
-    };
+  return {
+    ...config,
+    providers,
+    override,
+    getEmailDeliveryConfig,
+    getSmsDeliveryConfig,
+  }
 }

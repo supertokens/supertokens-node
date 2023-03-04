@@ -13,40 +13,39 @@
  * under the License.
  */
 
-import { JSONObject } from "../../types";
-import Recipe from "./recipe";
-import { RecipeInterface } from "./types";
-export * from "./types";
+import { JSONObject } from '../../types'
+import Recipe from './recipe'
+import { RecipeInterface } from './types'
 
 export default class Wrapper {
-    static init = Recipe.init;
+  static init = Recipe.init
 
-    static async getUserMetadata(userId: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserMetadata({
-            userId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async getUserMetadata(userId: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserMetadata({
+      userId,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserMetadata({
-            userId,
-            metadataUpdate,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUserMetadata({
+      userId,
+      metadataUpdate,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 
-    static async clearUserMetadata(userId: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.clearUserMetadata({
-            userId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
+  static async clearUserMetadata(userId: string, userContext?: any) {
+    return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.clearUserMetadata({
+      userId,
+      userContext: userContext === undefined ? {} : userContext,
+    })
+  }
 }
 
-export const init = Wrapper.init;
-export const getUserMetadata = Wrapper.getUserMetadata;
-export const updateUserMetadata = Wrapper.updateUserMetadata;
-export const clearUserMetadata = Wrapper.clearUserMetadata;
+export const init = Wrapper.init
+export const getUserMetadata = Wrapper.getUserMetadata
+export const updateUserMetadata = Wrapper.updateUserMetadata
+export const clearUserMetadata = Wrapper.clearUserMetadata
 
-export type { RecipeInterface, JSONObject };
+export type { RecipeInterface, JSONObject }

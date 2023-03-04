@@ -12,73 +12,75 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
-import { createAndSendCustomEmail as defaultCreateAndSendCustomEmail } from "../../../passwordResetFunctions";
-import { NormalisedAppinfo } from "../../../../../types";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import { RecipeInterface, TypeEmailPasswordEmailDeliveryInput, User } from '../../../types'
+import { createAndSendCustomEmail as defaultCreateAndSendCustomEmail } from '../../../passwordResetFunctions'
+import { NormalisedAppinfo } from '../../../../../types'
+import { EmailDeliveryInterface } from '../../../../../ingredients/emaildelivery/types'
 
 export default class BackwardCompatibilityService
-    implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
-    private recipeInterfaceImpl: RecipeInterface;
-    private isInServerlessEnv: boolean;
-    private appInfo: NormalisedAppinfo;
-    private resetPasswordUsingTokenFeature: {
-        createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
-    };
+implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
+  private recipeInterfaceImpl: RecipeInterface
+  private isInServerlessEnv: boolean
+  private appInfo: NormalisedAppinfo
+  private resetPasswordUsingTokenFeature: {
+    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>
+  }
 
-    constructor(
-        recipeInterfaceImpl: RecipeInterface,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        resetPasswordUsingTokenFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                passwordResetURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
-        this.recipeInterfaceImpl = recipeInterfaceImpl;
-        this.isInServerlessEnv = isInServerlessEnv;
-        this.appInfo = appInfo;
-        {
-            let inputCreateAndSendCustomEmail = resetPasswordUsingTokenFeature?.createAndSendCustomEmail;
-            this.resetPasswordUsingTokenFeature =
-                inputCreateAndSendCustomEmail !== undefined
-                    ? {
-                          createAndSendCustomEmail: inputCreateAndSendCustomEmail,
-                      }
-                    : {
-                          createAndSendCustomEmail: defaultCreateAndSendCustomEmail(this.appInfo),
-                      };
-        }
-    }
-
-    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        let user = await this.recipeInterfaceImpl.getUserById({
-            userId: input.user.id,
-            userContext: input.userContext,
-        });
-        if (user === undefined) {
-            throw Error("this should never come here");
-        }
-        // we add this here cause the user may have overridden the sendEmail function
-        // to change the input email and if we don't do this, the input email
-        // will get reset by the getUserById call above.
-        user.email = input.user.email;
-        try {
-            if (!this.isInServerlessEnv) {
-                this.resetPasswordUsingTokenFeature
-                    .createAndSendCustomEmail(user, input.passwordResetLink, input.userContext)
-                    .catch((_) => {});
-            } else {
-                // see https://github.com/supertokens/supertokens-node/pull/135
-                await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
-                    user,
-                    input.passwordResetLink,
-                    input.userContext
-                );
+  constructor(
+    recipeInterfaceImpl: RecipeInterface,
+    appInfo: NormalisedAppinfo,
+    isInServerlessEnv: boolean,
+    resetPasswordUsingTokenFeature?: {
+      createAndSendCustomEmail?: (
+        user: User,
+        passwordResetURLWithToken: string,
+        userContext: any
+      ) => Promise<void>
+    },
+  ) {
+    this.recipeInterfaceImpl = recipeInterfaceImpl
+    this.isInServerlessEnv = isInServerlessEnv
+    this.appInfo = appInfo
+    {
+      const inputCreateAndSendCustomEmail = resetPasswordUsingTokenFeature?.createAndSendCustomEmail
+      this.resetPasswordUsingTokenFeature
+                = inputCreateAndSendCustomEmail !== undefined
+          ? {
+              createAndSendCustomEmail: inputCreateAndSendCustomEmail,
             }
-        } catch (_) {}
-    };
+          : {
+              createAndSendCustomEmail: defaultCreateAndSendCustomEmail(this.appInfo),
+            }
+    }
+  }
+
+  sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+    const user = await this.recipeInterfaceImpl.getUserById({
+      userId: input.user.id,
+      userContext: input.userContext,
+    })
+    if (user === undefined)
+      throw new Error('this should never come here')
+
+    // we add this here cause the user may have overridden the sendEmail function
+    // to change the input email and if we don't do this, the input email
+    // will get reset by the getUserById call above.
+    user.email = input.user.email
+    try {
+      if (!this.isInServerlessEnv) {
+        this.resetPasswordUsingTokenFeature
+          .createAndSendCustomEmail(user, input.passwordResetLink, input.userContext)
+          .catch((_) => {})
+      }
+      else {
+        // see https://github.com/supertokens/supertokens-node/pull/135
+        await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
+          user,
+          input.passwordResetLink,
+          input.userContext,
+        )
+      }
+    }
+    catch (_) {}
+  }
 }

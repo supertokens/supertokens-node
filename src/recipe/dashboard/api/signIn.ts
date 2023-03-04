@@ -13,44 +13,44 @@
  * under the License.
  */
 
-import { APIInterface, APIOptions } from "../types";
-import { send200Response } from "../../../utils";
-import STError from "../../../error";
-import { Querier } from "../../../querier";
-import NormalisedURLPath from "../../../normalisedURLPath";
+import { APIInterface, APIOptions } from '../types'
+import { send200Response } from '../../../utils'
+import STError from '../../../error'
+import { Querier } from '../../../querier'
+import NormalisedURLPath from '../../../normalisedURLPath'
 
 type SignInResponse =
-    | { status: "OK"; sessionId: string }
-    | { status: "INVALID_CREDENTIALS_ERROR" }
-    | { status: "USER_SUSPENDED_ERROR" };
+    | { status: 'OK'; sessionId: string }
+    | { status: 'INVALID_CREDENTIALS_ERROR' }
+    | { status: 'USER_SUSPENDED_ERROR' }
 
 export default async function signIn(_: APIInterface, options: APIOptions): Promise<boolean> {
-    const { email, password } = await options.req.getJSONBody();
+  const { email, password } = await options.req.getJSONBody()
 
-    if (email === undefined) {
-        throw new STError({
-            message: "Missing required parameter 'email'",
-            type: STError.BAD_INPUT_ERROR,
-        });
-    }
+  if (email === undefined) {
+    throw new STError({
+      message: 'Missing required parameter \'email\'',
+      type: STError.BAD_INPUT_ERROR,
+    })
+  }
 
-    if (password === undefined) {
-        throw new STError({
-            message: "Missing required parameter 'password'",
-            type: STError.BAD_INPUT_ERROR,
-        });
-    }
+  if (password === undefined) {
+    throw new STError({
+      message: 'Missing required parameter \'password\'',
+      type: STError.BAD_INPUT_ERROR,
+    })
+  }
 
-    let querier = Querier.getNewInstanceOrThrowError(undefined);
-    const signInResponse = await querier.sendPostRequest<SignInResponse>(
-        new NormalisedURLPath("/recipe/dashboard/signin"),
-        {
-            email,
-            password,
-        }
-    );
+  const querier = Querier.getNewInstanceOrThrowError(undefined)
+  const signInResponse = await querier.sendPostRequest<SignInResponse>(
+    new NormalisedURLPath('/recipe/dashboard/signin'),
+    {
+      email,
+      password,
+    },
+  )
 
-    send200Response(options.res, signInResponse);
+  send200Response(options.res, signInResponse)
 
-    return true;
+  return true
 }

@@ -12,49 +12,50 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import Twilio from 'twilio'
+import OverrideableBuilder from 'overrideableBuilder'
 import {
-    ServiceInterface,
-    TypeInput,
-    normaliseUserInputConfig,
-} from "../../../../../ingredients/smsdelivery/services/twilio";
-import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import Twilio from "twilio";
-import OverrideableBuilder from "supertokens-js-override";
-import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import { getServiceImplementation } from "./serviceImplementation";
+  ServiceInterface,
+  TypeInput,
+  normaliseUserInputConfig,
+} from '../../../../../ingredients/smsdelivery/services/twilio'
+import { SmsDeliveryInterface } from '../../../../../ingredients/smsdelivery/types'
+import { TypePasswordlessSmsDeliveryInput } from '../../../types'
+import { getServiceImplementation } from './serviceImplementation'
 
 export default class TwilioService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
-    serviceImpl: ServiceInterface<TypePasswordlessSmsDeliveryInput>;
-    private config: TypeInput<TypePasswordlessSmsDeliveryInput>;
+  serviceImpl: ServiceInterface<TypePasswordlessSmsDeliveryInput>
+  private config: TypeInput<TypePasswordlessSmsDeliveryInput>
 
-    constructor(config: TypeInput<TypePasswordlessSmsDeliveryInput>) {
-        this.config = normaliseUserInputConfig(config);
-        const twilioClient = Twilio(
-            config.twilioSettings.accountSid,
-            config.twilioSettings.authToken,
-            config.twilioSettings.opts
-        );
-        let builder = new OverrideableBuilder(getServiceImplementation(twilioClient));
-        if (config.override !== undefined) {
-            builder = builder.override(config.override);
-        }
-        this.serviceImpl = builder.build();
+  constructor(config: TypeInput<TypePasswordlessSmsDeliveryInput>) {
+    this.config = normaliseUserInputConfig(config)
+    const twilioClient = Twilio(
+      config.twilioSettings.accountSid,
+      config.twilioSettings.authToken,
+      config.twilioSettings.opts,
+    )
+    let builder = new OverrideableBuilder(getServiceImplementation(twilioClient))
+    if (config.override !== undefined)
+      builder = builder.override(config.override)
+
+    this.serviceImpl = builder.build()
+  }
+
+  sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
+    const content = await this.serviceImpl.getContent(input)
+    if ('from' in this.config.twilioSettings) {
+      await this.serviceImpl.sendRawSms({
+        ...content,
+        userContext: input.userContext,
+        from: this.config.twilioSettings.from,
+      })
     }
-
-    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
-        let content = await this.serviceImpl.getContent(input);
-        if ("from" in this.config.twilioSettings) {
-            await this.serviceImpl.sendRawSms({
-                ...content,
-                userContext: input.userContext,
-                from: this.config.twilioSettings.from,
-            });
-        } else {
-            await this.serviceImpl.sendRawSms({
-                ...content,
-                userContext: input.userContext,
-                messagingServiceSid: this.config.twilioSettings.messagingServiceSid,
-            });
-        }
-    };
+    else {
+      await this.serviceImpl.sendRawSms({
+        ...content,
+        userContext: input.userContext,
+        messagingServiceSid: this.config.twilioSettings.messagingServiceSid,
+      })
+    }
+  }
 }

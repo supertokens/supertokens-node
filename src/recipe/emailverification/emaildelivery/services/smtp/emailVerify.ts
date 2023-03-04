@@ -12,24 +12,24 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
-import Supertokens from "../../../../../supertokens";
+import { TypeEmailVerificationEmailDeliveryInput } from '../../../types'
+import { GetContentResult } from '../../../../../ingredients/emaildelivery/services/smtp'
+import Supertokens from '../../../../../supertokens'
 
 export default function getEmailVerifyEmailContent(input: TypeEmailVerificationEmailDeliveryInput): GetContentResult {
-    let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo.appName;
-    let body = getEmailVerifyEmailHTML(appName, input.user.email, input.emailVerifyLink);
-    return {
-        body,
-        toEmail: input.user.email,
-        subject: "Email verification instructions",
-        isHtml: true,
-    };
+  const supertokens = Supertokens.getInstanceOrThrowError()
+  const appName = supertokens.appInfo.appName
+  const body = getEmailVerifyEmailHTML(appName, input.user.email, input.emailVerifyLink)
+  return {
+    body,
+    toEmail: input.user.email,
+    subject: 'Email verification instructions',
+    isHtml: true,
+  }
 }
 
 export function getEmailVerifyEmailHTML(appName: string, email: string, verificationLink: string) {
-    return `
+  return `
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
             xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -938,5 +938,5 @@ export function getEmailVerifyEmailHTML(appName: string, email: string, verifica
         </body>
 
         </html>
-    `;
+    `
 }
