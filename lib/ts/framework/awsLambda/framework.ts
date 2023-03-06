@@ -22,7 +22,7 @@ import type {
     Callback,
 } from "aws-lambda";
 import { HTTPMethod } from "../../types";
-import { normaliseHttpMethod } from "../../utils";
+import { getFromObjectCaseInsensitive, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { normalizeHeaderValue, getCookieValueFromHeaders, serializeCookieValue } from "../utils";
@@ -116,7 +116,7 @@ export class AWSRequest extends BaseRequest {
         if (this.event.headers === undefined || this.event.headers === null) {
             return undefined;
         }
-        return normalizeHeaderValue(this.event.headers[key]);
+        return normalizeHeaderValue(getFromObjectCaseInsensitive(key, this.event.headers));
     };
 
     getOriginalURL = (): string => {
