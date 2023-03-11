@@ -53,6 +53,7 @@ export interface ErrorHandlers {
 export declare type TokenType = "access" | "refresh";
 export declare type TokenTransferMethod = "header" | "cookie";
 export declare type TypeInput = {
+    useDynamicAccessTokenSigningKey?: boolean;
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
     cookieSecure?: boolean;
@@ -65,10 +66,10 @@ export declare type TypeInput = {
     }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     jwt?:
         | {
               enable: true;
-              propertyNameInAccessTokenPayload?: string;
               issuer?: string;
           }
         | {
@@ -103,6 +104,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    useDynamicAccessTokenSigningKey: boolean;
     refreshTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
@@ -116,9 +118,9 @@ export declare type TypeNormalisedInput = {
         userContext: any;
     }) => TokenTransferMethod | "any";
     invalidClaimStatusCode: number;
+    exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
     jwt: {
         enable: boolean;
-        propertyNameInAccessTokenPayload: string;
         issuer?: string;
     };
     override: {
@@ -170,6 +172,7 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+    checkDatabase?: boolean;
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
@@ -183,6 +186,7 @@ export declare type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
+        useDynamicAccessTokenSigningKey?: boolean;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
@@ -251,8 +255,6 @@ export declare type RecipeInterface = {
           }
         | undefined
     >;
-    getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     validateClaims(input: {
         userId: string;
         accessTokenPayload: any;

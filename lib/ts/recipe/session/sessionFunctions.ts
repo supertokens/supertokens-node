@@ -29,36 +29,24 @@ export async function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
+    useStaticKey: boolean,
     accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
 
-    let requestBody: {
-        userId: string;
-        userDataInJWT: any;
-        userDataInDatabase: any;
-        enableAntiCsrf?: boolean;
-    } = {
+    const requestBody = {
         userId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionData,
+        useStaticKey,
+        enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
 
-    let handShakeInfo = await helpers.getHandshakeInfo();
-    requestBody.enableAntiCsrf = !disableAntiCsrf && handShakeInfo.antiCsrf === "VIA_TOKEN";
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
-    helpers.updateJwtSigningPublicKeyInfo(
-        response.jwtSigningPublicKeyList,
-        response.jwtSigningPublicKey,
-        response.jwtSigningPublicKeyExpiryTime
-    );
-    delete response.status;
-    delete response.jwtSigningPublicKey;
-    delete response.jwtSigningPublicKeyExpiryTime;
-    delete response.jwtSigningPublicKeyList;
+    const response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
 
+    delete response.status;
     return response;
 }
 
@@ -70,7 +58,8 @@ export async function getSession(
     parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
-    containsCustomHeader: boolean
+    containsCustomHeader: boolean,
+    alwaysCheckCore: boolean
 ): Promise<{
     session: {
         handle: string;
@@ -83,87 +72,73 @@ export async function getSession(
         createdTime: number;
     };
 }> {
-    let handShakeInfo = await helpers.getHandshakeInfo();
     let accessTokenInfo;
 
-    // If we have no key old enough to verify this access token we should reject it without calling the core
-    let foundASigningKeyThatIsOlderThanTheAccessToken = false;
-    for (const key of handShakeInfo.getJwtSigningPublicKeyList()) {
-        try {
-            /**
-             * get access token info using existing signingKey
-             */
-            accessTokenInfo = await getInfoFromAccessToken(
-                parsedAccessToken,
-                key.publicKey,
-                handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
-            );
-            foundASigningKeyThatIsOlderThanTheAccessToken = true;
-        } catch (err) {
-            /**
-             * if error type is not TRY_REFRESH_TOKEN, we return the
-             * error to the user
-             */
-            if (err.type !== STError.TRY_REFRESH_TOKEN) {
+    try {
+        /**
+         * get access token info using jwks
+         */
+        accessTokenInfo = await getInfoFromAccessToken(
+            parsedAccessToken,
+            helpers.JWKS,
+            helpers.config.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
+        );
+    } catch (err) {
+        /**
+         * if error type is not TRY_REFRESH_TOKEN, we return the
+         * error to the user
+         */
+        if (err.type !== STError.TRY_REFRESH_TOKEN) {
+            throw err;
+        }
+        /**
+         * if it comes here, it means token verification has failed.
+         * It may be due to:
+         *  - signing key was updated and this token was signed with new key
+         *  - access token is actually expired
+         *  - access token was signed with the older signing key
+         *
+         * if access token is actually expired, we don't need to call core and
+         * just return TRY_REFRESH_TOKEN to the client
+         *
+         * if access token creation time is after this signing key was created
+         * we need to call core as there are chances that the token
+         * was signed with the updated signing key
+         *
+         * if access token creation time is before oldest signing key was created,
+         * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
+         * the loop we just return TRY_REFRESH_TOKEN
+         */
+        let payload = parsedAccessToken.payload;
+
+        const timeCreated = sanitizeNumberInput(payload.timeCreated);
+        const expiryTime = sanitizeNumberInput(payload.expiryTime);
+
+        if (expiryTime === undefined || timeCreated == undefined) {
+            throw err;
+        }
+
+        if (parsedAccessToken.version < 3) {
+            if (expiryTime < Date.now()) {
                 throw err;
             }
-            /**
-             * if it comes here, it means token verification has failed.
-             * It may be due to:
-             *  - signing key was updated and this token was signed with new key
-             *  - access token is actually expired
-             *  - access token was signed with the older signing key
-             *
-             * if access token is actually expired, we don't need to call core and
-             * just return TRY_REFRESH_TOKEN to the client
-             *
-             * if access token creation time is after this signing key was created
-             * we need to call core as there are chances that the token
-             * was signed with the updated signing key
-             *
-             * if access token creation time is before oldest signing key was created,
-             * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
-             * the loop we just return TRY_REFRESH_TOKEN
-             */
-            let payload = parsedAccessToken.payload;
-
-            const timeCreated = sanitizeNumberInput(payload.timeCreated);
-            const expiryTime = sanitizeNumberInput(payload.expiryTime);
-
-            if (expiryTime === undefined || expiryTime < Date.now()) {
+            if (timeCreated <= Date.now() - 60000) {
                 throw err;
             }
-
-            if (timeCreated === undefined) {
-                throw err;
-            }
-
-            // If we reached a key older than the token and failed to validate the token,
-            // that means it was signed by a key newer than the cached list.
-            // In this case we go to the server.
-            if (timeCreated >= key.createdAt) {
-                foundASigningKeyThatIsOlderThanTheAccessToken = true;
-                break;
-            }
+        } else {
+            // Since v3 (and above) tokens contain a kid we can trust the cache-refresh mechanism of the jose library.
+            // This means we do not need to call the core since the signature wouldn't pass verification anyway.
+            throw err;
         }
     }
 
-    // If the token was created before the oldest key in the cache but hasn't expired, then a config value must've changed.
-    // E.g., the access_token_signing_key_update_interval was reduced, or access_token_signing_key_dynamic was turned on.
-    // Either way, the user needs to refresh the access token as validating by the server is likely to do nothing.
-    if (!foundASigningKeyThatIsOlderThanTheAccessToken) {
-        throw new STError({
-            message: "Access token has expired. Please call the refresh API",
-            type: STError.TRY_REFRESH_TOKEN,
-        });
-    }
-
+    // If we get here we either have a V2 token that doesn't pass verification or a valid V3> token
     /**
      * anti-csrf check if accesstokenInfo is not undefined,
      * which means token verification was successful
      */
     if (doAntiCsrfCheck) {
-        if (handShakeInfo.antiCsrf === "VIA_TOKEN") {
+        if (helpers.config.antiCsrf === "VIA_TOKEN") {
             if (accessTokenInfo !== undefined) {
                 if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
                     if (antiCsrfToken === undefined) {
@@ -186,7 +161,7 @@ export async function getSession(
                     }
                 }
             }
-        } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
+        } else if (helpers.config.antiCsrf === "VIA_CUSTOM_HEADER") {
             if (!containsCustomHeader) {
                 logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
                 throw new STError({
@@ -197,11 +172,7 @@ export async function getSession(
             }
         }
     }
-    if (
-        accessTokenInfo !== undefined &&
-        !handShakeInfo.accessTokenBlacklistingEnabled &&
-        accessTokenInfo.parentRefreshTokenHash1 === undefined
-    ) {
+    if (accessTokenInfo !== undefined && !alwaysCheckCore && accessTokenInfo.parentRefreshTokenHash1 === undefined) {
         return {
             session: {
                 handle: accessTokenInfo.sessionHandle,
@@ -222,20 +193,12 @@ export async function getSession(
         accessToken: parsedAccessToken.rawTokenString,
         antiCsrfToken,
         doAntiCsrfCheck,
-        enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
+        enableAntiCsrf: helpers.config.antiCsrf === "VIA_TOKEN",
     };
 
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
-        helpers.updateJwtSigningPublicKeyInfo(
-            response.jwtSigningPublicKeyList,
-            response.jwtSigningPublicKey,
-            response.jwtSigningPublicKeyExpiryTime
-        );
         delete response.status;
-        delete response.jwtSigningPublicKey;
-        delete response.jwtSigningPublicKeyExpiryTime;
-        delete response.jwtSigningPublicKeyList;
         return response;
     } else if (response.status === "UNAUTHORISED") {
         logDebugMessage("getSession: Returning UNAUTHORISED because of core response");
@@ -244,20 +207,6 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
-        if (
-            response.jwtSigningPublicKeyList !== undefined ||
-            (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined)
-        ) {
-            // after CDI 2.7.1, the API returns the new keys
-            helpers.updateJwtSigningPublicKeyInfo(
-                response.jwtSigningPublicKeyList,
-                response.jwtSigningPublicKey,
-                response.jwtSigningPublicKeyExpiryTime
-            );
-        } else {
-            // we force update the signing keys...
-            await helpers.getHandshakeInfo(true);
-        }
         logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because of core response.");
         throw new STError({
             message: response.message,
@@ -309,8 +258,6 @@ export async function refreshSession(
     containsCustomHeader: boolean,
     transferMethod: TokenTransferMethod
 ): Promise<CreateOrRefreshAPIResponse> {
-    let handShakeInfo = await helpers.getHandshakeInfo();
-
     let requestBody: {
         refreshToken: string;
         antiCsrfToken?: string;
@@ -318,10 +265,10 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
-        enableAntiCsrf: transferMethod === "cookie" && handShakeInfo.antiCsrf === "VIA_TOKEN",
+        enableAntiCsrf: transferMethod === "cookie" && helpers.config.antiCsrf === "VIA_TOKEN",
     };
 
-    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && transferMethod === "cookie") {
+    if (helpers.config.antiCsrf === "VIA_CUSTOM_HEADER" && transferMethod === "cookie") {
         if (!containsCustomHeader) {
             logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new STError({

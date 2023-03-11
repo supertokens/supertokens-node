@@ -76,6 +76,7 @@ export type TokenType = "access" | "refresh";
 export type TokenTransferMethod = "header" | "cookie";
 
 export type TypeInput = {
+    useDynamicAccessTokenSigningKey?: boolean;
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
 
@@ -91,10 +92,10 @@ export type TypeInput = {
 
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     jwt?:
         | {
               enable: true;
-              propertyNameInAccessTokenPayload?: string;
               issuer?: string;
           }
         | { enable: false };
@@ -128,6 +129,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    useDynamicAccessTokenSigningKey: boolean;
     refreshTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
@@ -143,9 +145,9 @@ export type TypeNormalisedInput = {
     }) => TokenTransferMethod | "any";
 
     invalidClaimStatusCode: number;
+    exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
     jwt: {
         enable: boolean;
-        propertyNameInAccessTokenPayload: string;
         issuer?: string;
     };
     override: {
@@ -203,6 +205,7 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+    checkDatabase?: boolean;
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
@@ -217,6 +220,7 @@ export type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
+        useDynamicAccessTokenSigningKey?: boolean;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -297,10 +301,6 @@ export type RecipeInterface = {
           }
         | undefined
     >;
-
-    getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-
-    getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
     validateClaims(input: {
         userId: string;

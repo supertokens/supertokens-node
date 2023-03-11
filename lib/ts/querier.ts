@@ -233,6 +233,23 @@ export class Querier {
         );
     };
 
+    public getUrlsForPath(path: string) {
+        if (this.__hosts === undefined) {
+            throw Error(
+                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
+            );
+        }
+
+        const normalisedPath = new NormalisedURLPath(path);
+
+        return this.__hosts.map((h) => {
+            const currentDomain: string = h.domain.getAsStringDangerous();
+            const currentBasePath: string = h.basePath.getAsStringDangerous();
+
+            return currentDomain + currentBasePath + normalisedPath.getAsStringDangerous();
+        });
+    }
+
     // path should start with "/"
     private sendRequestHelper = async (
         path: NormalisedURLPath,
@@ -250,11 +267,12 @@ export class Querier {
         }
         let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
+        const url = currentDomain + currentBasePath + path.getAsStringDangerous();
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
-            let response = await axiosFunction(currentDomain + currentBasePath + path.getAsStringDangerous());
+            let response = await axiosFunction(url);
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }

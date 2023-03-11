@@ -1,28 +1,11 @@
 // @ts-nocheck
-import { RecipeInterface, TypeNormalisedInput, KeyInfo, AntiCsrfType } from "./types";
+import { JWTVerifyGetKey } from "jose";
+import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
-export declare class HandshakeInfo {
-    antiCsrf: AntiCsrfType;
-    accessTokenBlacklistingEnabled: boolean;
-    accessTokenValidity: number;
-    refreshTokenValidity: number;
-    private rawJwtSigningPublicKeyList;
-    constructor(
-        antiCsrf: AntiCsrfType,
-        accessTokenBlacklistingEnabled: boolean,
-        accessTokenValidity: number,
-        refreshTokenValidity: number,
-        rawJwtSigningPublicKeyList: KeyInfo[]
-    );
-    setJwtSigningPublicKeyList(updatedList: KeyInfo[]): void;
-    getJwtSigningPublicKeyList(): KeyInfo[];
-    clone(): HandshakeInfo;
-}
 export declare type Helpers = {
     querier: Querier;
-    getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
-    updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
+    JWKS: JWTVerifyGetKey;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;

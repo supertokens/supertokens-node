@@ -22,6 +22,7 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload?: any,
         sessionData?: any,
+        useDynamicAccessTokenSigningKey?: boolean,
         userContext?: any
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(

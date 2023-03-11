@@ -1,10 +1,9 @@
+import { createRemoteJWKSet, JWTVerifyGetKey } from "jose";
 import {
     RecipeInterface,
     VerifySessionOptions,
     TypeNormalisedInput,
     SessionInformation,
-    KeyInfo,
-    AntiCsrfType,
     SessionClaimValidator,
     SessionClaim,
     ClaimValidationError,
@@ -24,7 +23,6 @@ import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, getRidFromHeader, isAnIpAddress } from "../../utils";
 import { Querier } from "../../querier";
-import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { JSONObject, NormalisedAppinfo } from "../../types";
 import { logDebugMessage } from "../../logger";
@@ -34,38 +32,9 @@ import { availableTokenTransferMethods } from "./constants";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 
-export class HandshakeInfo {
-    constructor(
-        public antiCsrf: AntiCsrfType,
-        public accessTokenBlacklistingEnabled: boolean,
-        public accessTokenValidity: number,
-        public refreshTokenValidity: number,
-        private rawJwtSigningPublicKeyList: KeyInfo[]
-    ) {}
-
-    setJwtSigningPublicKeyList(updatedList: KeyInfo[]) {
-        this.rawJwtSigningPublicKeyList = updatedList;
-    }
-
-    getJwtSigningPublicKeyList() {
-        return this.rawJwtSigningPublicKeyList.filter((key) => key.expiryTime > Date.now());
-    }
-
-    clone() {
-        return new HandshakeInfo(
-            this.antiCsrf,
-            this.accessTokenBlacklistingEnabled,
-            this.accessTokenValidity,
-            this.refreshTokenValidity,
-            this.rawJwtSigningPublicKeyList
-        );
-    }
-}
-
 export type Helpers = {
     querier: Querier;
-    getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
-    updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
+    JWKS: JWTVerifyGetKey;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
@@ -80,41 +49,21 @@ export default function getRecipeInterface(
     appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface {
-    let handshakeInfo: undefined | HandshakeInfo;
+    const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier
+        .getUrlsForPath(".well-known/jwks.json")
+        .map((url) => createRemoteJWKSet(new URL(url)));
 
-    async function getHandshakeInfo(forceRefetch = false): Promise<HandshakeInfo> {
-        if (handshakeInfo === undefined || handshakeInfo.getJwtSigningPublicKeyList().length === 0 || forceRefetch) {
-            let antiCsrf = config.antiCsrf;
-            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
-
-            handshakeInfo = new HandshakeInfo(
-                antiCsrf,
-                response.accessTokenBlacklistingEnabled,
-                response.accessTokenValidity,
-                response.refreshTokenValidity,
-                response.jwtSigningPublicKeyList
-            );
-
-            updateJwtSigningPublicKeyInfo(
-                response.jwtSigningPublicKeyList,
-                response.jwtSigningPublicKey,
-                response.jwtSigningPublicKeyExpiryTime
-            );
+    const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
+        let lastError = undefined;
+        for (const jwks of JWKS) {
+            try {
+                await jwks(...args);
+            } catch (ex) {
+                lastError = ex;
+            }
         }
-        return handshakeInfo;
-    }
-
-    function updateJwtSigningPublicKeyInfo(keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) {
-        if (keyList === undefined) {
-            // Setting createdAt to Date.now() emulates the old lastUpdatedAt logic
-            keyList = [{ publicKey, expiryTime, createdAt: Date.now() }];
-        }
-
-        if (handshakeInfo !== undefined) {
-            handshakeInfo.setJwtSigningPublicKeyList(keyList);
-        }
-    }
+        throw lastError;
+    };
 
     let obj: RecipeInterface = {
         createNewSession: async function ({
@@ -141,13 +90,11 @@ export default function getRecipeInterface(
 
             if (
                 outputTransferMethod === "cookie" &&
-                helpers.config.cookieSameSite === "none" &&
-                !helpers.config.cookieSecure &&
+                config.cookieSameSite === "none" &&
+                !config.cookieSecure &&
                 !(
-                    (helpers.appInfo.topLevelAPIDomain === "localhost" ||
-                        isAnIpAddress(helpers.appInfo.topLevelAPIDomain)) &&
-                    (helpers.appInfo.topLevelWebsiteDomain === "localhost" ||
-                        isAnIpAddress(helpers.appInfo.topLevelWebsiteDomain))
+                    (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
+                    (appInfo.topLevelWebsiteDomain === "localhost" || isAnIpAddress(appInfo.topLevelWebsiteDomain))
                 )
             ) {
                 // We can allow insecure cookie when both website & API domain are localhost or an IP
@@ -230,7 +177,7 @@ export default function getRecipeInterface(
                 if (tokenString !== undefined) {
                     try {
                         const info = parseJWTWithoutSignatureVerification(tokenString);
-                        validateAccessTokenStructure(info.payload);
+                        validateAccessTokenStructure(info.payload, info.version);
                         logDebugMessage("getSession: got access token from " + transferMethod);
                         accessTokens[transferMethod] = info;
                     } catch {
@@ -304,7 +251,8 @@ export default function getRecipeInterface(
                 accessToken,
                 antiCsrfToken,
                 doAntiCsrfCheck,
-                getRidFromHeader(req) !== undefined
+                getRidFromHeader(req) !== undefined,
+                options?.checkDatabase === true
             );
             let accessTokenString = accessToken.rawTokenString;
             if (response.accessToken !== undefined) {
@@ -642,14 +590,6 @@ export default function getRecipeInterface(
             return this.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload, userContext });
         },
 
-        getAccessTokenLifeTimeMS: async function (): Promise<number> {
-            return (await getHandshakeInfo()).accessTokenValidity;
-        },
-
-        getRefreshTokenLifeTimeMS: async function (): Promise<number> {
-            return (await getHandshakeInfo()).refreshTokenValidity;
-        },
-
         fetchAndSetClaim: async function <T>(
             this: RecipeInterface,
             input: {
@@ -728,8 +668,7 @@ export default function getRecipeInterface(
 
     let helpers: Helpers = {
         querier,
-        updateJwtSigningPublicKeyInfo,
-        getHandshakeInfo,
+        JWKS: combinedJWKS,
         config,
         appInfo,
         getRecipeImpl: getRecipeImplAfterOverrides,
@@ -737,12 +676,7 @@ export default function getRecipeInterface(
 
     if (process.env.TEST_MODE === "testing") {
         // testing mode, we add some of the help functions to the obj
-        (obj as any).getHandshakeInfo = getHandshakeInfo;
-        (obj as any).updateJwtSigningPublicKeyInfo = updateJwtSigningPublicKeyInfo;
         (obj as any).helpers = helpers;
-        (obj as any).setHandshakeInfo = function (info: any) {
-            handshakeInfo = info;
-        };
     }
 
     return obj;

@@ -858,8 +858,6 @@ let sessionConfig: SessionTypeInput = {
                 revokeSession: originalImpl.revokeSession,
                 updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
                 updateSessionData: originalImpl.updateSessionData,
-                getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
-                getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
                 getSessionInformation: originalImpl.getSessionInformation,
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
                 mergeIntoAccessTokenPayload: originalImpl.mergeIntoAccessTokenPayload,
@@ -1124,7 +1122,6 @@ Supertokens.init({
 Session.init({
     jwt: {
         enable: true,
-        propertyNameInAccessTokenPayload: "someKey",
     },
 });
 

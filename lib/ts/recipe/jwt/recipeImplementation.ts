@@ -27,8 +27,10 @@ export default function getRecipeInterface(
         createJWT: async function ({
             payload,
             validitySeconds,
+            useStaticSigningKey,
         }: {
             payload?: any;
+            useStaticSigningKey?: boolean;
             validitySeconds?: number;
         }): Promise<
             | {
@@ -47,6 +49,7 @@ export default function getRecipeInterface(
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
                 payload: payload ?? {},
                 validity: validitySeconds,
+                useStaticSigningKey,
                 algorithm: "RS256",
                 jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
             });

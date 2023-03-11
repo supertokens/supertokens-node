@@ -42,6 +42,7 @@ export declare type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
+        useStaticSigningKey?: boolean;
         userContext: any;
     }): Promise<
         | {

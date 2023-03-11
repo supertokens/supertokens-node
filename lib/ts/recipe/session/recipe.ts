@@ -35,7 +35,6 @@ import {
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
 } from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
-import RecipeImplementationWithJWT from "./with-jwt";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -79,39 +78,17 @@ export default class SessionRecipe extends RecipeModule {
                 issuer: this.config.jwt.issuer,
                 override: this.config.override.openIdFeature,
             });
-
-            let builder = new OverrideableBuilder(
-                RecipeImplementation(
-                    Querier.getNewInstanceOrThrowError(recipeId),
-                    this.config,
-                    this.getAppInfo(),
-                    () => this.recipeInterfaceImpl
-                )
-            );
-            this.recipeInterfaceImpl = builder
-                .override((oI) => {
-                    return RecipeImplementationWithJWT(
-                        oI,
-                        // this.jwtRecipe is never undefined here
-                        this.openIdRecipe!.recipeImplementation,
-                        this.config
-                    );
-                })
-                .override(this.config.override.functions)
-                .build();
-        } else {
-            {
-                let builder = new OverrideableBuilder(
-                    RecipeImplementation(
-                        Querier.getNewInstanceOrThrowError(recipeId),
-                        this.config,
-                        this.getAppInfo(),
-                        () => this.recipeInterfaceImpl
-                    )
-                );
-                this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
-            }
         }
+        let builder = new OverrideableBuilder(
+            RecipeImplementation(
+                Querier.getNewInstanceOrThrowError(recipeId),
+                this.config,
+                this.getAppInfo(),
+                () => this.recipeInterfaceImpl
+            )
+        );
+        this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+
         {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();

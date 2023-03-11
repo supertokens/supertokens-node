@@ -26,5 +26,6 @@ export declare class Querier {
     sendDeleteRequest: (path: NormalisedURLPath, body: any, params?: any) => Promise<any>;
     sendGetRequest: (path: NormalisedURLPath, params: any) => Promise<any>;
     sendPutRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
+    getUrlsForPath(path: string): string[];
     private sendRequestHelper;
 }

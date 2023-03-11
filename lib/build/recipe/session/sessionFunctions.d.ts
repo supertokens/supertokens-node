@@ -9,6 +9,7 @@ export declare function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
+    useStaticKey: boolean,
     accessTokenPayload?: any,
     sessionData?: any
 ): Promise<CreateOrRefreshAPIResponse>;
@@ -20,7 +21,8 @@ export declare function getSession(
     parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
-    containsCustomHeader: boolean
+    containsCustomHeader: boolean,
+    alwaysCheckCore: boolean
 ): Promise<{
     session: {
         handle: string;

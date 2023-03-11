@@ -44,6 +44,7 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload: any = {},
         sessionData: any = {},
+        useDynamicAccessTokenSigningKey?: boolean,
         userContext: any = {}
     ) {
         const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
@@ -71,6 +72,7 @@ export default class SessionWrapper {
             userId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionData,
+            useDynamicAccessTokenSigningKey,
             userContext,
         });
     }
