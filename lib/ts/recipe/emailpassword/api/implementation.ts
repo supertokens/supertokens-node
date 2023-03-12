@@ -670,7 +670,7 @@ export default function getAPIImplementation(): APIInterface {
                 status: "OK",
                 session,
                 user,
-                createdNewUser: user.id === recipeUser?.recipeUserId,
+                createdNewUser: response.createdNewUser,
                 createdNewRecipeUser: true,
             };
         },

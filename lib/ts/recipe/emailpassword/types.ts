@@ -100,7 +100,7 @@ export type RecipeInterface = {
          */
         doAccountLinking: boolean;
         userContext: any;
-    }): Promise<{ status: "OK"; newUserCreated: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
     signIn(input: {
         email: string;

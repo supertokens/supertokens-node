@@ -30,7 +30,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              newUserCreated: boolean;
+              createdNewUser: boolean;
               user: import("../emailpassword").User;
           }
         | {

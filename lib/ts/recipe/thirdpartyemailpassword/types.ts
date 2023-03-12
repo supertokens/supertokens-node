@@ -114,7 +114,7 @@ export type RecipeInterface = {
         password: string;
         doAccountLinking: boolean;
         userContext: any;
-    }): Promise<{ status: "OK"; newUserCreated: boolean; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<{ status: "OK"; createdNewUser: boolean; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
     emailPasswordSignIn(input: {
         email: string;

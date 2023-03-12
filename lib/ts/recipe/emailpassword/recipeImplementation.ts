@@ -18,13 +18,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             password: string;
             doAccountLinking: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; newUserCreated: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
                 email,
                 password,
             });
             if (response.status === "OK") {
-                let newUserCreated = true;
+                let createdNewUser = true;
                 if (doAccountLinking) {
                     let primaryUserId = await AccountLinking.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations(
                         {
@@ -38,13 +38,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                         }
                     );
                     if (response.user.id !== primaryUserId) {
-                        newUserCreated = false;
+                        createdNewUser = false;
                     }
                     response.user.id = primaryUserId;
                 }
                 return {
                     ...response,
-                    newUserCreated,
+                    createdNewUser,
                 };
             } else {
                 return {

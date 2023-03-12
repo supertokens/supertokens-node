@@ -25,7 +25,7 @@ export default function getRecipeInterface(
             doAccountLinking: boolean;
             userContext: any;
         }): Promise<
-            { status: "OK"; newUserCreated: boolean; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            { status: "OK"; createdNewUser: boolean; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },

@@ -9,7 +9,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password: string;
             doAccountLinking: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; newUserCreated: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await recipeInterface.emailPasswordSignUp(input);
         },
 

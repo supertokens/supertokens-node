@@ -82,7 +82,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              newUserCreated: boolean;
+              createdNewUser: boolean;
               user: User;
           }
         | {
