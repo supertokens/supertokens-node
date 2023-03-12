@@ -50,13 +50,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 // either user is undefined or it's an email password user.
                 return undefined;
             }
-            return {
-                email: user.email,
-                id: user.id,
-                recipeUserId: user.recipeUserId,
-                timeJoined: user.timeJoined,
-                thirdParty: user.thirdParty,
-            };
+            return user as User;
         },
 
         getUsersByEmail: async function (input: { email: string; userContext: any }): Promise<User[]> {

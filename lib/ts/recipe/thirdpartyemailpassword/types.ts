@@ -27,7 +27,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser } from "../../types";
 
 export type User = {
     id: string;
@@ -92,9 +92,9 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
+    getUserById(input: { userId: string; userContext: any }): Promise<GlobalUser | User | undefined>;
 
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUsersByEmail(input: { email: string; userContext: any }): Promise<(User | GlobalUser)[]>;
 
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
@@ -114,13 +114,13 @@ export type RecipeInterface = {
         password: string;
         doAccountLinking: boolean;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<{ status: "OK"; newUserCreated: boolean; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
     emailPasswordSignIn(input: {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     createResetPasswordToken(input: {
         userId: string;
@@ -147,7 +147,11 @@ export type RecipeInterface = {
         password?: string;
         userContext: any;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
     }>;
 };
 
@@ -314,7 +318,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
@@ -352,7 +356,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
                 }
               | {
@@ -373,7 +377,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     createdNewUser: boolean;
                     session: SessionContainerInterface;
                 }

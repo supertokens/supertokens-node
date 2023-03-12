@@ -7,7 +7,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -51,12 +51,6 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
-export declare type User = {
-    id: string;
-    recipeUserId: string;
-    email: string;
-    timeJoined: number;
-};
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
@@ -72,11 +66,23 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        /**
+         * we now do account-linking in the recipe implementation of
+         * this function. If someone wants to call this function
+         * manually and wants the any other account with the same email
+         * to be linked automatically, all they need to do is pass this
+         * boolean. If the user doesn't want to do automatic account linking
+         * while calling this function, they can pass false. Default value
+         * of the parameter would be false. So if we are moving the account
+         * linking part to be part of this function, ideally we should keep
+         * this boolean parameter
+         */
         doAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {
               status: "OK";
+              newUserCreated: boolean;
               user: User;
           }
         | {
@@ -142,7 +148,11 @@ export declare type RecipeInterface = {
         password?: string;
         userContext: any;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
     }>;
 };
 export declare type APIOptions = {
@@ -298,7 +308,7 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
-        recipeUserId?: string;
+        recipeUserId: string;
         email: string;
     };
     passwordResetLink: string;

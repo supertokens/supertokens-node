@@ -134,16 +134,36 @@ export default function getAPIImplementation(): APIInterface {
             }
             if (!result.accountsLinked && "reason" in result) {
                 if (result.reason === "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+                    const emailVerificationInstance = EmailVerification.getInstance();
+                    if (emailVerificationInstance !== undefined) {
+                        let emailVerificationResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                userId: result.userId,
+                                email,
+                                userContext,
+                            }
+                        );
+                        if (emailVerificationResponse.status !== "EMAIL_ALREADY_VERIFIED_ERROR") {
+                            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                            let emailVerifyLink = getEmailVerifyLink({
+                                appInfo: options.appInfo,
+                                token: emailVerificationResponse.token,
+                                recipeId: options.recipeId,
+                            });
+                            await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                                type: "EMAIL_VERIFICATION",
+                                user: {
+                                    id: result.userId,
+                                    email,
+                                },
+                                emailVerifyLink,
+                                userContext,
+                            });
+                        }
+                    }
                     return {
                         status: "ACCOUNT_NOT_VERIFIED_ERROR",
                         isNotVerifiedAccountFromInputSession: true,
-                        description: "",
-                    };
-                }
-                if (result.reason === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
-                    return {
-                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
-                        isNotVerifiedAccountFromInputSession: false,
                         description: "",
                     };
                 }
@@ -174,23 +194,9 @@ export default function getAPIImplementation(): APIInterface {
                     "this error should never be thrown. Can't find primary user with userId: " + session.getUserId()
                 );
             }
-            let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
-            if (recipeUser === undefined) {
-                throw Error(
-                    "this error should never be thrown. Can't find emailPassword recipeUser with email: " +
-                        email +
-                        "  and primary userId: " +
-                        session.getUserId()
-                );
-            }
             return {
                 status: "OK",
-                user: {
-                    id: user.id,
-                    recipeUserId: recipeUser.recipeUserId,
-                    timeJoined: recipeUser.timeJoined,
-                    email,
-                },
+                user,
                 createdNewRecipeUser,
                 wereAccountsAlreadyLinked,
                 session,
@@ -238,7 +244,7 @@ export default function getAPIImplementation(): APIInterface {
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let userIdForPasswordReset: string | undefined = undefined;
-            let recipeUserId: string | undefined = undefined;
+            let recipeUserId: string;
 
             /**
              * check if primaryUserId is linked with this email
@@ -304,6 +310,7 @@ export default function getAPIImplementation(): APIInterface {
                                 }
                             }
                             userIdForPasswordReset = primaryUser.id;
+                            recipeUserId = primaryUser.id;
                         } else {
                             /**
                              * this means emailpassword user associated with the input email exists but it
@@ -577,11 +584,12 @@ export default function getAPIImplementation(): APIInterface {
             }
             let user = response.user;
 
+            let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
                 user.id,
-                user.recipeUserId,
+                recipeUser?.recipeUserId,
                 {},
                 {},
                 userContext
@@ -647,12 +655,13 @@ export default function getAPIImplementation(): APIInterface {
                 return response;
             }
             let user = response.user;
+            let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
 
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
                 user.id,
-                user.recipeUserId,
+                recipeUser?.recipeUserId,
                 {},
                 {},
                 userContext
@@ -661,7 +670,7 @@ export default function getAPIImplementation(): APIInterface {
                 status: "OK",
                 session,
                 user,
-                createdNewUser: user.id === user.recipeUserId,
+                createdNewUser: user.id === recipeUser?.recipeUserId,
                 createdNewRecipeUser: true,
             };
         },

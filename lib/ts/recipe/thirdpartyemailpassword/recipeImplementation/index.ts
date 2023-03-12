@@ -6,6 +6,7 @@ import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
+import { User as GlobalUser } from "../../../types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
@@ -23,7 +24,9 @@ export default function getRecipeInterface(
             password: string;
             doAccountLinking: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<
+            { status: "OK"; newUserCreated: boolean; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
 
@@ -31,7 +34,7 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
 
@@ -47,10 +50,13 @@ export default function getRecipeInterface(
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
 
-        getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
-            let user: User | undefined = await originalEmailPasswordImplementation.getUserById.bind(DerivedEP(this))(
-                input
-            );
+        getUserById: async function (input: {
+            userId: string;
+            userContext: any;
+        }): Promise<GlobalUser | User | undefined> {
+            let user: GlobalUser | User | undefined = await originalEmailPasswordImplementation.getUserById.bind(
+                DerivedEP(this)
+            )(input);
             if (user !== undefined) {
                 return user;
             }
@@ -60,10 +66,20 @@ export default function getRecipeInterface(
             return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
         },
 
-        getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
-            let userFromEmailPass: User | undefined = await originalEmailPasswordImplementation.getUserByEmail.bind(
-                DerivedEP(this)
-            )({ email, userContext });
+        getUsersByEmail: async function ({
+            email,
+            userContext,
+        }: {
+            email: string;
+            userContext: any;
+        }): Promise<(User | GlobalUser)[]> {
+            let userFromEmailPass:
+                | GlobalUser
+                | User
+                | undefined = await originalEmailPasswordImplementation.getUserByEmail.bind(DerivedEP(this))({
+                email,
+                userContext,
+            });
 
             if (originalThirdPartyImplementation === undefined) {
                 return userFromEmailPass === undefined ? [] : [userFromEmailPass];
@@ -110,7 +126,11 @@ export default function getRecipeInterface(
                 userContext: any;
             }
         ): Promise<{
-            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+            status:
+                | "OK"
+                | "UNKNOWN_USER_ID_ERROR"
+                | "EMAIL_ALREADY_EXISTS_ERROR"
+                | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
         }> {
             let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {

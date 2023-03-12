@@ -407,10 +407,12 @@ export default class Recipe extends RecipeModule {
                 }
               | {
                     accountsLinked: false;
-                    reason:
-                        | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
-                        | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
-                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                    reason: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                }
+              | {
+                    accountsLinked: false;
+                    reason: "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                    userId: string;
                 }
               | {
                     accountsLinked: false;
@@ -489,6 +491,7 @@ export default class Recipe extends RecipeModule {
                     createRecipeUser: false,
                     accountsLinked: false,
                     reason: "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                    userId: existingUser.loginMethods[0].recipeUserId,
                 };
             }
 

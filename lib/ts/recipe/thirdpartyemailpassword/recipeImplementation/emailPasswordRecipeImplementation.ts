@@ -1,4 +1,5 @@
-import { RecipeInterface, User } from "../../emailpassword/types";
+import { RecipeInterface } from "../../emailpassword/types";
+import { User } from "../../../types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPasswordRecipeInterface): RecipeInterface {
@@ -8,7 +9,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password: string;
             doAccountLinking: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<{ status: "OK"; newUserCreated: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await recipeInterface.emailPasswordSignUp(input);
         },
 
@@ -26,14 +27,14 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 // either user is undefined or it's a thirdparty user.
                 return undefined;
             }
-            return user;
+            return user as User;
         },
 
         getUserByEmail: async function (input: { email: string; userContext: any }): Promise<User | undefined> {
             let result = await recipeInterface.getUsersByEmail(input);
             for (let i = 0; i < result.length; i++) {
                 if (result[i].thirdParty === undefined) {
-                    return result[i];
+                    return result[i] as User;
                 }
             }
             return undefined;
@@ -57,7 +58,11 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password?: string;
             userContext: any;
         }): Promise<{
-            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+            status:
+                | "OK"
+                | "UNKNOWN_USER_ID_ERROR"
+                | "EMAIL_ALREADY_EXISTS_ERROR"
+                | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
         }> {
             return recipeInterface.updateEmailOrPassword(input);
         },

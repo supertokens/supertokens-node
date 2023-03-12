@@ -14,7 +14,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser } from "../../types";
 export declare type User = {
     id: string;
     recipeUserId: string;
@@ -70,8 +70,8 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUserById(input: { userId: string; userContext: any }): Promise<GlobalUser | User | undefined>;
+    getUsersByEmail(input: { email: string; userContext: any }): Promise<(User | GlobalUser)[]>;
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
@@ -95,7 +95,8 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              user: User;
+              newUserCreated: boolean;
+              user: GlobalUser;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -108,7 +109,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              user: User;
+              user: GlobalUser;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
@@ -147,7 +148,11 @@ export declare type RecipeInterface = {
         password?: string;
         userContext: any;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
     }>;
 };
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
@@ -306,7 +311,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
@@ -344,7 +349,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
                 }
               | {
@@ -364,7 +369,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     createdNewUser: boolean;
                     session: SessionContainerInterface;
                 }

@@ -1,9 +1,10 @@
-import { RecipeInterface, User } from "./types";
+import { RecipeInterface } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser, listUsersByAccountInfo } from "../..";
 import EmailVerification from "../emailverification/recipe";
+import { User } from "../../types";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
@@ -17,12 +18,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             password: string;
             doAccountLinking: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<{ status: "OK"; newUserCreated: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
                 email,
                 password,
             });
             if (response.status === "OK") {
+                let newUserCreated = true;
                 if (doAccountLinking) {
                     let primaryUserId = await AccountLinking.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations(
                         {
@@ -35,9 +37,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                             userContext,
                         }
                     );
+                    if (response.user.id !== primaryUserId) {
+                        newUserCreated = false;
+                    }
                     response.user.id = primaryUserId;
                 }
-                return response;
+                return {
+                    ...response,
+                    newUserCreated,
+                };
             } else {
                 return {
                     status: "EMAIL_ALREADY_EXISTS_ERROR",
@@ -141,7 +149,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             email?: string;
             password?: string;
         }): Promise<{
-            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+            status:
+                | "OK"
+                | "UNKNOWN_USER_ID_ERROR"
+                | "EMAIL_ALREADY_EXISTS_ERROR"
+                | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
         }> {
             let markEmailAsVerified = false;
             if (input.email !== undefined) {
@@ -155,7 +167,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                         if (primaryUserFromEmailUsers !== undefined) {
                             if (primaryUserFromEmailUsers.id !== userForUserId.id) {
                                 return {
-                                    status: "EMAIL_CHANGE_NOT_ALLOWED",
+                                    status: "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING",
                                 };
                             }
                             markEmailAsVerified = true;

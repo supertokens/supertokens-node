@@ -6,7 +6,7 @@ import { PrimitiveClaim } from "../session/claims";
 export class AccountLinkingClaimClass extends PrimitiveClaim<string> {
     constructor() {
         super({
-            key: "st-acl",
+            key: "st-linking",
             fetchValue(_, __, ___) {
                 return undefined;
             },

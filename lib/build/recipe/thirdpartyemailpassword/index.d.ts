@@ -30,7 +30,8 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              newUserCreated: boolean;
+              user: import("../emailpassword").User;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -43,14 +44,14 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
+    static getUserById(userId: string, userContext?: any): Promise<import("../emailpassword").User | User | undefined>;
+    static getUsersByEmail(email: string, userContext?: any): Promise<(import("../emailpassword").User | User)[]>;
     static createResetPasswordToken(
         userId: string,
         email: string,
@@ -84,7 +85,11 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
     }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;

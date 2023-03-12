@@ -224,12 +224,17 @@ export default class Recipe extends RecipeModule {
 
     // extra instance functions below...............
     getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            return {
-                status: "OK",
-                email: userInfo.email,
-            };
+        let user = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
+        if (user !== undefined) {
+            let recipeLevelUser = user.loginMethods.find(
+                (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
+            );
+            if (recipeLevelUser !== undefined && recipeLevelUser.email !== undefined) {
+                return {
+                    status: "OK",
+                    email: recipeLevelUser.email,
+                };
+            }
         }
         return {
             status: "UNKNOWN_USER_ID_ERROR",

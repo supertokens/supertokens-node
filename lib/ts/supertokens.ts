@@ -434,11 +434,16 @@ export default class SuperTokens {
                 const userResponse = await EmailPassword.getUserById(userId);
 
                 if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        recipeId: "emailpassword",
-                    };
-                    recipe = "emailpassword";
+                    let loginMethod = userResponse.loginMethods.find(
+                        (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
+                    );
+                    if (loginMethod !== undefined) {
+                        user = {
+                            ...loginMethod,
+                            recipeId: "emailpassword",
+                        };
+                        recipe = "emailpassword";
+                    }
                 }
             } catch (e) {
                 // No - op
@@ -449,11 +454,24 @@ export default class SuperTokens {
                     const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
 
                     if (userResponse !== undefined) {
-                        user = {
-                            ...userResponse,
-                            recipeId: "emailpassword",
-                        };
-                        recipe = "thirdpartyemailpassword";
+                        if ("loginMethods" in userResponse) {
+                            let loginMethod = userResponse.loginMethods.find(
+                                (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
+                            );
+                            if (loginMethod !== undefined) {
+                                user = {
+                                    ...loginMethod,
+                                    recipeId: "emailpassword",
+                                };
+                                recipe = "thirdpartyemailpassword";
+                            }
+                        } else {
+                            user = {
+                                ...userResponse,
+                                recipeId: "emailpassword",
+                            };
+                            recipe = "thirdpartyemailpassword";
+                        }
                     }
                 } catch (e) {
                     // No - op
@@ -479,11 +497,24 @@ export default class SuperTokens {
                     const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
 
                     if (userResponse !== undefined) {
-                        user = {
-                            ...userResponse,
-                            recipeId: "thirdparty",
-                        };
-                        recipe = "thirdpartyemailpassword";
+                        if ("loginMethods" in userResponse) {
+                            let loginMethod = userResponse.loginMethods.find(
+                                (u) => u.recipeId === "thirdparty" && u.recipeUserId === userId
+                            );
+                            if (loginMethod !== undefined) {
+                                user = {
+                                    ...loginMethod,
+                                    recipeId: "thirdparty",
+                                };
+                                recipe = "thirdpartyemailpassword";
+                            }
+                        } else {
+                            user = {
+                                ...userResponse,
+                                recipeId: "emailpassword",
+                            };
+                            recipe = "thirdpartyemailpassword";
+                        }
                     }
                 } catch (e) {
                     // No - op

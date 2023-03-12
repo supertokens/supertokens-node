@@ -1,7 +1,8 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, User, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { User } from "../../types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -13,6 +14,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
+              newUserCreated: boolean;
               user: User;
           }
         | {
@@ -78,7 +80,11 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
     }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
