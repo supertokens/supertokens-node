@@ -235,9 +235,7 @@ export class Querier {
 
     public getUrlsForPath(path: string) {
         if (this.__hosts === undefined) {
-            throw Error(
-                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
-            );
+            return [];
         }
 
         const normalisedPath = new NormalisedURLPath(path);

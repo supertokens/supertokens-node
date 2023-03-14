@@ -1206,7 +1206,18 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         //check the value of the retrieved
-        assert.deepStrictEqual(response3.json(), {});
+        assert.deepStrictEqual(
+            new Set(Object.keys(response3.json())),
+            new Set([
+                "antiCsrfToken",
+                "exp",
+                "iat",
+                "parentRefreshTokenHash1",
+                "refreshTokenHash1",
+                "sessionHandle",
+                "sub",
+            ])
+        );
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await this.server.inject({
             method: "post",

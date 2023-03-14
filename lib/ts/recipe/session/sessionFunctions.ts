@@ -184,16 +184,12 @@ export async function getSession(
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
-    let requestBody: {
-        accessToken: string;
-        antiCsrfToken?: string;
-        doAntiCsrfCheck: boolean;
-        enableAntiCsrf?: boolean;
-    } = {
+    let requestBody = {
         accessToken: parsedAccessToken.rawTokenString,
         antiCsrfToken,
         doAntiCsrfCheck,
         enableAntiCsrf: helpers.config.antiCsrf === "VIA_TOKEN",
+        checkDatabase: alwaysCheckCore,
     };
 
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);

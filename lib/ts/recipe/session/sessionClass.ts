@@ -18,6 +18,16 @@ import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
 
+const protectedProps = [
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken",
+];
+
 export default class Session implements SessionContainerInterface {
     constructor(
         protected helpers: Helpers,
@@ -93,6 +103,10 @@ export default class Session implements SessionContainerInterface {
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
         const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        for (const key of protectedProps) {
+            delete updatedPayload[key];
+        }
+
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
                 delete updatedPayload[key];

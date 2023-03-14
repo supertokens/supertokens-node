@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { ParsedJWTInfo } from "./jwt";
-import jose from "jose";
+import * as jose from "jose";
 export declare function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
     jwks: jose.JWTVerifyGetKey,

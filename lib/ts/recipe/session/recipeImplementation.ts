@@ -49,15 +49,23 @@ export default function getRecipeInterface(
     appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface {
-    const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier
-        .getUrlsForPath(".well-known/jwks.json")
-        .map((url) => createRemoteJWKSet(new URL(url)));
+    const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier.getUrlsForPath("/.well-known/jwks.json").map((url) =>
+        createRemoteJWKSet(new URL(url), {
+            cooldownDuration: 500,
+        })
+    );
 
     const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
         let lastError = undefined;
+        if (JWKS.length === 0) {
+            throw Error(
+                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
+            );
+        }
         for (const jwks of JWKS) {
             try {
-                await jwks(...args);
+                // We await before returning to make sure we catch the error
+                return await jwks(...args);
             } catch (ex) {
                 lastError = ex;
             }
@@ -72,6 +80,7 @@ export default function getRecipeInterface(
             userId,
             accessTokenPayload = {},
             sessionData = {},
+            useDynamicAccessTokenSigningKey,
             userContext,
         }: {
             req: BaseRequest;
@@ -79,6 +88,7 @@ export default function getRecipeInterface(
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
+            useDynamicAccessTokenSigningKey?: boolean;
             userContext: any;
         }): Promise<Session> {
             logDebugMessage("createNewSession: Started");
@@ -110,6 +120,9 @@ export default function getRecipeInterface(
                 helpers,
                 userId,
                 disableAntiCSRF,
+                useDynamicAccessTokenSigningKey !== undefined
+                    ? useDynamicAccessTokenSigningKey
+                    : config.useDynamicAccessTokenSigningKey === false,
                 accessTokenPayload,
                 sessionData
             );

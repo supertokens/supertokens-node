@@ -55,7 +55,7 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
             throw new Error("JWT header mismatch");
         }
 
-        version = Number.parseInt(parsedHeader.kid);
+        version = Number.parseInt(parsedHeader.version);
     }
 
     return {

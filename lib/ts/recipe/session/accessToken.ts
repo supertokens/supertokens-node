@@ -15,7 +15,7 @@
 
 import STError from "./error";
 import { ParsedJWTInfo } from "./jwt";
-import jose from "jose";
+import * as jose from "jose";
 
 export async function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
@@ -60,9 +60,11 @@ export async function getInfoFromAccessToken(
         // We can mark these as defined (the ! after the calls), since validateAccessTokenPayload checks this
         let userId = jwtInfo.version === 2 ? sanitizeStringInput(payload.userId)! : sanitizeStringInput(payload.sub)!;
         let expiryTime =
-            jwtInfo.version === 2 ? sanitizeNumberInput(payload.expiryTime)! : sanitizeNumberInput(payload.exp)!;
+            jwtInfo.version === 2 ? sanitizeNumberInput(payload.expiryTime)! : sanitizeNumberInput(payload.exp)! * 1000;
         let timeCreated =
-            jwtInfo.version === 2 ? sanitizeNumberInput(payload.timeCreated)! : sanitizeNumberInput(payload.iat)!;
+            jwtInfo.version === 2
+                ? sanitizeNumberInput(payload.timeCreated)!
+                : sanitizeNumberInput(payload.iat)! * 1000;
         let userData = jwtInfo.version === 2 ? payload.userData : payload;
         let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;

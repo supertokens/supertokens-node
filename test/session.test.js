@@ -322,7 +322,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
-            true
+            true,
+            false,
+            false
         );
 
         try {
@@ -379,7 +381,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
-            true
+            true,
+            false,
+            false
         );
 
         try {
@@ -445,11 +449,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let s = SessionRecipe.getInstanceOrThrowError();
 
         let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
-        assert(response.session !== undefined);
-        assert(response.accessToken !== undefined);
-        assert(response.refreshToken !== undefined);
-        assert(response.antiCsrfToken !== undefined);
-        assert(Object.keys(response).length === 5);
+        assert.notEqual(response.session, undefined);
+        assert.notEqual(response.accessToken, undefined);
+        assert.notEqual(response.refreshToken, undefined);
+        assert.notEqual(response.antiCsrfToken, undefined);
+        assert.strictEqual(Object.keys(response).length, 4);
 
         await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
@@ -473,14 +477,15 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response2.accessToken !== undefined);
         assert(response2.refreshToken !== undefined);
         assert(response2.antiCsrfToken !== undefined);
-        assert(Object.keys(response2).length === 5);
+        assert(Object.keys(response2).length === 4);
 
         let response3 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
             true,
-            true
+            true,
+            false
         );
         let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
         assert(verifyState !== undefined);
@@ -989,11 +994,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        s.helpers.config = { antiCsrf: "NONE" };
         let response = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
-            s,
+            s.helpers,
             parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             false,
@@ -1004,7 +1010,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         let response3 = await SessionFunctions.getSession(
-            s,
+            s.helpers,
             parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             true,

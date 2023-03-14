@@ -1406,7 +1406,18 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
 
         //check the value of the retrieved
-        assert.deepStrictEqual(response2.body, {});
+        assert.deepStrictEqual(
+            new Set(Object.keys(response2.body)),
+            new Set([
+                "antiCsrfToken",
+                "exp",
+                "iat",
+                "parentRefreshTokenHash1",
+                "refreshTokenHash1",
+                "sessionHandle",
+                "sub",
+            ])
+        );
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(this.server)
