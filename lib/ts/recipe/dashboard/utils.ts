@@ -237,11 +237,7 @@ async function _getUserForRecipeId(
                             recipe = "thirdpartyemailpassword";
                         }
                     } else {
-                        user = {
-                            ...userResponse,
-                            recipeId: "emailpassword",
-                        };
-                        recipe = "thirdpartyemailpassword";
+                        throw new Error("Should never come here. TODO remove me");
                     }
                 }
             } catch (e) {
@@ -269,20 +265,11 @@ async function _getUserForRecipeId(
 
                 if (userResponse !== undefined) {
                     if ("loginMethods" in userResponse) {
-                        let loginMethod = userResponse.loginMethods.find(
-                            (u) => u.recipeId === "thirdparty" && u.recipeUserId === userId
-                        );
-                        if (loginMethod !== undefined) {
-                            user = {
-                                ...loginMethod,
-                                recipeId: "thirdparty",
-                            };
-                            recipe = "thirdpartyemailpassword";
-                        }
+                        throw new Error("Should never come here. TODO remove me");
                     } else {
                         user = {
                             ...userResponse,
-                            recipeId: "emailpassword",
+                            recipeId: "thirdparty",
                         };
                         recipe = "thirdpartyemailpassword";
                     }
