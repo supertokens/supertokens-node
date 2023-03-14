@@ -4,11 +4,10 @@ import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
-    private recipeInterfaceImpl;
     private isInServerlessEnv;
     private appInfo;
     private resetPasswordUsingTokenFeature;
-    constructor(recipeInterfaceImpl: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean);
+    constructor(_: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean);
     sendEmail: (
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext: any;

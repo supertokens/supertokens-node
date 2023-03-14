@@ -50,6 +50,17 @@ export declare type RecipeLevelUser = {
         id: string;
         userId: string;
     };
+};
+export declare type RecipeLevelUserWithFirstAndLastName = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+    timeJoined: number;
+    recipeUserId: string;
+    email?: string;
+    phoneNumber?: string;
+    thirdParty?: {
+        id: string;
+        userId: string;
+    };
     firstName: string;
     lastName: string;
 };

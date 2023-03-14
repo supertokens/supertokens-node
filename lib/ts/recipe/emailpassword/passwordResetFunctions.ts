@@ -23,7 +23,6 @@ export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
             id: string;
             recipeUserId?: string;
             email: string;
-            timeJoined: number;
         },
         passwordResetURLWithToken: string
     ) => {
