@@ -12,21 +12,6 @@ export declare type KeyInfo = {
     createdAt: number;
 };
 export declare type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-export declare type StoredHandshakeInfo = {
-    antiCsrf: AntiCsrfType;
-    accessTokenBlacklistingEnabled: boolean;
-    accessTokenValidity: number;
-    refreshTokenValidity: number;
-} & (
-    | {
-          jwtSigningPublicKeyList: KeyInfo[];
-      }
-    | {
-          jwtSigningPublicKeyList: undefined;
-          jwtSigningPublicKey: string;
-          jwtSigningPublicKeyExpiryTime: number;
-      }
-);
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
