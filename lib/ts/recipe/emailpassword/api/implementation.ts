@@ -585,11 +585,16 @@ export default function getAPIImplementation(): APIInterface {
             let user = response.user;
 
             let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
+
+            if (recipeUser === undefined) {
+                throw new Error("Race condition error - please call this API again");
+            }
+
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
                 user.id,
-                recipeUser?.recipeUserId,
+                recipeUser.recipeUserId,
                 {},
                 {},
                 userContext
@@ -642,7 +647,8 @@ export default function getAPIImplementation(): APIInterface {
             if (!isSignUpAllowed) {
                 return {
                     status: "SIGNUP_NOT_ALLOWED",
-                    reason: "the sign-up info is already associated with another account where it is not verified",
+                    reason:
+                        "The input email is already associated with another account where it is not verified. Please disable automatic account linking, or verify the other account before trying again.",
                 };
             }
             let response = await options.recipeImplementation.signUp({
@@ -657,11 +663,15 @@ export default function getAPIImplementation(): APIInterface {
             let user = response.user;
             let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
 
+            if (recipeUser === undefined) {
+                throw new Error("Race condition error - please call this API again");
+            }
+
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
                 user.id,
-                recipeUser?.recipeUserId,
+                recipeUser.recipeUserId,
                 {},
                 {},
                 userContext
