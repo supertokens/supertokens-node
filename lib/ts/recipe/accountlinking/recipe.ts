@@ -952,32 +952,27 @@ export default class Recipe extends RecipeModule {
                     ) {
                         primaryUserId = linkAccountsResult.primaryUserId;
                     }
-                    if (linkAccountsResult.status === "OK") {
-                        // remove session claim if session claim exists
-                        // else create a new session
-                        if (session !== undefined) {
-                            let existingSessionClaimValue = await session.getClaimValue(
-                                AccountLinkingClaim,
-                                userContext
-                            );
-                            if (existingSessionClaimValue !== undefined) {
-                                // It can come here when we are trying to link
-                                // an account post login, and that new account just
-                                // finished email verification. In this case, we do not
-                                // want to change the session cause the user should
-                                // still be logged into their original session.
-                                await session.removeClaim(AccountLinkingClaim, userContext);
-                            } else {
-                                // It can come here when the user has just finished
-                                // verifying their email (for a new recipe account), and
-                                // now that account has been linked to another account
-                                // so we should change the session.
-                                return {
-                                    createNewSession: true,
-                                    primaryUserId,
-                                    recipeUserId,
-                                };
-                            }
+                    // remove session claim if session claim exists
+                    // else create a new session
+                    if (session !== undefined) {
+                        let existingSessionClaimValue = await session.getClaimValue(AccountLinkingClaim, userContext);
+                        if (existingSessionClaimValue !== undefined) {
+                            // It can come here when we are trying to link
+                            // an account post login, and that new account just
+                            // finished email verification. In this case, we do not
+                            // want to change the session cause the user should
+                            // still be logged into their original session.
+                            await session.removeClaim(AccountLinkingClaim, userContext);
+                        } else {
+                            // It can come here when the user has just finished
+                            // verifying their email (for a new recipe account), and
+                            // now that account has been linked to another account
+                            // so we should change the session.
+                            return {
+                                createNewSession: true,
+                                primaryUserId,
+                                recipeUserId,
+                            };
                         }
                     }
                 }
