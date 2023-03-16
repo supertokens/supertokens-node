@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.1.4] - 2023-03-16
+
+### Fixes
+
+-   Fixes an issue where importing recipes without importing the package index file would cause crashes
+
 ## [13.1.3] - 2023-03-08
 
 ### Changed

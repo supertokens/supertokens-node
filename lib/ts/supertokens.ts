@@ -32,7 +32,6 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
-import DashboardRecipe from "./recipe/dashboard/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -134,7 +133,6 @@ export default class SuperTokens {
             throw new Error("calling testing function in non testing env");
         }
         Querier.reset();
-        DashboardRecipe.reset();
         SuperTokens.instance = undefined;
     }
 
