@@ -19,7 +19,7 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
+import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import {
     DASHBOARD_API,
     SIGN_IN_API,
@@ -120,7 +120,110 @@ export default class Recipe extends RecipeModule {
          * `returnAPIIdIfCanHandleRequest` method of this class. Since this array is never
          * used for this recipe, we simply return an empty array.
          */
-        return [];
+        return [
+            {
+                id: DASHBOARD_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: SIGN_IN_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SIGN_IN_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: VALIDATE_KEY_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(VALIDATE_KEY_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: SIGN_OUT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SIGN_OUT_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: USERS_LIST_GET_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERS_LIST_GET_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USERS_COUNT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERS_COUNT_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
+                method: "delete",
+            },
+            {
+                id: USER_EMAIL_VERIFY_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_EMAIL_VERIFY_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_EMAIL_VERIFY_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_EMAIL_VERIFY_API)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: USER_METADATA_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_METADATA_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_METADATA_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_METADATA_API)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: USER_SESSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_SESSIONS_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_SESSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_SESSIONS_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: USER_PASSWORD_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_PASSWORD_API)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: USER_EMAIL_VERIFY_TOKEN_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_EMAIL_VERIFY_TOKEN_API)),
+                disabled: false,
+                method: "post",
+            },
+        ];
     };
 
     handleAPIRequest = async (
