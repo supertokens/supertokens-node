@@ -32,8 +32,6 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
-import DashboardIndex from "./recipe/dashboard";
-import DashboardRecipe from "./recipe/dashboard/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -85,11 +83,6 @@ export default class SuperTokens {
             return func(this.appInfo, this.isInServerlessEnv);
         });
 
-        if (this.recipeModules.filter((i) => i.getRecipeId() === DashboardRecipe.RECIPE_ID).length === 0) {
-            // This means that the user has not initialised the dashboard recipe
-            this.recipeModules.push(DashboardIndex.init()(this.appInfo, this.isInServerlessEnv));
-        }
-
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
         if (telemetry) {
@@ -140,7 +133,6 @@ export default class SuperTokens {
             throw new Error("calling testing function in non testing env");
         }
         Querier.reset();
-        DashboardRecipe.reset();
         SuperTokens.instance = undefined;
     }
 
