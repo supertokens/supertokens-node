@@ -23,6 +23,7 @@ let Koa = require("koa");
 const Router = require("@koa/router");
 let { verifySession } = require("../../recipe/session/framework/koa");
 const request = require("supertest");
+let Dashboard = require("../../recipe/dashboard");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1475,5 +1476,60 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 })
         );
         assert(response.body.custom);
+    });
+
+    it("test that authorization header is read correctly in dashboard recipe", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    if (authHeader === "Bearer testapikey") {
+                                        return true;
+                                    }
+
+                                    return false;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users/count")
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(res.statusCode === 200);
     });
 });
