@@ -245,16 +245,6 @@ export type RecipeInterface = {
     // Returns false if the sessionHandle does not exist
     updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>;
 
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
-     */
-    updateAccessTokenPayload(input: {
-        sessionHandle: string;
-        newAccessTokenPayload: any;
-        userContext: any;
-    }): Promise<boolean>;
-
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
@@ -345,10 +335,6 @@ export interface SessionContainerInterface {
 
     getAccessToken(userContext?: any): string;
 
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     */
-    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
 
     getTimeCreated(userContext?: any): Promise<number>;

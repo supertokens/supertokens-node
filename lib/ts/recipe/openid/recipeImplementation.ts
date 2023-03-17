@@ -66,7 +66,7 @@ export default function getRecipeInterface(
                 userContext,
             });
         },
-        getJWKS: async function (input): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
+        getJWKS: async function (input): Promise<{ keys: JsonWebKey[] }> {
             return await jwtRecipeImplementation.getJWKS(input);
         },
     };

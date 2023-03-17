@@ -1258,7 +1258,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         router.post("/updateAccessTokenPayload", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
             let accessTokenBefore = session.accessToken;
-            await session.updateAccessTokenPayload({ key: "value" });
+            await session.mergeIntoAccessTokenPayload({ key: "value" });
             let accessTokenAfter = session.accessToken;
             let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
             ctx.status = statusCode;
@@ -1272,13 +1272,13 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         router.post("/updateAccessTokenPayload2", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            await session.updateAccessTokenPayload(null);
+            await session.mergeIntoAccessTokenPayload({ key: null });
             ctx.body = "";
         });
 
         router.post("/updateAccessTokenPayloadInvalidSessionHandle", async (ctx, _) => {
             ctx.body = {
-                success: !(await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" })),
+                success: !(await Session.mergeIntoAccessTokenPayload("InvalidHandle", { key: "value3" })),
             };
         });
 

@@ -1085,7 +1085,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             },
             async (req, res) => {
                 let accessTokenBefore = req.session.accessToken;
-                await req.session.updateAccessTokenPayload({ key: "value" });
+                await req.session.mergeIntoAccessTokenPayload({ key: "value" });
                 let accessTokenAfter = req.session.accessToken;
                 let statusCode =
                     accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
@@ -1110,7 +1110,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                await req.session.updateAccessTokenPayload(null);
+                await req.session.mergeIntoAccessTokenPayload({ key: null });
                 return res.send("").code(200);
             }
         );

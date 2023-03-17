@@ -56,7 +56,6 @@ export declare type RecipeInterface = {
     getJWKS(input: {
         userContext: any;
     }): Promise<{
-        status: "OK";
         keys: JsonWebKey[];
     }>;
 };
@@ -68,7 +67,6 @@ export declare type APIInterface = {
               userContext: any;
           }) => Promise<
               | {
-                    status: "OK";
                     keys: JsonWebKey[];
                 }
               | GeneralErrorResponse

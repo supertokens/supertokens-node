@@ -18,7 +18,7 @@ import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { Helpers } from "./recipeImplementation";
+import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 
@@ -122,7 +122,9 @@ export async function getSession(
             if (expiryTime < Date.now()) {
                 throw err;
             }
-            if (timeCreated <= Date.now() - 60000) {
+            // We check if the token was created since the last time we refreshed the keys from the core
+            // Since we do not know the exact timing of the last refresh, we check against the max age
+            if (timeCreated <= Date.now() - JWKCacheMaxAgeInMs) {
                 throw err;
             }
         } else {

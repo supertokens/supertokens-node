@@ -16,6 +16,7 @@
 import STError from "./error";
 import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
+import { ProcessState, PROCESS_STATE } from "../../processState";
 
 export async function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
@@ -33,14 +34,19 @@ export async function getInfoFromAccessToken(
 }> {
     try {
         // From the library examples
-        const { payload } = await jose.jwtVerify(jwtInfo.rawTokenString, jwks).catch(async (error) => {
+        let payload = undefined;
+        try {
+            payload = (await jose.jwtVerify(jwtInfo.rawTokenString, jwks)).payload;
+        } catch (error) {
             // We only want to opt-into this for V2 access tokens
             if (jwtInfo.version === 2 && error?.code === "ERR_JWKS_MULTIPLE_MATCHING_KEYS") {
+                ProcessState.getInstance().addState(PROCESS_STATE.MULTI_JWKS_VALIDATION);
                 // We are trying to validate the token with each key.
                 // Since the kid is missing from v2 tokens, this basically means we try all keys present in the cache.
                 for await (const publicKey of error) {
                     try {
-                        return await jose.jwtVerify(jwtInfo.rawTokenString, publicKey);
+                        payload = (await jose.jwtVerify(jwtInfo.rawTokenString, publicKey)).payload;
+                        break;
                     } catch (innerError) {
                         if (innerError?.code === "ERR_JWS_SIGNATURE_VERIFICATION_FAILED") {
                             continue;
@@ -48,11 +54,13 @@ export async function getInfoFromAccessToken(
                         throw innerError;
                     }
                 }
-                throw new jose.errors.JWSSignatureVerificationFailed();
+                if (payload === undefined) {
+                    throw new jose.errors.JWSSignatureVerificationFailed();
+                }
+            } else {
+                throw error;
             }
-
-            throw error;
-        });
+        }
 
         // This should be called before this function, but the check is very quick, so we can also do them here
         validateAccessTokenStructure(payload, jwtInfo.version);

@@ -203,15 +203,6 @@ export declare type RecipeInterface = {
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
     updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>;
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
-     */
-    updateAccessTokenPayload(input: {
-        sessionHandle: string;
-        newAccessTokenPayload: any;
-        userContext: any;
-    }): Promise<boolean>;
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
@@ -288,10 +279,6 @@ export interface SessionContainerInterface {
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     */
-    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;

@@ -233,7 +233,7 @@ export class Querier {
         );
     };
 
-    public getUrlsForPath(path: string) {
+    public getAllCoreUrlsForPath(path: string) {
         if (this.__hosts === undefined) {
             return [];
         }

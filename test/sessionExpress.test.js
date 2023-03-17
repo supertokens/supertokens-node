@@ -1424,7 +1424,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.post("/updateAccessTokenPayload", async (req, res) => {
             let session = await Session.getSession(req, res);
             let accessTokenBefore = session.accessToken;
-            await session.updateAccessTokenPayload({ key: "value" });
+            await session.mergeIntoAccessTokenPayload({ key: "value" });
             let accessTokenAfter = session.accessToken;
             let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
             res.status(statusCode).send("");
@@ -1441,13 +1441,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/updateAccessTokenPayload2", async (req, res) => {
             let session = await Session.getSession(req, res);
-            await session.updateAccessTokenPayload(null);
+            await session.mergeIntoAccessTokenPayload({ key: null });
             res.status(200).send("");
         });
 
         app.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
             res.status(200).json({
-                success: !(await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" })),
+                success: !(await Session.mergeIntoAccessTokenPayload("InvalidHandle", { key: "value3" })),
             });
         });
 

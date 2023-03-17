@@ -102,18 +102,52 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
-        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        const newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
         for (const key of protectedProps) {
-            delete updatedPayload[key];
+            delete newAccessTokenPayload[key];
         }
 
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
-                delete updatedPayload[key];
+                delete newAccessTokenPayload[key];
             }
         }
 
-        await this.updateAccessTokenPayload(updatedPayload, userContext);
+        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
+            accessToken: this.getAccessToken(),
+            newAccessTokenPayload,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+
+        if (response === undefined) {
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
+            });
+        }
+
+        this.userDataInAccessToken = response.session.userDataInJWT;
+        if (response.accessToken !== undefined) {
+            this.accessToken = response.accessToken.token;
+            setFrontTokenInHeaders(
+                this.res,
+                response.session.userId,
+                response.accessToken.expiry,
+                response.session.userDataInJWT
+            );
+            setToken(
+                this.helpers.config,
+                this.res,
+                "access",
+                response.accessToken.token,
+                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+                Date.now() + 3153600000000,
+                this.transferMethod
+            );
+        }
     }
 
     async getTimeCreated(userContext?: any): Promise<number> {
@@ -187,44 +221,5 @@ export default class Session implements SessionContainerInterface {
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
         const update = claim.removeFromPayloadByMerge_internal({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload
-     */
-    async updateAccessTokenPayload(newAccessTokenPayload: any, userContext: any): Promise<void> {
-        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
-            accessToken: this.getAccessToken(),
-            newAccessTokenPayload,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (response === undefined) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
-        this.userDataInAccessToken = response.session.userDataInJWT;
-        if (response.accessToken !== undefined) {
-            this.accessToken = response.accessToken.token;
-            setFrontTokenInHeaders(
-                this.res,
-                response.session.userId,
-                response.accessToken.expiry,
-                response.session.userDataInJWT
-            );
-            setToken(
-                this.helpers.config,
-                this.res,
-                "access",
-                response.accessToken.token,
-                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                Date.now() + 3153600000000,
-                this.transferMethod
-            );
-        }
     }
 }

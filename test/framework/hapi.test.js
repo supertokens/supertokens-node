@@ -1099,7 +1099,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             handler: async (req, res) => {
                 let accessTokenBefore = req.session.accessToken;
-                await req.session.updateAccessTokenPayload({ key: "value" });
+                await req.session.mergeIntoAccessTokenPayload({ key: "value" });
                 let accessTokenAfter = req.session.accessToken;
                 let statusCode =
                     accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
@@ -1126,7 +1126,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateAccessTokenPayload2",
             method: "post",
             handler: async (req, res) => {
-                await req.session.updateAccessTokenPayload(null);
+                await req.session.mergeIntoAccessTokenPayload({ key: null });
                 return res.response("").code(200);
             },
             options: {

@@ -42,6 +42,7 @@ export type Helpers = {
 
 // We are defining this here to reduce the scope of legacy code
 const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
+export const JWKCacheMaxAgeInMs = 60000;
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -49,11 +50,14 @@ export default function getRecipeInterface(
     appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface {
-    const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier.getUrlsForPath("/.well-known/jwks.json").map((url) =>
-        createRemoteJWKSet(new URL(url), {
-            cooldownDuration: 500,
-        })
-    );
+    const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier
+        .getAllCoreUrlsForPath("/.well-known/jwks.json")
+        .map((url) =>
+            createRemoteJWKSet(new URL(url), {
+                cooldownDuration: 500,
+                cacheMaxAge: JWKCacheMaxAgeInMs,
+            })
+        );
 
     const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
         let lastError = undefined;
@@ -121,7 +125,7 @@ export default function getRecipeInterface(
                 userId,
                 disableAntiCSRF,
                 useDynamicAccessTokenSigningKey !== undefined
-                    ? useDynamicAccessTokenSigningKey
+                    ? !useDynamicAccessTokenSigningKey
                     : config.useDynamicAccessTokenSigningKey === false,
                 accessTokenPayload,
                 sessionData
@@ -568,16 +572,6 @@ export default function getRecipeInterface(
             return SessionFunctions.updateSessionData(helpers, sessionHandle, newSessionData);
         },
 
-        updateAccessTokenPayload: function ({
-            sessionHandle,
-            newAccessTokenPayload,
-        }: {
-            sessionHandle: string;
-            newAccessTokenPayload: any;
-        }): Promise<boolean> {
-            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
-        },
-
         mergeIntoAccessTokenPayload: async function (
             this: RecipeInterface,
             {
@@ -600,7 +594,8 @@ export default function getRecipeInterface(
                     delete newAccessTokenPayload[key];
                 }
             }
-            return this.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload, userContext });
+
+            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 
         fetchAndSetClaim: async function <T>(

@@ -17,7 +17,7 @@ let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
 const express = require("express");
 const request = require("supertest");
-let { ProcessState } = require("../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
@@ -118,6 +118,10 @@ describe(`AccessToken versions: ${printPath("[test/accessTokenVersions.test.js]"
                         resolve(res);
                     }
                 })
+        );
+        assert.notEqual(
+            await ProcessState.getInstance().waitForEvent(PROCESS_STATE.MULTI_JWKS_VALIDATION, 1500),
+            undefined
         );
 
         assert.deepStrictEqual(res.body, {

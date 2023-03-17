@@ -25,7 +25,6 @@ export default class OpenIdRecipeWrapper {
     static getJWKS(
         userContext?: any
     ): Promise<{
-        status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;
 }

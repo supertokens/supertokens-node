@@ -20,7 +20,6 @@ export default class Wrapper {
     static getJWKS(
         userContext?: any
     ): Promise<{
-        status: "OK";
         keys: JsonWebKey[];
     }>;
 }

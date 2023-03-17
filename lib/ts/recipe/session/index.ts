@@ -267,14 +267,6 @@ export default class SessionWrapper {
         });
     }
 
-    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateAccessTokenPayload({
-            sessionHandle,
-            newAccessTokenPayload,
-            userContext,
-        });
-    }
-
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
@@ -394,7 +386,6 @@ export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 
 export let updateSessionData = SessionWrapper.updateSessionData;
 
-export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 export let mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload;
 
 export let fetchAndSetClaim = SessionWrapper.fetchAndSetClaim;

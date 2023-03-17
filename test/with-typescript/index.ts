@@ -839,7 +839,6 @@ let sessionConfig: SessionTypeInput = {
                         getSessionData: session.getSessionData,
                         getUserId: session.getUserId,
                         revokeSession: session.revokeSession,
-                        updateAccessTokenPayload: session.updateAccessTokenPayload,
                         updateSessionData: session.updateSessionData,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
                         assertClaims: session.assertClaims,
@@ -856,7 +855,6 @@ let sessionConfig: SessionTypeInput = {
                 revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                 revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                 revokeSession: originalImpl.revokeSession,
-                updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
                 updateSessionData: originalImpl.updateSessionData,
                 getSessionInformation: originalImpl.getSessionInformation,
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
@@ -1120,8 +1118,11 @@ Supertokens.init({
 });
 
 Session.init({
+    exposeAccessTokenToFrontendInCookieBasedAuth: true,
+    useDynamicAccessTokenSigningKey: true,
     jwt: {
         enable: true,
+        issuer: "asdf",
     },
 });
 
@@ -1223,10 +1224,7 @@ Session.init({
                 refreshSession: async function (input) {
                     let session = await originalImplementation.refreshSession(input);
 
-                    let currAccessTokenPayload = session.getAccessTokenPayload();
-
-                    await session.updateAccessTokenPayload({
-                        ...currAccessTokenPayload,
+                    await session.mergeIntoAccessTokenPayload({
                         lastTokenRefresh: Date.now(),
                     });
 

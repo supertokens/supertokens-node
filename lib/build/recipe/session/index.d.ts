@@ -101,11 +101,6 @@ export default class SessionWrapper {
           }
         | undefined
     >;
-    static updateAccessTokenPayload(
-        sessionHandle: string,
-        newAccessTokenPayload: any,
-        userContext?: any
-    ): Promise<boolean>;
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
@@ -127,7 +122,6 @@ export default class SessionWrapper {
     static getJWKS(
         userContext?: any
     ): Promise<{
-        status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;
     static getOpenIdDiscoveryConfiguration(
@@ -169,7 +163,6 @@ export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSess
 export declare let revokeSession: typeof SessionWrapper.revokeSession;
 export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleSessions;
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
-export declare let updateAccessTokenPayload: typeof SessionWrapper.updateAccessTokenPayload;
 export declare let mergeIntoAccessTokenPayload: typeof SessionWrapper.mergeIntoAccessTokenPayload;
 export declare let fetchAndSetClaim: typeof SessionWrapper.fetchAndSetClaim;
 export declare let setClaimValue: typeof SessionWrapper.setClaimValue;
