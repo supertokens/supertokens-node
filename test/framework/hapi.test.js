@@ -21,6 +21,7 @@ const Hapi = require("@hapi/hapi");
 let Session = require("../../recipe/session");
 let ThirdpartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let { verifySession } = require("../../recipe/session/framework/hapi");
+let Dashboard = require("../../recipe/dashboard");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1294,5 +1295,55 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         assert(response.statusCode === 203);
         assert(response.result.custom);
+    });
+
+    it("test that authorization header is read correctly in dashboard recipe", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    if (authHeader === "Bearer testapikey") {
+                                        return true;
+                                    }
+
+                                    return false;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        let res2 = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users/count",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(res2.statusCode === 200);
     });
 });
