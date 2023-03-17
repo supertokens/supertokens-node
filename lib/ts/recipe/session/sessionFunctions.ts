@@ -403,7 +403,7 @@ export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: s
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export async function updateSessionData(
+export async function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any

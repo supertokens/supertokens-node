@@ -597,14 +597,14 @@ export default function getRecipeInterface(
             return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles);
         },
 
-        updateSessionData: function ({
+        updateSessionDataInDatabase: function ({
             sessionHandle,
             newSessionData,
         }: {
             sessionHandle: string;
             newSessionData: any;
         }): Promise<boolean> {
-            return SessionFunctions.updateSessionData(helpers, sessionHandle, newSessionData);
+            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData);
         },
 
         updateAccessTokenPayload: function ({

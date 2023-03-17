@@ -249,8 +249,8 @@ export default class SessionWrapper {
         });
     }
 
-    static updateSessionData(sessionHandle: string, newSessionData: any, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData({
+    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionDataInDatabase({
             sessionHandle,
             newSessionData,
             userContext,
@@ -390,7 +390,7 @@ export let revokeSession = SessionWrapper.revokeSession;
 
 export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 
-export let updateSessionData = SessionWrapper.updateSessionData;
+export let updateSessionDataInDatabase = SessionWrapper.updateSessionDataInDatabase;
 
 export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 export let mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload;

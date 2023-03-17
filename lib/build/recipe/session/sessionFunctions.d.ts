@@ -74,7 +74,7 @@ export declare function revokeMultipleSessions(helpers: Helpers, sessionHandles:
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export declare function updateSessionData(
+export declare function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any

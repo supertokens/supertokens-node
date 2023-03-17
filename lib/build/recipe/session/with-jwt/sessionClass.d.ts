@@ -6,8 +6,8 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     private readonly openIdRecipeImplementation;
     constructor(originalSessionClass: SessionContainerInterface, openIdRecipeImplementation: OpenIdRecipeInterface);
     revokeSession(userContext?: any): Promise<void>;
-    getSessionData(userContext?: any): Promise<any>;
-    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
+    getSessionDataFromDatabase(userContext?: any): Promise<any>;
+    updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;

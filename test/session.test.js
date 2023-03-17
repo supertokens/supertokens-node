@@ -658,19 +658,19 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
         assert.deepStrictEqual(res2, { key: "value" });
 
         //changing the value of session data with the same key
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
         assert.deepStrictEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating session data
-        assert(!(await SessionFunctions.updateSessionData(s.helpers, "random", { key2: "value2" })));
+        assert(!(await SessionFunctions.updateSessionDataInDatabase(s.helpers, "random", { key2: "value2" })));
     });
 
     it("test manipulating session data with new get session function", async function () {
@@ -698,19 +698,19 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res2.sessionData, { key: "value" });
 
         //changing the value of session data with the same key
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res3.sessionData, { key: "value 2" });
 
         //passing invalid session handle when updating session data
-        assert(!(await SessionFunctions.updateSessionData(s.helpers, "random", { key2: "value2" })));
+        assert(!(await SessionFunctions.updateSessionDataInDatabase(s.helpers, "random", { key2: "value2" })));
     });
 
     it("test null and undefined values passed for session data", async function () {
@@ -734,22 +734,22 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
         assert.deepStrictEqual(res2, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
         assert.deepStrictEqual(res3, { key: "value" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, undefined);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, undefined);
 
         let res4 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
         assert.deepStrictEqual(res4, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
         let res5 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
         assert.deepStrictEqual(res5, { key: "value 2" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, null);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, null);
 
         let res6 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
         assert.deepStrictEqual(res6, {});
@@ -784,22 +784,22 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res2.sessionData, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res3.sessionData, { key: "value" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, undefined);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, undefined);
 
         let res4 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res4.sessionData, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
         let res5 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res5.sessionData, { key: "value 2" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, null);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, null);
 
         let res6 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res6.sessionData, {});
@@ -1202,7 +1202,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         const session = await Session.createNewSession(mockRequest(), mockResponse(), "testId");
 
-        const data = await session.getSessionData();
+        const data = await session.getSessionDataFromDatabase();
 
         assert.equal(data.test, 1);
     });
