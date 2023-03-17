@@ -174,7 +174,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendGetRequest = async (path: NormalisedURLPath, params: any): Promise<any> => {
+    sendGetRequest = async <T = any>(path: NormalisedURLPath, params: any): Promise<T> => {
         return this.sendRequestHelper(
             path,
             "GET",

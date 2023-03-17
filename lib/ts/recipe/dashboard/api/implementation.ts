@@ -18,6 +18,17 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import SuperTokens from "../../../supertokens";
 import { DASHBOARD_API } from "../constants";
 import { APIInterface, AuthMode } from "../types";
+import { version as SDKVersion } from "../../../version";
+import { Querier } from "../../../querier";
+
+type TelemetryAPIResponse =
+    | {
+          exists: false;
+      }
+    | {
+          exists: true;
+          telemetryId: string;
+      };
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -39,17 +50,44 @@ export default function getAPIImplementation(): APIInterface {
                 connectionURI = superTokensInstance.supertokens.connectionURI;
             }
 
+            let telemetryId = "";
+            try {
+                let querier = Querier.getNewInstanceOrThrowError(input.options.recipeId);
+                const response = await querier.sendGetRequest<TelemetryAPIResponse>(
+                    new NormalisedURLPath("/telemetry"),
+                    {}
+                );
+
+                if (response.exists === true) {
+                    telemetryId = response.telemetryId;
+                }
+            } catch (_) {
+                telemetryId = "failed";
+            }
+
+            const { apiDomain, apiBasePath, websiteDomain, websiteBasePath, appName } = input.options.appInfo;
+
             return `
             <html>
                 <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
                         window.staticBasePath = "${bundleDomain}/static"
-                        window.dashboardAppPath = "${input.options.appInfo.apiBasePath
+                        window.dashboardAppPath = "${apiBasePath
                             .appendPath(new NormalisedURLPath(DASHBOARD_API))
                             .getAsStringDangerous()}"
                         window.connectionURI = "${connectionURI}"
                         window.authMode = "${authMode}"
+                        window.analyticsInfo = {
+                            apiDomain: "${apiDomain.getAsStringDangerous()}",
+                            apiBasePath: "${apiBasePath.getAsStringDangerous()}",
+                            websiteDomain: "${websiteDomain.getAsStringDangerous()}",
+                            websiteBasePath: "${websiteBasePath.getAsStringDangerous()}",
+                            appName: "${appName}",
+                            backendSDKName: "supertokens-node",
+                            backendSDKVersion: "${SDKVersion}",
+                            coreTelemetryId: "${telemetryId}"
+                        }
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
