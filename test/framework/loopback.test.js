@@ -22,6 +22,7 @@ let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
 const request = require("supertest");
 const axios = require("axios").default;
+let Dashboard = require("../../recipe/dashboard");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {
@@ -230,5 +231,54 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         await new Promise((r) => setTimeout(r, 1000)); // we delay so that the API call finishes and doesn't shut the core before the test finishes.
         assert(result.status === 203);
         assert(result.data.custom);
+    });
+
+    it("test that authorization header is read correctly in dashboard recipe", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "loopback",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    if (authHeader === "Bearer testapikey") {
+                                        return true;
+                                    }
+
+                                    return false;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        await this.app.start();
+
+        let result = await axios({
+            url: "/auth/dashboard/api/users/count",
+            baseURL: "http://localhost:9876",
+            method: "get",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(result.status === 200);
     });
 });

@@ -156,3 +156,13 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
     }
     return parsedURL.domain;
 }
+
+export function getFromObjectCaseInsensitive<T>(key: string, object: Record<string, T>): T | undefined {
+    const matchedKeys = Object.keys(object).filter((i) => i.toLocaleLowerCase() === key.toLocaleLowerCase());
+
+    if (matchedKeys.length === 0) {
+        return undefined;
+    }
+
+    return object[matchedKeys[0]];
+}
