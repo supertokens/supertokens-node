@@ -62,7 +62,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -75,7 +75,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };

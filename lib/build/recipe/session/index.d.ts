@@ -21,7 +21,7 @@ export default class SessionWrapper {
         res: any,
         userId: string,
         accessTokenPayload?: any,
-        sessionData?: any,
+        sessionDataInDatabase?: any,
         userContext?: any
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(

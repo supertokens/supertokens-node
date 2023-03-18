@@ -56,7 +56,7 @@ export default class Session implements SessionContainerInterface {
                 type: STError.UNAUTHORISED,
             });
         }
-        return sessionInfo.sessionData;
+        return sessionInfo.sessionDataInDatabase;
     }
 
     async updateSessionDataInDatabase(newSessionData: any, userContext?: any) {

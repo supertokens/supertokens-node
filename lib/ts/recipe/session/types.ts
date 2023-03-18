@@ -216,7 +216,7 @@ export type RecipeInterface = {
         res: BaseResponse;
         userId: string;
         accessTokenPayload?: any;
-        sessionData?: any;
+        sessionDataInDatabase?: any;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -427,7 +427,7 @@ export type APIInterface = {
 export type SessionInformation = {
     sessionHandle: string;
     userId: string;
-    sessionData: any;
+    sessionDataInDatabase: any;
     expiry: number;
     accessTokenPayload: any;
     timeCreated: number;

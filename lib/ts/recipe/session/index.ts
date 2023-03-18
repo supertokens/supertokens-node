@@ -43,7 +43,7 @@ export default class SessionWrapper {
         res: any,
         userId: string,
         accessTokenPayload: any = {},
-        sessionData: any = {},
+        sessionDataInDatabase: any = {},
         userContext: any = {}
     ) {
         const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
@@ -70,7 +70,7 @@ export default class SessionWrapper {
             res,
             userId,
             accessTokenPayload: finalAccessTokenPayload,
-            sessionData,
+            sessionDataInDatabase,
             userContext,
         });
     }

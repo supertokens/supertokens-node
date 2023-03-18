@@ -1044,8 +1044,8 @@ Supertokens.init({
                                 someKey: "someValue",
                             };
 
-                            input.sessionData = {
-                                ...input.sessionData,
+                            input.sessionDataInDatabase = {
+                                ...input.sessionDataInDatabase,
                                 someKey: "someValue",
                             };
 
