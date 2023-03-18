@@ -8,6 +8,7 @@ import {
     SessionClaim,
     ClaimValidationError,
     TokenTransferMethod,
+    SessionContainerInterface,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -17,6 +18,7 @@ import {
     getToken,
     setToken,
     setCookie,
+    buildFrontToken,
 } from "./cookieAndHeaders";
 import { attachTokensToResponse, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
@@ -141,13 +143,58 @@ export default function getRecipeInterface(
             return new Session(
                 helpers,
                 response.accessToken.token,
+                buildFrontToken(response.session.userId, response.accessToken.expiry, response.session.userDataInJWT),
+                response.refreshToken.token,
+                response.antiCsrfToken,
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                res,
-                req,
-                outputTransferMethod
+                { res, req, transferMethod: outputTransferMethod },
+                true
             );
+        },
+
+        createNewSessionWithoutModifyingResponse: async function ({
+            userId,
+            accessTokenPayload = {},
+            sessionData = {},
+            disableAntiCSRF,
+        }: {
+            userId: string;
+            disableAntiCSRF?: boolean;
+            accessTokenPayload?: any;
+            sessionData?: any;
+            userContext: any;
+        }): Promise<{ status: "OK"; session: SessionContainerInterface }> {
+            logDebugMessage("createNewSessionRaw: Started");
+
+            let response = await SessionFunctions.createNewSession(
+                helpers,
+                userId,
+                disableAntiCSRF === true,
+                accessTokenPayload,
+                sessionData
+            );
+
+            return {
+                status: "OK",
+                session: new Session(
+                    helpers,
+                    response.accessToken.token,
+                    buildFrontToken(
+                        response.session.userId,
+                        response.accessToken.expiry,
+                        response.session.userDataInJWT
+                    ),
+                    response.refreshToken.token,
+                    response.antiCsrfToken,
+                    response.session.handle,
+                    response.session.userId,
+                    response.session.userDataInJWT,
+                    undefined,
+                    true
+                ),
+            };
         },
 
         getGlobalClaimValidators: async function (input: {
@@ -297,15 +344,98 @@ export default function getRecipeInterface(
             const session = new Session(
                 helpers,
                 accessTokenString,
+                buildFrontToken(
+                    response.session.userId,
+                    response.accessToken !== undefined ? response.accessToken?.expiry : response.session.expiryTime,
+                    response.session.userDataInJWT
+                ),
+                undefined, // refresh
+                undefined, // anti-csrf
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                res,
-                req,
-                requestTransferMethod
+                { res, req, transferMethod: requestTransferMethod },
+                response.accessToken !== undefined
             );
 
             return session;
+        },
+
+        getSessionWithoutModifyingResponse: async function ({
+            accessToken: accessTokenString,
+            antiCsrfToken,
+            options,
+        }: {
+            accessToken: string;
+            antiCsrfToken?: string;
+            options?: Omit<VerifySessionOptions, "sessionRequired">;
+            userContext: any;
+        }): Promise<
+            | { status: "OK"; session: SessionContainerInterface | undefined }
+            | { status: "TOKEN_VALIDATION_ERROR"; error: any }
+            | { status: "TRY_REFRESH_TOKEN_ERROR" }
+        > {
+            if (options?.antiCsrfCheck === true && config.antiCsrf === "VIA_CUSTOM_HEADER") {
+                throw new Error(
+                    "Since the anti csrf mode is VIA_CUSTOM_HEADER getSessionWithoutModifyingResponse can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
+                );
+            }
+            logDebugMessage("getSessionWithoutModifyingResponse: Started");
+
+            let accessToken: ParsedJWTInfo | undefined;
+            try {
+                accessToken = parseJWTWithoutSignatureVerification(accessTokenString);
+                validateAccessTokenStructure(accessToken.payload, accessToken.version);
+            } catch (error) {
+                logDebugMessage(
+                    "getSessionWithoutModifyingResponse: Returning TOKEN_VALIDATION_ERROR because parsing failed"
+                );
+                return { status: "TOKEN_VALIDATION_ERROR", error };
+            }
+
+            let response;
+            try {
+                response = await SessionFunctions.getSession(
+                    helpers,
+                    accessToken,
+                    antiCsrfToken,
+                    options?.antiCsrfCheck === true,
+                    true, //
+                    options?.checkDatabase === true
+                );
+            } catch (error) {
+                if (error.type !== STError.TRY_REFRESH_TOKEN) {
+                    logDebugMessage(
+                        "getSessionWithoutModifyingResponse: Returning TOKEN_VALIDATION_ERROR because of an exception during getSession"
+                    );
+                    return { status: "TOKEN_VALIDATION_ERROR", error };
+                }
+
+                logDebugMessage(
+                    "getSessionWithoutModifyingResponse: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during getSession"
+                );
+                return { status: "TRY_REFRESH_TOKEN_ERROR" };
+            }
+
+            logDebugMessage("getSessionWithoutModifyingResponse: Success!");
+            const session = new Session(
+                helpers,
+                response.accessToken !== undefined ? response.accessToken.token : accessTokenString,
+                buildFrontToken(
+                    response.session.userId,
+                    response.accessToken !== undefined ? response.accessToken?.expiry : response.session.expiryTime,
+                    response.session.userDataInJWT
+                ),
+                undefined, // refresh
+                antiCsrfToken,
+                response.session.handle,
+                response.session.userId,
+                response.session.userDataInJWT,
+                undefined,
+                response.accessToken !== undefined
+            );
+
+            return { status: "OK", session };
         },
 
         validateClaims: async function (
@@ -488,12 +618,18 @@ export default function getRecipeInterface(
                 return new Session(
                     helpers,
                     response.accessToken.token,
+                    buildFrontToken(
+                        response.session.userId,
+                        response.accessToken.expiry,
+                        response.session.userDataInJWT
+                    ),
+                    response.refreshToken.token,
+                    response.antiCsrfToken,
                     response.session.handle,
                     response.session.userId,
                     response.session.userDataInJWT,
-                    res,
-                    req,
-                    requestTransferMethod
+                    { res, req, transferMethod: requestTransferMethod },
+                    true
                 );
             } catch (err) {
                 if (err.type === STError.TOKEN_THEFT_DETECTED || err.payload.clearTokens) {
@@ -504,6 +640,60 @@ export default function getRecipeInterface(
                         );
                         setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
                     }
+                }
+                throw err;
+            }
+        },
+        refreshSessionWithoutModifyingResponse: async function (
+            this: RecipeInterface,
+            {
+                refreshToken,
+                antiCsrfToken,
+                doAntiCsrfCheck,
+            }: { refreshToken: string; antiCsrfToken?: string; doAntiCsrfCheck: boolean; userContext: any }
+        ): Promise<
+            | { status: "OK"; session: SessionContainerInterface }
+            | { status: "UNAUTHORISED" }
+            | { status: "TOKEN_THEFT_DETECTED" }
+        > {
+            logDebugMessage("refreshSessionWithoutModifyingResponse: Started");
+
+            try {
+                let response = await SessionFunctions.refreshSession(
+                    helpers,
+                    refreshToken,
+                    antiCsrfToken,
+                    true,
+                    doAntiCsrfCheck ? "cookie" : "header"
+                );
+
+                logDebugMessage("refreshSessionWithoutModifyingResponse: Success!");
+
+                return {
+                    status: "OK",
+                    session: new Session(
+                        helpers,
+                        response.accessToken.token,
+                        buildFrontToken(
+                            response.session.userId,
+                            response.accessToken.expiry,
+                            response.session.userDataInJWT
+                        ),
+                        response.refreshToken.token,
+                        response.antiCsrfToken,
+                        response.session.handle,
+                        response.session.userId,
+                        response.session.userDataInJWT,
+                        undefined,
+                        true
+                    ),
+                };
+            } catch (err) {
+                if (err.type === STError.TOKEN_THEFT_DETECTED) {
+                    return { status: "TOKEN_THEFT_DETECTED" };
+                }
+                if (err.type === STError.UNAUTHORISED) {
+                    return { status: "UNAUTHORISED" };
                 }
                 throw err;
             }

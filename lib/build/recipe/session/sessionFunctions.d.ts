@@ -28,6 +28,7 @@ export declare function getSession(
         handle: string;
         userId: string;
         userDataInJWT: any;
+        expiryTime: number;
     };
     accessToken?: {
         token: string;

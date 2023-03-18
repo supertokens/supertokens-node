@@ -15,6 +15,7 @@ export declare function setFrontTokenInHeaders(
     atExpiry: number,
     accessTokenPayload: any
 ): void;
+export declare function buildFrontToken(userId: string, atExpiry: number, accessTokenPayload: any): string;
 export declare function getCORSAllowedHeaders(): string[];
 export declare function getToken(
     req: BaseRequest,

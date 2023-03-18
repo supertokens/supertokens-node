@@ -208,6 +208,13 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
+    createNewSessionWithoutModifyingResponse(input: {
+        userId: string;
+        accessTokenPayload?: any;
+        sessionData?: any;
+        userContext: any;
+    }): Promise<{ status: "OK"; session: SessionContainerInterface }>;
+
     getGlobalClaimValidators(input: {
         userId: string;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
@@ -221,11 +228,34 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<SessionContainerInterface | undefined>;
 
+    getSessionWithoutModifyingResponse(input: {
+        accessToken: string;
+        antiCsrfToken?: string;
+        options?: Omit<VerifySessionOptions, "sessionRequired">;
+        userContext: any;
+    }): Promise<
+        | { status: "OK"; session: SessionContainerInterface | undefined }
+        | { status: "TOKEN_VALIDATION_ERROR"; error: any }
+        | { status: "TRY_REFRESH_TOKEN_ERROR" }
+    >;
+
     refreshSession(input: {
         req: BaseRequest;
         res: BaseResponse;
         userContext: any;
     }): Promise<SessionContainerInterface>;
+
+    refreshSessionWithoutModifyingResponse(input: {
+        refreshToken: string;
+        antiCsrfToken?: string;
+        doAntiCsrfCheck: boolean;
+        userContext: any;
+    }): Promise<
+        | { status: "OK"; session: SessionContainerInterface }
+        | { status: "UNAUTHORISED" }
+        | { status: "TOKEN_THEFT_DETECTED" }
+    >;
+
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData
@@ -333,6 +363,14 @@ export interface SessionContainerInterface {
     getAccessTokenPayload(userContext?: any): any;
 
     getHandle(userContext?: any): string;
+
+    getTokensDangerously(): {
+        accessToken: string;
+        refreshToken: string | undefined;
+        antiCsrf: string | undefined;
+        frontToken: string;
+        accessAndFrontTokenUpdated: boolean;
+    };
 
     getAccessToken(userContext?: any): string;
 

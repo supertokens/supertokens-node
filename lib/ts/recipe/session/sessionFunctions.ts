@@ -65,6 +65,7 @@ export async function getSession(
         handle: string;
         userId: string;
         userDataInJWT: any;
+        expiryTime: number;
     };
     accessToken?: {
         token: string;
@@ -180,6 +181,7 @@ export async function getSession(
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
                 userDataInJWT: accessTokenInfo.userData,
+                expiryTime: accessTokenInfo.expiryTime,
             },
         };
     }

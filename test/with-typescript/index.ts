@@ -830,6 +830,7 @@ let sessionConfig: SessionTypeInput = {
         functions: (originalImpl: RecipeInterface) => {
             return {
                 getSession: originalImpl.getSession,
+                getSessionWithoutModifyingResponse: originalImpl.getSessionWithoutModifyingResponse,
                 createNewSession: async (input) => {
                     let session = await originalImpl.createNewSession(input);
                     return {
@@ -848,10 +849,13 @@ let sessionConfig: SessionTypeInput = {
                         removeClaim: session.removeClaim,
                         getExpiry: session.getExpiry,
                         getTimeCreated: session.getTimeCreated,
+                        getTokensDangerously: session.getTokensDangerously,
                     };
                 },
+                createNewSessionWithoutModifyingResponse: originalImpl.createNewSessionWithoutModifyingResponse,
                 getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
                 refreshSession: originalImpl.refreshSession,
+                refreshSessionWithoutModifyingResponse: originalImpl.refreshSessionWithoutModifyingResponse,
                 revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                 revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                 revokeSession: originalImpl.revokeSession,

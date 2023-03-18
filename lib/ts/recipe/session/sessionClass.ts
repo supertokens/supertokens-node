@@ -28,16 +28,24 @@ const protectedProps = [
     "antiCsrfToken",
 ];
 
+type ReqResInfo = {
+    res: BaseResponse;
+    req: BaseRequest;
+    transferMethod: TokenTransferMethod;
+};
+
 export default class Session implements SessionContainerInterface {
     constructor(
         protected helpers: Helpers,
         protected accessToken: string,
+        protected frontToken: string,
+        protected refreshToken: string | undefined,
+        protected antiCsrfToken: string | undefined,
         protected sessionHandle: string,
         protected userId: string,
         protected userDataInAccessToken: any,
-        protected res: BaseResponse,
-        protected readonly req: BaseRequest,
-        protected readonly transferMethod: TokenTransferMethod
+        protected reqResInfo: ReqResInfo | undefined,
+        protected accessTokenUpdated: boolean
     ) {}
 
     async revokeSession(userContext?: any) {
@@ -46,13 +54,16 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
 
-        // we do not check the output of calling revokeSession
-        // before clearing the cookies because we are revoking the
-        // current API request's session.
-        // If we instead clear the cookies only when revokeSession
-        // returns true, it can cause this kind of a bug:
-        // https://github.com/supertokens/supertokens-node/issues/343
-        clearSession(this.helpers.config, this.res, this.transferMethod);
+        // These can  only ever be
+        if (this.reqResInfo !== undefined) {
+            // we do not check the output of calling revokeSession
+            // before clearing the cookies because we are revoking the
+            // current API request's session.
+            // If we instead clear the cookies only when revokeSession
+            // returns true, it can cause this kind of a bug:
+            // https://github.com/supertokens/supertokens-node/issues/343
+            clearSession(this.helpers.config, this.reqResInfo.res, this.reqResInfo.transferMethod);
+        }
     }
 
     async getSessionData(userContext?: any): Promise<any> {
@@ -100,6 +111,16 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     }
 
+    getTokensDangerously() {
+        return {
+            accessToken: this.accessToken,
+            accessAndFrontTokenUpdated: this.accessTokenUpdated,
+            refreshToken: this.refreshToken,
+            frontToken: this.frontToken,
+            antiCsrf: this.antiCsrfToken,
+        };
+    }
+
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
         const newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
@@ -129,24 +150,27 @@ export default class Session implements SessionContainerInterface {
         this.userDataInAccessToken = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {
             this.accessToken = response.accessToken.token;
-            setFrontTokenInHeaders(
-                this.res,
-                response.session.userId,
-                response.accessToken.expiry,
-                response.session.userDataInJWT
-            );
-            setToken(
-                this.helpers.config,
-                this.res,
-                "access",
-                response.accessToken.token,
-                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                Date.now() + 3153600000000,
-                this.transferMethod
-            );
+            this.accessTokenUpdated = true;
+            if (this.reqResInfo !== undefined) {
+                setFrontTokenInHeaders(
+                    this.reqResInfo.res,
+                    response.session.userId,
+                    response.accessToken.expiry,
+                    response.session.userDataInJWT
+                );
+                setToken(
+                    this.helpers.config,
+                    this.reqResInfo.res,
+                    "access",
+                    response.accessToken.token,
+                    // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+                    // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                    // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+                    // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+                    Date.now() + 3153600000000,
+                    this.reqResInfo.transferMethod
+                );
+            }
         }
     }
 
