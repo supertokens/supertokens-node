@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+-   Added `createNewSessionWithoutModifyingResponse`, `getSessionWithoutModifyingResponse`, `refreshSessionWithoutModifyingResponse` to the Session recipe.
+-   Added `getTokensDangerously` to session objects (`SessionContainerInterface`)
+
 ## [13.1.3] - 2023-03-08
 
 ### Changed
