@@ -836,10 +836,10 @@ let sessionConfig: SessionTypeInput = {
                         getAccessToken: session.getAccessToken,
                         getHandle: session.getHandle,
                         getAccessTokenPayload: session.getAccessTokenPayload,
-                        getSessionData: session.getSessionData,
+                        getSessionDataFromDatabase: session.getSessionDataFromDatabase,
                         getUserId: session.getUserId,
                         revokeSession: session.revokeSession,
-                        updateSessionData: session.updateSessionData,
+                        updateSessionDataInDatabase: session.updateSessionDataInDatabase,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
                         assertClaims: session.assertClaims,
                         fetchAndSetClaim: session.fetchAndSetClaim,
@@ -855,7 +855,7 @@ let sessionConfig: SessionTypeInput = {
                 revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                 revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                 revokeSession: originalImpl.revokeSession,
-                updateSessionData: originalImpl.updateSessionData,
+                updateSessionDataInDatabase: originalImpl.updateSessionDataInDatabase,
                 getSessionInformation: originalImpl.getSessionInformation,
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
                 mergeIntoAccessTokenPayload: originalImpl.mergeIntoAccessTokenPayload,
@@ -1040,8 +1040,8 @@ Supertokens.init({
                                 someKey: "someValue",
                             };
 
-                            input.sessionData = {
-                                ...input.sessionData,
+                            input.sessionDataInDatabase = {
+                                ...input.sessionDataInDatabase,
                                 someKey: "someValue",
                             };
 

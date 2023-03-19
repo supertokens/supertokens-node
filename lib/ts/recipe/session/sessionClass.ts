@@ -55,7 +55,7 @@ export default class Session implements SessionContainerInterface {
         clearSession(this.helpers.config, this.res, this.transferMethod);
     }
 
-    async getSessionData(userContext?: any): Promise<any> {
+    async getSessionDataFromDatabase(userContext?: any): Promise<any> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -66,12 +66,12 @@ export default class Session implements SessionContainerInterface {
                 type: STError.UNAUTHORISED,
             });
         }
-        return sessionInfo.sessionData;
+        return sessionInfo.sessionDataInDatabase;
     }
 
-    async updateSessionData(newSessionData: any, userContext?: any) {
+    async updateSessionDataInDatabase(newSessionData: any, userContext?: any) {
         if (
-            !(await this.helpers.getRecipeImpl().updateSessionData({
+            !(await this.helpers.getRecipeImpl().updateSessionDataInDatabase({
                 sessionHandle: this.sessionHandle,
                 newSessionData,
                 userContext: userContext === undefined ? {} : userContext,

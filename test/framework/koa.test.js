@@ -1108,23 +1108,23 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         });
         router.post("/updateSessionData", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            await session.updateSessionData({ key: "value" });
+            await session.updateSessionDataInDatabase({ key: "value" });
             ctx.body = "";
         });
         router.post("/getSessionData", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            let sessionData = await session.getSessionData();
+            let sessionData = await session.getSessionDataFromDatabase();
             ctx.body = sessionData;
         });
 
         router.post("/updateSessionData2", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            await session.updateSessionData(null);
+            await session.updateSessionDataInDatabase(null);
             ctx.body = "";
         });
 
         router.post("/updateSessionDataInvalidSessionHandle", async (ctx, _) => {
-            ctx.body = { success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) };
+            ctx.body = { success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })) };
         });
 
         app.use(router.routes());

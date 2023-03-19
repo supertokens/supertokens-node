@@ -83,7 +83,7 @@ export default function getRecipeInterface(
             res,
             userId,
             accessTokenPayload = {},
-            sessionData = {},
+            sessionDataInDatabase = {},
             useDynamicAccessTokenSigningKey,
             userContext,
         }: {
@@ -91,7 +91,7 @@ export default function getRecipeInterface(
             res: BaseResponse;
             userId: string;
             accessTokenPayload?: any;
-            sessionData?: any;
+            sessionDataInDatabase?: any;
             useDynamicAccessTokenSigningKey?: boolean;
             userContext: any;
         }): Promise<Session> {
@@ -128,7 +128,7 @@ export default function getRecipeInterface(
                     ? !useDynamicAccessTokenSigningKey
                     : config.useDynamicAccessTokenSigningKey === false,
                 accessTokenPayload,
-                sessionData
+                sessionDataInDatabase
             );
 
             for (const transferMethod of availableTokenTransferMethods) {
@@ -562,14 +562,14 @@ export default function getRecipeInterface(
             return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles);
         },
 
-        updateSessionData: function ({
+        updateSessionDataInDatabase: function ({
             sessionHandle,
             newSessionData,
         }: {
             sessionHandle: string;
             newSessionData: any;
         }): Promise<boolean> {
-            return SessionFunctions.updateSessionData(helpers, sessionHandle, newSessionData);
+            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData);
         },
 
         mergeIntoAccessTokenPayload: async function (
