@@ -109,14 +109,14 @@ export default function (
                 res,
                 userId,
                 accessTokenPayload,
-                sessionData,
+                sessionDataInDatabase,
                 userContext,
             }: {
                 req: BaseRequest;
                 res: BaseResponse;
                 userId: string;
                 accessTokenPayload?: any;
-                sessionData?: any;
+                sessionDataInDatabase?: any;
                 userContext: any;
             }
         ): Promise<SessionContainerInterface> {
@@ -138,7 +138,7 @@ export default function (
                 res,
                 userId,
                 accessTokenPayload,
-                sessionData,
+                sessionDataInDatabase,
                 userContext,
             });
 

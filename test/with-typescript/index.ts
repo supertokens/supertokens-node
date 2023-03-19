@@ -836,11 +836,11 @@ let sessionConfig: SessionTypeInput = {
                         getAccessToken: session.getAccessToken,
                         getHandle: session.getHandle,
                         getAccessTokenPayload: session.getAccessTokenPayload,
-                        getSessionData: session.getSessionData,
+                        getSessionDataFromDatabase: session.getSessionDataFromDatabase,
                         getUserId: session.getUserId,
                         revokeSession: session.revokeSession,
                         updateAccessTokenPayload: session.updateAccessTokenPayload,
-                        updateSessionData: session.updateSessionData,
+                        updateSessionDataInDatabase: session.updateSessionDataInDatabase,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
                         assertClaims: session.assertClaims,
                         fetchAndSetClaim: session.fetchAndSetClaim,
@@ -857,7 +857,7 @@ let sessionConfig: SessionTypeInput = {
                 revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                 revokeSession: originalImpl.revokeSession,
                 updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
-                updateSessionData: originalImpl.updateSessionData,
+                updateSessionDataInDatabase: originalImpl.updateSessionDataInDatabase,
                 getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
                 getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
                 getSessionInformation: originalImpl.getSessionInformation,
@@ -1044,8 +1044,8 @@ Supertokens.init({
                                 someKey: "someValue",
                             };
 
-                            input.sessionData = {
-                                ...input.sessionData,
+                            input.sessionDataInDatabase = {
+                                ...input.sessionDataInDatabase,
                                 someKey: "someValue",
                             };
 

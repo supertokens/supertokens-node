@@ -97,7 +97,7 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -109,7 +109,7 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };

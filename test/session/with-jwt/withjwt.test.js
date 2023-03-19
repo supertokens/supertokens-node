@@ -74,7 +74,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -87,7 +87,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -168,7 +168,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -181,7 +181,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -265,7 +265,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -278,7 +278,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -482,7 +482,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -495,7 +495,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -583,7 +583,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -596,7 +596,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -672,7 +672,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -685,7 +685,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -728,7 +728,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -741,7 +741,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -818,7 +818,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -831,7 +831,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -886,7 +886,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -899,7 +899,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -976,7 +976,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -988,7 +988,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1064,7 +1064,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1077,7 +1077,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1154,7 +1154,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1166,7 +1166,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1240,7 +1240,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1252,7 +1252,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1346,7 +1346,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1358,7 +1358,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1462,7 +1462,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1474,7 +1474,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1550,7 +1550,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1562,7 +1562,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1657,7 +1657,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1669,7 +1669,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1776,7 +1776,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1788,7 +1788,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1856,7 +1856,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1868,7 +1868,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1913,7 +1913,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -1925,7 +1925,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -1994,7 +1994,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -2006,7 +2006,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -2065,7 +2065,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -2077,7 +2077,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };
@@ -2186,7 +2186,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                     res,
                                     userId,
                                     accessTokenPayload,
-                                    sessionData,
+                                    sessionDataInDatabase,
                                 }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
@@ -2198,7 +2198,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                                         res,
                                         userId,
                                         accessTokenPayload,
-                                        sessionData,
+                                        sessionDataInDatabase,
                                     });
                                 },
                             };

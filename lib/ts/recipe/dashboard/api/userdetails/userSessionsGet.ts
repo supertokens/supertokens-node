@@ -3,7 +3,7 @@ import STError from "../../../../error";
 import Session from "../../../session";
 
 type SessionType = {
-    sessionData: any;
+    sessionDataInDatabase: any;
     accessTokenPayload: any;
     userId: string;
     expiry: number;

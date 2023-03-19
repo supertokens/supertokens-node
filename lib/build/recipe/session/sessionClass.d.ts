@@ -22,8 +22,8 @@ export default class Session implements SessionContainerInterface {
         transferMethod: TokenTransferMethod
     );
     revokeSession(userContext?: any): Promise<void>;
-    getSessionData(userContext?: any): Promise<any>;
-    updateSessionData(newSessionData: any, userContext?: any): Promise<void>;
+    getSessionDataFromDatabase(userContext?: any): Promise<any>;
+    updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<void>;
     getUserId(_userContext?: any): string;
     getAccessTokenPayload(_userContext?: any): any;
     getHandle(): string;

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Breaking Changes
+
+-   Renamed `getSessionData` to `getSessionDataFromDatabase` to clarify that it always hits the DB
+-   Renamed `updateSessionData` to `updateSessionDataInDatabase`
+-   Renamed `sessionData` to `sessionDataInDatabase` in `SessionInformation` and the input to `createNewSession`
+
 ## [13.1.3] - 2023-03-08
 
 ### Changed

@@ -10,7 +10,7 @@ export declare function createNewSession(
     userId: string,
     disableAntiCsrf: boolean,
     accessTokenPayload?: any,
-    sessionData?: any
+    sessionDataInDatabase?: any
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
@@ -74,7 +74,7 @@ export declare function revokeMultipleSessions(helpers: Helpers, sessionHandles:
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export declare function updateSessionData(
+export declare function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any

@@ -122,14 +122,14 @@ export default function getRecipeInterface(
             res,
             userId,
             accessTokenPayload = {},
-            sessionData = {},
+            sessionDataInDatabase = {},
             userContext,
         }: {
             req: BaseRequest;
             res: BaseResponse;
             userId: string;
             accessTokenPayload?: any;
-            sessionData?: any;
+            sessionDataInDatabase?: any;
             userContext: any;
         }): Promise<Session> {
             logDebugMessage("createNewSession: Started");
@@ -164,7 +164,7 @@ export default function getRecipeInterface(
                 userId,
                 disableAntiCSRF,
                 accessTokenPayload,
-                sessionData
+                sessionDataInDatabase
             );
 
             for (const transferMethod of availableTokenTransferMethods) {
@@ -597,14 +597,14 @@ export default function getRecipeInterface(
             return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles);
         },
 
-        updateSessionData: function ({
+        updateSessionDataInDatabase: function ({
             sessionHandle,
             newSessionData,
         }: {
             sessionHandle: string;
             newSessionData: any;
         }): Promise<boolean> {
-            return SessionFunctions.updateSessionData(helpers, sessionHandle, newSessionData);
+            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData);
         },
 
         updateAccessTokenPayload: function ({

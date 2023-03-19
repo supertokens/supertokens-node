@@ -31,11 +31,11 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void> {
         return this.originalSessionClass.revokeSession(userContext);
     }
-    getSessionData(userContext?: any): Promise<any> {
-        return this.originalSessionClass.getSessionData(userContext);
+    getSessionDataFromDatabase(userContext?: any): Promise<any> {
+        return this.originalSessionClass.getSessionDataFromDatabase(userContext);
     }
-    updateSessionData(newSessionData: any, userContext?: any): Promise<any> {
-        return this.originalSessionClass.updateSessionData(newSessionData, userContext);
+    updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any> {
+        return this.originalSessionClass.updateSessionDataInDatabase(newSessionData, userContext);
     }
     getUserId(userContext?: any): string {
         return this.originalSessionClass.getUserId(userContext);

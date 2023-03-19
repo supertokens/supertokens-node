@@ -1280,23 +1280,25 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
         app.post("/updateSessionData", async (req, res) => {
             let session = await Session.getSession(req, res);
-            await session.updateSessionData({ key: "value" });
+            await session.updateSessionDataInDatabase({ key: "value" });
             res.status(200).send("");
         });
         app.post("/getSessionData", async (req, res) => {
             let session = await Session.getSession(req, res);
-            let sessionData = await session.getSessionData();
+            let sessionData = await session.getSessionDataFromDatabase();
             res.status(200).json(sessionData);
         });
 
         app.post("/updateSessionData2", async (req, res) => {
             let session = await Session.getSession(req, res);
-            await session.updateSessionData(null);
+            await session.updateSessionDataInDatabase(null);
             res.status(200).send("");
         });
 
         app.post("/updateSessionDataInvalidSessionHandle", async (req, res) => {
-            res.status(200).json({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) });
+            res.status(200).json({
+                success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })),
+            });
         });
 
         //create a new session
