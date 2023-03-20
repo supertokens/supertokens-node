@@ -30,6 +30,7 @@ import {
     USER_PASSWORD_API,
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
+    DASHBOARD_ANALYTICS_API,
 } from "./constants";
 import {
     APIInterface,
@@ -140,6 +141,10 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 
     if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
         return USER_PASSWORD_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(DASHBOARD_ANALYTICS_API) && method === "post") {
+        return DASHBOARD_ANALYTICS_API;
     }
 
     return undefined;

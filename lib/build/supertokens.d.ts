@@ -11,6 +11,7 @@ export default class SuperTokens {
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
     supertokens: undefined | SuperTokensInfo;
+    telemetryEnabled: boolean;
     constructor(config: TypeInput);
     sendTelemetry: () => Promise<void>;
     static init(config: TypeInput): void;

@@ -46,6 +46,8 @@ export default class SuperTokens {
 
     supertokens: undefined | SuperTokensInfo;
 
+    telemetryEnabled: boolean;
+
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
@@ -83,19 +85,7 @@ export default class SuperTokens {
             return func(this.appInfo, this.isInServerlessEnv);
         });
 
-        let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
-
-        if (telemetry) {
-            if (this.isInServerlessEnv) {
-                // see https://github.com/supertokens/supertokens-node/issues/127
-                let randomNum = Math.random() * 10;
-                if (randomNum > 7) {
-                    this.sendTelemetry();
-                }
-            } else {
-                this.sendTelemetry();
-            }
-        }
+        this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }
 
     sendTelemetry = async () => {
