@@ -21,6 +21,7 @@ import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import {
+    DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
     SIGN_IN_API,
     SIGN_OUT_API,
@@ -55,6 +56,7 @@ import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyToken
 import { userSessionsPost } from "./api/userdetails/userSessionsPost";
 import signIn from "./api/signIn";
 import signOut from "./api/signOut";
+import analyticsPost from "./api/analytics";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -308,6 +310,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = userEmailVerifyTokenPost;
         } else if (id === SIGN_OUT_API) {
             apiFunction = signOut;
+        } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
+            apiFunction = analyticsPost;
         }
 
         // If the id doesnt match any APIs return false

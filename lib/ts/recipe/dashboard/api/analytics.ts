@@ -15,14 +15,24 @@
 
 import { APIInterface, APIOptions } from "../types";
 import SuperTokens from "../../../supertokens";
-import STError from "../../../error";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
-import axios from "axios";
 
 export type Response = {
     status: "OK";
+    data?: {
+        websiteDomain: string;
+        websiteBasePath: string;
+        apiDomain: string;
+        apiBasePath: string;
+        appName: string;
+        backendSDKName: string;
+        backendSDKVersion: string;
+        // These can be undefined and will be skipped if not present
+        telemetryId: string | undefined;
+        numberOfUsers: number | undefined;
+    };
 };
 
 export default async function analyticsPost(_: APIInterface, options: APIOptions): Promise<Response> {
@@ -31,19 +41,6 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
         return {
             status: "OK",
         };
-    }
-
-    const {
-        // email will be undefined if the frontend is using the api key flow
-        email,
-        dashboardVersion,
-    } = await options.req.getJSONBody();
-
-    if (dashboardVersion === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Missing required parameter 'dashboardVersion'",
-        });
     }
 
     let telemetryId: string | undefined;
@@ -65,42 +62,20 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
         // ignored
     }
 
-    const retries = 3;
     const { apiDomain, apiBasePath, websiteDomain, websiteBasePath, appName } = options.appInfo;
-
-    for (let i = 0; i < retries; i++) {
-        try {
-            let response = await axios({
-                method: "POST",
-                url: "https://api.supertokens.com/0/st/telemetry",
-                data: {
-                    websiteDomain: websiteDomain.getAsStringDangerous(),
-                    websiteBasePath: websiteBasePath.getAsStringDangerous(),
-                    apiDomain: apiDomain.getAsStringDangerous(),
-                    apiBasePath: apiBasePath.getAsStringDangerous(),
-                    appName,
-                    backendSDKName: "supertokens-node",
-                    backendSDKVersion: SDKVersion,
-                    dashboardVersion,
-                    // These can be undefined and will be skipped if not present
-                    email,
-                    telemetryId,
-                    numberOfUsers,
-                },
-                headers: {
-                    "api-version": 2,
-                },
-            });
-
-            if (response.status === 200) {
-                break;
-            }
-        } catch (_) {
-            // ignored
-        }
-    }
 
     return {
         status: "OK",
+        data: {
+            websiteDomain: websiteDomain.getAsStringDangerous(),
+            websiteBasePath: websiteBasePath.getAsStringDangerous(),
+            apiDomain: apiDomain.getAsStringDangerous(),
+            apiBasePath: apiBasePath.getAsStringDangerous(),
+            appName,
+            backendSDKName: "supertokens-node",
+            backendSDKVersion: SDKVersion,
+            telemetryId,
+            numberOfUsers,
+        },
     };
 }
