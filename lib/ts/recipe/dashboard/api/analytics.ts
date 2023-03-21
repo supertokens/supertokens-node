@@ -23,16 +23,6 @@ import axios from "axios";
 
 export type Response = {
     status: "OK";
-    data?: {
-        websiteDomain: string;
-        apiDomain: string;
-        appName: string;
-        sdk: string;
-        sdkVersion: string;
-        numberOfUsers: number;
-        // These can be undefined and will be skipped if not present
-        telemetryId: string | undefined;
-    };
 };
 
 export default async function analyticsPost(_: APIInterface, options: APIOptions): Promise<Response> {

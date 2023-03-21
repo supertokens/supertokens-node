@@ -14,7 +14,6 @@
  */
 
 import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
-import axios from "axios";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -87,29 +86,6 @@ export default class SuperTokens {
 
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }
-
-    sendTelemetry = async () => {
-        try {
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
-            let telemetryId: string | undefined;
-            if (response.exists) {
-                telemetryId = response.telemetryId;
-            }
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.com/0/st/telemetry",
-                data: {
-                    appName: this.appInfo.appName,
-                    websiteDomain: this.appInfo.websiteDomain.getAsStringDangerous(),
-                    telemetryId,
-                },
-                headers: {
-                    "api-version": 2,
-                },
-            });
-        } catch (ignored) {}
-    };
 
     static init(config: TypeInput) {
         if (SuperTokens.instance === undefined) {

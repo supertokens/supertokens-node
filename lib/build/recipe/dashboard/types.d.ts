@@ -39,7 +39,7 @@ export declare type APIInterface = {
 };
 export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
-export declare type AuthMode = "api-key" | "email-password";
+export declare type AuthMode = "email-password";
 declare type CommonUserInformation = {
     id: string;
     timeJoined: number;
