@@ -39,15 +39,13 @@ export default function getAPIImplementation(): APIInterface {
                 connectionURI = superTokensInstance.supertokens.connectionURI;
             }
 
-            const { apiBasePath } = input.options.appInfo;
-
             return `
             <html>
                 <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
                         window.staticBasePath = "${bundleDomain}/static"
-                        window.dashboardAppPath = "${apiBasePath
+                        window.dashboardAppPath = "${input.options.appInfo.apiBasePath
                             .appendPath(new NormalisedURLPath(DASHBOARD_API))
                             .getAsStringDangerous()}"
                         window.connectionURI = "${connectionURI}"

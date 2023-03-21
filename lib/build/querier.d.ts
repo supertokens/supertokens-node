@@ -24,7 +24,7 @@ export declare class Querier {
     ): void;
     sendPostRequest: <T = any>(path: NormalisedURLPath, body: any) => Promise<T>;
     sendDeleteRequest: (path: NormalisedURLPath, body: any, params?: any) => Promise<any>;
-    sendGetRequest: <T = any>(path: NormalisedURLPath, params: any) => Promise<T>;
+    sendGetRequest: (path: NormalisedURLPath, params: any) => Promise<any>;
     sendPutRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     private sendRequestHelper;
 }
