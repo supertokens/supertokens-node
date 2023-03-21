@@ -4,14 +4,12 @@ export declare type Response = {
     status: "OK";
     data?: {
         websiteDomain: string;
-        websiteBasePath: string;
         apiDomain: string;
-        apiBasePath: string;
         appName: string;
-        backendSDKName: string;
-        backendSDKVersion: string;
+        sdk: string;
+        sdkVersion: string;
+        numberOfUsers: number;
         telemetryId: string | undefined;
-        numberOfUsers: number | undefined;
     };
 };
 export default function analyticsPost(_: APIInterface, options: APIOptions): Promise<Response>;

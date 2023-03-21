@@ -228,6 +228,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "post",
             },
+            {
+                id: DASHBOARD_ANALYTICS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_ANALYTICS_API)),
+                disabled: false,
+                method: "post",
+            },
         ];
     };
 
@@ -310,7 +316,7 @@ export default class Recipe extends RecipeModule {
             apiFunction = userEmailVerifyTokenPost;
         } else if (id === SIGN_OUT_API) {
             apiFunction = signOut;
-        } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "get") {
+        } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
             apiFunction = analyticsPost;
         }
 

@@ -18,20 +18,20 @@ import SuperTokens from "../../../supertokens";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
+import STError from "../../../error";
+import axios from "axios";
 
 export type Response = {
     status: "OK";
     data?: {
         websiteDomain: string;
-        websiteBasePath: string;
         apiDomain: string;
-        apiBasePath: string;
         appName: string;
-        backendSDKName: string;
-        backendSDKVersion: string;
+        sdk: string;
+        sdkVersion: string;
+        numberOfUsers: number;
         // These can be undefined and will be skipped if not present
         telemetryId: string | undefined;
-        numberOfUsers: number | undefined;
     };
 };
 
@@ -43,39 +43,66 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
         };
     }
 
+    const { email, dashboardVersion } = await options.req.getJSONBody();
+
+    if (email === undefined) {
+        throw new STError({
+            message: "Missing required property 'email'",
+            type: STError.BAD_INPUT_ERROR,
+        });
+    }
+
+    if (dashboardVersion === undefined) {
+        throw new STError({
+            message: "Missing required property 'dashboardVersion'",
+            type: STError.BAD_INPUT_ERROR,
+        });
+    }
+
     let telemetryId: string | undefined;
+    let numberOfUsers: number;
     try {
         let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
         let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
         if (response.exists) {
             telemetryId = response.telemetryId;
         }
+
+        numberOfUsers = await SuperTokens.getInstanceOrThrowError().getUserCount();
     } catch (_) {
+        // If either telemetry id API or user count fetch fails, no event should be sent
+        return {
+            status: "OK",
+        };
+    }
+
+    const { apiDomain, websiteDomain, appName } = options.appInfo;
+    const data = {
+        websiteDomain: websiteDomain.getAsStringDangerous(),
+        apiDomain: apiDomain.getAsStringDangerous(),
+        appName,
+        sdk: "supertokens-node",
+        sdkVersion: SDKVersion,
+        telemetryId,
+        numberOfUsers,
+        email,
+        dashboardVersion,
+    };
+
+    try {
+        await axios({
+            url: "https://api.supertokens.com/0/st/telemetrybroken",
+            method: "POST",
+            data,
+            headers: {
+                "api-version": 3,
+            },
+        });
+    } catch (e) {
         // Ignored
     }
 
-    let numberOfUsers: number | undefined;
-
-    try {
-        numberOfUsers = await SuperTokens.getInstanceOrThrowError().getUserCount();
-    } catch (_) {
-        // ignored
-    }
-
-    const { apiDomain, apiBasePath, websiteDomain, websiteBasePath, appName } = options.appInfo;
-
     return {
         status: "OK",
-        data: {
-            websiteDomain: websiteDomain.getAsStringDangerous(),
-            websiteBasePath: websiteBasePath.getAsStringDangerous(),
-            apiDomain: apiDomain.getAsStringDangerous(),
-            apiBasePath: apiBasePath.getAsStringDangerous(),
-            appName,
-            backendSDKName: "supertokens-node",
-            backendSDKVersion: SDKVersion,
-            telemetryId,
-            numberOfUsers,
-        },
     };
 }
