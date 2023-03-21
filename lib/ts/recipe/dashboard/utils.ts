@@ -61,9 +61,8 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 
     return {
-        apiKey: config === undefined ? undefined : config.apiKey,
         override,
-        authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
+        authMode: "email-password",
     };
 }
 
@@ -354,17 +353,8 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
     return isRecipeInitialised;
 }
 
-export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
-    let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
-
-    // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
-    apiKeyHeaderValue = apiKeyHeaderValue?.split(" ")[1];
-
-    if (apiKeyHeaderValue === undefined) {
-        return false;
-    }
-
-    return apiKeyHeaderValue === input.config.apiKey;
+export async function validateApiKey(_: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
+    return false;
 }
 
 export function getApiPathWithDashboardBase(path: string): string {

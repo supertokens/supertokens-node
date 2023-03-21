@@ -17,7 +17,6 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { dashboardVersion } from "../../version";
 import { RecipeInterface } from "./types";
-import { validateApiKey } from "./utils";
 
 export default function getRecipeImplementation(): RecipeInterface {
     return {
@@ -25,20 +24,16 @@ export default function getRecipeImplementation(): RecipeInterface {
             return `https://cdn.jsdelivr.net/gh/supertokens/dashboard@v${dashboardVersion}/build/`;
         },
         shouldAllowAccess: async function (input) {
-            // For cases where we're not using the API key, the JWT is being used; we allow their access by default
-            if (!input.config.apiKey) {
-                // make the check for the API endpoint here with querier
-                let querier = Querier.getNewInstanceOrThrowError(undefined);
-                const authHeaderValue = input.req.getHeaderValue("authorization")?.split(" ")[1];
-                const sessionVerificationResponse = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/dashboard/session/verify"),
-                    {
-                        sessionId: authHeaderValue,
-                    }
-                );
-                return sessionVerificationResponse.status === "OK";
-            }
-            return await validateApiKey(input);
+            // make the check for the API endpoint here with querier
+            let querier = Querier.getNewInstanceOrThrowError(undefined);
+            const authHeaderValue = input.req.getHeaderValue("authorization")?.split(" ")[1];
+            const sessionVerificationResponse = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/dashboard/session/verify"),
+                {
+                    sessionId: authHeaderValue,
+                }
+            );
+            return sessionVerificationResponse.status === "OK";
         },
     };
 }

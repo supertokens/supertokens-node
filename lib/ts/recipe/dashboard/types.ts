@@ -18,7 +18,6 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 
 export type TypeInput = {
-    apiKey?: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -29,7 +28,6 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    apiKey?: string;
     authMode: AuthMode;
     override: {
         functions: (
