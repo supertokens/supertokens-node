@@ -310,7 +310,7 @@ export default class Recipe extends RecipeModule {
             apiFunction = userEmailVerifyTokenPost;
         } else if (id === SIGN_OUT_API) {
             apiFunction = signOut;
-        } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
+        } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "get") {
             apiFunction = analyticsPost;
         }
 

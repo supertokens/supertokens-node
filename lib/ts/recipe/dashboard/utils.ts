@@ -143,7 +143,7 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
         return USER_PASSWORD_API;
     }
 
-    if (path.getAsStringDangerous().endsWith(DASHBOARD_ANALYTICS_API) && method === "post") {
+    if (path.getAsStringDangerous().endsWith(DASHBOARD_ANALYTICS_API) && method === "get") {
         return DASHBOARD_ANALYTICS_API;
     }
 
