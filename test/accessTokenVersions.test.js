@@ -13,17 +13,19 @@
  * under the License.
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
-let assert = require("assert");
-let { Querier } = require("../lib/build/querier");
+const assert = require("assert");
+const { Querier } = require("../lib/build/querier");
 const express = require("express");
 const request = require("supertest");
-let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
-let SuperTokens = require("../");
-let Session = require("../recipe/session");
-let { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
-let { middleware, errorHandler } = require("../framework/express");
+const { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
+const SuperTokens = require("../");
+const Session = require("../recipe/session");
+const EmailPassword = require("../recipe/emailpassword");
+const { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
+const { middleware, errorHandler } = require("../framework/express");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 const { verifySession } = require("../recipe/session/framework/express");
+const { json } = require("body-parser");
 
 describe(`AccessToken versions: ${printPath("[test/accessTokenVersions.test.js]")}`, function () {
     beforeEach(async function () {
@@ -37,152 +39,579 @@ describe(`AccessToken versions: ${printPath("[test/accessTokenVersions.test.js]"
         await cleanST();
     });
 
-    it("we should create a V3 token", async function () {
-        await startST();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [Session.init()],
+    describe("createNewSession", () => {
+        it("should create a V3 token", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert(cookies.accessTokenFromAny !== undefined);
+            assert(cookies.refreshTokenFromAny !== undefined);
+            assert(cookies.frontToken !== undefined);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.strictEqual(parsedToken.version, 3);
+
+            const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
+            assert.strictEqual(typeof parsedHeader.kid, "string");
+            assert(parsedHeader.kid.startsWith("d-"));
         });
 
-        const app = getTestExpressApp();
+        it("should create a V3 token signed by a static key if set in session recipe config", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        useDynamicAccessTokenSigningKey: false,
+                    }),
+                ],
+            });
 
-        let res = await new Promise((resolve) =>
-            request(app)
-                .post("/create")
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+            const app = getTestExpressApp();
 
-        let cookies = extractInfoFromResponse(res);
-        assert(cookies.accessTokenFromAny !== undefined);
-        assert(cookies.refreshTokenFromAny !== undefined);
-        assert(cookies.frontToken !== undefined);
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
 
-        assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 3);
+            let cookies = extractInfoFromResponse(res);
+            assert(cookies.accessTokenFromAny !== undefined);
+            assert(cookies.refreshTokenFromAny !== undefined);
+            assert(cookies.frontToken !== undefined);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.strictEqual(parsedToken.version, 3);
+
+            const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
+            assert.strictEqual(typeof parsedHeader.kid, "string");
+            assert(parsedHeader.kid.startsWith("s-"));
+        });
+
+        it("should create a V3 token signed by a static key if set in createNewSession options", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/create-static")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert(cookies.accessTokenFromAny !== undefined);
+            assert(cookies.refreshTokenFromAny !== undefined);
+            assert(cookies.frontToken !== undefined);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.strictEqual(parsedToken.version, 3);
+
+            const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
+            assert.strictEqual(typeof parsedHeader.kid, "string");
+            assert(parsedHeader.kid.startsWith("s-"));
+        });
+
+        it("should throw an error when adding protected props", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((res, rej) =>
+                request(app)
+                    .post("/create")
+                    .type("application/json")
+                    .send(
+                        JSON.stringify({
+                            payload: {
+                                sub: "asdf",
+                            },
+                        })
+                    )
+                    .expect(400)
+                    .end((err, resp) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res(resp);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert.strictEqual(cookies.accessTokenFromAny, undefined);
+            assert.strictEqual(cookies.refreshTokenFromAny, undefined);
+            assert.strictEqual(cookies.frontToken, undefined);
+        });
+
+        it("should make sign in/up return a 500 when adding protected props", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        override: {
+                            functions: (oI) => ({
+                                createNewSession: (input) => {
+                                    input.accessTokenPayload = {
+                                        ...input.accessTokenPayload,
+                                        sub: "asdf",
+                                    };
+
+                                    return oI.createNewSession(input);
+                                },
+                            }),
+                        },
+                    }),
+                ],
+            });
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((res, rej) =>
+                request(app)
+                    .post("/auth/signup")
+                    .type("application/json")
+                    .send(
+                        JSON.stringify({
+                            formFields: [
+                                { id: "email", value: `test-${Date.now()}@supertokens.com` },
+                                { id: "password", value: "Asdf12.." },
+                            ],
+                        })
+                    )
+                    .expect(500)
+                    .end((err, resp) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res(resp);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert.strictEqual(cookies.accessTokenFromAny, undefined);
+            assert.strictEqual(cookies.refreshTokenFromAny, undefined);
+            assert.strictEqual(cookies.frontToken, undefined);
+
+            assert(res.text.includes("The user payload contains protected field"));
+        });
     });
 
-    it("v2 tokens should still be valid", async function () {
-        await startST();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [Session.init()],
+    describe("verifySession", () => {
+        it("should validate v2 tokens", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "2.18";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {},
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyToken = legacySessionResp.accessToken.token;
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.notEqual(
+                await ProcessState.getInstance().waitForEvent(PROCESS_STATE.MULTI_JWKS_VALIDATION, 1500),
+                undefined
+            );
+
+            assert.deepStrictEqual(res.body, {
+                message: true,
+                sessionExists: true,
+                sessionHandle: legacySessionResp.session.handle,
+            });
         });
 
-        // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
-        // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
-        Querier.apiVersion = "2.18";
-        const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-            new NormalisedURLPath("/recipe/session"),
-            {
-                userId: "test-user-id",
-                enableAntiCsrf: false,
-                userDataInJWT: {},
-                userDataInDatabase: {},
-            }
-        );
-        Querier.apiVersion = undefined;
+        it("should validate v2 tokens with check database enabled", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
 
-        const legacyToken = legacySessionResp.accessToken.token;
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "2.18";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {},
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
 
-        const app = getTestExpressApp();
+            const legacyToken = legacySessionResp.accessToken.token;
 
-        let res = await new Promise((resolve, reject) =>
-            request(app)
-                .get("/verify")
-                .set("Authorization", `Bearer ${legacyToken}`)
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.notEqual(
-            await ProcessState.getInstance().waitForEvent(PROCESS_STATE.MULTI_JWKS_VALIDATION, 1500),
-            undefined
-        );
+            const app = getTestExpressApp();
 
-        assert.deepStrictEqual(res.body, {
-            message: true,
-            sessionExists: true,
-            sessionHandle: legacySessionResp.session.handle,
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/revoke-session")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let resDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify-checkdb")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(401)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(resDBCheck.body, { message: "unauthorised" });
+
+            let resNoDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.notEqual(
+                await ProcessState.getInstance().waitForEvent(PROCESS_STATE.MULTI_JWKS_VALIDATION, 1500),
+                undefined
+            );
+
+            assert.deepStrictEqual(resNoDBCheck.body, {
+                message: true,
+                sessionExists: true,
+                sessionHandle: legacySessionResp.session.handle,
+            });
+        });
+
+        it("should validate v3 tokens with check database enabled", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+
+            assert(cookies.accessTokenFromAny !== undefined);
+            assert(cookies.refreshTokenFromAny !== undefined);
+            assert(cookies.frontToken !== undefined);
+
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/revoke-session")
+                    .set("Authorization", `Bearer ${cookies.accessTokenFromAny}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let resDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify-checkdb")
+                    .set("Authorization", `Bearer ${cookies.accessTokenFromAny}`)
+                    .expect(401)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(resDBCheck.body, { message: "unauthorised" });
+
+            let resNoDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${cookies.accessTokenFromAny}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.notDeepStrictEqual(resNoDBCheck.body, { message: "unauthorised" });
         });
     });
 
-    it("legacy sessions should refresh to new version", async function () {
-        await startST();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [Session.init()],
+    describe("refresh session", () => {
+        it("should refresh legacy sessions to new version", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "2.18";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {},
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyRefreshToken = legacySessionResp.refreshToken.token;
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Authorization", `Bearer ${legacyRefreshToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert(cookies.accessTokenFromAny !== undefined);
+            assert(cookies.refreshTokenFromAny !== undefined);
+            assert(cookies.frontToken !== undefined);
+
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 3);
         });
 
-        // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
-        // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
-        Querier.apiVersion = "2.18";
-        const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
-            new NormalisedURLPath("/recipe/session"),
-            {
-                userId: "test-user-id",
-                enableAntiCsrf: false,
-                userDataInJWT: {},
-                userDataInDatabase: {},
-            }
-        );
-        Querier.apiVersion = undefined;
+        it("should throw when refreshing legacy session with protected prop in payload", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
 
-        const legacyRefreshToken = legacySessionResp.refreshToken.token;
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "2.18";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {
+                        sub: "asdf",
+                    },
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
 
-        const app = getTestExpressApp();
+            const legacyRefreshToken = legacySessionResp.refreshToken.token;
 
-        let res = await new Promise((resolve, reject) =>
-            request(app)
-                .post("/auth/session/refresh")
-                .set("Authorization", `Bearer ${legacyRefreshToken}`)
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+            const app = getTestExpressApp();
 
-        let cookies = extractInfoFromResponse(res);
-        assert(cookies.accessTokenFromAny !== undefined);
-        assert(cookies.refreshTokenFromAny !== undefined);
-        assert(cookies.frontToken !== undefined);
+            let res = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Authorization", `Bearer ${legacyRefreshToken}`)
+                    .expect(401)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
 
-        assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 3);
+            let cookies = extractInfoFromResponse(res);
+            assert.strictEqual(cookies.accessTokenFromAny, "");
+            assert.strictEqual(cookies.refreshTokenFromAny, "");
+            assert.strictEqual(cookies.frontToken, "remove");
+        });
     });
 });
 
@@ -190,9 +619,19 @@ function getTestExpressApp() {
     const app = express();
 
     app.use(middleware());
+    app.use(json());
 
     app.post("/create", async (req, res) => {
-        await Session.createNewSession(req, res, "", {}, {});
+        try {
+            await Session.createNewSession(req, res, "", req.body.payload, {});
+            res.status(200).send("");
+        } catch (ex) {
+            res.status(400).json({ message: ex.message });
+        }
+    });
+
+    app.post("/create-static", async (req, res) => {
+        await Session.createNewSession(req, res, "", req.body.payload, {}, false);
         res.status(200).send("");
     });
 
@@ -205,12 +644,20 @@ function getTestExpressApp() {
         res.status(200).json({ message: true, sessionHandle: req.session.getHandle(), sessionExists: true });
     });
 
+    app.get("/verify-checkdb", verifySession({ checkDatabase: true }), async (req, res) => {
+        res.status(200).json({ message: true, sessionHandle: req.session.getHandle(), sessionExists: true });
+    });
+
     app.get("/verify-optional", verifySession({ sessionRequired: false }), async (req, res) => {
         res.status(200).json({
             message: true,
             sessionHandle: req.session && req.session.getHandle(),
             sessionExists: !!req.session,
         });
+    });
+
+    app.get("/revoke-session", verifySession(), async (req, res) => {
+        res.status(200).json({ message: await req.session.revokeSession(), sessionHandle: req.session.getHandle() });
     });
 
     app.use(errorHandler());
