@@ -9,7 +9,7 @@ export declare function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
-    useStaticSigningKey: boolean,
+    useDynamicSigningKey: boolean,
     accessTokenPayload?: any,
     sessionDataInDatabase?: any
 ): Promise<CreateOrRefreshAPIResponse>;

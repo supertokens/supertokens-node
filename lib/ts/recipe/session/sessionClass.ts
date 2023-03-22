@@ -13,20 +13,11 @@
  * under the License.
  */
 import { BaseRequest, BaseResponse } from "../../framework";
-import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
+import { clearSession } from "./cookieAndHeaders";
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
-
-const protectedProps = [
-    "sub",
-    "iat",
-    "exp",
-    "sessionHandle",
-    "parentRefreshTokenHash1",
-    "refreshTokenHash1",
-    "antiCsrfToken",
-];
+import { setAccessTokenInResponse } from "./utils";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -103,9 +94,6 @@ export default class Session implements SessionContainerInterface {
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
         const newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
-        for (const key of protectedProps) {
-            delete newAccessTokenPayload[key];
-        }
 
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
@@ -129,22 +117,11 @@ export default class Session implements SessionContainerInterface {
         this.userDataInAccessToken = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {
             this.accessToken = response.accessToken.token;
-            setFrontTokenInHeaders(
+            // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
+            setAccessTokenInResponse(
                 this.res,
-                response.session.userId,
-                response.accessToken.expiry,
-                response.session.userDataInJWT
-            );
-            setToken(
+                response as Required<typeof response>,
                 this.helpers.config,
-                this.res,
-                "access",
-                response.accessToken.token,
-                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                Date.now() + 3153600000000,
                 this.transferMethod
             );
         }

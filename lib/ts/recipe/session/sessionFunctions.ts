@@ -29,7 +29,7 @@ export async function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
-    useStaticSigningKey: boolean,
+    useDynamicSigningKey: boolean,
     accessTokenPayload: any = {},
     sessionDataInDatabase: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
@@ -41,7 +41,7 @@ export async function createNewSession(
         userId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionDataInDatabase,
-        useStaticSigningKey,
+        useDynamicSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
 

@@ -10,15 +10,8 @@ import {
     TokenTransferMethod,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
-import {
-    clearSession,
-    getAntiCsrfTokenFromHeaders,
-    setFrontTokenInHeaders,
-    getToken,
-    setToken,
-    setCookie,
-} from "./cookieAndHeaders";
-import { attachTokensToResponse, validateClaimsInPayload } from "./utils";
+import { clearSession, getAntiCsrfTokenFromHeaders, getToken, setCookie } from "./cookieAndHeaders";
+import { attachTokensToResponse, setAccessTokenInResponse, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, getRidFromHeader, isAnIpAddress } from "../../utils";
@@ -43,6 +36,16 @@ export type Helpers = {
 // We are defining this here to reduce the scope of legacy code
 const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
 export const JWKCacheMaxAgeInMs = 60000;
+
+const protectedProps = [
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken",
+];
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -125,8 +128,8 @@ export default function getRecipeInterface(
                 userId,
                 disableAntiCSRF,
                 useDynamicAccessTokenSigningKey !== undefined
-                    ? !useDynamicAccessTokenSigningKey
-                    : config.useDynamicAccessTokenSigningKey === false,
+                    ? useDynamicAccessTokenSigningKey
+                    : config.useDynamicAccessTokenSigningKey,
                 accessTokenPayload,
                 sessionDataInDatabase
             );
@@ -273,22 +276,11 @@ export default function getRecipeInterface(
             );
             let accessTokenString = accessToken.rawTokenString;
             if (response.accessToken !== undefined) {
-                setFrontTokenInHeaders(
+                // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
+                setAccessTokenInResponse(
                     res,
-                    response.session.userId,
-                    response.accessToken.expiry,
-                    response.session.userDataInJWT
-                );
-                setToken(
-                    config,
-                    res,
-                    "access",
-                    response.accessToken.token,
-                    // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                    // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                    // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                    // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                    Date.now() + 3153600000000,
+                    response as Required<typeof response>,
+                    helpers.config,
                     requestTransferMethod
                 );
                 accessTokenString = response.accessToken.token;
@@ -496,7 +488,10 @@ export default function getRecipeInterface(
                     requestTransferMethod
                 );
             } catch (err) {
-                if (err.type === STError.TOKEN_THEFT_DETECTED || err.payload.clearTokens) {
+                if (
+                    err.type === STError.TOKEN_THEFT_DETECTED ||
+                    (err.payload !== undefined && err.payload.clearTokens)
+                ) {
                     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
                         logDebugMessage(
@@ -536,6 +531,9 @@ export default function getRecipeInterface(
                 input.newAccessTokenPayload === null || input.newAccessTokenPayload === undefined
                     ? {}
                     : input.newAccessTokenPayload;
+            for (const key of protectedProps) {
+                delete newAccessTokenPayload[key];
+            }
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
                 accessToken: input.accessToken,
                 userDataInJWT: newAccessTokenPayload,

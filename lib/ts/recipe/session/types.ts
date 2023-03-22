@@ -14,9 +14,7 @@
  */
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
-import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
 import { JSONObject, JSONValue } from "../../types";
 import { GeneralErrorResponse } from "../../types";
 
@@ -76,39 +74,12 @@ export type TypeInput = {
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
-    /** @deprecated */
-    jwt?:
-        | {
-              enable: true;
-              issuer?: string;
-          }
-        | { enable: false };
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        openIdFeature?: {
-            functions?: (
-                originalImplementation: OpenIdRecipeInterface,
-                builder?: OverrideableBuilder<OpenIdRecipeInterface>
-            ) => OpenIdRecipeInterface;
-            apis?: (
-                originalImplementation: OpenIdAPIInterface,
-                builder?: OverrideableBuilder<OpenIdAPIInterface>
-            ) => OpenIdAPIInterface;
-            jwtFeature?: {
-                functions?: (
-                    originalImplementation: JWTRecipeInterface,
-                    builder?: OverrideableBuilder<JWTRecipeInterface>
-                ) => JWTRecipeInterface;
-                apis?: (
-                    originalImplementation: JWTAPIInterface,
-                    builder?: OverrideableBuilder<JWTAPIInterface>
-                ) => JWTAPIInterface;
-            };
-        };
     };
 };
 
@@ -130,36 +101,12 @@ export type TypeNormalisedInput = {
 
     invalidClaimStatusCode: number;
     exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
-    jwt: {
-        enable: boolean;
-        issuer?: string;
-    };
     override: {
         functions: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        openIdFeature?: {
-            functions?: (
-                originalImplementation: OpenIdRecipeInterface,
-                builder?: OverrideableBuilder<OpenIdRecipeInterface>
-            ) => OpenIdRecipeInterface;
-            apis?: (
-                originalImplementation: OpenIdAPIInterface,
-                builder?: OverrideableBuilder<OpenIdAPIInterface>
-            ) => OpenIdAPIInterface;
-            jwtFeature?: {
-                functions?: (
-                    originalImplementation: JWTRecipeInterface,
-                    builder?: OverrideableBuilder<JWTRecipeInterface>
-                ) => JWTRecipeInterface;
-                apis?: (
-                    originalImplementation: JWTAPIInterface,
-                    builder?: OverrideableBuilder<JWTAPIInterface>
-                ) => JWTAPIInterface;
-            };
-        };
     };
 };
 

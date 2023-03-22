@@ -1119,11 +1119,7 @@ Supertokens.init({
 
 Session.init({
     exposeAccessTokenToFrontendInCookieBasedAuth: true,
-    useDynamicAccessTokenSigningKey: true,
-    jwt: {
-        enable: true,
-        issuer: "asdf",
-    },
+    useDynamicAccessTokenSigningKey: false,
 });
 
 ThirdPartyEmailPassword.init({
