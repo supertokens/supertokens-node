@@ -9,9 +9,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+-   Added support for CDI version `2.19`
+-   Dropped support for CDI version `2.8`-`2.18`
+-   Changed the interface and configuration of the Session recipe, see below for details. If you do not use the Session recipe directly and do not provide custom configuration, then no migration is necessary.
+-   `getAccessTokenPayload` will now return standard (`sub`, `iat`, `exp`) claims along the user defined ones in `getAccessTokenPayload`
+-   Some claim names are now prohibited in the root level of the access token payload
+    -   They are: `sub`, `iat`, `exp`, `sessionHandle`, `parentRefreshTokenHash1`, `refreshTokenHash1`, `antiCsrfToken`
+    -   If you used these in the root level of the access token payload, then you'll need to migrate your sessions or they will be logged out during the next refresh
+    -   These props should be renamed (e.g., by adding a prefix) or moved inside an object in the access token payload
+    -   You can migrate these sessions by updating their payload to match your new structure, by calling `mergeIntoAccessTokenPayload`
+-   New access tokens are valid JWTs now
+    -   They can be used directly (i.e.: by calling `getAccessToken` on the session) if you need a JWT
+    -   The `jwt` prop in the access token payload is removed
+
+### Configuration changes
+
+-   Added `useDynamicAccessTokenSigningKey` (defaults to `true`) option to the Session recipe config
+-   Added `exposeAccessTokenToFrontendInCookieBasedAuth` (defaults to `false`) option to the Session recipe config
+-   JWT and OpenId related configuration has been removed from the Session recipe config. If necessary, they can be added by initializing the OpenId recipe before the Session recipe.
+
+### Interface changes
+
 -   Renamed `getSessionData` to `getSessionDataFromDatabase` to clarify that it always hits the DB
 -   Renamed `updateSessionData` to `updateSessionDataInDatabase`
 -   Renamed `sessionData` to `sessionDataInDatabase` in `SessionInformation` and the input to `createNewSession`
+-   Added new `checkDatabase` param to `verifySession` and `getSession`
+-   Removed `status` from `getJWKS` output (function & API)
+-   Added new optional `useStaticSigningKey` param to `createJWT`
+-   Added new optional `useDynamicAccessTokenSigningKey` param to `createNewSession`
+-   Removed deprecated `updateAccessTokenPayload` and `regenerateAccessToken` from the Session recipe interface
+-   Removed `getAccessTokenLifeTimeMS` and `getRefreshTokenLifeTimeMS` functions
+
+## Changes
+
+-   The Session recipe now always initializes the OpenID recipe if it hasn't been initialized.
+-   Refactored how access token validation is done
+-   Removed the handshake call to improve start-up times
+-   Added support for new access token version
 
 ## [13.1.3] - 2023-03-08
 

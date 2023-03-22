@@ -12,22 +12,22 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
+const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 const assert = require("assert");
-const { Querier } = require("../lib/build/querier");
+const { Querier } = require("../../lib/build/querier");
 const express = require("express");
 const request = require("supertest");
-const { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
-const SuperTokens = require("../");
-const Session = require("../recipe/session");
-const EmailPassword = require("../recipe/emailpassword");
-const { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
-const { middleware, errorHandler } = require("../framework/express");
-const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
-const { verifySession } = require("../recipe/session/framework/express");
+const { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+const SuperTokens = require("../../");
+const Session = require("../../recipe/session");
+const EmailPassword = require("../../recipe/emailpassword");
+const { parseJWTWithoutSignatureVerification } = require("../../lib/build/recipe/session/jwt");
+const { middleware, errorHandler } = require("../../framework/express");
+const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
+const { verifySession } = require("../../recipe/session/framework/express");
 const { json } = require("body-parser");
 
-describe(`AccessToken versions: ${printPath("[test/accessTokenVersions.test.js]")}`, function () {
+describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -273,6 +273,175 @@ describe(`AccessToken versions: ${printPath("[test/accessTokenVersions.test.js]"
             assert.strictEqual(cookies.frontToken, undefined);
 
             assert(res.text.includes("The user payload contains protected field"));
+        });
+    });
+
+    describe("mergeIntoAccessTokenPayload", () => {
+        it("should help migrating a v2 token using protected props", async () => {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "2.18";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {
+                        sub: "asdf",
+                    },
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyAccessToken = legacySessionResp.accessToken.token;
+            const legacyRefreshToken = legacySessionResp.refreshToken.token;
+
+            const app = getTestExpressApp();
+
+            let mergeRes = await new Promise((res, rej) =>
+                request(app)
+                    .post("/merge-into-payload")
+                    .set("Authorization", `Bearer ${legacyAccessToken}`)
+                    .type("application/json")
+                    .send(
+                        JSON.stringify({
+                            payload: {
+                                sub: null,
+                                appSub: "asdf",
+                            },
+                        })
+                    )
+                    .expect(200)
+                    .end((err, resp) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res(resp);
+                        }
+                    })
+            );
+
+            let mergeCookies = extractInfoFromResponse(mergeRes);
+            assert(mergeCookies.accessTokenFromAny !== undefined);
+            assert(mergeCookies.refreshTokenFromAny === undefined);
+            assert(mergeCookies.frontToken !== undefined);
+
+            const parsedTokenAfterMerge = parseJWTWithoutSignatureVerification(mergeCookies.accessTokenFromAny);
+            assert.strictEqual(parsedTokenAfterMerge.version, 2);
+
+            let res = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Authorization", `Bearer ${legacyRefreshToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let cookiesAfterRefresh = extractInfoFromResponse(res);
+            assert(cookiesAfterRefresh.accessTokenFromAny !== undefined);
+            assert(cookiesAfterRefresh.refreshTokenFromAny !== undefined);
+            assert(cookiesAfterRefresh.frontToken !== undefined);
+
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookiesAfterRefresh.accessTokenFromAny).version, 3);
+
+            const parsedTokenAfterRefresh = parseJWTWithoutSignatureVerification(
+                cookiesAfterRefresh.accessTokenFromAny
+            );
+            assert.strictEqual(parsedTokenAfterRefresh.version, 3);
+            assert.strictEqual(parsedTokenAfterRefresh.payload.sub, "test-user-id");
+            assert.strictEqual(parsedTokenAfterRefresh.payload.appSub, "asdf");
+
+            const parsedHeaderAfterRefresh = JSON.parse(
+                Buffer.from(parsedTokenAfterRefresh.header, "base64").toString()
+            );
+            assert.strictEqual(typeof parsedHeaderAfterRefresh.kid, "string");
+            assert(parsedHeaderAfterRefresh.kid.startsWith("d-"));
+        });
+
+        it("should help migrating a v2 token using protected props when called using session handle", async () => {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "2.18";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {
+                        sub: "asdf",
+                    },
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyRefreshToken = legacySessionResp.refreshToken.token;
+
+            const app = getTestExpressApp();
+
+            await Session.mergeIntoAccessTokenPayload(legacySessionResp.session.handle, { sub: null, appSub: "asdf" });
+            let res = await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Authorization", `Bearer ${legacyRefreshToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert(cookies.accessTokenFromAny !== undefined);
+            assert(cookies.refreshTokenFromAny !== undefined);
+            assert(cookies.frontToken !== undefined);
+
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 3);
+
+            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
+            assert.strictEqual(parsedToken.version, 3);
+            assert.strictEqual(parsedToken.payload.sub, "test-user-id");
+            assert.strictEqual(parsedToken.payload.appSub, "asdf");
+
+            const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
+            assert.strictEqual(typeof parsedHeader.kid, "string");
+            assert(parsedHeader.kid.startsWith("d-"));
         });
     });
 
@@ -635,11 +804,6 @@ function getTestExpressApp() {
         res.status(200).send("");
     });
 
-    app.get("/update-payload", verifySession(), async (req, res) => {
-        await req.session.mergeIntoAccessTokenPayload({ newValue: "test" });
-        res.status(200).json({ message: true });
-    });
-
     app.get("/verify", verifySession(), async (req, res) => {
         res.status(200).json({ message: true, sessionHandle: req.session.getHandle(), sessionExists: true });
     });
@@ -653,6 +817,16 @@ function getTestExpressApp() {
             message: true,
             sessionHandle: req.session && req.session.getHandle(),
             sessionExists: !!req.session,
+        });
+    });
+
+    app.post("/merge-into-payload", verifySession(), async (req, res) => {
+        await req.session.mergeIntoAccessTokenPayload(req.body.payload);
+        res.status(200).json({
+            message: true,
+            sessionHandle: req.session && req.session.getHandle(),
+            sessionExists: !!req.session,
+            newPayload: await req.session.getAccessTokenPayload(),
         });
     });
 
