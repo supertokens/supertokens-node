@@ -21,13 +21,6 @@ type TagsResponse = { status: "OK"; tags: string[] };
 
 export const getSearchTags = async (_: APIInterface, __: APIOptions): Promise<TagsResponse> => {
     let querier = Querier.getNewInstanceOrThrowError(undefined);
-    try {
-        let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/recipe/dashboard/tags"), {});
-        if (tagsResponse.status === 200) {
-            return tagsResponse;
-        }
-    } catch (err) {
-        return { status: "OK", tags: ["email", "phone", "provider"] };
-    }
-    return { status: "OK", tags: ["email", "phone", "provider"] };
+    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {});
+    return tagsResponse;
 };
