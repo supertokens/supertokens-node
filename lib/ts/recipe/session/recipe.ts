@@ -73,12 +73,9 @@ export default class SessionRecipe extends RecipeModule {
 
         this.isInServerlessEnv = isInServerlessEnv;
 
-        try {
-            // We do this so the user could add their own overrides/other configs if they prefer.
-            this.openIdRecipe = OpenIdRecipe.getInstanceOrThrowError();
-        } catch {
-            this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {});
-        }
+        this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {
+            override: this.config.override.openIdFeature,
+        });
 
         let builder = new OverrideableBuilder(
             RecipeImplementation(

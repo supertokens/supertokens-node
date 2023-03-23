@@ -37,7 +37,7 @@ export type Helpers = {
 const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
 export const JWKCacheMaxAgeInMs = 60000;
 
-const protectedProps = [
+export const protectedProps = [
     "sub",
     "iat",
     "exp",
@@ -531,9 +531,7 @@ export default function getRecipeInterface(
                 input.newAccessTokenPayload === null || input.newAccessTokenPayload === undefined
                     ? {}
                     : input.newAccessTokenPayload;
-            for (const key of protectedProps) {
-                delete newAccessTokenPayload[key];
-            }
+
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
                 accessToken: input.accessToken,
                 userDataInJWT: newAccessTokenPayload,
@@ -586,7 +584,12 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            const newAccessTokenPayload = { ...sessionInfo.accessTokenPayload, ...accessTokenPayloadUpdate };
+            let newAccessTokenPayload = { ...sessionInfo.accessTokenPayload };
+            for (const key of protectedProps) {
+                delete newAccessTokenPayload[key];
+            }
+
+            newAccessTokenPayload = { ...newAccessTokenPayload, ...accessTokenPayloadUpdate };
             for (const key of Object.keys(accessTokenPayloadUpdate)) {
                 if (accessTokenPayloadUpdate[key] === null) {
                     delete newAccessTokenPayload[key];

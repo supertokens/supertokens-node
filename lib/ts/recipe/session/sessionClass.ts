@@ -16,7 +16,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { clearSession } from "./cookieAndHeaders";
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
-import { Helpers } from "./recipeImplementation";
+import { Helpers, protectedProps } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
 
 export default class Session implements SessionContainerInterface {
@@ -93,7 +93,12 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
-        const newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        let newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext) };
+        for (const key of protectedProps) {
+            delete newAccessTokenPayload[key];
+        }
+
+        newAccessTokenPayload = { ...newAccessTokenPayload, ...accessTokenPayloadUpdate };
 
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
