@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+-   Updates the example app to also initialise the dashboard
+
 ## [13.1.5] - 2023-03-17
 
 ### Fixes
