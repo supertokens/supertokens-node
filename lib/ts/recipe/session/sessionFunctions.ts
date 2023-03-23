@@ -29,18 +29,19 @@ export async function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
-    useStaticSigningKey: boolean,
+    useDynamicSigningKey: boolean,
     accessTokenPayload: any = {},
-    sessionData: any = {}
+    sessionDataInDatabase: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
-    sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
+    sessionDataInDatabase =
+        sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
 
     const requestBody = {
         userId,
         userDataInJWT: accessTokenPayload,
-        userDataInDatabase: sessionData,
-        useStaticSigningKey,
+        userDataInDatabase: sessionDataInDatabase,
+        useDynamicSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
 
@@ -235,10 +236,10 @@ export async function getSessionInformation(
 
     if (response.status === "OK") {
         // Change keys to make them more readable
-        response["sessionData"] = response.userDataInDatabase;
+        response["sessionDataInDatabase"] = response.userDataInDatabase;
         response["accessTokenPayload"] = response.userDataInJWT;
 
-        delete response.userDataInJWT;
+        delete response.userDataInDatabase;
         delete response.userDataInJWT;
 
         return response;
@@ -350,7 +351,7 @@ export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: s
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export async function updateSessionData(
+export async function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any

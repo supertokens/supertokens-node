@@ -13,20 +13,11 @@
  * under the License.
  */
 import { BaseRequest, BaseResponse } from "../../framework";
-import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
+import { clearSession } from "./cookieAndHeaders";
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
-import { Helpers } from "./recipeImplementation";
-
-const protectedProps = [
-    "sub",
-    "iat",
-    "exp",
-    "sessionHandle",
-    "parentRefreshTokenHash1",
-    "refreshTokenHash1",
-    "antiCsrfToken",
-];
+import { Helpers, protectedProps } from "./recipeImplementation";
+import { setAccessTokenInResponse } from "./utils";
 
 type ReqResInfo = {
     res: BaseResponse;
@@ -66,7 +57,7 @@ export default class Session implements SessionContainerInterface {
         }
     }
 
-    async getSessionData(userContext?: any): Promise<any> {
+    async getSessionDataFromDatabase(userContext?: any): Promise<any> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -77,12 +68,12 @@ export default class Session implements SessionContainerInterface {
                 type: STError.UNAUTHORISED,
             });
         }
-        return sessionInfo.sessionData;
+        return sessionInfo.sessionDataInDatabase;
     }
 
-    async updateSessionData(newSessionData: any, userContext?: any) {
+    async updateSessionDataInDatabase(newSessionData: any, userContext?: any) {
         if (
-            !(await this.helpers.getRecipeImpl().updateSessionData({
+            !(await this.helpers.getRecipeImpl().updateSessionDataInDatabase({
                 sessionHandle: this.sessionHandle,
                 newSessionData,
                 userContext: userContext === undefined ? {} : userContext,
@@ -123,10 +114,12 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
-        const newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        let newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext) };
         for (const key of protectedProps) {
             delete newAccessTokenPayload[key];
         }
+
+        newAccessTokenPayload = { ...newAccessTokenPayload, ...accessTokenPayloadUpdate };
 
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
@@ -152,22 +145,11 @@ export default class Session implements SessionContainerInterface {
             this.accessToken = response.accessToken.token;
             this.accessTokenUpdated = true;
             if (this.reqResInfo !== undefined) {
-                setFrontTokenInHeaders(
+                // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
+                setAccessTokenInResponse(
                     this.reqResInfo.res,
-                    response.session.userId,
-                    response.accessToken.expiry,
-                    response.session.userDataInJWT
-                );
-                setToken(
+                    response as Required<typeof response>,
                     this.helpers.config,
-                    this.reqResInfo.res,
-                    "access",
-                    response.accessToken.token,
-                    // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                    // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                    // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                    // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                    Date.now() + 3153600000000,
                     this.reqResInfo.transferMethod
                 );
             }
@@ -212,6 +194,10 @@ export default class Session implements SessionContainerInterface {
         });
 
         if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
+            for (const key of protectedProps) {
+                delete validateClaimResponse.accessTokenPayloadUpdate[key];
+            }
+
             await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
         }
 

@@ -51,6 +51,15 @@ export declare function attachTokensToResponse(
     response: CreateOrRefreshAPIResponse,
     transferMethod: TokenTransferMethod
 ): void;
+export declare function setAccessTokenInResponse(
+    res: BaseResponse,
+    response: {
+        accessToken: CreateOrRefreshAPIResponse["accessToken"];
+        session: CreateOrRefreshAPIResponse["session"];
+    },
+    config: TypeNormalisedInput,
+    transferMethod: TokenTransferMethod
+): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],

@@ -76,13 +76,6 @@ export type TypeInput = {
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
-    /** @deprecated */
-    jwt?:
-        | {
-              enable: true;
-              issuer?: string;
-          }
-        | { enable: false };
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -130,10 +123,6 @@ export type TypeNormalisedInput = {
 
     invalidClaimStatusCode: number;
     exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
-    jwt: {
-        enable: boolean;
-        issuer?: string;
-    };
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -203,7 +192,7 @@ export type RecipeInterface = {
         res: BaseResponse;
         userId: string;
         accessTokenPayload?: any;
-        sessionData?: any;
+        sessionDataInDatabase?: any;
         useDynamicAccessTokenSigningKey?: boolean;
         userContext: any;
     }): Promise<SessionContainerInterface>;
@@ -258,7 +247,7 @@ export type RecipeInterface = {
 
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
-     * - getSessionData
+     * - getSessionDataFromDatabase
      * - getAccessTokenPayload
      *
      * Returns undefined if the sessionHandle does not exist
@@ -274,7 +263,11 @@ export type RecipeInterface = {
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
 
     // Returns false if the sessionHandle does not exist
-    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>;
+    updateSessionDataInDatabase(input: {
+        sessionHandle: string;
+        newSessionData: any;
+        userContext: any;
+    }): Promise<boolean>;
 
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
@@ -354,9 +347,9 @@ export type RecipeInterface = {
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
 
-    getSessionData(userContext?: any): Promise<any>;
+    getSessionDataFromDatabase(userContext?: any): Promise<any>;
 
-    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
+    updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
 
     getUserId(userContext?: any): string;
 
@@ -431,7 +424,7 @@ export type APIInterface = {
 export type SessionInformation = {
     sessionHandle: string;
     userId: string;
-    sessionData: any;
+    sessionDataInDatabase: any;
     expiry: number;
     accessTokenPayload: any;
     timeCreated: number;

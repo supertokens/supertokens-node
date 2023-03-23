@@ -958,7 +958,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateSessionData",
             method: "post",
             handler: async (req, res) => {
-                await req.session.updateSessionData({ key: "value" });
+                await req.session.updateSessionDataInDatabase({ key: "value" });
                 return res.response("").code(200);
             },
             options: {
@@ -970,7 +970,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/getSessionData",
             method: "post",
             handler: async (req, res) => {
-                let sessionData = await req.session.getSessionData();
+                let sessionData = await req.session.getSessionDataFromDatabase();
                 return res.response(sessionData).code(200);
             },
             options: {
@@ -982,7 +982,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateSessionData2",
             method: "post",
             handler: async (req, res) => {
-                await req.session.updateSessionData(null);
+                await req.session.updateSessionDataInDatabase(null);
                 return res.response("").code(200);
             },
             options: {
@@ -995,7 +995,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             handler: async (req, res) => {
                 return res
-                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .response({
+                        success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })),
+                    })
                     .code(200);
             },
         });
@@ -1145,7 +1147,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             handler: async (req, res) => {
                 return res
-                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .response({
+                        success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })),
+                    })
                     .code(200);
             },
         });

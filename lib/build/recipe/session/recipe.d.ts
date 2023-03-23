@@ -21,7 +21,7 @@ export default class SessionRecipe extends RecipeModule {
     private claimValidatorsAddedByOtherRecipes;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
-    openIdRecipe?: OpenIdRecipe;
+    openIdRecipe: OpenIdRecipe;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);

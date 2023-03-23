@@ -202,18 +202,6 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    let exposeAccessTokenToFrontendInCookieBasedAuth = false;
-    let jwtEnabled = false;
-    let jwtIssuer = undefined;
-    if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
-        exposeAccessTokenToFrontendInCookieBasedAuth = true;
-        jwtEnabled = true;
-        jwtIssuer = config.jwt.issuer;
-    }
-    if (config?.exposeAccessTokenToFrontendInCookieBasedAuth == true) {
-        exposeAccessTokenToFrontendInCookieBasedAuth = true;
-    }
-
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -221,7 +209,8 @@ export function validateAndNormaliseUserInput(
     };
 
     return {
-        useDynamicAccessTokenSigningKey: config?.useDynamicAccessTokenSigningKey === false,
+        useDynamicAccessTokenSigningKey: config?.useDynamicAccessTokenSigningKey ?? true,
+        exposeAccessTokenToFrontendInCookieBasedAuth: config?.exposeAccessTokenToFrontendInCookieBasedAuth ?? false,
         refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
         getTokenTransferMethod:
             config?.getTokenTransferMethod === undefined
@@ -235,11 +224,6 @@ export function validateAndNormaliseUserInput(
         antiCsrf,
         override,
         invalidClaimStatusCode,
-        jwt: {
-            enable: jwtEnabled,
-            issuer: jwtIssuer,
-        },
-        exposeAccessTokenToFrontendInCookieBasedAuth,
     };
 }
 
@@ -258,14 +242,29 @@ export function attachTokensToResponse(
     response: CreateOrRefreshAPIResponse,
     transferMethod: TokenTransferMethod
 ) {
-    let accessToken = response.accessToken;
+    setAccessTokenInResponse(res, response, config, transferMethod);
     let refreshToken = response.refreshToken;
+    setToken(config, res, "refresh", refreshToken.token, refreshToken.expiry, transferMethod);
+    if (response.antiCsrfToken !== undefined) {
+        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
+    }
+}
+
+export function setAccessTokenInResponse(
+    res: BaseResponse,
+    response: {
+        accessToken: CreateOrRefreshAPIResponse["accessToken"];
+        session: CreateOrRefreshAPIResponse["session"];
+    },
+    config: TypeNormalisedInput,
+    transferMethod: TokenTransferMethod
+) {
     setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
     setToken(
         config,
         res,
         "access",
-        accessToken.token,
+        response.accessToken.token,
         // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
         // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
@@ -273,13 +272,13 @@ export function attachTokensToResponse(
         Date.now() + 3153600000000,
         transferMethod
     );
-    setToken(config, res, "refresh", refreshToken.token, refreshToken.expiry, transferMethod);
-    if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod !== "header") {
+
+    if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
         setToken(
             config,
             res,
             "access",
-            accessToken.token,
+            response.accessToken.token,
             // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
             // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
             // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
@@ -287,9 +286,6 @@ export function attachTokensToResponse(
             Date.now() + 3153600000000,
             "header"
         );
-    }
-    if (response.antiCsrfToken !== undefined) {
-        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
 }
 

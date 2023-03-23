@@ -51,11 +51,18 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
     // checking header
     if (!HEADERS.has(splittedInput[0])) {
         const parsedHeader = JSON.parse(Buffer.from(splittedInput[0], "base64").toString());
-        if (parsedHeader.typ !== "JWT" || parsedHeader.version !== "3" || parsedHeader.kid === undefined) {
+
+        // We have to ensure version is a string, otherwise Number.parseInt can have unexpected results
+        if (typeof parsedHeader.version !== "string") {
             throw new Error("JWT header mismatch");
         }
 
         version = Number.parseInt(parsedHeader.version);
+
+        // Number.isInteger returns false for Number.NaN (if it fails to parse the version)
+        if (parsedHeader.typ !== "JWT" || !Number.isInteger(version) || version < 3 || parsedHeader.kid === undefined) {
+            throw new Error("JWT header mismatch");
+        }
     }
 
     return {

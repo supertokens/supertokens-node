@@ -25,7 +25,6 @@ import {
     SessionClaim,
     ClaimValidationError,
 } from "./types";
-import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import frameworks from "../../framework";
@@ -43,7 +42,7 @@ export default class SessionWrapper {
         res: any,
         userId: string,
         accessTokenPayload: any = {},
-        sessionData: any = {},
+        sessionDataInDatabase: any = {},
         useDynamicAccessTokenSigningKey?: boolean,
         userContext: any = {}
     ) {
@@ -71,7 +70,7 @@ export default class SessionWrapper {
             res,
             userId,
             accessTokenPayload: finalAccessTokenPayload,
-            sessionData,
+            sessionDataInDatabase,
             useDynamicAccessTokenSigningKey,
             userContext,
         });
@@ -251,18 +250,10 @@ export default class SessionWrapper {
         });
     }
 
-    static updateSessionData(sessionHandle: string, newSessionData: any, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData({
+    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionDataInDatabase({
             sessionHandle,
             newSessionData,
-            userContext,
-        });
-    }
-
-    static regenerateAccessToken(accessToken: string, newAccessTokenPayload?: any, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.regenerateAccessToken({
-            accessToken,
-            newAccessTokenPayload,
             userContext,
         });
     }
@@ -280,39 +271,21 @@ export default class SessionWrapper {
     }
 
     static createJWT(payload?: any, validitySeconds?: number, userContext: any = {}) {
-        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
-
-        if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.createJWT({ payload, validitySeconds, userContext });
-        }
-
-        throw new global.Error(
-            "createJWT cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-        );
+        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.createJWT({
+            payload,
+            validitySeconds,
+            userContext,
+        });
     }
 
     static getJWKS(userContext: any = {}) {
-        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
-
-        if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.getJWKS({ userContext });
-        }
-
-        throw new global.Error(
-            "getJWKS cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-        );
+        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getJWKS({ userContext });
     }
 
     static getOpenIdDiscoveryConfiguration(userContext: any = {}) {
-        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
-
-        if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext });
-        }
-
-        throw new global.Error(
-            "getOpenIdDiscoveryConfiguration cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-        );
+        return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({
+            userContext,
+        });
     }
 
     static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
@@ -384,7 +357,7 @@ export let revokeSession = SessionWrapper.revokeSession;
 
 export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 
-export let updateSessionData = SessionWrapper.updateSessionData;
+export let updateSessionDataInDatabase = SessionWrapper.updateSessionDataInDatabase;
 
 export let mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload;
 

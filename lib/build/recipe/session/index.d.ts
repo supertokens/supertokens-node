@@ -21,7 +21,7 @@ export default class SessionWrapper {
         res: any,
         userId: string,
         accessTokenPayload?: any,
-        sessionData?: any,
+        sessionDataInDatabase?: any,
         useDynamicAccessTokenSigningKey?: boolean,
         userContext?: any
     ): Promise<SessionContainer>;
@@ -78,29 +78,7 @@ export default class SessionWrapper {
     static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
-    static updateSessionData(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;
-    static regenerateAccessToken(
-        accessToken: string,
-        newAccessTokenPayload?: any,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              session: {
-                  handle: string;
-                  userId: string;
-                  userDataInJWT: any;
-              };
-              accessToken?:
-                  | {
-                        token: string;
-                        expiry: number;
-                        createdTime: number;
-                    }
-                  | undefined;
-          }
-        | undefined
-    >;
+    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
@@ -162,7 +140,7 @@ export declare let revokeAllSessionsForUser: typeof SessionWrapper.revokeAllSess
 export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSessionHandlesForUser;
 export declare let revokeSession: typeof SessionWrapper.revokeSession;
 export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleSessions;
-export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
+export declare let updateSessionDataInDatabase: typeof SessionWrapper.updateSessionDataInDatabase;
 export declare let mergeIntoAccessTokenPayload: typeof SessionWrapper.mergeIntoAccessTokenPayload;
 export declare let fetchAndSetClaim: typeof SessionWrapper.fetchAndSetClaim;
 export declare let setClaimValue: typeof SessionWrapper.setClaimValue;

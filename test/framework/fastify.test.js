@@ -957,7 +957,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                await req.session.updateSessionData({ key: "value" });
+                await req.session.updateSessionDataInDatabase({ key: "value" });
                 return res.send("").code(200);
             }
         );
@@ -968,7 +968,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                let sessionData = await req.session.getSessionData();
+                let sessionData = await req.session.getSessionDataFromDatabase();
                 return res.send(sessionData).code(200);
             }
         );
@@ -979,14 +979,14 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                await req.session.updateSessionData(null);
+                await req.session.updateSessionDataInDatabase(null);
                 return res.send("").code(200);
             }
         );
 
         this.server.post("/updateSessionDataInvalidSessionHandle", async (req, res) => {
             return res
-                .send({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                .send({ success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })) })
                 .code(200);
         });
 
@@ -1117,7 +1117,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
         this.server.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
             return res
-                .send({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                .send({ success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })) })
                 .code(200);
         });
 
