@@ -170,6 +170,10 @@ export default class Session implements SessionContainerInterface {
         });
 
         if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
+            for (const key of protectedProps) {
+                delete validateClaimResponse.accessTokenPayloadUpdate[key];
+            }
+
             await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
         }
 
