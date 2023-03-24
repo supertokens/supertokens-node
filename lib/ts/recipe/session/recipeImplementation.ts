@@ -288,7 +288,9 @@ export default function getRecipeInterface(
             }
             logDebugMessage("getSession: Success!");
             const payload =
-                response.accessToken !== undefined
+                accessToken.version < 3
+                    ? response.session.userDataInJWT
+                    : response.accessToken !== undefined
                     ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
                     : accessToken.payload;
             const session = new Session(
@@ -482,7 +484,8 @@ export default function getRecipeInterface(
                     setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
                 }
 
-                const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
+                const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
+                const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
                 return new Session(
                     helpers,
                     response.accessToken.token,

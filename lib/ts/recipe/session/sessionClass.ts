@@ -121,7 +121,8 @@ export default class Session implements SessionContainerInterface {
         }
 
         if (response.accessToken !== undefined) {
-            const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
+            const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
+            const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
             this.userDataInAccessToken = payload;
             this.accessToken = response.accessToken.token;
             // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
