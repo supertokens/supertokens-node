@@ -142,15 +142,16 @@ export default function getRecipeInterface(
             }
 
             attachTokensToResponse(config, res, response, outputTransferMethod);
+            const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
             return new Session(
                 helpers,
                 response.accessToken.token,
-                buildFrontToken(response.session.userId, response.accessToken.expiry, response.session.userDataInJWT),
+                buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
                 response.refreshToken.token,
                 response.antiCsrfToken,
                 response.session.handle,
                 response.session.userId,
-                response.session.userDataInJWT,
+                payload,
                 { res, req, transferMethod: outputTransferMethod },
                 true
             );
@@ -333,19 +334,23 @@ export default function getRecipeInterface(
                 accessTokenString = response.accessToken.token;
             }
             logDebugMessage("getSession: Success!");
+            const payload =
+                response.accessToken !== undefined
+                    ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
+                    : accessToken.payload;
             const session = new Session(
                 helpers,
                 accessTokenString,
                 buildFrontToken(
                     response.session.userId,
                     response.accessToken !== undefined ? response.accessToken?.expiry : response.session.expiryTime,
-                    response.session.userDataInJWT
+                    payload
                 ),
                 undefined, // refresh
                 undefined, // anti-csrf
                 response.session.handle,
                 response.session.userId,
-                response.session.userDataInJWT,
+                payload,
                 { res, req, transferMethod: requestTransferMethod },
                 response.accessToken !== undefined
             );
@@ -613,19 +618,16 @@ export default function getRecipeInterface(
                     setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
                 }
 
+                const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
                 return new Session(
                     helpers,
                     response.accessToken.token,
-                    buildFrontToken(
-                        response.session.userId,
-                        response.accessToken.expiry,
-                        response.session.userDataInJWT
-                    ),
+                    buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
                     response.refreshToken.token,
                     response.antiCsrfToken,
                     response.session.handle,
                     response.session.userId,
-                    response.session.userDataInJWT,
+                    payload,
                     { res, req, transferMethod: requestTransferMethod },
                     true
                 );
