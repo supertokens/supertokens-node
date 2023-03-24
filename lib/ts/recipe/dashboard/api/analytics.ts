@@ -81,7 +81,7 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
 
     try {
         await axios({
-            url: "https://api.supertokens.com/0/st/telemetrybroken",
+            url: "https://api.supertokens.com/0/st/telemetry",
             method: "POST",
             data,
             headers: {
