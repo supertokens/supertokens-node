@@ -121,12 +121,12 @@ export default function getRecipeInterface(
                 );
             }
 
-            const disableAntiCSRF = outputTransferMethod === "header";
+            const disableAntiCsrf = outputTransferMethod === "header";
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 userId,
-                disableAntiCSRF,
+                disableAntiCsrf,
                 useDynamicAccessTokenSigningKey !== undefined
                     ? useDynamicAccessTokenSigningKey
                     : config.useDynamicAccessTokenSigningKey,
@@ -141,12 +141,13 @@ export default function getRecipeInterface(
             }
 
             attachTokensToResponse(config, res, response, outputTransferMethod);
+            const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
             return new Session(
                 helpers,
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
-                response.session.userDataInJWT,
+                payload,
                 res,
                 req,
                 outputTransferMethod
@@ -286,12 +287,16 @@ export default function getRecipeInterface(
                 accessTokenString = response.accessToken.token;
             }
             logDebugMessage("getSession: Success!");
+            const payload =
+                response.accessToken !== undefined
+                    ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
+                    : accessToken.payload;
             const session = new Session(
                 helpers,
                 accessTokenString,
                 response.session.handle,
                 response.session.userId,
-                response.session.userDataInJWT,
+                payload,
                 res,
                 req,
                 requestTransferMethod
@@ -477,12 +482,13 @@ export default function getRecipeInterface(
                     setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
                 }
 
+                const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
                 return new Session(
                     helpers,
                     response.accessToken.token,
                     response.session.handle,
                     response.session.userId,
-                    response.session.userDataInJWT,
+                    payload,
                     res,
                     req,
                     requestTransferMethod

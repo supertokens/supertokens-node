@@ -18,6 +18,7 @@ import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
 import { Helpers, protectedProps } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -119,8 +120,9 @@ export default class Session implements SessionContainerInterface {
             });
         }
 
-        this.userDataInAccessToken = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {
+            const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
+            this.userDataInAccessToken = payload;
             this.accessToken = response.accessToken.token;
             // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
             setAccessTokenInResponse(
@@ -129,6 +131,14 @@ export default class Session implements SessionContainerInterface {
                 this.helpers.config,
                 this.transferMethod
             );
+        } else {
+            // This case means that the access token has expired between the validation and this update
+            // We can't update the access token on the FE, as it will need to call refresh anyway but we handle this as a successful update during this request.
+            // the changes will be reflected on the FE after refresh is called
+            this.userDataInAccessToken = {
+                ...this.getAccessTokenPayload(),
+                ...response.session.userDataInJWT,
+            };
         }
     }
 

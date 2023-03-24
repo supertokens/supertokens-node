@@ -35,6 +35,7 @@ import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -259,7 +260,12 @@ export function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod
 ) {
-    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
+    setFrontTokenInHeaders(
+        res,
+        response.session.userId,
+        response.accessToken.expiry,
+        parseJWTWithoutSignatureVerification(response.accessToken.token).payload
+    );
     setToken(
         config,
         res,
