@@ -1295,4 +1295,58 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         assert(response.statusCode === 203);
         assert(response.result.custom);
     });
+
+    it("test verifySession/getSession without accessToken", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+        });
+
+        this.server.route({
+            path: "/getSessionV1",
+            method: "get",
+            handler: async (req, res) => {
+                return res.response({}).code(200);
+            },
+            options: {
+                pre: [{ method: verifySession() }],
+            },
+        });
+
+        this.server.route({
+            path: "/getSessionV2",
+            method: "get",
+            handler: async (req, res) => {
+                await Session.getSession(req, res);
+                return res.response({}).code(200);
+            },
+        });
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        let response1 = await this.server.inject({
+            method: "get",
+            url: "/getSessionV1",
+        });
+
+        assert.strictEqual(response1.statusCode, 401);
+
+        let response2 = await this.server.inject({
+            method: "get",
+            url: "/getSessionV2",
+        });
+
+        assert.strictEqual(response2.statusCode, 401);
+    });
 });
