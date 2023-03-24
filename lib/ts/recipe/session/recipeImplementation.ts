@@ -122,12 +122,12 @@ export default function getRecipeInterface(
                 );
             }
 
-            const disableAntiCSRF = outputTransferMethod === "header";
+            const disableAntiCsrf = outputTransferMethod === "header";
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 userId,
-                disableAntiCSRF,
+                disableAntiCsrf,
                 useDynamicAccessTokenSigningKey !== undefined
                     ? useDynamicAccessTokenSigningKey
                     : config.useDynamicAccessTokenSigningKey,
@@ -159,40 +159,41 @@ export default function getRecipeInterface(
         createNewSessionWithoutModifyingResponse: async function ({
             userId,
             accessTokenPayload = {},
-            sessionData = {},
-            disableAntiCSRF,
+            sessionDataInDatabase = {},
+            useDynamicAccessTokenSigningKey,
+            disableAntiCsrf,
         }: {
             userId: string;
-            disableAntiCSRF?: boolean;
+            disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
-            sessionData?: any;
+            sessionDataInDatabase?: any;
+            useDynamicAccessTokenSigningKey?: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; session: SessionContainerInterface }> {
-            logDebugMessage("createNewSessionRaw: Started");
+            logDebugMessage("createNewSessionWithoutModifyingResponse: Started");
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 userId,
-                disableAntiCSRF === true,
+                disableAntiCsrf === true,
+                useDynamicAccessTokenSigningKey !== undefined
+                    ? useDynamicAccessTokenSigningKey
+                    : config.useDynamicAccessTokenSigningKey,
                 accessTokenPayload,
-                sessionData
+                sessionDataInDatabase
             );
-
+            const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
             return {
                 status: "OK",
                 session: new Session(
                     helpers,
                     response.accessToken.token,
-                    buildFrontToken(
-                        response.session.userId,
-                        response.accessToken.expiry,
-                        response.session.userDataInJWT
-                    ),
+                    buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
                     response.refreshToken.token,
                     response.antiCsrfToken,
                     response.session.handle,
                     response.session.userId,
-                    response.session.userDataInJWT,
+                    payload,
                     undefined,
                     true
                 ),
@@ -362,13 +363,13 @@ export default function getRecipeInterface(
             options?: Omit<VerifySessionOptions, "sessionRequired">;
             userContext: any;
         }): Promise<
-            | { status: "OK"; session: SessionContainerInterface | undefined }
+            | { status: "OK"; session: SessionContainerInterface }
             | { status: "TOKEN_VALIDATION_ERROR"; error: any }
             | { status: "TRY_REFRESH_TOKEN_ERROR" }
         > {
-            if (options?.antiCsrfCheck === true && config.antiCsrf === "VIA_CUSTOM_HEADER") {
+            if (options?.antiCsrfCheck !== false && config.antiCsrf === "VIA_CUSTOM_HEADER") {
                 throw new Error(
-                    "Since the anti csrf mode is VIA_CUSTOM_HEADER getSessionWithoutModifyingResponse can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
+                    "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSessionWithoutModifyingResponse can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
                 );
             }
             logDebugMessage("getSessionWithoutModifyingResponse: Started");
@@ -390,8 +391,10 @@ export default function getRecipeInterface(
                     helpers,
                     accessToken,
                     antiCsrfToken,
-                    options?.antiCsrfCheck === true,
-                    true, //
+                    options?.antiCsrfCheck !== false,
+                    // We set this to true, but it has no effect: either options?.antiCsrfCheck is false or config.antiCsrf is not VIA_CUSTOM_HEADER
+                    // This is checked at the top of this function.
+                    true,
                     options?.checkDatabase === true
                 );
             } catch (error) {
@@ -409,19 +412,23 @@ export default function getRecipeInterface(
             }
 
             logDebugMessage("getSessionWithoutModifyingResponse: Success!");
+            const payload =
+                response.accessToken !== undefined
+                    ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
+                    : accessToken.payload;
             const session = new Session(
                 helpers,
                 response.accessToken !== undefined ? response.accessToken.token : accessTokenString,
                 buildFrontToken(
                     response.session.userId,
-                    response.accessToken !== undefined ? response.accessToken?.expiry : response.session.expiryTime,
-                    response.session.userDataInJWT
+                    response.accessToken !== undefined ? response.accessToken.expiry : response.session.expiryTime,
+                    payload
                 ),
                 undefined, // refresh
                 antiCsrfToken,
                 response.session.handle,
                 response.session.userId,
-                response.session.userDataInJWT,
+                payload,
                 undefined,
                 response.accessToken !== undefined
             );
@@ -643,13 +650,18 @@ export default function getRecipeInterface(
             {
                 refreshToken,
                 antiCsrfToken,
-                doAntiCsrfCheck,
-            }: { refreshToken: string; antiCsrfToken?: string; doAntiCsrfCheck: boolean; userContext: any }
+                disableAntiCsrf,
+            }: { refreshToken: string; antiCsrfToken?: string; disableAntiCsrf: boolean; userContext: any }
         ): Promise<
             | { status: "OK"; session: SessionContainerInterface }
             | { status: "UNAUTHORISED" }
             | { status: "TOKEN_THEFT_DETECTED" }
         > {
+            if (disableAntiCsrf !== true && config.antiCsrf === "VIA_CUSTOM_HEADER") {
+                throw new Error(
+                    "Since the anti-csrf mode is VIA_CUSTOM_HEADER refreshSessionWithoutModifyingResponse can't check the CSRF token. Please either use VIA_TOKEN or set disableAntiCsrf to true"
+                );
+            }
             logDebugMessage("refreshSessionWithoutModifyingResponse: Started");
 
             try {
@@ -657,27 +669,25 @@ export default function getRecipeInterface(
                     helpers,
                     refreshToken,
                     antiCsrfToken,
+                    // We always set this to true, but it doesn't matter: if we
                     true,
-                    doAntiCsrfCheck ? "cookie" : "header"
+                    disableAntiCsrf ? "header" : "cookie"
                 );
 
                 logDebugMessage("refreshSessionWithoutModifyingResponse: Success!");
 
+                const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
                 return {
                     status: "OK",
                     session: new Session(
                         helpers,
                         response.accessToken.token,
-                        buildFrontToken(
-                            response.session.userId,
-                            response.accessToken.expiry,
-                            response.session.userDataInJWT
-                        ),
+                        buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
                         response.refreshToken.token,
                         response.antiCsrfToken,
                         response.session.handle,
                         response.session.userId,
-                        response.session.userDataInJWT,
+                        payload,
                         undefined,
                         true
                     ),

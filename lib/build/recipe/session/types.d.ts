@@ -165,7 +165,9 @@ export declare type RecipeInterface = {
     createNewSessionWithoutModifyingResponse(input: {
         userId: string;
         accessTokenPayload?: any;
-        sessionData?: any;
+        sessionDataInDatabase?: any;
+        useDynamicAccessTokenSigningKey?: boolean;
+        disableAntiCsrf?: boolean;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -190,7 +192,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              session: SessionContainerInterface | undefined;
+              session: SessionContainerInterface;
           }
         | {
               status: "TOKEN_VALIDATION_ERROR";
@@ -208,7 +210,7 @@ export declare type RecipeInterface = {
     refreshSessionWithoutModifyingResponse(input: {
         refreshToken: string;
         antiCsrfToken?: string;
-        doAntiCsrfCheck: boolean;
+        disableAntiCsrf: boolean;
         userContext: any;
     }): Promise<
         | {

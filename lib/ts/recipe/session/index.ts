@@ -30,6 +30,7 @@ import { JSONObject } from "../../types";
 import frameworks from "../../framework";
 import SuperTokens from "../../supertokens";
 import { getRequiredClaimValidators } from "./utils";
+import SessionError from "./error";
 
 // For Express
 export default class SessionWrapper {
@@ -72,6 +73,36 @@ export default class SessionWrapper {
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             useDynamicAccessTokenSigningKey,
+            userContext,
+        });
+    }
+
+    static async createNewSessionWithoutModifyingResponse(
+        userId: string,
+        accessTokenPayload: any = {},
+        sessionDataInDatabase: any = {},
+        disableAntiCsrf: boolean = false,
+        useDynamicAccessTokenSigningKey?: boolean,
+        userContext: any = {}
+    ) {
+        const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
+
+        let finalAccessTokenPayload = accessTokenPayload;
+
+        for (const claim of claimsAddedByOtherRecipes) {
+            const update = await claim.build(userId, userContext);
+            finalAccessTokenPayload = {
+                ...finalAccessTokenPayload,
+                ...update,
+            };
+        }
+
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSessionWithoutModifyingResponse({
+            userId,
+            accessTokenPayload: finalAccessTokenPayload,
+            sessionDataInDatabase,
+            useDynamicAccessTokenSigningKey,
+            disableAntiCsrf,
             userContext,
         });
     }
@@ -211,6 +242,46 @@ export default class SessionWrapper {
         return session;
     }
 
+    static async getSessionWithoutModifyingResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: VerifySessionOptions,
+        userContext: any = {}
+    ): Promise<
+        | { status: "OK"; session: SessionContainer }
+        | { status: "TOKEN_VALIDATION_ERROR"; error: any }
+        | { status: "TRY_REFRESH_TOKEN_ERROR" }
+        | { status: "CLAIM_VALIDATION_ERROR"; invalidClaims: ClaimValidationError[] }
+    > {
+        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const res = await recipeInterfaceImpl.getSessionWithoutModifyingResponse({
+            accessToken,
+            antiCsrfToken,
+            options,
+            userContext,
+        });
+
+        if (res.status === "OK" && res.session !== undefined) {
+            const claimValidators = await getRequiredClaimValidators(
+                res.session,
+                options?.overrideGlobalClaimValidators,
+                userContext
+            );
+            try {
+                await res.session.assertClaims(claimValidators, userContext);
+            } catch (err) {
+                if (err instanceof SessionError && err.type === "INVALID_CLAIMS") {
+                    return {
+                        status: "CLAIM_VALIDATION_ERROR",
+                        invalidClaims: err.payload,
+                    };
+                }
+                throw err;
+            }
+        }
+        return res;
+    }
+
     static getSessionInformation(sessionHandle: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
             sessionHandle,
@@ -228,6 +299,19 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res, userContext });
     }
 
+    static refreshSessionWithoutModifyingResponse(
+        refreshToken: string,
+        disableAntiCsrf: boolean = false,
+        antiCsrfToken?: string,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSessionWithoutModifyingResponse({
+            refreshToken,
+            disableAntiCsrf,
+            antiCsrfToken,
+            userContext,
+        });
+    }
     static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
     }
@@ -342,12 +426,15 @@ export default class SessionWrapper {
 export let init = SessionWrapper.init;
 
 export let createNewSession = SessionWrapper.createNewSession;
+export let createNewSessionWithoutModifyingResponse = SessionWrapper.createNewSessionWithoutModifyingResponse;
 
 export let getSession = SessionWrapper.getSession;
+export let getSessionWithoutModifyingResponse = SessionWrapper.getSessionWithoutModifyingResponse;
 
 export let getSessionInformation = SessionWrapper.getSessionInformation;
 
 export let refreshSession = SessionWrapper.refreshSession;
+export let refreshSessionWithoutModifyingResponse = SessionWrapper.refreshSessionWithoutModifyingResponse;
 
 export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
 

@@ -25,6 +25,17 @@ export default class SessionWrapper {
         useDynamicAccessTokenSigningKey?: boolean,
         userContext?: any
     ): Promise<SessionContainer>;
+    static createNewSessionWithoutModifyingResponse(
+        userId: string,
+        accessTokenPayload?: any,
+        sessionDataInDatabase?: any,
+        disableAntiCsrf?: boolean,
+        useDynamicAccessTokenSigningKey?: boolean,
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+        session: SessionContainer;
+    }>;
     static validateClaimsForSessionHandle(
         sessionHandle: string,
         overrideGlobalClaimValidators?: (
@@ -72,8 +83,47 @@ export default class SessionWrapper {
         },
         userContext?: any
     ): Promise<SessionContainer | undefined>;
+    static getSessionWithoutModifyingResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: VerifySessionOptions,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              session: SessionContainer;
+          }
+        | {
+              status: "TOKEN_VALIDATION_ERROR";
+              error: any;
+          }
+        | {
+              status: "TRY_REFRESH_TOKEN_ERROR";
+          }
+        | {
+              status: "CLAIM_VALIDATION_ERROR";
+              invalidClaims: ClaimValidationError[];
+          }
+    >;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
     static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
+    static refreshSessionWithoutModifyingResponse(
+        refreshToken: string,
+        disableAntiCsrf?: boolean,
+        antiCsrfToken?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              session: SessionContainer;
+          }
+        | {
+              status: "UNAUTHORISED";
+          }
+        | {
+              status: "TOKEN_THEFT_DETECTED";
+          }
+    >;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
@@ -133,9 +183,12 @@ export default class SessionWrapper {
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
+export declare let createNewSessionWithoutModifyingResponse: typeof SessionWrapper.createNewSessionWithoutModifyingResponse;
 export declare let getSession: typeof SessionWrapper.getSession;
+export declare let getSessionWithoutModifyingResponse: typeof SessionWrapper.getSessionWithoutModifyingResponse;
 export declare let getSessionInformation: typeof SessionWrapper.getSessionInformation;
 export declare let refreshSession: typeof SessionWrapper.refreshSession;
+export declare let refreshSessionWithoutModifyingResponse: typeof SessionWrapper.refreshSessionWithoutModifyingResponse;
 export declare let revokeAllSessionsForUser: typeof SessionWrapper.revokeAllSessionsForUser;
 export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSessionHandlesForUser;
 export declare let revokeSession: typeof SessionWrapper.revokeSession;
