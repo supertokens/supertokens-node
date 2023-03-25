@@ -29,6 +29,7 @@ let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
+let Dashboard = require("../../recipe/dashboard");
 
 describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, function () {
     beforeEach(async function () {
@@ -578,4 +579,57 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             });
         });
     }
+
+    it("test that authorization header is read correctly in dashboard recipe", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    if (authHeader === "Bearer testapikey") {
+                                        return true;
+                                    }
+
+                                    return false;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        let proxy = "/dev";
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users/count",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            null
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+    });
 });

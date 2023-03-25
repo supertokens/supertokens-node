@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+-   Updates the example app to also initialise the dashboard
+
+## [13.1.5] - 2023-03-17
+
+### Fixes
+
+-   Fixed an issue where BaseRequest implmentations for frameworks such as AWS Lambda would not consider case sensitivity when fetching request headers
+-   Fixes an issue where dashboard recipe APIs would return 404 for Hapi
+
+## [13.1.4] - 2023-03-16
+
+### Fixes
+
+-   Fixes an issue where importing recipes without importing the package index file would cause crashes
+
+## [13.1.3] - 2023-03-08
+
+### Changed
+
+-   The dashboard recipe is no longer intialised automatically
+
 ## [13.1.2] - 2023-02-27
 
 ### Fixes

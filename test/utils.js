@@ -34,6 +34,7 @@ let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
+const { join } = require("path");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -560,4 +561,18 @@ module.exports.mockRequest = () => {
         header: (key) => headers[key],
     };
     return req;
+};
+
+module.exports.getAllFilesInDirectory = (path) => {
+    return fs
+        .readdirSync(path, {
+            withFileTypes: true,
+        })
+        .flatMap((file) => {
+            if (file.isDirectory()) {
+                return this.getAllFilesInDirectory(join(path, file.name));
+            } else {
+                return join(path, file.name);
+            }
+        });
 };
