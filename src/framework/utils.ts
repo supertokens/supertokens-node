@@ -21,6 +21,7 @@ import { json, urlencoded } from 'body-parser'
 import { NextApiRequest } from 'next'
 import STError from '../error'
 import type { HTTPMethod } from '../types'
+import { getFromObjectCaseInsensitive } from '../utils'
 import { COOKIE_HEADER } from './constants'
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
@@ -48,7 +49,7 @@ export function getCookieValueFromIncomingMessage(request: IncomingMessage, key:
 }
 
 export function getHeaderValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined {
-  return normalizeHeaderValue(request.headers[key])
+  return normalizeHeaderValue(getFromObjectCaseInsensitive(key, request.headers))
 }
 
 export function normalizeHeaderValue(value: string | string[] | undefined): string | undefined {
