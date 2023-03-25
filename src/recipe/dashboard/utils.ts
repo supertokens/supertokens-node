@@ -364,3 +364,7 @@ export async function validateApiKey(input: { req: BaseRequest; config: TypeNorm
 
   return apiKeyHeaderValue === input.config.apiKey
 }
+
+export function getApiPathWithDashboardBase(path: string): string {
+  return DASHBOARD_API + path
+}

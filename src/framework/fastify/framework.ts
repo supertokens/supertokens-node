@@ -20,7 +20,7 @@ import type {
   FastifyRequest as OriginalFastifyRequest,
 } from 'fastify'
 import type { HTTPMethod } from '../../types'
-import { normaliseHttpMethod } from '../../utils'
+import { getFromObjectCaseInsensitive, normaliseHttpMethod } from '../../utils'
 import { BaseRequest } from '../request'
 import { BaseResponse } from '../response'
 import { getCookieValueFromHeaders, normalizeHeaderValue, serializeCookieValue } from '../utils'
@@ -66,7 +66,7 @@ export class FastifyRequest extends BaseRequest {
   }
 
   getHeaderValue = (key: string): string | undefined => {
-    return normalizeHeaderValue(this.request.headers[key])
+    return normalizeHeaderValue(getFromObjectCaseInsensitive(key, this.request.headers))
   }
 
   getOriginalURL = (): string => {
