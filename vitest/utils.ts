@@ -36,12 +36,9 @@ import { OpenIdRecipe } from 'supertokens-node/recipe/openid/recipe'
 
 export async function executeCommand(cmd: string): Promise<{ stdout: string; stderr: string }> {
   const cwd = process.cwd()
-  console.log(`Executing command: ${cmd} in ${cwd}...`)
   return new Promise((resolve, reject) => {
     exec(cmd,
-      {
-        cwd,
-      },
+      { cwd },
       (err, stdout, stderr) => {
         if (err) {
           reject(err)
@@ -267,22 +264,12 @@ export async function startST(host = 'localhost', port = 8080) {
     const installationPath = process.env.INSTALL_PATH
     const pidsBefore = await getListOfPids()
     let returned = false
-    module.exports
-      .executeCommand(
-        `cd ${
-                     installationPath
-                     } && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=${
-                     host
-                     } port=${
-                     port
-                     } test_mode`,
-      )
-      .catch((err: any) => {
-        if (!returned) {
-          returned = true
-          reject(err)
-        }
-      })
+    await executeCommand(`cd ${installationPath} && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=${host} port=${port} test_mode`).catch((err: any) => {
+      if (!returned) {
+        returned = true
+        reject(err)
+      }
+    })
     const startTime = Date.now()
     while (Date.now() - startTime < 30000) {
       const pidsAfter = await getListOfPids()
@@ -321,8 +308,7 @@ async function getListOfPids() {
     return []
   }
 
-  if (typeof currList === 'string')
-    currList = currList.split('\n')
+  currList = currList.split('\n')
 
   const result = []
   for (let i = 0; i < currList.length; i++) {
@@ -331,8 +317,7 @@ async function getListOfPids() {
       continue
 
     try {
-      let pid = (await executeCommand(`cd ${installationPath} && cat .started/${item}`))
-        .stdout
+      let pid = (await executeCommand(`cd ${installationPath} && cat .started/${item}`)).stdout
       pid = pid.split('\n')[0]
       result.push(pid)
     }

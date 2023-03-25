@@ -16,6 +16,8 @@
 import SuperTokens from './supertokens'
 import SuperTokensError from './error'
 
+export { SuperTokensError }
+
 // For Express
 export default class SuperTokensWrapper {
   static init = SuperTokens.init

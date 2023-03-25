@@ -4,9 +4,6 @@ import { defineConfig } from 'vitest/config'
 const alias = (p: string) => path.resolve(__dirname, p)
 
 export default defineConfig({
-  optimizeDeps: {
-    entries: [],
-  },
   test: {
     coverage: {
       provider: 'c8', // or 'c8',
@@ -20,11 +17,12 @@ export default defineConfig({
       'vitest/utils.ts',
     ],
     include: [
-      './vitest/**',
+      './vitest/**/*.test.ts',
     ],
-    testTimeout: 90000,
-    maxConcurrency: 1,
-    threads: false,
+    // maxConcurrency: 1,
+    // threads: false,
+    cache: false,
+    hookTimeout: 80000,
   },
   resolve: {
     alias: {
