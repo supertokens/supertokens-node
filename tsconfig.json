@@ -19,7 +19,8 @@
         "allowSyntheticDefaultImports": true,
         "importHelpers": true,
         "types": [
-            "vite/client"
+            "vite/client",
+            "node"
         ],
         "paths": {
             "overrideableBuilder": [

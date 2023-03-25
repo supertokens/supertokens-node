@@ -264,7 +264,7 @@ export async function startST(host = 'localhost', port = 8080) {
     const installationPath = process.env.INSTALL_PATH
     const pidsBefore = await getListOfPids()
     let returned = false
-    await executeCommand(`cd ${installationPath} && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=${host} port=${port} test_mode`).catch((err: any) => {
+    executeCommand(`cd ${installationPath} && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=${host} port=${port} test_mode`).catch((err: any) => {
       if (!returned) {
         returned = true
         reject(err)

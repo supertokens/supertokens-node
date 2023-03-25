@@ -19,10 +19,9 @@ export default defineConfig({
     include: [
       './vitest/**/*.test.ts',
     ],
-    // maxConcurrency: 1,
-    // threads: false,
-    cache: false,
-    hookTimeout: 80000,
+    threads: false,
+    hookTimeout: 31000,
+    testTimeout: 20000,
   },
   resolve: {
     alias: {
