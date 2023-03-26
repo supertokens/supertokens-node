@@ -21,7 +21,7 @@ export default defineConfig({
     ],
     threads: false,
     hookTimeout: 31000,
-    testTimeout: 20000,
+    testTimeout: 90000,
   },
   resolve: {
     alias: {

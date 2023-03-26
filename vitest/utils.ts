@@ -15,6 +15,7 @@
 
 import { exec } from 'node:child_process'
 import fs from 'fs'
+import { join } from 'node:path'
 import nock from 'nock'
 import request from 'supertest'
 import SuperTokens from 'supertokens-node/supertokens'
@@ -562,4 +563,18 @@ export function printPath(path: any) {
   return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
         consoleOptions.default,
     ])}`
+}
+
+export const getAllFilesInDirectory = (path: any): any => {
+  return fs
+    .readdirSync(path, {
+      withFileTypes: true,
+    })
+    .flatMap((file: any) => {
+      if (file.isDirectory())
+        return getAllFilesInDirectory(join(path, file.name))
+
+      else
+        return join(path, file.name)
+    })
 }
