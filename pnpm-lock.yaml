@@ -23,6 +23,7 @@ importers:
       '@types/jsonwebtoken': ^9.0.1
       '@types/koa': ^2.13.4
       '@types/koa-bodyparser': ^4.3.10
+      '@types/koa__router': ^12.0.0
       '@types/node': ^18.15.9
       '@types/nodemailer': ^6.4.7
       '@types/psl': ^1.1.0
@@ -96,6 +97,7 @@ importers:
       '@types/jsonwebtoken': 9.0.1
       '@types/koa': 2.13.5
       '@types/koa-bodyparser': 4.3.10
+      '@types/koa__router': 12.0.0
       '@types/node': 18.15.9
       '@types/nodemailer': 6.4.7
       '@types/psl': 1.1.0
@@ -1463,6 +1465,12 @@ packages:
       '@types/keygrip': 1.0.2
       '@types/koa-compose': 3.2.5
       '@types/node': 18.15.9
+    dev: true
+
+  /@types/koa__router/12.0.0:
+    resolution: {integrity: sha512-S6eHyZyoWCZLNHyy8j0sMW85cPrpByCbGGU2/BO4IzGiI87aHJ92lZh4E9xfsM9DcbCT469/OIqyC0sSJXSIBQ==}
+    dependencies:
+      '@types/koa': 2.13.5
     dev: true
 
   /@types/mdast/3.0.10:

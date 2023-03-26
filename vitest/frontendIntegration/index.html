@@ -1,0 +1,85 @@
+<html>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/axios-mock-adapter/dist/axios-mock-adapter.js"></script>
+    <script type="module">
+        import umdAssert from "https://cdn.skypack.dev/umd-assert";
+        window.assert = umdAssert;
+    </script>
+
+    <script>
+        if (axios.default) {
+            axios = axios.default;
+        }
+        async function getNumberOfTimesRefreshCalled(BASE_URL = "http://localhost.org:8080") {
+            let instance = axios.create();
+            let response = await instance.get(BASE_URL + "/refreshCalledTime");
+            return response.data;
+        }
+
+        async function getNumberOfTimesRefreshAttempted(BASE_URL = "http://localhost.org:8080") {
+            let instance = axios.create();
+            let response = await instance.get(BASE_URL + "/refreshAttemptedTime");
+            return response.data;
+        }
+
+        async function getNumberOfTimesGetSessionCalled(BASE_URL = "http://localhost.org:8080") {
+            let instance = axios.create();
+            let response = await instance.get(BASE_URL + "/getSessionCalledTime");
+            return response.data;
+        }
+
+        async function getPackageVersion(BASE_URL = "http://localhost.org:8080") {
+            let instance = axios.create();
+            let response = await instance.get(BASE_URL + "/getPackageVersion");
+            return response.data;
+        }
+
+        function assertEqual(a, b) {
+            if (a !== b) {
+                throw new Error(`assert failed ${a} === ${b}`);
+            }
+        }
+
+        function assertNotEqual(a, b) {
+            if (a === b) {
+                throw new Error(`assert failed ${a} !== ${b}`);
+            }
+        }
+
+        async function delay(time) {
+            await new Promise((r) => setTimeout(r, time * 1000));
+        }
+
+        function loadAngular() {
+            if (window.angularHttpClient !== undefined) {
+                return;
+            }
+            document.body.appendChild(document.createElement("app-root"));
+            const scripts = ["/angular/runtime.js", "/angular/polyfills.js", "/angular/vendor.js", "/angular/main.js"];
+            const loadPromises = [];
+
+            for (const src of scripts) {
+                const tag = document.createElement("script");
+                tag.src = src;
+                tag.type = "module";
+                loadPromises.push(new Promise((res) => (tag.onload = res)));
+                document.body.appendChild(tag);
+            }
+
+            return Promise.all(loadPromises);
+        }
+
+        function deleteAllCookies() {
+            var cookies = document.cookie.split(";");
+
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i];
+                var eqPos = cookie.indexOf("=");
+                var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            }
+        }
+    </script>
+
+    <body></body>
+</html>

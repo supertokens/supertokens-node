@@ -72,7 +72,7 @@ export async function setKeyValueInConfig(key: any, value: any) {
   })
 }
 
-export function extractInfoFromResponse(res: { headers: { [x: string]: any }; status: any; statusCode: any; body: any }) {
+export function extractInfoFromResponse(res: any) {
   /* eslint-disable prefer-const */
   let antiCsrf = res.headers['anti-csrf']
   let accessToken
