@@ -263,7 +263,7 @@ export class Querier {
 
       return response.data
     }
-    catch (err) {
+    catch (err: any) {
       if (err.message !== undefined && err.message.includes('ECONNREFUSED'))
         return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1)
 

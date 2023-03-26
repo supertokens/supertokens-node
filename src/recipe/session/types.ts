@@ -366,7 +366,7 @@ export interface SessionContainerInterface {
      * @deprecated Use mergeIntoAccessTokenPayload instead
      */
   updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>
-  mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>
+  mergeIntoAccessTokenPayload(accessTokenPayloadUpdate?: JSONObject, userContext?: any): Promise<void>
 
   getTimeCreated(userContext?: any): Promise<number>
 

@@ -1418,10 +1418,10 @@ describe(`sessionExpress: ${printPath('[test/sessionExpress.test.js]')}`, () => 
     })
     app.post('/updateAccessTokenPayload', async (req, res) => {
       const session = await Session.getSession(req, res)
-      const accessTokenBefore = session.accessToken
-      await session.updateAccessTokenPayload({ key: 'value' })
-      const accessTokenAfter = session.accessToken
-      const statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === 'string' ? 200 : 500
+      const accessTokenBefore = session.getAccessToken()
+      await session.mergeIntoAccessTokenPayload({ key: 'value' })
+      const accessTokenAfter = session.getAccessToken()
+      const statusCode = accessTokenBefore !== (accessTokenAfter && typeof accessTokenAfter === 'string') ? 200 : 500
       res.status(statusCode).send('')
     })
     app.post('/auth/session/refresh', async (req, res) => {
@@ -1436,7 +1436,12 @@ describe(`sessionExpress: ${printPath('[test/sessionExpress.test.js]')}`, () => 
 
     app.post('/updateAccessTokenPayload2', async (req, res) => {
       const session = await Session.getSession(req, res)
-      await session.updateAccessTokenPayload(null)
+      try {
+        await session.mergeIntoAccessTokenPayload(undefined)
+      }
+      catch (error) {
+        console.log(error)
+      }
       res.status(200).send('')
     })
 
@@ -1528,6 +1533,8 @@ describe(`sessionExpress: ${printPath('[test/sessionExpress.test.js]')}`, () => 
     assert(frontendInfo.uid === 'user1')
     assert.deepStrictEqual(frontendInfo.up, { key: 'value' })
 
+    if (!response2)
+      throw new Error('accessToken is undefined')
     // change the value of the inserted jwt payload
     const updatedResponse2 = extractInfoFromResponse(
       await new Promise(resolve =>

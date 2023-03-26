@@ -92,14 +92,19 @@ export default class Session implements SessionContainerInterface {
   }
 
   // Any update to this function should also be reflected in the respective JWT version
-  async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
+  async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate?: any, userContext?: any): Promise<void> {
     const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate }
-    for (const key of Object.keys(accessTokenPayloadUpdate)) {
-      if (accessTokenPayloadUpdate[key] === null)
-        delete updatedPayload[key]
+
+    if (accessTokenPayloadUpdate) {
+      for (const key of Object.keys(accessTokenPayloadUpdate)) {
+        if (accessTokenPayloadUpdate[key] === null)
+          delete updatedPayload[key]
+      }
+      await this.updateAccessTokenPayload(updatedPayload, userContext)
     }
 
-    await this.updateAccessTokenPayload(updatedPayload, userContext)
+    if (accessTokenPayloadUpdate === undefined)
+      await this.updateAccessTokenPayload(undefined, undefined)
   }
 
   async getTimeCreated(userContext?: any): Promise<number> {
@@ -177,7 +182,7 @@ export default class Session implements SessionContainerInterface {
   /**
      * @deprecated Use mergeIntoAccessTokenPayload
      */
-  async updateAccessTokenPayload(newAccessTokenPayload: any, userContext: any): Promise<void> {
+  async updateAccessTokenPayload(newAccessTokenPayload?: any, userContext?: any): Promise<void> {
     const response = await this.helpers.getRecipeImpl().regenerateAccessToken({
       accessToken: this.getAccessToken(),
       newAccessTokenPayload,
