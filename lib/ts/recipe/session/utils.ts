@@ -34,8 +34,8 @@ import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
-import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./with-jwt/constants";
 import { logDebugMessage } from "../../logger";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -203,24 +203,6 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    let enableJWT = false;
-    let accessTokenPayloadJWTPropertyName = "jwt";
-    let issuer: string | undefined;
-
-    if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
-        enableJWT = true;
-        let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
-        issuer = config.jwt.issuer;
-
-        if (jwtPropertyName !== undefined) {
-            if (jwtPropertyName === ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY) {
-                throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
-            }
-
-            accessTokenPayloadJWTPropertyName = jwtPropertyName;
-        }
-    }
-
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -228,6 +210,8 @@ export function validateAndNormaliseUserInput(
     };
 
     return {
+        useDynamicAccessTokenSigningKey: config?.useDynamicAccessTokenSigningKey ?? true,
+        exposeAccessTokenToFrontendInCookieBasedAuth: config?.exposeAccessTokenToFrontendInCookieBasedAuth ?? false,
         refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
         getTokenTransferMethod:
             config?.getTokenTransferMethod === undefined
@@ -241,11 +225,6 @@ export function validateAndNormaliseUserInput(
         antiCsrf,
         override,
         invalidClaimStatusCode,
-        jwt: {
-            enable: enableJWT,
-            propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
-            issuer,
-        },
     };
 }
 
@@ -264,14 +243,32 @@ export function attachTokensToResponse(
     response: CreateOrRefreshAPIResponse,
     transferMethod: TokenTransferMethod
 ) {
-    let accessToken = response.accessToken;
+    setAccessTokenInResponse(res, response, config, transferMethod);
     let refreshToken = response.refreshToken;
-    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
+    setToken(config, res, "refresh", refreshToken.token, refreshToken.expiry, transferMethod);
+    if (response.antiCsrfToken !== undefined) {
+        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
+    }
+}
+
+export function setAccessTokenInResponse(
+    res: BaseResponse,
+    response: {
+        accessToken: CreateOrRefreshAPIResponse["accessToken"];
+        session: CreateOrRefreshAPIResponse["session"];
+    },
+    config: TypeNormalisedInput,
+    transferMethod: TokenTransferMethod
+) {
+    const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
+    const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
+
+    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, payload);
     setToken(
         config,
         res,
         "access",
-        accessToken.token,
+        response.accessToken.token,
         // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
         // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
@@ -279,9 +276,20 @@ export function attachTokensToResponse(
         Date.now() + 3153600000000,
         transferMethod
     );
-    setToken(config, res, "refresh", refreshToken.token, refreshToken.expiry, transferMethod);
-    if (response.antiCsrfToken !== undefined) {
-        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
+
+    if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
+        setToken(
+            config,
+            res,
+            "access",
+            response.accessToken.token,
+            // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
+            // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+            // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
+            // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
+            Date.now() + 3153600000000,
+            "header"
+        );
     }
 }
 

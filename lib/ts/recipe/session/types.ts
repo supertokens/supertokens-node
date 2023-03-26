@@ -27,23 +27,6 @@ export type KeyInfo = {
 };
 
 export type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-export type StoredHandshakeInfo = {
-    antiCsrf: AntiCsrfType;
-    accessTokenBlacklistingEnabled: boolean;
-    accessTokenValidity: number;
-    refreshTokenValidity: number;
-} & (
-    | {
-          // Stored after 2.9
-          jwtSigningPublicKeyList: KeyInfo[];
-      }
-    | {
-          // Stored before 2.9
-          jwtSigningPublicKeyList: undefined;
-          jwtSigningPublicKey: string;
-          jwtSigningPublicKeyExpiryTime: number;
-      }
-);
 
 export type CreateOrRefreshAPIResponse = {
     session: {
@@ -76,6 +59,7 @@ export type TokenType = "access" | "refresh";
 export type TokenTransferMethod = "header" | "cookie";
 
 export type TypeInput = {
+    useDynamicAccessTokenSigningKey?: boolean;
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
 
@@ -91,13 +75,7 @@ export type TypeInput = {
 
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    jwt?:
-        | {
-              enable: true;
-              propertyNameInAccessTokenPayload?: string;
-              issuer?: string;
-          }
-        | { enable: false };
+    exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -128,6 +106,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    useDynamicAccessTokenSigningKey: boolean;
     refreshTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
@@ -143,11 +122,7 @@ export type TypeNormalisedInput = {
     }) => TokenTransferMethod | "any";
 
     invalidClaimStatusCode: number;
-    jwt: {
-        enable: boolean;
-        propertyNameInAccessTokenPayload: string;
-        issuer?: string;
-    };
+    exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -203,6 +178,7 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+    checkDatabase?: boolean;
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
@@ -217,6 +193,7 @@ export type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
+        useDynamicAccessTokenSigningKey?: boolean;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -262,16 +239,6 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<boolean>;
 
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
-     */
-    updateAccessTokenPayload(input: {
-        sessionHandle: string;
-        newAccessTokenPayload: any;
-        userContext: any;
-    }): Promise<boolean>;
-
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
@@ -301,10 +268,6 @@ export type RecipeInterface = {
           }
         | undefined
     >;
-
-    getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-
-    getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
     validateClaims(input: {
         userId: string;
@@ -366,10 +329,6 @@ export interface SessionContainerInterface {
 
     getAccessToken(userContext?: any): string;
 
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     */
-    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
 
     getTimeCreated(userContext?: any): Promise<number>;

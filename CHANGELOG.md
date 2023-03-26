@@ -9,9 +9,216 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+-   Added support for CDI version `2.19`
+-   Dropped support for CDI version `2.8`-`2.18`
+-   Changed the interface and configuration of the Session recipe, see below for details. If you do not use the Session recipe directly and do not provide custom configuration, then no migration is necessary.
+-   `getAccessTokenPayload` will now return standard (`sub`, `iat`, `exp`) claims and some SuperTokens specific claims along the user defined ones in `getAccessTokenPayload`.
+-   Some claim names are now prohibited in the root level of the access token payload
+    -   They are: `sub`, `iat`, `exp`, `sessionHandle`, `parentRefreshTokenHash1`, `refreshTokenHash1`, `antiCsrfToken`
+    -   If you used these in the root level of the access token payload, then you'll need to migrate your sessions or they will be logged out during the next refresh
+    -   These props should be renamed (e.g., by adding a prefix) or moved inside an object in the access token payload
+    -   You can migrate these sessions by updating their payload to match your new structure, by calling `mergeIntoAccessTokenPayload`
+-   New access tokens are valid JWTs now
+    -   They can be used directly (i.e.: by calling `getAccessToken` on the session) if you need a JWT
+    -   The `jwt` prop in the access token payload is removed
+
+### Configuration changes
+
+-   Added `useDynamicAccessTokenSigningKey` (defaults to `true`) option to the Session recipe config
+-   Added `exposeAccessTokenToFrontendInCookieBasedAuth` (defaults to `false`) option to the Session recipe config
+-   JWT and OpenId related configuration has been removed from the Session recipe config. If necessary, they can be added by initializing the OpenId recipe before the Session recipe.
+
+### Interface changes
+
 -   Renamed `getSessionData` to `getSessionDataFromDatabase` to clarify that it always hits the DB
 -   Renamed `updateSessionData` to `updateSessionDataInDatabase`
 -   Renamed `sessionData` to `sessionDataInDatabase` in `SessionInformation` and the input to `createNewSession`
+-   Added new `checkDatabase` param to `verifySession` and `getSession`
+-   Removed `status` from `getJWKS` output (function & API)
+-   Added new optional `useStaticSigningKey` param to `createJWT`
+-   Added new optional `useDynamicAccessTokenSigningKey` param to `createNewSession`
+-   Removed deprecated `updateAccessTokenPayload` and `regenerateAccessToken` from the Session recipe interface
+-   Removed `getAccessTokenLifeTimeMS` and `getRefreshTokenLifeTimeMS` functions
+
+## Changes
+
+-   The Session recipe now always initializes the OpenID recipe if it hasn't been initialized.
+-   Refactored how access token validation is done
+-   Removed the handshake call to improve start-up times
+-   Added support for new access token version
+
+## Migration
+
+### If self-hosting core
+
+1. You need to update the core version
+2. There are manual migration steps needed. Check out the core changelogs for more details.
+
+### If you used the jwt feature of the session recipe
+
+1. Add `exposeAccessTokenToFrontendInCookieBasedAuth: true` to the Session recipe config on the backend if you need to access the JWT on the frontend.
+2. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
+
+```tsx
+let jwt = null;
+const accessTokenPayload = await Session.getAccessTokenPayloadSecurely();
+if (accessTokenPayload.jwt === undefined) {
+    jwt = await Session.getAccessToken();
+} else {
+    // This branch is only required if there are valid access tokens created before the update
+    // It can be removed after the validity period ends
+    jwt = accessTokenPayload.jwt;
+}
+```
+
+3. On the backend if you accessed the JWT before by `session.getAccessTokenPayload().jwt` please update to:
+
+```tsx
+let jwt = null;
+const accessTokenPayload = await Session.getAccessTokenPayloadSecurely();
+if (accessTokenPayload.jwt === undefined) {
+    jwt = await session.getAccessToken();
+} else {
+    // This branch is only required if there are valid access tokens created before the update
+    // It can be removed after the validity period ends
+    jwt = accessTokenPayload.jwt;
+}
+```
+
+### If you used to set an issuer in the session recipe `jwt` configuration
+
+-   You can add an issuer claim to access tokens by overriding the `createNewSession` function in the session recipe init.
+    -   Check out https://supertokens.com/docs/passwordless/common-customizations/sessions/claims/access-token-payload#during-session-creation for more information
+-   You can add an issuer claim to JWTs created by the JWT recipe by passing the `iss` claim as part of the payload.
+-   You can set the OpenId discovery configuration as follows:
+
+Before:
+
+```tsx
+import SuperTokens from "supertokens-auth-react";
+import Session from "supertokens-auth-react/recipe/session";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init({
+            jwt: {
+                enable: true,
+                issuer: "...",
+            },
+        }),
+    ],
+});
+```
+
+After:
+
+```tsx
+import SuperTokens from "supertokens-auth-react";
+import Session from "supertokens-auth-react/recipe/session";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init({
+            getTokenTransferMethod: () => "header",
+            override: {
+                openIdFeature: {
+                    functions: originalImplementation => ({
+                        ...originalImplementation,
+                        getOpenIdDiscoveryConfiguration: async (input) => ({
+                            issuer: "your issuer",
+                            jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                            status: "OK"
+                        }),
+                    })
+                }
+            }
+        });
+    ],
+});
+```
+
+### If you used `sessionData` (not `accessTokenPayload`)
+
+Related functions/prop names have changes (`sessionData` became `sessionDataFromDatabase`):
+
+-   Renamed `getSessionData` to `getSessionDataFromDatabase` to clarify that it always hits the DB
+-   Renamed `updateSessionData` to `updateSessionDataInDatabase`
+-   Renamed `sessionData` to `sessionDataInDatabase` in `SessionInformation` and the input to `createNewSession`
+
+### If you used to set `access_token_blacklisting` in the core config
+
+-   You should now set `checkDatabase` to true in the verifySession params.
+
+### If you used to set `access_token_signing_key_dynamic` in the core config
+
+-   You should now set `useDynamicAccessTokenSigningKey` in the Session recipe config.
+
+### If you used to use standard/protected props in the access token payload root:
+
+1. Update you application logic to rename those props (e.g., by adding a prefix)
+2. Update the session recipe config (in this example `sub` is the protected property we are updating by adding tha `app` prefix):
+
+Before:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            createNewSession: async (input) => {
+                return oI.createNewSession({
+                    ...input,
+                    accessTokenPayload: {
+                        ...input.accessTokenPayload,
+                        sub: input.userId + "!!!",
+                    },
+                });
+            },
+        }),
+    },
+});
+```
+
+After:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const result = await oI.getSession(input);
+                if (result) {
+                    const origPayload = result.getAccessTokenPayload();
+                    if (origPayload.appSub === undefined) {
+                        await result.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
+                    }
+                }
+                return result;
+            },
+            createNewSession: async (input) => {
+                return oI.createNewSession({
+                    ...input,
+                    accessTokenPayload: {
+                        ...input.accessTokenPayload,
+                        appSub: input.userId + "!!!",
+                    },
+                });
+            },
+        }),
+    },
+});
+```
 
 ## [13.1.3] - 2023-03-08
 

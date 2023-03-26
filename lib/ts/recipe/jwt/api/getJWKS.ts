@@ -26,10 +26,10 @@ export default async function getJWKS(apiImplementation: APIInterface, options: 
         options,
         userContext: makeDefaultUserContextFromAPI(options.req),
     });
-    if (result.status === "OK") {
-        options.res.setHeader("Access-Control-Allow-Origin", "*", false);
-        send200Response(options.res, { keys: result.keys });
+    if ("status" in result && result.status === "GENERAL_ERROR") {
+        send200Response(options.res, result);
     } else {
+        options.res.setHeader("Access-Control-Allow-Origin", "*", false);
         send200Response(options.res, result);
     }
     return true;

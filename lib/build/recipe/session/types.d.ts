@@ -12,21 +12,6 @@ export declare type KeyInfo = {
     createdAt: number;
 };
 export declare type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-export declare type StoredHandshakeInfo = {
-    antiCsrf: AntiCsrfType;
-    accessTokenBlacklistingEnabled: boolean;
-    accessTokenValidity: number;
-    refreshTokenValidity: number;
-} & (
-    | {
-          jwtSigningPublicKeyList: KeyInfo[];
-      }
-    | {
-          jwtSigningPublicKeyList: undefined;
-          jwtSigningPublicKey: string;
-          jwtSigningPublicKeyExpiryTime: number;
-      }
-);
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
@@ -53,6 +38,7 @@ export interface ErrorHandlers {
 export declare type TokenType = "access" | "refresh";
 export declare type TokenTransferMethod = "header" | "cookie";
 export declare type TypeInput = {
+    useDynamicAccessTokenSigningKey?: boolean;
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
     cookieSecure?: boolean;
@@ -65,15 +51,7 @@ export declare type TypeInput = {
     }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    jwt?:
-        | {
-              enable: true;
-              propertyNameInAccessTokenPayload?: string;
-              issuer?: string;
-          }
-        | {
-              enable: false;
-          };
+    exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -103,6 +81,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    useDynamicAccessTokenSigningKey: boolean;
     refreshTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
@@ -116,11 +95,7 @@ export declare type TypeNormalisedInput = {
         userContext: any;
     }) => TokenTransferMethod | "any";
     invalidClaimStatusCode: number;
-    jwt: {
-        enable: boolean;
-        propertyNameInAccessTokenPayload: string;
-        issuer?: string;
-    };
+    exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -170,6 +145,7 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+    checkDatabase?: boolean;
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
@@ -183,6 +159,7 @@ export declare type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
+        useDynamicAccessTokenSigningKey?: boolean;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
@@ -218,15 +195,6 @@ export declare type RecipeInterface = {
         newSessionData: any;
         userContext: any;
     }): Promise<boolean>;
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
-     */
-    updateAccessTokenPayload(input: {
-        sessionHandle: string;
-        newAccessTokenPayload: any;
-        userContext: any;
-    }): Promise<boolean>;
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
@@ -255,8 +223,6 @@ export declare type RecipeInterface = {
           }
         | undefined
     >;
-    getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     validateClaims(input: {
         userId: string;
         accessTokenPayload: any;
@@ -305,10 +271,6 @@ export interface SessionContainerInterface {
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     */
-    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;

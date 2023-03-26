@@ -1,5 +1,14 @@
 const assert = require("assert");
-const { printPath, setupST, startST, killAllST, cleanST, mockResponse, mockRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    mockResponse,
+    mockRequest,
+    setKeyValueInConfig,
+} = require("../utils");
 const { ProcessState } = require("../../lib/build/processState");
 const STExpress = require("../..");
 const UserRoles = require("../../lib/build/recipe/userroles").default;

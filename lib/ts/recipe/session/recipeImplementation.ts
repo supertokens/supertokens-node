@@ -1,30 +1,21 @@
+import { createRemoteJWKSet, JWTVerifyGetKey } from "jose";
 import {
     RecipeInterface,
     VerifySessionOptions,
     TypeNormalisedInput,
     SessionInformation,
-    KeyInfo,
-    AntiCsrfType,
     SessionClaimValidator,
     SessionClaim,
     ClaimValidationError,
     TokenTransferMethod,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
-import {
-    clearSession,
-    getAntiCsrfTokenFromHeaders,
-    setFrontTokenInHeaders,
-    getToken,
-    setToken,
-    setCookie,
-} from "./cookieAndHeaders";
-import { attachTokensToResponse, validateClaimsInPayload } from "./utils";
+import { clearSession, getAntiCsrfTokenFromHeaders, getToken, setCookie } from "./cookieAndHeaders";
+import { attachTokensToResponse, setAccessTokenInResponse, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, getRidFromHeader, isAnIpAddress } from "../../utils";
 import { Querier } from "../../querier";
-import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { JSONObject, NormalisedAppinfo } from "../../types";
 import { logDebugMessage } from "../../logger";
@@ -34,38 +25,9 @@ import { availableTokenTransferMethods } from "./constants";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 
-export class HandshakeInfo {
-    constructor(
-        public antiCsrf: AntiCsrfType,
-        public accessTokenBlacklistingEnabled: boolean,
-        public accessTokenValidity: number,
-        public refreshTokenValidity: number,
-        private rawJwtSigningPublicKeyList: KeyInfo[]
-    ) {}
-
-    setJwtSigningPublicKeyList(updatedList: KeyInfo[]) {
-        this.rawJwtSigningPublicKeyList = updatedList;
-    }
-
-    getJwtSigningPublicKeyList() {
-        return this.rawJwtSigningPublicKeyList.filter((key) => key.expiryTime > Date.now());
-    }
-
-    clone() {
-        return new HandshakeInfo(
-            this.antiCsrf,
-            this.accessTokenBlacklistingEnabled,
-            this.accessTokenValidity,
-            this.refreshTokenValidity,
-            this.rawJwtSigningPublicKeyList
-        );
-    }
-}
-
 export type Helpers = {
     querier: Querier;
-    getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
-    updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
+    JWKS: JWTVerifyGetKey;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
@@ -73,6 +35,17 @@ export type Helpers = {
 
 // We are defining this here to reduce the scope of legacy code
 const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
+export const JWKCacheMaxAgeInMs = 60000;
+
+export const protectedProps = [
+    "sub",
+    "iat",
+    "exp",
+    "sessionHandle",
+    "parentRefreshTokenHash1",
+    "refreshTokenHash1",
+    "antiCsrfToken",
+];
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -80,41 +53,32 @@ export default function getRecipeInterface(
     appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface {
-    let handshakeInfo: undefined | HandshakeInfo;
+    const JWKS: ReturnType<typeof createRemoteJWKSet>[] = querier
+        .getAllCoreUrlsForPath("/.well-known/jwks.json")
+        .map((url) =>
+            createRemoteJWKSet(new URL(url), {
+                cooldownDuration: 500,
+                cacheMaxAge: JWKCacheMaxAgeInMs,
+            })
+        );
 
-    async function getHandshakeInfo(forceRefetch = false): Promise<HandshakeInfo> {
-        if (handshakeInfo === undefined || handshakeInfo.getJwtSigningPublicKeyList().length === 0 || forceRefetch) {
-            let antiCsrf = config.antiCsrf;
-            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
-
-            handshakeInfo = new HandshakeInfo(
-                antiCsrf,
-                response.accessTokenBlacklistingEnabled,
-                response.accessTokenValidity,
-                response.refreshTokenValidity,
-                response.jwtSigningPublicKeyList
-            );
-
-            updateJwtSigningPublicKeyInfo(
-                response.jwtSigningPublicKeyList,
-                response.jwtSigningPublicKey,
-                response.jwtSigningPublicKeyExpiryTime
+    const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
+        let lastError = undefined;
+        if (JWKS.length === 0) {
+            throw Error(
+                "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
             );
         }
-        return handshakeInfo;
-    }
-
-    function updateJwtSigningPublicKeyInfo(keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) {
-        if (keyList === undefined) {
-            // Setting createdAt to Date.now() emulates the old lastUpdatedAt logic
-            keyList = [{ publicKey, expiryTime, createdAt: Date.now() }];
+        for (const jwks of JWKS) {
+            try {
+                // We await before returning to make sure we catch the error
+                return await jwks(...args);
+            } catch (ex) {
+                lastError = ex;
+            }
         }
-
-        if (handshakeInfo !== undefined) {
-            handshakeInfo.setJwtSigningPublicKeyList(keyList);
-        }
-    }
+        throw lastError;
+    };
 
     let obj: RecipeInterface = {
         createNewSession: async function ({
@@ -123,6 +87,7 @@ export default function getRecipeInterface(
             userId,
             accessTokenPayload = {},
             sessionDataInDatabase = {},
+            useDynamicAccessTokenSigningKey,
             userContext,
         }: {
             req: BaseRequest;
@@ -130,6 +95,7 @@ export default function getRecipeInterface(
             userId: string;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
+            useDynamicAccessTokenSigningKey?: boolean;
             userContext: any;
         }): Promise<Session> {
             logDebugMessage("createNewSession: Started");
@@ -141,13 +107,11 @@ export default function getRecipeInterface(
 
             if (
                 outputTransferMethod === "cookie" &&
-                helpers.config.cookieSameSite === "none" &&
-                !helpers.config.cookieSecure &&
+                config.cookieSameSite === "none" &&
+                !config.cookieSecure &&
                 !(
-                    (helpers.appInfo.topLevelAPIDomain === "localhost" ||
-                        isAnIpAddress(helpers.appInfo.topLevelAPIDomain)) &&
-                    (helpers.appInfo.topLevelWebsiteDomain === "localhost" ||
-                        isAnIpAddress(helpers.appInfo.topLevelWebsiteDomain))
+                    (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
+                    (appInfo.topLevelWebsiteDomain === "localhost" || isAnIpAddress(appInfo.topLevelWebsiteDomain))
                 )
             ) {
                 // We can allow insecure cookie when both website & API domain are localhost or an IP
@@ -157,12 +121,15 @@ export default function getRecipeInterface(
                 );
             }
 
-            const disableAntiCSRF = outputTransferMethod === "header";
+            const disableAntiCsrf = outputTransferMethod === "header";
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 userId,
-                disableAntiCSRF,
+                disableAntiCsrf,
+                useDynamicAccessTokenSigningKey !== undefined
+                    ? useDynamicAccessTokenSigningKey
+                    : config.useDynamicAccessTokenSigningKey,
                 accessTokenPayload,
                 sessionDataInDatabase
             );
@@ -174,12 +141,13 @@ export default function getRecipeInterface(
             }
 
             attachTokensToResponse(config, res, response, outputTransferMethod);
+            const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
             return new Session(
                 helpers,
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
-                response.session.userDataInJWT,
+                payload,
                 res,
                 req,
                 outputTransferMethod
@@ -230,7 +198,7 @@ export default function getRecipeInterface(
                 if (tokenString !== undefined) {
                     try {
                         const info = parseJWTWithoutSignatureVerification(tokenString);
-                        validateAccessTokenStructure(info.payload);
+                        validateAccessTokenStructure(info.payload, info.version);
                         logDebugMessage("getSession: got access token from " + transferMethod);
                         accessTokens[transferMethod] = info;
                     } catch {
@@ -304,37 +272,33 @@ export default function getRecipeInterface(
                 accessToken,
                 antiCsrfToken,
                 doAntiCsrfCheck,
-                getRidFromHeader(req) !== undefined
+                getRidFromHeader(req) !== undefined,
+                options?.checkDatabase === true
             );
             let accessTokenString = accessToken.rawTokenString;
             if (response.accessToken !== undefined) {
-                setFrontTokenInHeaders(
+                // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
+                setAccessTokenInResponse(
                     res,
-                    response.session.userId,
-                    response.accessToken.expiry,
-                    response.session.userDataInJWT
-                );
-                setToken(
-                    config,
-                    res,
-                    "access",
-                    response.accessToken.token,
-                    // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                    // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                    // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                    // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                    Date.now() + 3153600000000,
+                    response as Required<typeof response>,
+                    helpers.config,
                     requestTransferMethod
                 );
                 accessTokenString = response.accessToken.token;
             }
             logDebugMessage("getSession: Success!");
+            const payload =
+                accessToken.version < 3
+                    ? response.session.userDataInJWT
+                    : response.accessToken !== undefined
+                    ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
+                    : accessToken.payload;
             const session = new Session(
                 helpers,
                 accessTokenString,
                 response.session.handle,
                 response.session.userId,
-                response.session.userDataInJWT,
+                payload,
                 res,
                 req,
                 requestTransferMethod
@@ -520,18 +484,23 @@ export default function getRecipeInterface(
                     setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
                 }
 
+                const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
+                const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
                 return new Session(
                     helpers,
                     response.accessToken.token,
                     response.session.handle,
                     response.session.userId,
-                    response.session.userDataInJWT,
+                    payload,
                     res,
                     req,
                     requestTransferMethod
                 );
             } catch (err) {
-                if (err.type === STError.TOKEN_THEFT_DETECTED || err.payload.clearTokens) {
+                if (
+                    err.type === STError.TOKEN_THEFT_DETECTED ||
+                    (err.payload !== undefined && err.payload.clearTokens)
+                ) {
                     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
                     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
                         logDebugMessage(
@@ -571,6 +540,7 @@ export default function getRecipeInterface(
                 input.newAccessTokenPayload === null || input.newAccessTokenPayload === undefined
                     ? {}
                     : input.newAccessTokenPayload;
+
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
                 accessToken: input.accessToken,
                 userDataInJWT: newAccessTokenPayload,
@@ -607,16 +577,6 @@ export default function getRecipeInterface(
             return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData);
         },
 
-        updateAccessTokenPayload: function ({
-            sessionHandle,
-            newAccessTokenPayload,
-        }: {
-            sessionHandle: string;
-            newAccessTokenPayload: any;
-        }): Promise<boolean> {
-            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
-        },
-
         mergeIntoAccessTokenPayload: async function (
             this: RecipeInterface,
             {
@@ -633,21 +593,19 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            const newAccessTokenPayload = { ...sessionInfo.accessTokenPayload, ...accessTokenPayloadUpdate };
+            let newAccessTokenPayload = { ...sessionInfo.accessTokenPayload };
+            for (const key of protectedProps) {
+                delete newAccessTokenPayload[key];
+            }
+
+            newAccessTokenPayload = { ...newAccessTokenPayload, ...accessTokenPayloadUpdate };
             for (const key of Object.keys(accessTokenPayloadUpdate)) {
                 if (accessTokenPayloadUpdate[key] === null) {
                     delete newAccessTokenPayload[key];
                 }
             }
-            return this.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload, userContext });
-        },
 
-        getAccessTokenLifeTimeMS: async function (): Promise<number> {
-            return (await getHandshakeInfo()).accessTokenValidity;
-        },
-
-        getRefreshTokenLifeTimeMS: async function (): Promise<number> {
-            return (await getHandshakeInfo()).refreshTokenValidity;
+            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 
         fetchAndSetClaim: async function <T>(
@@ -728,8 +686,7 @@ export default function getRecipeInterface(
 
     let helpers: Helpers = {
         querier,
-        updateJwtSigningPublicKeyInfo,
-        getHandshakeInfo,
+        JWKS: combinedJWKS,
         config,
         appInfo,
         getRecipeImpl: getRecipeImplAfterOverrides,
@@ -737,12 +694,7 @@ export default function getRecipeInterface(
 
     if (process.env.TEST_MODE === "testing") {
         // testing mode, we add some of the help functions to the obj
-        (obj as any).getHandshakeInfo = getHandshakeInfo;
-        (obj as any).updateJwtSigningPublicKeyInfo = updateJwtSigningPublicKeyInfo;
         (obj as any).helpers = helpers;
-        (obj as any).setHandshakeInfo = function (info: any) {
-            handshakeInfo = info;
-        };
     }
 
     return obj;

@@ -1163,7 +1163,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode, 401);
     });
 
-    it("Test that the jwt feature is disabled by default", async function () {
+    it("Test that the JWKS and OpenId endpoints are exposed by Session", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -1176,115 +1176,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
-        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
-        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.enable, false);
-    });
-
-    it("Test that the jwt feature is disabled when explicitly set to false", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", jwt: { enable: false } })],
-        });
-        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
-        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.enable, false);
-    });
-
-    it("Test that the jwt feature is enabled when explicitly set to true", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", jwt: { enable: true } })],
-        });
-
-        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
-        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.enable, true);
-    });
-
-    it("Test that the custom jwt property name in access token payload is set correctly in config", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    getTokenTransferMethod: () => "cookie",
-                    jwt: { enable: true, propertyNameInAccessTokenPayload: "customJWTKey" },
-                }),
-            ],
-        });
-
-        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
-        assert.strictEqual(
-            SessionRecipe.getInstanceOrThrowError().config.jwt.propertyNameInAccessTokenPayload,
-            "customJWTKey"
-        );
-    });
-
-    it("Test that the the jwt property name uses default value when not set in config", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", jwt: { enable: true } })],
-        });
-
-        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
-        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.propertyNameInAccessTokenPayload, "jwt");
-    });
-
-    it("Test that when setting jwt property name with the same value as the reserved property, init throws an error", async function () {
-        try {
-            await startST();
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init({
-                        getTokenTransferMethod: () => "cookie",
-                        jwt: { enable: true, propertyNameInAccessTokenPayload: "_jwtPName" },
-                    }),
-                ],
-            });
-
-            throw new Error("Init succeeded when it should have failed");
-        } catch (e) {
-            if (e.message !== "_jwtPName is a reserved property name, please use a different key name for the jwt") {
-                throw e;
-            }
-        }
+        const apis = SessionRecipe.getInstanceOrThrowError().getAPIsHandled();
+        const jwksApi = apis.find((f) => f.id === "/jwt/jwks.json");
+        assert.ok(jwksApi);
+        assert.equal(jwksApi.pathWithoutApiBasePath.getAsStringDangerous(), "/jwt/jwks.json");
+        const openidApi = apis.find((f) => f.id === "/.well-known/openid-configuration");
+        assert.ok(openidApi);
+        assert.equal(openidApi.pathWithoutApiBasePath.getAsStringDangerous(), "/.well-known/openid-configuration");
     });
 
     it("testing getTopLevelDomainForSameSiteResolution function", async function () {

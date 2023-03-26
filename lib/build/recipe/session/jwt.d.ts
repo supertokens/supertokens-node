@@ -1,5 +1,6 @@
 // @ts-nocheck
 export declare type ParsedJWTInfo = {
+    version: number;
     rawTokenString: string;
     rawPayload: string;
     header: string;
@@ -7,4 +8,3 @@ export declare type ParsedJWTInfo = {
     signature: string;
 };
 export declare function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo;
-export declare function verifyJWT({ header, rawPayload, signature }: ParsedJWTInfo, jwtSigningPublicKey: string): void;

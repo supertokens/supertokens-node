@@ -12,7 +12,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import * as crypto from "crypto";
 
 const HEADERS = new Set([
     Buffer.from(
@@ -32,6 +31,7 @@ const HEADERS = new Set([
 ]);
 
 export type ParsedJWTInfo = {
+    version: number;
     rawTokenString: string;
     rawPayload: string;
     header: string;
@@ -45,12 +45,28 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
         throw new Error("Invalid JWT");
     }
 
+    // V1&V2 is functionally identical, plus all legacy tokens should be V2 now.
+    let version = 2;
+    // V2 or older tokens did not save the key id;
     // checking header
     if (!HEADERS.has(splittedInput[0])) {
-        throw new Error("JWT header mismatch");
+        const parsedHeader = JSON.parse(Buffer.from(splittedInput[0], "base64").toString());
+
+        // We have to ensure version is a string, otherwise Number.parseInt can have unexpected results
+        if (typeof parsedHeader.version !== "string") {
+            throw new Error("JWT header mismatch");
+        }
+
+        version = Number.parseInt(parsedHeader.version);
+
+        // Number.isInteger returns false for Number.NaN (if it fails to parse the version)
+        if (parsedHeader.typ !== "JWT" || !Number.isInteger(version) || version < 3 || parsedHeader.kid === undefined) {
+            throw new Error("JWT header mismatch");
+        }
     }
 
     return {
+        version,
         rawTokenString: jwt,
         rawPayload: splittedInput[1],
         header: splittedInput[0],
@@ -59,20 +75,4 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
         payload: JSON.parse(Buffer.from(splittedInput[1], "base64").toString()),
         signature: splittedInput[2],
     };
-}
-
-export function verifyJWT({ header, rawPayload, signature }: ParsedJWTInfo, jwtSigningPublicKey: string): void {
-    let verifier = crypto.createVerify("sha256");
-    // convert the jwtSigningPublicKey into .pem format
-
-    verifier.update(header + "." + rawPayload);
-    if (
-        !verifier.verify(
-            "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----",
-            signature,
-            "base64"
-        )
-    ) {
-        throw new Error("JWT verification failed");
-    }
 }

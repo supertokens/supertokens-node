@@ -13,10 +13,12 @@
  * under the License.
  */
 import { BaseRequest, BaseResponse } from "../../framework";
-import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
+import { clearSession } from "./cookieAndHeaders";
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
-import { Helpers } from "./recipeImplementation";
+import { Helpers, protectedProps } from "./recipeImplementation";
+import { setAccessTokenInResponse } from "./utils";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -92,14 +94,53 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
-        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        let newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext) };
+        for (const key of protectedProps) {
+            delete newAccessTokenPayload[key];
+        }
+
+        newAccessTokenPayload = { ...newAccessTokenPayload, ...accessTokenPayloadUpdate };
+
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
-                delete updatedPayload[key];
+                delete newAccessTokenPayload[key];
             }
         }
 
-        await this.updateAccessTokenPayload(updatedPayload, userContext);
+        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
+            accessToken: this.getAccessToken(),
+            newAccessTokenPayload,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+
+        if (response === undefined) {
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
+            });
+        }
+
+        if (response.accessToken !== undefined) {
+            const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
+            const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
+            this.userDataInAccessToken = payload;
+            this.accessToken = response.accessToken.token;
+            // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
+            setAccessTokenInResponse(
+                this.res,
+                response as Required<typeof response>,
+                this.helpers.config,
+                this.transferMethod
+            );
+        } else {
+            // This case means that the access token has expired between the validation and this update
+            // We can't update the access token on the FE, as it will need to call refresh anyway but we handle this as a successful update during this request.
+            // the changes will be reflected on the FE after refresh is called
+            this.userDataInAccessToken = {
+                ...this.getAccessTokenPayload(),
+                ...response.session.userDataInJWT,
+            };
+        }
     }
 
     async getTimeCreated(userContext?: any): Promise<number> {
@@ -140,6 +181,10 @@ export default class Session implements SessionContainerInterface {
         });
 
         if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
+            for (const key of protectedProps) {
+                delete validateClaimResponse.accessTokenPayloadUpdate[key];
+            }
+
             await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
         }
 
@@ -173,44 +218,5 @@ export default class Session implements SessionContainerInterface {
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
         const update = claim.removeFromPayloadByMerge_internal({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
-    }
-
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload
-     */
-    async updateAccessTokenPayload(newAccessTokenPayload: any, userContext: any): Promise<void> {
-        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
-            accessToken: this.getAccessToken(),
-            newAccessTokenPayload,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (response === undefined) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
-        this.userDataInAccessToken = response.session.userDataInJWT;
-        if (response.accessToken !== undefined) {
-            this.accessToken = response.accessToken.token;
-            setFrontTokenInHeaders(
-                this.res,
-                response.session.userId,
-                response.accessToken.expiry,
-                response.session.userDataInJWT
-            );
-            setToken(
-                this.helpers.config,
-                this.res,
-                "access",
-                response.accessToken.token,
-                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                Date.now() + 3153600000000,
-                this.transferMethod
-            );
-        }
     }
 }

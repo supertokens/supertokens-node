@@ -268,7 +268,7 @@ app.post(
     "/update-jwt",
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        await req.session.updateAccessTokenPayload(req.body);
+        await req.session.mergeIntoAccessTokenPayload(req.body);
         res.json(req.session.getAccessTokenPayload());
     }
 );
@@ -392,7 +392,7 @@ app.post(
     "/update-jwt-with-handle",
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        await Session.updateAccessTokenPayload(req.session.getHandle(), req.body);
+        await Session.mergeIntoAccessTokenPayload(req.session.getHandle(), req.body);
         res.json(req.session.getAccessTokenPayload());
     }
 );

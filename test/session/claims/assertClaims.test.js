@@ -19,21 +19,16 @@ const sinon = require("sinon");
 const { StubClaim } = require("./testClaims");
 const { default: getRecipeInterface } = require("../../../lib/build/recipe/session/recipeImplementation");
 
+const helpers = { getRecipeImpl: () => getRecipeInterface({ getAllCoreUrlsForPath: () => [] }, {}) };
+
 describe(`sessionClaims/assertClaims: ${printPath("[test/session/claims/assertClaims.test.js]")}`, function () {
     describe("SessionClass.assertClaims", () => {
         afterEach(() => {
             sinon.restore();
         });
         it("should not throw for empty array", async () => {
-            const session = new SessionClass(
-                { getRecipeImpl: () => getRecipeInterface({}, {}) },
-                "testToken",
-                "testHandle",
-                "testUserId",
-                {},
-                {}
-            );
-            const mock = sinon.mock(session).expects("updateAccessTokenPayload").never();
+            const session = new SessionClass(helpers, "testToken", "testHandle", "testUserId", {}, {});
+            const mock = sinon.mock(session).expects("mergeIntoAccessTokenPayload").never();
 
             await session.assertClaims([]);
             mock.verify();
@@ -41,15 +36,8 @@ describe(`sessionClaims/assertClaims: ${printPath("[test/session/claims/assertCl
 
         it("should call validate with the same payload object", async () => {
             const payload = {};
-            const session = new SessionClass(
-                { getRecipeImpl: () => getRecipeInterface({}, {}) },
-                "testToken",
-                "testHandle",
-                "testUserId",
-                payload,
-                {}
-            );
-            const mock = sinon.mock(session).expects("updateAccessTokenPayload").never();
+            const session = new SessionClass(helpers, "testToken", "testHandle", "testUserId", payload, {});
+            const mock = sinon.mock(session).expects("mergeIntoAccessTokenPayload").never();
             const claim = new StubClaim({ key: "st-c1", validateRes: { isValid: true } });
 
             await session.assertClaims([claim.validators.stub]);

@@ -1426,7 +1426,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.post("/updateAccessTokenPayload", async (req, res) => {
             let session = await Session.getSession(req, res);
             let accessTokenBefore = session.accessToken;
-            await session.updateAccessTokenPayload({ key: "value" });
+            await session.mergeIntoAccessTokenPayload({ key: "value" });
             let accessTokenAfter = session.accessToken;
             let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
             res.status(statusCode).send("");
@@ -1443,13 +1443,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/updateAccessTokenPayload2", async (req, res) => {
             let session = await Session.getSession(req, res);
-            await session.updateAccessTokenPayload(null);
+            await session.mergeIntoAccessTokenPayload({ key: null });
             res.status(200).send("");
         });
 
         app.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
             res.status(200).json({
-                success: !(await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" })),
+                success: !(await Session.mergeIntoAccessTokenPayload("InvalidHandle", { key: "value3" })),
             });
         });
 
@@ -1471,7 +1471,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1493,7 +1495,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
@@ -1533,7 +1538,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1555,7 +1563,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
@@ -1574,7 +1584,18 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check the value of the retrieved
-        assert.deepStrictEqual(response2.body, {});
+        assert.deepStrictEqual(
+            new Set(Object.keys(response2.body)),
+            new Set([
+                "antiCsrfToken",
+                "exp",
+                "iat",
+                "parentRefreshTokenHash1",
+                "refreshTokenHash1",
+                "sessionHandle",
+                "sub",
+            ])
+        );
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(app)

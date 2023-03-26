@@ -1372,7 +1372,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     // https://github.com/supertokens/supertokens-node/pull/108
     // A session exists, is refreshed, then is revoked, and then we try and use the access token (after first refresh), and we see that unauthorised error is called.
     it("test session verify middleware with old access token and session required false", async function () {
-        await setKeyValueInConfig("access_token_blacklisting", true);
         await startST();
 
         SuperTokens.init({
@@ -1421,6 +1420,17 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             "/custom/user/handle",
             verifySession({
                 sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
+
+        app.get(
+            "/custom/user/handle-with-blacklisting",
+            verifySession({
+                sessionRequired: false,
+                checkDatabase: true,
             }),
             async (req, res) => {
                 res.status(200).json({ message: req.session !== undefined });
@@ -1559,18 +1569,18 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         let r2 = await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handle-with-blacklisting")
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .expect(401)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        resolve(err);
                     } else {
                         resolve(res.body.message);
                     }
                 })
         );
-        assert(r2 === "unauthorised");
+        assert.strictEqual(r2, "unauthorised");
     });
 
     // https://github.com/supertokens/supertokens-node/pull/108

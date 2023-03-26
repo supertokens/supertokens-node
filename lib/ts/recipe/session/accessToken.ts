@@ -14,11 +14,13 @@
  */
 
 import STError from "./error";
-import { ParsedJWTInfo, verifyJWT } from "./jwt";
+import { ParsedJWTInfo } from "./jwt";
+import * as jose from "jose";
+import { ProcessState, PROCESS_STATE } from "../../processState";
 
 export async function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
-    jwtSigningPublicKey: string,
+    jwks: jose.JWTVerifyGetKey,
     doAntiCsrfCheck: boolean
 ): Promise<{
     sessionHandle: string;
@@ -31,21 +33,51 @@ export async function getInfoFromAccessToken(
     timeCreated: number;
 }> {
     try {
-        verifyJWT(jwtInfo, jwtSigningPublicKey);
-        const payload = jwtInfo.payload;
+        // From the library examples
+        let payload = undefined;
+        try {
+            payload = (await jose.jwtVerify(jwtInfo.rawTokenString, jwks)).payload;
+        } catch (error) {
+            // We only want to opt-into this for V2 access tokens
+            if (jwtInfo.version === 2 && error?.code === "ERR_JWKS_MULTIPLE_MATCHING_KEYS") {
+                ProcessState.getInstance().addState(PROCESS_STATE.MULTI_JWKS_VALIDATION);
+                // We are trying to validate the token with each key.
+                // Since the kid is missing from v2 tokens, this basically means we try all keys present in the cache.
+                for await (const publicKey of error) {
+                    try {
+                        payload = (await jose.jwtVerify(jwtInfo.rawTokenString, publicKey)).payload;
+                        break;
+                    } catch (innerError) {
+                        if (innerError?.code === "ERR_JWS_SIGNATURE_VERIFICATION_FAILED") {
+                            continue;
+                        }
+                        throw innerError;
+                    }
+                }
+                if (payload === undefined) {
+                    throw new jose.errors.JWSSignatureVerificationFailed();
+                }
+            } else {
+                throw error;
+            }
+        }
 
         // This should be called before this function, but the check is very quick, so we can also do them here
-        validateAccessTokenStructure(payload);
+        validateAccessTokenStructure(payload, jwtInfo.version);
 
         // We can mark these as defined (the ! after the calls), since validateAccessTokenPayload checks this
+        let userId = jwtInfo.version === 2 ? sanitizeStringInput(payload.userId)! : sanitizeStringInput(payload.sub)!;
+        let expiryTime =
+            jwtInfo.version === 2 ? sanitizeNumberInput(payload.expiryTime)! : sanitizeNumberInput(payload.exp)! * 1000;
+        let timeCreated =
+            jwtInfo.version === 2
+                ? sanitizeNumberInput(payload.timeCreated)!
+                : sanitizeNumberInput(payload.iat)! * 1000;
+        let userData = jwtInfo.version === 2 ? payload.userData : payload;
         let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
-        let userId = sanitizeStringInput(payload.userId)!;
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
-        let userData = payload.userData;
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
-        let expiryTime = sanitizeNumberInput(payload.expiryTime)!;
-        let timeCreated = sanitizeNumberInput(payload.timeCreated)!;
 
         if (antiCsrfToken === undefined && doAntiCsrfCheck) {
             throw Error("Access token does not contain the anti-csrf token.");
@@ -72,8 +104,19 @@ export async function getInfoFromAccessToken(
     }
 }
 
-export function validateAccessTokenStructure(payload: any) {
-    if (
+export function validateAccessTokenStructure(payload: any, version: number) {
+    if (version >= 3) {
+        if (
+            typeof payload.sub !== "string" ||
+            typeof payload.exp !== "number" ||
+            typeof payload.iat !== "number" ||
+            typeof payload.sessionHandle !== "string" ||
+            typeof payload.refreshTokenHash1 !== "string"
+        ) {
+            // it would come here if we change the structure of the JWT.
+            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        }
+    } else if (
         typeof payload.sessionHandle !== "string" ||
         typeof payload.userId !== "string" ||
         typeof payload.refreshTokenHash1 !== "string" ||

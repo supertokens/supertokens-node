@@ -23,7 +23,7 @@ import {
     SupertokensService as SupertokensServiceP,
 } from "../../recipe/thirdpartypasswordless/smsdelivery";
 import UserMetadata from "../../recipe/usermetadata";
-import { BooleanClaim, PrimitiveClaim, SessionClaim } from "../../recipe/session/claims";
+import { BooleanClaim, PrimitiveClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
@@ -839,7 +839,6 @@ let sessionConfig: SessionTypeInput = {
                         getSessionDataFromDatabase: session.getSessionDataFromDatabase,
                         getUserId: session.getUserId,
                         revokeSession: session.revokeSession,
-                        updateAccessTokenPayload: session.updateAccessTokenPayload,
                         updateSessionDataInDatabase: session.updateSessionDataInDatabase,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
                         assertClaims: session.assertClaims,
@@ -856,10 +855,7 @@ let sessionConfig: SessionTypeInput = {
                 revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                 revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                 revokeSession: originalImpl.revokeSession,
-                updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
                 updateSessionDataInDatabase: originalImpl.updateSessionDataInDatabase,
-                getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
-                getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
                 getSessionInformation: originalImpl.getSessionInformation,
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
                 mergeIntoAccessTokenPayload: originalImpl.mergeIntoAccessTokenPayload,
@@ -1122,10 +1118,8 @@ Supertokens.init({
 });
 
 Session.init({
-    jwt: {
-        enable: true,
-        propertyNameInAccessTokenPayload: "someKey",
-    },
+    exposeAccessTokenToFrontendInCookieBasedAuth: true,
+    useDynamicAccessTokenSigningKey: false,
 });
 
 ThirdPartyEmailPassword.init({
@@ -1226,10 +1220,7 @@ Session.init({
                 refreshSession: async function (input) {
                     let session = await originalImplementation.refreshSession(input);
 
-                    let currAccessTokenPayload = session.getAccessTokenPayload();
-
-                    await session.updateAccessTokenPayload({
-                        ...currAccessTokenPayload,
+                    await session.mergeIntoAccessTokenPayload({
                         lastTokenRefresh: Date.now(),
                     });
 
@@ -1376,6 +1367,40 @@ Session.init({
 
 Session.init({
     getTokenTransferMethod: () => "header",
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const result = await oI.getSession(input);
+                if (result) {
+                    const origPayload = result.getAccessTokenPayload();
+                    if (origPayload.appSub === undefined) {
+                        await result.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
+                    }
+                }
+                return result;
+            },
+            createNewSession: async (input) => {
+                return oI.createNewSession({
+                    ...input,
+                    accessTokenPayload: {
+                        ...input.accessTokenPayload,
+                        appSub: input.userId + "!!!",
+                    },
+                });
+            },
+        }),
+        openIdFeature: {
+            functions: (oI) => ({
+                ...oI,
+                getOpenIdDiscoveryConfiguration: async (input) => ({
+                    issuer: "your issuer",
+                    jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                    status: "OK",
+                }),
+            }),
+        },
+    },
 });
 
 Supertokens.init({

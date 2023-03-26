@@ -17,8 +17,6 @@ const assert = require("assert");
 const { ProcessState } = require("../../../lib/build/processState");
 const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
-const { Querier } = require("../../../lib/build/querier");
-const { maxVersion } = require("../../../lib/build/utils");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
 
 describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/createNewSession.test.js]")}`, function () {
@@ -64,18 +62,12 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                     }),
                 ],
             });
-            let q = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await q.getAPIVersion();
 
-            // Only run test for >= 2.13
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return;
-            }
             const response = mockResponse();
             const res = await Session.createNewSession(mockRequest(), response, "someId");
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 1);
+            assert.equal(Object.keys(payload).length, 8);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 1000);
@@ -114,17 +106,11 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                     }),
                 ],
             });
-            let q = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await q.getAPIVersion();
 
-            // Only run test for >= 2.13
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return;
-            }
             const response = mockResponse();
             const res = await Session.createNewSession(mockRequest(), response, "someId");
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 0);
+            assert.equal(Object.keys(payload).length, 7);
         });
 
         it("should merge claims and the passed access token payload obj", async function () {
@@ -164,14 +150,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                     }),
                 ],
             });
-            let q = Querier.getNewInstanceOrThrowError(undefined);
-            let apiVersion = await q.getAPIVersion();
 
-            // Only run test for >= 2.13
-            if (maxVersion(apiVersion, "2.12") === "2.12") {
-                return;
-            }
-            const includesNullInPayload = maxVersion(apiVersion, "2.14") !== "2.14";
             const response = mockResponse();
             const res = await Session.createNewSession(mockRequest(), response, "someId", payloadParam);
 
@@ -179,7 +158,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             assert.strictEqual(Object.keys(payloadParam).length, 1);
 
             const payload = res.getAccessTokenPayload();
-            assert.strictEqual(Object.keys(payload).length, includesNullInPayload ? 5 : 4);
+            assert.strictEqual(Object.keys(payload).length, 12); // 5 + 7 standard
             // We have the prop from the payload param
             assert.strictEqual(payload["initial"], true);
             // We have the boolean claim
@@ -189,18 +168,11 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             // We have the custom claim
             // The resulting payload is different from the input: it doesn't container undefined
             assert.deepStrictEqual(payload["user-custom"], "asdf");
-            if (includesNullInPayload) {
-                assert.deepStrictEqual(payload["user-custom2"], {
-                    inner: "asdf",
-                    nullProp: null,
-                });
-                assert.deepStrictEqual(payload["user-custom3"], null);
-            } else {
-                assert.deepStrictEqual(payload["user-custom2"], {
-                    inner: "asdf",
-                });
-                assert.deepStrictEqual(payload["user-custom3"], undefined);
-            }
+            assert.deepStrictEqual(payload["user-custom2"], {
+                inner: "asdf",
+                nullProp: null,
+            });
+            assert.deepStrictEqual(payload["user-custom3"], null);
         });
     });
 });

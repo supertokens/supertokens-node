@@ -24,7 +24,7 @@ export default function getAPIImplementation(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK"; keys: JsonWebKey[] } | GeneralErrorResponse> {
+        }): Promise<{ keys: JsonWebKey[] } | GeneralErrorResponse> {
             return await options.recipeImplementation.getJWKS({ userContext });
         },
     };
