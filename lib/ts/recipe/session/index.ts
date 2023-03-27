@@ -251,7 +251,7 @@ export default class SessionWrapper {
         | { status: "OK"; session: SessionContainer }
         | { status: "TOKEN_VALIDATION_ERROR"; error: any }
         | { status: "TRY_REFRESH_TOKEN_ERROR" }
-        | { status: "CLAIM_VALIDATION_ERROR"; invalidClaims: ClaimValidationError[] }
+        | { status: "CLAIM_VALIDATION_ERROR"; claimValidationErrors: ClaimValidationError[] }
     > {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
         const res = await recipeInterfaceImpl.getSessionWithoutModifyingResponse({
@@ -273,7 +273,7 @@ export default class SessionWrapper {
                 if (err instanceof SessionError && err.type === "INVALID_CLAIMS") {
                     return {
                         status: "CLAIM_VALIDATION_ERROR",
-                        invalidClaims: err.payload,
+                        claimValidationErrors: err.payload,
                     };
                 }
                 throw err;

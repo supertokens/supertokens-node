@@ -102,7 +102,7 @@ export default class SessionWrapper {
           }
         | {
               status: "CLAIM_VALIDATION_ERROR";
-              invalidClaims: ClaimValidationError[];
+              claimValidationErrors: ClaimValidationError[];
           }
     >;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
