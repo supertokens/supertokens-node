@@ -316,7 +316,7 @@ export interface SessionContainerInterface {
     getUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
-    getTokensDangerously(): {
+    getAllSessionTokensDangerously(): {
         accessToken: string;
         refreshToken: string | undefined;
         antiCsrf: string | undefined;

@@ -849,7 +849,7 @@ let sessionConfig: SessionTypeInput = {
                         removeClaim: session.removeClaim,
                         getExpiry: session.getExpiry,
                         getTimeCreated: session.getTimeCreated,
-                        getTokensDangerously: session.getTokensDangerously,
+                        getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
                     };
                 },
                 createNewSessionWithoutModifyingResponse: originalImpl.createNewSessionWithoutModifyingResponse,

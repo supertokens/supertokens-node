@@ -51,7 +51,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 { dbProp: true }
             );
             assert.strictEqual(res.status, "OK");
-            const tokens = res.session.getTokensDangerously();
+            const tokens = res.session.getAllSessionTokensDangerously();
             assert.strictEqual(tokens.accessAndFrontTokenUpdated, true);
             assert.strictEqual(tokens.antiCsrf, undefined);
 
@@ -86,7 +86,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 { dbProp: true }
             );
             assert.strictEqual(res.status, "OK");
-            const tokens = res.session.getTokensDangerously();
+            const tokens = res.session.getAllSessionTokensDangerously();
             assert.strictEqual(tokens.accessAndFrontTokenUpdated, true);
             assert.notStrictEqual(tokens.antiCsrf, undefined);
 
@@ -114,12 +114,12 @@ describe(`Session handling functions without modifying response: ${printPath(
             });
 
             const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
-            const tokens = createRes.session.getTokensDangerously();
+            const tokens = createRes.session.getAllSessionTokensDangerously();
             const getSession = await Session.getSessionWithoutModifyingResponse(tokens.accessToken, tokens.antiCsrf);
             assert.strictEqual(getSession.status, "OK");
             /** @type {import("../../recipe/session").SessionContainer} */
             const session = getSession.session;
-            const getSessionTokenInfo = session.getTokensDangerously();
+            const getSessionTokenInfo = session.getAllSessionTokensDangerously();
             assert.deepStrictEqual(getSessionTokenInfo, {
                 accessToken: tokens.accessToken,
                 frontToken: tokens.frontToken,
@@ -148,12 +148,12 @@ describe(`Session handling functions without modifying response: ${printPath(
             });
 
             const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
-            const tokens = createRes.session.getTokensDangerously();
+            const tokens = createRes.session.getAllSessionTokensDangerously();
             const getSession = await Session.getSessionWithoutModifyingResponse(tokens.accessToken, tokens.antiCsrf);
             assert.strictEqual(getSession.status, "OK");
             /** @type {import("../../recipe/session").SessionContainer} */
             const session = getSession.session;
-            const getSessionTokenInfo = session.getTokensDangerously();
+            const getSessionTokenInfo = session.getAllSessionTokensDangerously();
             assert.deepStrictEqual(getSessionTokenInfo, {
                 accessToken: tokens.accessToken,
                 frontToken: tokens.frontToken,
@@ -214,7 +214,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             });
 
             const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
-            const tokens = createRes.session.getTokensDangerously();
+            const tokens = createRes.session.getAllSessionTokensDangerously();
             const res = await Session.getSessionWithoutModifyingResponse(tokens.accessToken, undefined, {
                 overrideGlobalClaimValidators: () => [
                     { id: "test", validate: () => ({ isValid: false, reason: "test" }) },
@@ -252,7 +252,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 { tokenProp: true },
                 { dbProp: true }
             );
-            const tokens = createRes.session.getTokensDangerously();
+            const tokens = createRes.session.getAllSessionTokensDangerously();
             const refreshSession = await Session.refreshSessionWithoutModifyingResponse(
                 tokens.refreshToken,
                 tokens.antiCsrf
@@ -261,7 +261,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             /** @type {import("../../recipe/session").SessionContainer} */
             const session = refreshSession.session;
 
-            const tokensAfterRefresh = session.getTokensDangerously();
+            const tokensAfterRefresh = session.getAllSessionTokensDangerously();
             assert.strictEqual(tokensAfterRefresh.accessAndFrontTokenUpdated, true);
             assert.strictEqual(tokensAfterRefresh.antiCsrf, undefined);
 
@@ -291,7 +291,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             });
 
             const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
-            const tokens = createRes.session.getTokensDangerously();
+            const tokens = createRes.session.getAllSessionTokensDangerously();
 
             const refreshSession = await Session.refreshSessionWithoutModifyingResponse(
                 tokens.refreshToken,
@@ -301,7 +301,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             assert.strictEqual(refreshSession.status, "OK");
             /** @type {import("../../recipe/session").SessionContainer} */
             const session = refreshSession.session;
-            const tokensAfterRefresh = session.getTokensDangerously();
+            const tokensAfterRefresh = session.getAllSessionTokensDangerously();
             assert.strictEqual(tokensAfterRefresh.accessAndFrontTokenUpdated, true);
 
             const refreshSessionWithoutAntiCSRFToken = await Session.refreshSessionWithoutModifyingResponse(
@@ -315,7 +315,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 true
             );
             assert.strictEqual(refreshSessionWithDisabledAntiCSRF.status, "OK");
-            const tokensAfterRefreshWithDisable = session.getTokensDangerously();
+            const tokensAfterRefreshWithDisable = session.getAllSessionTokensDangerously();
             assert.strictEqual(tokensAfterRefreshWithDisable.accessAndFrontTokenUpdated, true);
         });
 

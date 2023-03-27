@@ -261,7 +261,7 @@ export default class SessionWrapper {
             userContext,
         });
 
-        if (res.status === "OK" && res.session !== undefined) {
+        if (res.status === "OK") {
             const claimValidators = await getRequiredClaimValidators(
                 res.session,
                 options?.overrideGlobalClaimValidators,

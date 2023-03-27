@@ -103,7 +103,7 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     }
 
-    getTokensDangerously() {
+    getAllSessionTokensDangerously() {
         return {
             accessToken: this.accessToken,
             accessAndFrontTokenUpdated: this.accessTokenUpdated,

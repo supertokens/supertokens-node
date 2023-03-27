@@ -359,7 +359,7 @@ export interface SessionContainerInterface {
 
     getHandle(userContext?: any): string;
 
-    getTokensDangerously(): {
+    getAllSessionTokensDangerously(): {
         accessToken: string;
         refreshToken: string | undefined;
         antiCsrf: string | undefined;

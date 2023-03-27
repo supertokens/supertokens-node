@@ -37,7 +37,7 @@ export default class Session implements SessionContainerInterface {
     getAccessTokenPayload(_userContext?: any): any;
     getHandle(): string;
     getAccessToken(): string;
-    getTokensDangerously(): {
+    getAllSessionTokensDangerously(): {
         accessToken: string;
         accessAndFrontTokenUpdated: boolean;
         refreshToken: string | undefined;
