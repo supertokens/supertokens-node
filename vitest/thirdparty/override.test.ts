@@ -308,7 +308,7 @@ describe(`overrideTest: ${printPath('[test/thirdparty/override.test.js]')}`, () 
                 signInUp: async (input) => {
                   const response = await oI.signInUp(input)
                   user = response.user
-                  newUser = response.createdNewUser
+                  const newUser = response.createdNewUser
                   if (newUser) {
                     throw {
                       error: 'signup error',
@@ -441,7 +441,7 @@ describe(`overrideTest: ${printPath('[test/thirdparty/override.test.js]')}`, () 
                 signInUpPOST: async (input) => {
                   const response = await oI.signInUpPOST(input)
                   user = response.user
-                  newUser = response.createdNewUser
+                  const newUser = response.createdNewUser
                   if (newUser) {
                     throw {
                       error: 'signup error',
