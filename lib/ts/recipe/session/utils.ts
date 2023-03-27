@@ -260,12 +260,10 @@ export function setAccessTokenInResponse(
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod
 ) {
-    setFrontTokenInHeaders(
-        res,
-        response.session.userId,
-        response.accessToken.expiry,
-        parseJWTWithoutSignatureVerification(response.accessToken.token).payload
-    );
+    const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
+    const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
+
+    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, payload);
     setToken(
         config,
         res,
