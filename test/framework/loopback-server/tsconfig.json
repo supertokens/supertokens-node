@@ -5,12 +5,22 @@
         "strict": true,
         // FIXME(bajtos) LB4 is not compatible with this setting yet
         "strictPropertyInitialization": false,
-        "lib": ["es2020"],
+        "lib": [
+            "es2020"
+        ],
         "module": "commonjs",
         "esModuleInterop": true,
         "moduleResolution": "node",
         "target": "es2018",
-        "outDir": "."
+        "outDir": ".",
+        "paths": {
+            "supertokens-node/*": [
+                "../../../src/*"
+            ],
+            "supertokens-node": [
+                "../../../src/index.ts"
+            ]
+        }
     },
     "exclude": []
 }

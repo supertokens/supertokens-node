@@ -2,6 +2,8 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "display": "Node 14",
     "compilerOptions": {
+        "baseUrl": ".",
+        "outDir": "dist",
         "lib": [
             "es2020"
         ],
@@ -13,13 +15,27 @@
         "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
         "resolveJsonModule": true,
+
+        "allowSyntheticDefaultImports": true,
+        "importHelpers": true,
+        "types": [
+            "vite/client",
+            "node"
+        ],
         "paths": {
             "overrideableBuilder": [
                 "./src/overrideableBuilder/index.ts"
+            ],
+            "supertokens-node/*": [
+                "./src/*"
+            ],
+            "supertokens-node": [
+                "./src/index.ts"
             ]
         }
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "test/**/*"
     ]
 }

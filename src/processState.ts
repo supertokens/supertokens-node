@@ -72,3 +72,5 @@ export class ProcessState {
     })
   }
 }
+
+export default ProcessState

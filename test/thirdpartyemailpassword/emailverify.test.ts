@@ -1,0 +1,362 @@
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+import assert from 'assert'
+import STExpress from 'supertokens-node'
+import Session from 'supertokens-node/recipe/session'
+import ProcessState from 'supertokens-node/processState'
+import ThirdPartyEmailPassword, { TypeProvider } from 'supertokens-node/recipe/thirdpartyemailpassword'
+import EmailVerification from 'supertokens-node/recipe/emailverification'
+import express from 'express'
+import request from 'supertest'
+import { errorHandler, middleware } from 'supertokens-node/framework/express'
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
+import {
+  cleanST,
+  emailVerifyTokenRequest,
+  extractInfoFromResponse,
+  killAllST,
+  printPath,
+  setupST,
+  signInUPCustomRequest,
+  signUPRequest,
+  startST,
+} from '../utils'
+
+describe(`emailverify: ${printPath('[test/thirdpartyemailpassword/emailverify.test.js]')}`, () => {
+  let customProvider1: TypeProvider
+  beforeAll(() => {
+    customProvider1 = {
+      id: 'custom',
+      get: (recipe, authCode) => {
+        return {
+          accessTokenAPI: {
+            url: 'https://test.com/oauth/token',
+          },
+          authorisationRedirect: {
+            url: 'https://test.com/oauth/auth',
+          },
+          getProfileInfo: async (authCodeResponse) => {
+            return {
+              id: authCodeResponse.id,
+              email: {
+                id: authCodeResponse.email,
+                isVerified: false,
+              },
+            }
+          },
+          getClientId: () => {
+            return 'supertokens'
+          },
+        }
+      },
+    }
+  })
+
+  beforeEach(async () => {
+    await killAllST()
+    await setupST()
+    ProcessState.getInstance().reset()
+  })
+
+  afterAll(async () => {
+    await killAllST()
+    await cleanST()
+  })
+
+  it('test the generate token api with valid input, email not verified', async () => {
+    await startST()
+    STExpress.init({
+      supertokens: {
+        connectionURI: 'http://localhost:8080',
+      },
+      appInfo: {
+        apiDomain: 'api.supertokens.io',
+        appName: 'SuperTokens',
+        websiteDomain: 'supertokens.io',
+      },
+      recipeList: [
+        EmailVerification.init({ mode: 'OPTIONAL' }),
+        ThirdPartyEmailPassword.init(),
+        Session.init({ getTokenTransferMethod: () => 'cookie', antiCsrf: 'VIA_TOKEN' }),
+      ],
+    })
+
+    const app = express()
+
+    app.use(middleware())
+
+    app.use(errorHandler())
+
+    let response = await signUPRequest(app, 'test@gmail.com', 'testPass123')
+    assert(JSON.parse(response.text).status === 'OK')
+    assert(response.status === 200)
+
+    const userId = JSON.parse(response.text).user.id
+    const infoFromResponse = extractInfoFromResponse(response)
+
+    response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId)
+
+    assert(JSON.parse(response.text).status === 'OK')
+    assert(Object.keys(JSON.parse(response.text)).length === 1)
+  })
+
+  it('test the generate token api with valid input, email verified and test error', async () => {
+    await startST()
+    STExpress.init({
+      supertokens: {
+        connectionURI: 'http://localhost:8080',
+      },
+      appInfo: {
+        apiDomain: 'api.supertokens.io',
+        appName: 'SuperTokens',
+        websiteDomain: 'supertokens.io',
+      },
+      recipeList: [
+        EmailVerification.init({ mode: 'OPTIONAL' }),
+        ThirdPartyEmailPassword.init(),
+        Session.init({ getTokenTransferMethod: () => 'cookie', antiCsrf: 'VIA_TOKEN' }),
+      ],
+    })
+
+    const app = express()
+
+    app.use(middleware())
+
+    app.use(errorHandler())
+
+    let response = await signUPRequest(app, 'test@gmail.com', 'testPass123')
+    assert(JSON.parse(response.text).status === 'OK')
+    assert(response.status === 200)
+
+    const userId = JSON.parse(response.text).user.id
+    const infoFromResponse = extractInfoFromResponse(response)
+
+    const verifyToken = await EmailVerification.createEmailVerificationToken(userId)
+    await EmailVerification.verifyEmailUsingToken(verifyToken.token)
+
+    response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId)
+
+    assert(JSON.parse(response.text).status === 'EMAIL_ALREADY_VERIFIED_ERROR')
+    assert(response.status === 200)
+    assert(Object.keys(JSON.parse(response.text)).length === 1)
+  })
+
+  it('test the generate token api with valid input, no session and check output', async () => {
+    await startST()
+    STExpress.init({
+      supertokens: {
+        connectionURI: 'http://localhost:8080',
+      },
+      appInfo: {
+        apiDomain: 'api.supertokens.io',
+        appName: 'SuperTokens',
+        websiteDomain: 'supertokens.io',
+      },
+      recipeList: [
+        EmailVerification.init({ mode: 'OPTIONAL' }),
+        ThirdPartyEmailPassword.init(),
+        Session.init({ getTokenTransferMethod: () => 'cookie', antiCsrf: 'VIA_TOKEN' }),
+      ],
+    })
+
+    const app = express()
+
+    app.use(middleware())
+
+    app.use(errorHandler())
+
+    const response = await new Promise(resolve =>
+      request(app)
+        .post('/auth/user/email/verify/token')
+        .end((err, res) => {
+          if (err)
+            resolve(undefined)
+
+          else
+            resolve(res)
+        }),
+    )
+
+    assert(response.status === 401)
+    assert(JSON.parse(response.text).message === 'unauthorised')
+    assert(Object.keys(JSON.parse(response.text)).length === 1)
+  })
+
+  it('test that providing your own email callback and make sure it is called', async () => {
+    await startST()
+
+    let userInfo = null
+    let emailToken = null
+
+    STExpress.init({
+      supertokens: {
+        connectionURI: 'http://localhost:8080',
+      },
+      appInfo: {
+        apiDomain: 'api.supertokens.io',
+        appName: 'SuperTokens',
+        websiteDomain: 'supertokens.io',
+      },
+      recipeList: [
+        EmailVerification.init({
+          mode: 'OPTIONAL',
+          createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+            userInfo = user
+            emailToken = emailVerificationURLWithToken
+          },
+        }),
+        ThirdPartyEmailPassword.init(),
+        Session.init({ getTokenTransferMethod: () => 'cookie', antiCsrf: 'VIA_TOKEN' }),
+      ],
+    })
+
+    const app = express()
+
+    app.use(middleware())
+
+    app.use(errorHandler())
+
+    const response = await signUPRequest(app, 'test@gmail.com', 'testPass123')
+    assert(JSON.parse(response.text).status === 'OK')
+    assert(response.status === 200)
+
+    const userId = JSON.parse(response.text).user.id
+    const infoFromResponse = extractInfoFromResponse(response)
+
+    const response2 = await emailVerifyTokenRequest(
+      app,
+      infoFromResponse.accessToken,
+      infoFromResponse.antiCsrf,
+      userId,
+    )
+
+    assert(response2.status === 200)
+
+    assert(JSON.parse(response2.text).status === 'OK')
+    assert(Object.keys(JSON.parse(response2.text)).length === 1)
+
+    assert(userInfo.id === userId)
+    assert(userInfo.email === 'test@gmail.com')
+    assert(emailToken !== null)
+  })
+
+  it('test that providing your own email callback and make sure it is called (thirdparty user)', async () => {
+    await startST()
+
+    let userInfo = null
+    let emailToken = null
+
+    STExpress.init({
+      supertokens: {
+        connectionURI: 'http://localhost:8080',
+      },
+      appInfo: {
+        apiDomain: 'api.supertokens.io',
+        appName: 'SuperTokens',
+        websiteDomain: 'supertokens.io',
+      },
+      recipeList: [
+        EmailVerification.init({
+          mode: 'OPTIONAL',
+          createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+            userInfo = user
+            emailToken = emailVerificationURLWithToken
+          },
+        }),
+        ThirdPartyEmailPassword.init({
+          providers: [customProvider1],
+        }),
+        Session.init({ getTokenTransferMethod: () => 'cookie', antiCsrf: 'VIA_TOKEN' }),
+      ],
+    })
+
+    const app = express()
+
+    app.use(middleware())
+
+    app.use(errorHandler())
+
+    const response = await signInUPCustomRequest(app, 'test@gmail.com', 'testPass0')
+    assert(JSON.parse(response.text).status === 'OK')
+    assert(response.status === 200)
+
+    const userId = JSON.parse(response.text).user.id
+    const infoFromResponse = extractInfoFromResponse(response)
+
+    const response2 = await emailVerifyTokenRequest(
+      app,
+      infoFromResponse.accessToken,
+      infoFromResponse.antiCsrf,
+      userId,
+    )
+
+    assert(response2.status === 200)
+
+    assert(JSON.parse(response2.text).status === 'OK')
+    assert(Object.keys(JSON.parse(response2.text)).length === 1)
+
+    assert(userInfo.id === userId)
+    assert(userInfo.email === 'test@gmail.com')
+    assert(emailToken !== null)
+  })
+
+  it('test the email verify API with invalid token and check error', async () => {
+    await startST()
+
+    STExpress.init({
+      supertokens: {
+        connectionURI: 'http://localhost:8080',
+      },
+      appInfo: {
+        apiDomain: 'api.supertokens.io',
+        appName: 'SuperTokens',
+        websiteDomain: 'supertokens.io',
+      },
+      recipeList: [
+        EmailVerification.init({
+          mode: 'OPTIONAL',
+        }),
+        ThirdPartyEmailPassword.init(),
+        Session.init({ getTokenTransferMethod: () => 'cookie', antiCsrf: 'VIA_TOKEN' }),
+      ],
+    })
+
+    const app = express()
+
+    app.use(middleware())
+
+    app.use(errorHandler())
+
+    const response = await new Promise(resolve =>
+      request(app)
+        .post('/auth/user/email/verify')
+        .send({
+          method: 'token',
+          token: 'randomToken',
+        })
+        .expect(200)
+        .end((err, res) => {
+          if (err)
+            resolve(err)
+
+          else
+            resolve(res)
+        }),
+    )
+    assert(JSON.parse(response.text).status === 'EMAIL_VERIFICATION_INVALID_TOKEN_ERROR')
+    assert(Object.keys(JSON.parse(response.text)).length === 1)
+  })
+})

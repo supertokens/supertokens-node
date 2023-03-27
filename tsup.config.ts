@@ -42,6 +42,9 @@ export default <Options>{
 
     'src/recipe/usermetadata/index.ts',
     'src/recipe/userroles/index.ts',
+
+    'src/processState.ts',
+    'src/utils.ts',
   ],
   outDir: 'dist',
   format: ['esm', 'cjs'],

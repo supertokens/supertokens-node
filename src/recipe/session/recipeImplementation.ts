@@ -576,7 +576,7 @@ export default function getRecipeInterface(
             | undefined
         > {
       const newAccessTokenPayload
-                = (input.newAccessTokenPayload === null || input.newAccessTokenPayload) === undefined
+                = (input.newAccessTokenPayload === null || input.newAccessTokenPayload === undefined)
                   ? {}
                   : input.newAccessTokenPayload
       const response = await querier.sendPostRequest(new NormalisedURLPath('/recipe/session/regenerate'), {

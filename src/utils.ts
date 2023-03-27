@@ -1,10 +1,10 @@
 import * as psl from 'psl'
 
+import { HEADER_RID } from './constants'
 import type { AppInfo, HTTPMethod, JSONObject, NormalisedAppinfo } from './types'
 import NormalisedURLDomain from './normalisedURLDomain'
 import NormalisedURLPath from './normalisedURLPath'
 import { logDebugMessage } from './logger'
-import { HEADER_RID } from './constants'
 import type { BaseResponse } from './framework/response'
 import type { BaseRequest } from './framework/request'
 

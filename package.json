@@ -14,6 +14,16 @@
             "import": "./dist/index.mjs",
             "require": "./dist/index.js"
         },
+        "./utils": {
+            "types": "./dist/utils/index.d.ts",
+            "import": "./dist/utils/index.mjs",
+            "require": "./dist/utils/index.js"
+        },
+        "./processState": {
+            "types": "./dist/processState.d.ts",
+            "import": "./dist/processState.mjs",
+            "require": "./dist/processState.js"
+        },
         "./framework/*": {
             "types": "./dist/framework/*/index.d.ts",
             "import": "./dist/framework/*/index.mjs",
@@ -150,6 +160,15 @@
     "types": "index.d.ts",
     "typesVersions": {
         "*": {
+            "*": [
+                "dist/index.d.ts"
+            ],
+            "utils": [
+                "./dist/utils.d.ts"
+            ],
+            "processState": [
+                "./dist/processState.d.ts"
+            ],
             "framework": [
                 "./dist/framework/index.d.ts"
             ],
@@ -158,9 +177,6 @@
             ],
             "recipe/*": [
                 "./dist/recipe/*/index.d.ts"
-            ],
-            "*": [
-                "dist/index.d.ts"
             ],
             "nextjs": [
                 "./dist/nextjs.d.ts"
@@ -238,7 +254,9 @@
     },
     "packageManager": "pnpm@7.28.0",
     "scripts": {
-        "test": "TEST_MODE=testing npx mocha --timeout 500000",
+        "test": "TEST_MODE=testing INSTALL_PATH=./../supertokens-root vitest",
+        "test:watch": "vitest --watch",
+        "dev": "tsup --watch",
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
         "build": "tsup",
         "pretty": "npx pretty-quick .",
@@ -301,8 +319,12 @@
         "@types/jsonwebtoken": "^9.0.1",
         "@types/koa": "^2.13.4",
         "@types/koa-bodyparser": "^4.3.10",
+        "@types/koa__router": "^12.0.0",
+        "@types/node": "^18.15.9",
         "@types/nodemailer": "^6.4.7",
         "@types/psl": "^1.1.0",
+        "@types/sinon": "^10.0.13",
+        "@types/supertest": "^2.0.12",
         "@types/validator": "^13.7.13",
         "aws-sdk-mock": "^5.4.0",
         "cookie-parser": "^1.4.6",
@@ -321,11 +343,17 @@
         "react": "^18.2.0",
         "sinon": "^15.0.1",
         "supertest": "^6.3.3",
+        "tslib": "^2.5.0",
         "tsup": "^6.6.3",
         "typedoc": "^0.23.26",
-        "typescript": "4.2"
+        "typescript": "4.2",
+        "vite": "^4.1.4",
+        "vitest": "^0.29.2"
     },
     "browser": {
         "fs": false
+    },
+    "resolutions": {
+        "supertokens-node": "link:."
     }
 }

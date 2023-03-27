@@ -27,7 +27,7 @@ import APIImplementation from './api/implementation'
 import { GET_DISCOVERY_CONFIG_URL } from './constants'
 import getOpenIdDiscoveryConfiguration from './api/getOpenIdDiscoveryConfiguration'
 
-export default class OpenIdRecipe extends RecipeModule {
+export class OpenIdRecipe extends RecipeModule {
   static RECIPE_ID = 'openid'
   private static instance: OpenIdRecipe | undefined = undefined
   config: TypeNormalisedInput
@@ -130,3 +130,5 @@ export default class OpenIdRecipe extends RecipeModule {
     )
   }
 }
+
+export default OpenIdRecipe

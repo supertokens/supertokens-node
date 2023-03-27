@@ -275,7 +275,7 @@ export default class SessionWrapper {
   static mergeIntoAccessTokenPayload(
     sessionHandle: string,
     accessTokenPayloadUpdate: JSONObject,
-        userContext: any = {},
+    userContext: any = {},
   ) {
     return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
       sessionHandle,
