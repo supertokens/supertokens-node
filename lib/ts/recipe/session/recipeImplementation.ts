@@ -134,7 +134,7 @@ export default function getRecipeInterface(
             userContext: any;
         }): Promise<
             | { status: "OK"; session: SessionContainerInterface }
-            | { status: "TOKEN_VALIDATION_ERROR"; error: any }
+            | { status: "UNAUTHORISED"; error: any }
             | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
         > {
             if (options?.antiCsrfCheck !== false && config.antiCsrf === "VIA_CUSTOM_HEADER") {
@@ -149,8 +149,8 @@ export default function getRecipeInterface(
                 accessToken = parseJWTWithoutSignatureVerification(accessTokenString);
                 validateAccessTokenStructure(accessToken.payload, accessToken.version);
             } catch (error) {
-                logDebugMessage("getSession: Returning TOKEN_VALIDATION_ERROR because parsing failed");
-                return { status: "TOKEN_VALIDATION_ERROR", error };
+                logDebugMessage("getSession: Returning UNAUTHORISED because parsing failed");
+                return { status: "UNAUTHORISED", error };
             }
 
             let response;
@@ -169,10 +169,8 @@ export default function getRecipeInterface(
                     );
                     return { status: "TRY_REFRESH_TOKEN_ERROR", error };
                 }
-                logDebugMessage(
-                    "getSession: Returning TOKEN_VALIDATION_ERROR because of an exception during getSession"
-                );
-                return { status: "TOKEN_VALIDATION_ERROR", error };
+                logDebugMessage("getSession: Returning UNAUTHORISED because of an exception during getSession");
+                return { status: "UNAUTHORISED", error };
             }
 
             logDebugMessage("getSession: Success!");

@@ -158,7 +158,7 @@ export async function getSessionFromRequest({
         userContext,
     });
 
-    if (result.status === "TRY_REFRESH_TOKEN_ERROR" || result.status === "TOKEN_VALIDATION_ERROR") {
+    if (result.status === "TRY_REFRESH_TOKEN_ERROR" || result.status === "UNAUTHORISED") {
         throw result.error;
     }
 

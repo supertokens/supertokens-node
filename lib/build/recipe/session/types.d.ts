@@ -176,7 +176,7 @@ export declare type RecipeInterface = {
               session: SessionContainerInterface;
           }
         | {
-              status: "TOKEN_VALIDATION_ERROR";
+              status: "UNAUTHORISED";
               error: any;
           }
         | {

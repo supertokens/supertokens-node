@@ -196,7 +196,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             });
 
             const res = await Session.getSessionWithoutRequestResponse("nope");
-            assert.strictEqual(res.status, "TOKEN_VALIDATION_ERROR");
+            assert.strictEqual(res.status, "UNAUTHORISED");
         });
 
         it("should return error for claim validation failures", async () => {

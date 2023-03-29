@@ -232,7 +232,7 @@ export default class SessionWrapper {
      * CLAIM_VALIDATION_ERROR: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
      * TRY_REFRESH_TOKEN_ERROR: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
      *  You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
-     * TOKEN_VALIDATION_ERROR: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
+     * UNAUTHORISED: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
      *
      * @param accessToken The access token extracted from the authorization header or cookies
      * @param antiCsrfToken The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
@@ -246,7 +246,7 @@ export default class SessionWrapper {
         userContext: any = {}
     ): Promise<
         | { status: "OK"; session: SessionContainer }
-        | { status: "TOKEN_VALIDATION_ERROR"; error: any }
+        | { status: "UNAUTHORISED"; error: any }
         | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
         | { status: "CLAIM_VALIDATION_ERROR"; claimValidationErrors: ClaimValidationError[] }
     > {

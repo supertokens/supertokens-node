@@ -206,7 +206,7 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<
         | { status: "OK"; session: SessionContainerInterface }
-        | { status: "TOKEN_VALIDATION_ERROR"; error: any }
+        | { status: "UNAUTHORISED"; error: any }
         | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
     >;
 
