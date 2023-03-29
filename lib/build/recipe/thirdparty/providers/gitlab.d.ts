@@ -9,6 +9,7 @@ declare type TypeThirdPartyProviderGitLabConfig = {
             [key: string]: string | ((request: any) => string);
         };
     };
+    gitlabBaseUrl?: string;
     isDefault?: boolean;
 };
 export default function GitLab(config: TypeThirdPartyProviderGitLabConfig): TypeProvider;

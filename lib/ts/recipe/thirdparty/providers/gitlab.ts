@@ -1,5 +1,6 @@
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
+import NormalisedURLDomain from "../../../normalisedURLDomain";
 
 type TypeThirdPartyProviderGitLabConfig = {
     clientId: string;
@@ -8,6 +9,7 @@ type TypeThirdPartyProviderGitLabConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
+    gitlabBaseUrl?: string;
     isDefault?: boolean;
 };
 
@@ -15,7 +17,11 @@ export default function GitLab(config: TypeThirdPartyProviderGitLabConfig): Type
     const id = "gitlab";
 
     function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://gitlab.com/oauth/token";
+        let baseUrl =
+            config.gitlabBaseUrl === undefined
+                ? "https://gitlab.com" // no traling slash cause we add that in the path
+                : new NormalisedURLDomain(config.gitlabBaseUrl).getAsStringDangerous();
+        let accessTokenAPIURL = baseUrl + "/oauth/token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: config.clientSecret,
@@ -27,7 +33,7 @@ export default function GitLab(config: TypeThirdPartyProviderGitLabConfig): Type
         if (redirectURI !== undefined) {
             accessTokenAPIParams.redirect_uri = redirectURI;
         }
-        let authorisationRedirectURL = "https://gitlab.com/oauth/authorize";
+        let authorisationRedirectURL = baseUrl + "/oauth/authorize";
         let scopes = ["read_user"];
         if (config.scope !== undefined) {
             scopes = config.scope;
@@ -54,7 +60,7 @@ export default function GitLab(config: TypeThirdPartyProviderGitLabConfig): Type
             let authHeader = `Bearer ${accessToken}`;
             let response = await axios({
                 method: "get",
-                url: "https://gitlab.com/api/v4/user",
+                url: baseUrl + "/api/v4/user",
                 headers: {
                     Authorization: authHeader,
                 },
