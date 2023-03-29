@@ -14,7 +14,20 @@
  */
 export const version = "13.2.0";
 
-export const cdiSupported = ["2.8", "2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15", "2.16", "2.17", "2.18"];
+export const cdiSupported = [
+    "2.8",
+    "2.9",
+    "2.10",
+    "2.11",
+    "2.12",
+    "2.13",
+    "2.14",
+    "2.15",
+    "2.16",
+    "2.17",
+    "2.18",
+    "2.19",
+];
 
 // Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
 export const dashboardVersion = "0.4";
