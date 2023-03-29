@@ -81,10 +81,30 @@ export default class SessionWrapper {
         },
         userContext?: any
     ): Promise<SessionContainer | undefined>;
+    /**
+     * Tries to validate an access token and build a Session object from it.
+     *
+     * Notes about anti-csrf checking:
+     * - if the `antiCsrf` is set to VIA_HEADER in the Session recipe config you have to handle anti-csrf checking before calling this function and set antiCsrfCheck to false in the options.
+     * - you can disable anti-csrf checks by setting antiCsrf to NONE in the Session recipe config. We only recommend this if you are always getting the access-token from the Authorization header.
+     * - if the antiCsrf check fails the returned satatus will be TRY_REFRESH_TOKEN_ERROR
+     *
+     * Returned statuses:
+     * OK: The session was successfully validated, including claim validation
+     * CLAIM_VALIDATION_ERROR: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
+     * TRY_REFRESH_TOKEN_ERROR: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
+     *  You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
+     * TOKEN_VALIDATION_ERROR: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
+     *
+     * @param accessToken The access token extracted from the authorization header or cookies
+     * @param antiCsrfToken The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
+     * @param options Same options objects as getSession or verifySession takes, except the `sessionRequired` prop, which is always set to true in this function
+     * @param userContext User context
+     */
     static getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
-        options?: VerifySessionOptions,
+        options?: Omit<VerifySessionOptions, "sessionRequired">,
         userContext?: any
     ): Promise<
         | {
@@ -97,6 +117,7 @@ export default class SessionWrapper {
           }
         | {
               status: "TRY_REFRESH_TOKEN_ERROR";
+              error: any;
           }
         | {
               status: "CLAIM_VALIDATION_ERROR";
@@ -117,12 +138,11 @@ export default class SessionWrapper {
           }
         | {
               status: "UNAUTHORISED";
-              clearTokens: boolean;
+              error: any;
           }
         | {
               status: "TOKEN_THEFT_DETECTED";
-              userId: string;
-              sessionHandle: string;
+              error: any;
           }
     >;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;

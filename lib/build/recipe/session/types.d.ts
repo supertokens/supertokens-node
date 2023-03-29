@@ -181,7 +181,7 @@ export declare type RecipeInterface = {
           }
         | {
               status: "TRY_REFRESH_TOKEN_ERROR";
-              message: string;
+              error: any;
           }
     >;
     refreshSession(input: {
@@ -196,12 +196,11 @@ export declare type RecipeInterface = {
           }
         | {
               status: "UNAUTHORISED";
-              clearTokens: boolean;
+              error: any;
           }
         | {
               status: "TOKEN_THEFT_DETECTED";
-              userId: string;
-              sessionHandle: string;
+              error: any;
           }
     >;
     /**

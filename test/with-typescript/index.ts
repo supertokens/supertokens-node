@@ -821,6 +821,8 @@ ThirdParty.init({
 import { TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
+import SessionError from "../../lib/build/recipe/session/error";
+import SuperTokensError from "../../lib/build/error";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {
@@ -1466,3 +1468,103 @@ Passwordless.init({
         },
     },
 });
+
+async function getSessionWithErrorHandlerMiddleware(req: express.Request, resp: express.Response) {
+    const session = await Session.getSession(req, resp, {
+        /* options */
+    });
+
+    // ...
+}
+
+async function getSessionWithoutErrorHandler(req: express.Request, resp: express.Response, next: express.NextFunction) {
+    try {
+        const session = await Session.getSession(req, resp, {
+            /* options */
+        });
+        /* .... */
+    } catch (err) {
+        if (SuperTokensError.isErrorFromSuperTokens(err)) {
+            if (err.type === Session.Error.TRY_REFRESH_TOKEN) {
+                resp.status(401).json({ message: "try again " });
+                // This means that the session exists, but the access token
+                // has expired.
+
+                // You can handle this in a custom way by sending a 401.
+                // Or you can call the errorHandler middleware as shown below
+            } else if (err.type === Session.Error.UNAUTHORISED) {
+                resp.status(401).json({ message: "try again " });
+                // This means that the session does not exist anymore.
+                // You can handle this in a custom way by sending a 401.
+                // Or you can call the errorHandler middleware as shown below
+            } else if (err.type === Session.Error.TOKEN_THEFT_DETECTED) {
+                // Security Alert!!
+                resp.status(401).json({ message: "try again " });
+                // Session hijacking attempted. You should revoke the session
+                // using Session.revokeSession fucntion and send a 401
+            } else if (err.type === Session.Error.INVALID_CLAIMS) {
+                resp.status(403).json({ status: "CLAIM_VALIDATION_ERROR", claimValidationErrors: err.payload });
+                // The user is missing some required claim.
+                // You can pass the missing claims to the frontend and handle it there
+            }
+
+            // OR you can use this errorHandler which will
+            // handle all of the above errors in the default way
+            errorHandler()(err, req, resp, (err) => {
+                next(err);
+            });
+        } else {
+            next(err);
+        }
+    }
+}
+
+async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp: express.Response) {
+    const accessToken = req.headers.authorization?.replace(/^Bearer /, "");
+
+    // We only need to split this declaration (and have the else statement) if the session is optional
+    let session;
+    if (!accessToken) {
+        // This means that the user doesn't have an active session
+        return resp.status(401).json({ message: "try again " }); // Or equivalent...
+    } else {
+        const result = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
+
+        // Note that the return type forces the user to have (or at least notice) error handling
+        if (result.status === "CLAIM_VALIDATION_ERROR") {
+            return resp.status(403).json(result); // Or equivalent...
+        } else if (result.status !== "OK") {
+            // We could need separate handling here if we expect non-ST access tokens
+            return resp.status(401); // Or equivalent...
+        }
+        session = result.session;
+    }
+    // API code...
+}
+
+async function getSessionWithoutRequestWithErrorHandler(req: express.Request, resp: express.Response) {
+    const accessToken = req.headers.authorization?.replace(/^Bearer /, "");
+
+    // We only need to split this declaration (and have the else statement) if the session is optional
+    let session;
+    if (!accessToken) {
+        // This means that the user doesn't have an active session
+        return resp.status(401).json({ message: "try again " });
+    } else {
+        const result = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
+
+        // Note that the return type forces the user to have (or at least notice) error handling
+        if (result.status === "CLAIM_VALIDATION_ERROR") {
+            throw new Session.Error({
+                type: "INVALID_CLAIMS",
+                payload: result.claimValidationErrors,
+                message: "INVALID_CLAIMS",
+            });
+        } else if (result.status !== "OK") {
+            // We could need separate handling here if we expect non-ST access tokens
+            throw result.error;
+        }
+        session = result.session;
+    }
+    // API code...
+}

@@ -207,7 +207,7 @@ export type RecipeInterface = {
     }): Promise<
         | { status: "OK"; session: SessionContainerInterface }
         | { status: "TOKEN_VALIDATION_ERROR"; error: any }
-        | { status: "TRY_REFRESH_TOKEN_ERROR"; message: string }
+        | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
     >;
 
     refreshSession(input: {
@@ -217,8 +217,8 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<
         | { status: "OK"; session: SessionContainerInterface }
-        | { status: "UNAUTHORISED"; clearTokens: boolean }
-        | { status: "TOKEN_THEFT_DETECTED"; userId: string; sessionHandle: string }
+        | { status: "UNAUTHORISED"; error: any }
+        | { status: "TOKEN_THEFT_DETECTED"; error: any }
     >;
 
     /**

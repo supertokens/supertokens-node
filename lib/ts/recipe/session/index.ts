@@ -28,7 +28,6 @@ import {
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
-import SessionError from "./error";
 import { logDebugMessage } from "../../logger";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 // For Express
@@ -220,15 +219,35 @@ export default class SessionWrapper {
         });
     }
 
+    /**
+     * Tries to validate an access token and build a Session object from it.
+     *
+     * Notes about anti-csrf checking:
+     * - if the `antiCsrf` is set to VIA_HEADER in the Session recipe config you have to handle anti-csrf checking before calling this function and set antiCsrfCheck to false in the options.
+     * - you can disable anti-csrf checks by setting antiCsrf to NONE in the Session recipe config. We only recommend this if you are always getting the access-token from the Authorization header.
+     * - if the antiCsrf check fails the returned satatus will be TRY_REFRESH_TOKEN_ERROR
+     *
+     * Returned statuses:
+     * OK: The session was successfully validated, including claim validation
+     * CLAIM_VALIDATION_ERROR: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
+     * TRY_REFRESH_TOKEN_ERROR: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
+     *  You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
+     * TOKEN_VALIDATION_ERROR: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
+     *
+     * @param accessToken The access token extracted from the authorization header or cookies
+     * @param antiCsrfToken The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
+     * @param options Same options objects as getSession or verifySession takes, except the `sessionRequired` prop, which is always set to true in this function
+     * @param userContext User context
+     */
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
-        options?: VerifySessionOptions,
+        options?: Omit<VerifySessionOptions, "sessionRequired">,
         userContext: any = {}
     ): Promise<
         | { status: "OK"; session: SessionContainer }
         | { status: "TOKEN_VALIDATION_ERROR"; error: any }
-        | { status: "TRY_REFRESH_TOKEN_ERROR" }
+        | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
         | { status: "CLAIM_VALIDATION_ERROR"; claimValidationErrors: ClaimValidationError[] }
     > {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
@@ -248,7 +267,7 @@ export default class SessionWrapper {
             try {
                 await res.session.assertClaims(claimValidators, userContext);
             } catch (err) {
-                if (err instanceof SessionError && err.type === "INVALID_CLAIMS") {
+                if (Error.isErrorFromSuperTokens(err) && err.type === "INVALID_CLAIMS") {
                     return {
                         status: "CLAIM_VALIDATION_ERROR",
                         claimValidationErrors: err.payload,
@@ -267,10 +286,6 @@ export default class SessionWrapper {
         });
     }
 
-    /*
-        In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
-        Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
-    */
     static async refreshSession(req: any, res: any, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;

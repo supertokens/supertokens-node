@@ -158,10 +158,7 @@ export async function getSessionFromRequest({
         userContext,
     });
 
-    if (result.status === "TRY_REFRESH_TOKEN_ERROR") {
-        throw new SessionError({ message: result.message, type: "TRY_REFRESH_TOKEN" });
-    }
-    if (result.status === "TOKEN_VALIDATION_ERROR") {
+    if (result.status === "TRY_REFRESH_TOKEN_ERROR" || result.status === "TOKEN_VALIDATION_ERROR") {
         throw result.error;
     }
 
@@ -182,6 +179,10 @@ export async function getSessionFromRequest({
     return session;
 }
 
+/*
+    In all cases: if sIdRefreshToken token exists (so it's a legacy session) we clear it.
+    Check http://localhost:3002/docs/contribute/decisions/session/0008 for further details and a table of expected behaviours
+*/
 export async function refreshSessionInRequest({
     res,
     req,
@@ -203,7 +204,7 @@ export async function refreshSessionInRequest({
         req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
     }
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
-    logDebugMessage("getSession: Wrapping done");
+    logDebugMessage("refreshSession: Wrapping done");
 
     const refreshTokens: {
         [key in TokenTransferMethod]?: string;
@@ -278,7 +279,7 @@ export async function refreshSessionInRequest({
         userContext,
     });
     if (result.status !== "OK") {
-        if (result.status === "TOKEN_THEFT_DETECTED" || result.clearTokens === true) {
+        if (result.status === "TOKEN_THEFT_DETECTED" || result.error.clearTokens === true) {
             // We clear the LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME here because we want to limit the scope of this legacy/migration code
             // so the token clearing functions in the error handlers do not
             if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
@@ -290,18 +291,10 @@ export async function refreshSessionInRequest({
         }
 
         if (result.status === "TOKEN_THEFT_DETECTED") {
-            throw new SessionError({
-                message: "TOKEN_THEFT_DETECTED",
-                type: "TOKEN_THEFT_DETECTED",
-                payload: { userId: result.userId, sessionHandle: result.sessionHandle },
-            });
+            throw result.error;
         }
         if (result.status === "UNAUTHORISED") {
-            throw new SessionError({
-                message: "asdf",
-                type: "UNAUTHORISED",
-                payload: { clearTokens: result.clearTokens },
-            });
+            throw result.error;
         }
     }
     logDebugMessage("refreshSession: Attaching refreshed session info as " + requestTransferMethod);
@@ -358,7 +351,7 @@ export async function createNewSessionInRequest({
         res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
     }
     logDebugMessage("createNewSession: Wrapping done");
-    setRequestInUserContextIfNotDefined(userContext, req);
+    userContext = setRequestInUserContextIfNotDefined(userContext, req);
 
     const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
 

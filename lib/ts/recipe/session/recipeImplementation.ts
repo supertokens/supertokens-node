@@ -135,7 +135,7 @@ export default function getRecipeInterface(
         }): Promise<
             | { status: "OK"; session: SessionContainerInterface }
             | { status: "TOKEN_VALIDATION_ERROR"; error: any }
-            | { status: "TRY_REFRESH_TOKEN_ERROR"; message: string }
+            | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
         > {
             if (options?.antiCsrfCheck !== false && config.antiCsrf === "VIA_CUSTOM_HEADER") {
                 throw new Error(
@@ -163,17 +163,16 @@ export default function getRecipeInterface(
                     options?.checkDatabase === true
                 );
             } catch (error) {
-                if (error.type !== STError.TRY_REFRESH_TOKEN) {
+                if (error instanceof STError && error.type === STError.TRY_REFRESH_TOKEN) {
                     logDebugMessage(
-                        "getSession: Returning TOKEN_VALIDATION_ERROR because of an exception during getSession"
+                        "getSession: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during getSession"
                     );
-                    return { status: "TOKEN_VALIDATION_ERROR", error };
+                    return { status: "TRY_REFRESH_TOKEN_ERROR", error };
                 }
-
                 logDebugMessage(
-                    "getSession: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during getSession"
+                    "getSession: Returning TOKEN_VALIDATION_ERROR because of an exception during getSession"
                 );
-                return { status: "TRY_REFRESH_TOKEN_ERROR", message: error.message };
+                return { status: "TOKEN_VALIDATION_ERROR", error };
             }
 
             logDebugMessage("getSession: Success!");
@@ -294,8 +293,8 @@ export default function getRecipeInterface(
             }: { refreshToken: string; antiCsrfToken?: string; disableAntiCsrf: boolean; userContext: any }
         ): Promise<
             | { status: "OK"; session: SessionContainerInterface }
-            | { status: "UNAUTHORISED"; clearTokens: boolean }
-            | { status: "TOKEN_THEFT_DETECTED"; userId: string; sessionHandle: string }
+            | { status: "UNAUTHORISED"; error: any }
+            | { status: "TOKEN_THEFT_DETECTED"; error: any }
         > {
             logDebugMessage("refreshSession: Started");
 
@@ -330,15 +329,20 @@ export default function getRecipeInterface(
                     if (err.type === STError.TOKEN_THEFT_DETECTED) {
                         return {
                             status: "TOKEN_THEFT_DETECTED",
-                            userId: err.payload.userId,
-                            sessionHandle: err.payload.sessionHandle,
+                            error: err,
                         };
                     }
-                    if (err.type === STError.UNAUTHORISED) {
-                        return { status: "UNAUTHORISED", clearTokens: err.payload.clearTokens };
-                    }
+                    return { status: "UNAUTHORISED", error: err };
                 }
-                throw err;
+
+                return {
+                    status: "UNAUTHORISED",
+                    error: new SessionError({
+                        message: (err as any).message,
+                        type: "UNAUTHORISED",
+                        payload: { clearTokens: false },
+                    }),
+                };
             }
         },
 
