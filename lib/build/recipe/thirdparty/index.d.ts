@@ -29,6 +29,7 @@ export default class Wrapper {
     static Discord: typeof import("./providers/discord").default;
     static GoogleWorkspaces: typeof import("./providers/googleWorkspaces").default;
     static Bitbucket: typeof import("./providers/bitbucket").default;
+    static GitLab: typeof import("./providers/gitlab").default;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -43,4 +44,5 @@ export declare let Apple: typeof import("./providers/apple").default;
 export declare let Discord: typeof import("./providers/discord").default;
 export declare let GoogleWorkspaces: typeof import("./providers/googleWorkspaces").default;
 export declare let Bitbucket: typeof import("./providers/bitbucket").default;
+export declare let GitLab: typeof import("./providers/gitlab").default;
 export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };

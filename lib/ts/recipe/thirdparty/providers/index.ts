@@ -7,6 +7,7 @@ import ProviderDiscord from "./discord";
 import ProviderGoogleWorkspaces from "./googleWorkspaces";
 // import ProviderAD from "./activeDirectory";
 import ProviderBitbucket from "./bitbucket";
+import ProviderGitlab from "./gitlab";
 
 export let Google = ProviderGoogle;
 export let Facebook = ProviderFacebook;
@@ -15,5 +16,6 @@ export let Apple = ProviderApple;
 export let Discord = ProviderDiscord;
 export let GoogleWorkspaces = ProviderGoogleWorkspaces;
 export let Bitbucket = ProviderBitbucket;
+export let GitLab = ProviderGitlab;
 // export let Okta = ProviderOkta;
 // export let ActiveDirectory = ProviderAD;
