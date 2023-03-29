@@ -92,7 +92,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                                     ...oI,
                                     createNewSession: async (input) => {
                                         let response = await oI.createNewSession(input);
-                                        process.env.user = response.getUserId();
+                                        process.env.user = response.session.getUserId();
                                         return response;
                                     },
                                 };
@@ -535,7 +535,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                                     ...oI,
                                     createNewSession: async (input) => {
                                         let response = await oI.createNewSession(input);
-                                        process.env.user = response.getUserId();
+                                        process.env.user = response.session.getUserId();
                                         throw {
                                             error: "sign up error",
                                         };

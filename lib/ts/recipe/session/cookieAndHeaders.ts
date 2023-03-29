@@ -14,6 +14,7 @@
  */
 import { HEADER_RID } from "../../constants";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods } from "./constants";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 
@@ -63,8 +64,7 @@ export function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: stri
     res.setHeader("Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
-export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpiry: number, accessTokenPayload: any) {
-    const frontToken = buildFrontToken(userId, atExpiry, accessTokenPayload);
+export function setFrontTokenInHeaders(res: BaseResponse, frontToken: string) {
     res.setHeader(frontTokenHeaderKey, frontToken, false);
     res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
@@ -128,6 +128,7 @@ export function setToken(
     expires: number,
     transferMethod: TokenTransferMethod
 ) {
+    logDebugMessage(`setToken: Setting ${tokenType} token as ${transferMethod}`);
     if (transferMethod === "cookie") {
         setCookie(
             config,

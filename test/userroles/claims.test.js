@@ -148,7 +148,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             try {
                 await session.assertClaims([UserRoles.UserRoleClaim.validators.includes("nope")]);
             } catch (ex) {
-                console.log(ex);
                 err = ex;
             }
             assert.ok(err);
@@ -224,7 +223,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             try {
                 await session.assertClaims([UserRoles.PermissionClaim.validators.includes("nope")]);
             } catch (ex) {
-                console.log(ex);
                 err = ex;
             }
             assert.ok(err);

@@ -136,11 +136,23 @@ export function humaniseMilliseconds(ms: number): string {
 }
 
 export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
-    return {
-        _default: {
-            request,
-        },
-    };
+    return setRequestInUserContextIfNotDefined({}, request);
+}
+
+export function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest) {
+    if (userContext === undefined) {
+        userContext = {};
+    }
+
+    if (userContext._default === undefined) {
+        userContext._default = {};
+    }
+
+    if (typeof userContext._default === "object") {
+        userContext._default.request = request;
+    }
+
+    return userContext;
 }
 
 export function getTopLevelDomainForSameSiteResolution(url: string): string {

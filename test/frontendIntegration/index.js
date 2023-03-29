@@ -92,25 +92,13 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
                         functions: function (oI) {
                             return {
                                 ...oI,
-                                createNewSession: async function ({
-                                    req,
-                                    res,
-                                    userId,
-                                    accessTokenPayload,
-                                    sessionDataInDatabase,
-                                }) {
-                                    accessTokenPayload = {
+                                createNewSession: async function (input) {
+                                    input.accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oI.createNewSession({
-                                        req,
-                                        res,
-                                        userId,
-                                        accessTokenPayload,
-                                        sessionDataInDatabase,
-                                    });
+                                    return await oI.createNewSession(input);
                                 },
                             };
                         },

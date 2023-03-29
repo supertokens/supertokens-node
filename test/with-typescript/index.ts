@@ -830,32 +830,33 @@ let sessionConfig: SessionTypeInput = {
         functions: (originalImpl: RecipeInterface) => {
             return {
                 getSession: originalImpl.getSession,
-                getSessionWithoutModifyingResponse: originalImpl.getSessionWithoutModifyingResponse,
                 createNewSession: async (input) => {
-                    let session = await originalImpl.createNewSession(input);
+                    let { session } = await originalImpl.createNewSession(input);
                     return {
-                        getAccessToken: session.getAccessToken,
-                        getHandle: session.getHandle,
-                        getAccessTokenPayload: session.getAccessTokenPayload,
-                        getSessionDataFromDatabase: session.getSessionDataFromDatabase,
-                        getUserId: session.getUserId,
-                        revokeSession: session.revokeSession,
-                        updateSessionDataInDatabase: session.updateSessionDataInDatabase,
-                        mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
-                        assertClaims: session.assertClaims,
-                        fetchAndSetClaim: session.fetchAndSetClaim,
-                        setClaimValue: session.setClaimValue,
-                        getClaimValue: session.getClaimValue,
-                        removeClaim: session.removeClaim,
-                        getExpiry: session.getExpiry,
-                        getTimeCreated: session.getTimeCreated,
-                        getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
+                        status: "OK",
+                        session: {
+                            getAccessToken: session.getAccessToken,
+                            getHandle: session.getHandle,
+                            getAccessTokenPayload: session.getAccessTokenPayload,
+                            getSessionDataFromDatabase: session.getSessionDataFromDatabase,
+                            getUserId: session.getUserId,
+                            revokeSession: session.revokeSession,
+                            updateSessionDataInDatabase: session.updateSessionDataInDatabase,
+                            mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
+                            assertClaims: session.assertClaims,
+                            fetchAndSetClaim: session.fetchAndSetClaim,
+                            setClaimValue: session.setClaimValue,
+                            getClaimValue: session.getClaimValue,
+                            removeClaim: session.removeClaim,
+                            getExpiry: session.getExpiry,
+                            getTimeCreated: session.getTimeCreated,
+                            getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
+                            attachToRequestResponse: session.attachToRequestResponse,
+                        },
                     };
                 },
-                createNewSessionWithoutModifyingResponse: originalImpl.createNewSessionWithoutModifyingResponse,
                 getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
                 refreshSession: originalImpl.refreshSession,
-                refreshSessionWithoutModifyingResponse: originalImpl.refreshSessionWithoutModifyingResponse,
                 revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                 revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                 revokeSession: originalImpl.revokeSession,
@@ -1222,13 +1223,15 @@ Session.init({
             return {
                 ...originalImplementation,
                 refreshSession: async function (input) {
-                    let session = await originalImplementation.refreshSession(input);
+                    let result = await originalImplementation.refreshSession(input);
 
-                    await session.mergeIntoAccessTokenPayload({
-                        lastTokenRefresh: Date.now(),
-                    });
+                    if (result.status === "OK") {
+                        await result.session.mergeIntoAccessTokenPayload({
+                            lastTokenRefresh: Date.now(),
+                        });
+                    }
 
-                    return session;
+                    return result;
                 },
                 getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
                     ...claimValidatorsAddedByOtherRecipes,
@@ -1376,10 +1379,10 @@ Session.init({
             ...oI,
             getSession: async (input) => {
                 const result = await oI.getSession(input);
-                if (result) {
-                    const origPayload = result.getAccessTokenPayload();
+                if (result.status === "OK") {
+                    const origPayload = result.session.getAccessTokenPayload();
                     if (origPayload.appSub === undefined) {
-                        await result.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
+                        await result.session.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
                     }
                 }
                 return result;

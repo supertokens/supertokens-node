@@ -1,17 +1,11 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
 import { Helpers } from "./recipeImplementation";
-declare type ReqResInfo = {
-    res: BaseResponse;
-    req: BaseRequest;
-    transferMethod: TokenTransferMethod;
-};
 export default class Session implements SessionContainerInterface {
     protected helpers: Helpers;
     protected accessToken: string;
     protected frontToken: string;
-    protected refreshToken: string | undefined;
+    protected refreshToken: TokenInfo | undefined;
     protected antiCsrfToken: string | undefined;
     protected sessionHandle: string;
     protected userId: string;
@@ -22,7 +16,7 @@ export default class Session implements SessionContainerInterface {
         helpers: Helpers,
         accessToken: string,
         frontToken: string,
-        refreshToken: string | undefined,
+        refreshToken: TokenInfo | undefined,
         antiCsrfToken: string | undefined,
         sessionHandle: string,
         userId: string,
@@ -40,9 +34,9 @@ export default class Session implements SessionContainerInterface {
     getAllSessionTokensDangerously(): {
         accessToken: string;
         accessAndFrontTokenUpdated: boolean;
-        refreshToken: string | undefined;
+        refreshToken: TokenInfo | undefined;
         frontToken: string;
-        antiCsrf: string | undefined;
+        antiCsrfToken: string | undefined;
     };
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
@@ -52,5 +46,5 @@ export default class Session implements SessionContainerInterface {
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    attachToRequestResponse(info: ReqResInfo): void;
 }
-export {};

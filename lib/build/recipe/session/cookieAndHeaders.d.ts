@@ -9,12 +9,7 @@ export declare function clearSession(
 ): void;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;
-export declare function setFrontTokenInHeaders(
-    res: BaseResponse,
-    userId: string,
-    atExpiry: number,
-    accessTokenPayload: any
-): void;
+export declare function setFrontTokenInHeaders(res: BaseResponse, frontToken: string): void;
 export declare function buildFrontToken(userId: string, atExpiry: number, accessTokenPayload: any): string;
 export declare function getCORSAllowedHeaders(): string[];
 export declare function getToken(

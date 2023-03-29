@@ -2,7 +2,6 @@
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
-    RecipeInterface,
     SessionContainerInterface as SessionContainer,
     SessionInformation,
     APIInterface,
@@ -10,6 +9,7 @@ import {
     SessionClaimValidator,
     SessionClaim,
     ClaimValidationError,
+    RecipeInterface,
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
@@ -106,7 +106,7 @@ export default class SessionWrapper {
           }
     >;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
-    static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
+    static refreshSession(req: any, res: any, userContext?: any): Promise<void>;
     static refreshSessionWithoutModifyingResponse(
         refreshToken: string,
         disableAntiCsrf?: boolean,
@@ -119,9 +119,12 @@ export default class SessionWrapper {
           }
         | {
               status: "UNAUTHORISED";
+              clearTokens: boolean;
           }
         | {
               status: "TOKEN_THEFT_DETECTED";
+              userId: string;
+              sessionHandle: string;
           }
     >;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;

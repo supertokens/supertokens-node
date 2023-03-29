@@ -12,22 +12,19 @@ export declare type KeyInfo = {
     createdAt: number;
 };
 export declare type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export declare type TokenInfo = {
+    token: string;
+    expiry: number;
+    createdTime: number;
+};
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
         userId: string;
         userDataInJWT: any;
     };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
+    accessToken: TokenInfo;
+    refreshToken: TokenInfo;
     antiCsrfToken: string | undefined;
 };
 export interface ErrorHandlers {
@@ -154,15 +151,6 @@ export interface VerifySessionOptions {
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
-        userId: string;
-        accessTokenPayload?: any;
-        sessionDataInDatabase?: any;
-        useDynamicAccessTokenSigningKey?: boolean;
-        userContext: any;
-    }): Promise<SessionContainerInterface>;
-    createNewSessionWithoutModifyingResponse(input: {
         userId: string;
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
@@ -179,12 +167,6 @@ export declare type RecipeInterface = {
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
     getSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
-        options?: VerifySessionOptions;
-        userContext: any;
-    }): Promise<SessionContainerInterface | undefined>;
-    getSessionWithoutModifyingResponse(input: {
         accessToken: string;
         antiCsrfToken?: string;
         options?: Omit<VerifySessionOptions, "sessionRequired">;
@@ -200,14 +182,10 @@ export declare type RecipeInterface = {
           }
         | {
               status: "TRY_REFRESH_TOKEN_ERROR";
+              message: string;
           }
     >;
     refreshSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
-        userContext: any;
-    }): Promise<SessionContainerInterface>;
-    refreshSessionWithoutModifyingResponse(input: {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
@@ -219,9 +197,12 @@ export declare type RecipeInterface = {
           }
         | {
               status: "UNAUTHORISED";
+              clearTokens: boolean;
           }
         | {
               status: "TOKEN_THEFT_DETECTED";
+              userId: string;
+              sessionHandle: string;
           }
     >;
     /**
@@ -318,8 +299,8 @@ export interface SessionContainerInterface {
     getHandle(userContext?: any): string;
     getAllSessionTokensDangerously(): {
         accessToken: string;
-        refreshToken: string | undefined;
-        antiCsrf: string | undefined;
+        refreshToken: TokenInfo | undefined;
+        antiCsrfToken: string | undefined;
         frontToken: string;
         accessAndFrontTokenUpdated: boolean;
     };
@@ -332,6 +313,7 @@ export interface SessionContainerInterface {
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    attachToRequestResponse(reqResInfo: ReqResInfo): Promise<void> | void;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -439,3 +421,8 @@ export declare abstract class SessionClaim<T> {
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
     build(userId: string, userContext?: any): Promise<JSONObject>;
 }
+export declare type ReqResInfo = {
+    res: BaseResponse;
+    req: BaseRequest;
+    transferMethod: TokenTransferMethod;
+};
