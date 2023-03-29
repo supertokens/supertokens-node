@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   New access tokens are valid JWTs now
     -   They can be used directly (i.e.: by calling `getAccessToken` on the session) if you need a JWT
     -   The `jwt` prop in the access token payload is removed
+-   Changed the Session recipe interface - createNewSession, getSession and refreshSession overrides now do not take response and request and return status instead of throwing
 
 ### Configuration changes
 
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Added `createNewSessionWithoutRequestResponse`, `getSessionWithoutRequestResponse`, `refreshSessionWithoutRequestResponse` to the Session recipe.
 -   Added `getAllSessionTokensDangerously` to session objects (`SessionContainerInterface`)
+-   Added `attachToRequestResponse` to session objects (`SessionContainerInterface`)
 
 ### Migration
 
@@ -218,6 +220,60 @@ Session.init({
                         appSub: input.userId + "!!!",
                     },
                 });
+            },
+        }),
+    },
+});
+```
+
+#### If you added an override for `createNewSession`/`refreshSession`/`getSession`:
+
+This example uses `getSession`, but the changes required for the other ones are very similar. Before:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const req = input.req;
+                console.log(req);
+
+                try {
+                    const session = await oI.getSession(input);
+                    console.log(session);
+                    return session;
+                } catch (error) {
+                    console.log(error);
+                    throw error;
+                }
+            },
+        }),
+    },
+});
+```
+
+After:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const req = input.userContext._default.request;
+                console.log(req);
+
+                const resp = await oI.getSession(input);
+
+                if (resp.status === "OK") {
+                    console.log(resp.session);
+                } else {
+                    console.log(resp.status);
+                    console.log(resp.error);
+                }
+
+                return resp;
             },
         }),
     },
