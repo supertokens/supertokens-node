@@ -29,7 +29,6 @@ export async function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
-    useDynamicSigningKey: boolean,
     accessTokenPayload: any = {},
     sessionDataInDatabase: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
@@ -41,7 +40,7 @@ export async function createNewSession(
         userId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionDataInDatabase,
-        useDynamicSigningKey,
+        useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
     const response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
@@ -134,6 +133,18 @@ export async function getSession(
         }
     }
 
+    if (parsedAccessToken.version >= 3) {
+        const tokenUsesDynamicKey = parsedAccessToken.kid!.startsWith("d-");
+        if (tokenUsesDynamicKey !== helpers.config.useDynamicAccessTokenSigningKey) {
+            logDebugMessage(
+                "getSession: Returning TRY_REFRESH_TOKEN because the access token doesn't match the useDynamicAccessTokenSigningKey in the config"
+            );
+            throw new STError({
+                message: "The access token doesn't match the useDynamicAccessTokenSigningKey setting",
+                type: STError.TRY_REFRESH_TOKEN,
+            });
+        }
+    }
     // If we get here we either have a V2 token that doesn't pass verification or a valid V3> token
     /**
      * anti-csrf check if accesstokenInfo is not undefined,

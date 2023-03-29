@@ -22,15 +22,13 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
-        useDynamicAccessTokenSigningKey?: boolean,
         userContext?: any
     ): Promise<SessionContainer>;
-    static createNewSessionWithoutModifyingResponse(
+    static createNewSessionWithoutRequestResponse(
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
-        useDynamicAccessTokenSigningKey?: boolean,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -83,7 +81,7 @@ export default class SessionWrapper {
         },
         userContext?: any
     ): Promise<SessionContainer | undefined>;
-    static getSessionWithoutModifyingResponse(
+    static getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
@@ -107,7 +105,7 @@ export default class SessionWrapper {
     >;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
     static refreshSession(req: any, res: any, userContext?: any): Promise<void>;
-    static refreshSessionWithoutModifyingResponse(
+    static refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf?: boolean,
         antiCsrfToken?: string,
@@ -186,12 +184,12 @@ export default class SessionWrapper {
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
-export declare let createNewSessionWithoutModifyingResponse: typeof SessionWrapper.createNewSessionWithoutModifyingResponse;
+export declare let createNewSessionWithoutRequestResponse: typeof SessionWrapper.createNewSessionWithoutRequestResponse;
 export declare let getSession: typeof SessionWrapper.getSession;
-export declare let getSessionWithoutModifyingResponse: typeof SessionWrapper.getSessionWithoutModifyingResponse;
+export declare let getSessionWithoutRequestResponse: typeof SessionWrapper.getSessionWithoutRequestResponse;
 export declare let getSessionInformation: typeof SessionWrapper.getSessionInformation;
 export declare let refreshSession: typeof SessionWrapper.refreshSession;
-export declare let refreshSessionWithoutModifyingResponse: typeof SessionWrapper.refreshSessionWithoutModifyingResponse;
+export declare let refreshSessionWithoutRequestResponse: typeof SessionWrapper.refreshSessionWithoutRequestResponse;
 export declare let revokeAllSessionsForUser: typeof SessionWrapper.revokeAllSessionsForUser;
 export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSessionHandlesForUser;
 export declare let revokeSession: typeof SessionWrapper.revokeSession;

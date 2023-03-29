@@ -74,7 +74,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -165,7 +164,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -173,7 +171,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}
@@ -184,7 +181,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const newSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}
@@ -248,7 +244,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -258,7 +253,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}
@@ -331,7 +325,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -341,7 +334,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}
@@ -413,7 +405,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -460,7 +451,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}
@@ -563,7 +553,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}

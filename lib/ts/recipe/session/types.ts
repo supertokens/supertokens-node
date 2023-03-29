@@ -189,7 +189,6 @@ export type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
-        useDynamicAccessTokenSigningKey?: boolean;
         disableAntiCsrf?: boolean;
         userContext: any;
     }): Promise<{ status: "OK"; session: SessionContainerInterface }>;

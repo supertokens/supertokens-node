@@ -6,5 +6,6 @@ export declare type ParsedJWTInfo = {
     header: string;
     payload: any;
     signature: string;
+    kid: string | undefined;
 };
 export declare function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo;

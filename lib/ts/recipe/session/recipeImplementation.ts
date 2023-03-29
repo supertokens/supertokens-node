@@ -80,28 +80,25 @@ export default function getRecipeInterface(
             userId,
             accessTokenPayload = {},
             sessionDataInDatabase = {},
-            useDynamicAccessTokenSigningKey,
             disableAntiCsrf,
         }: {
             userId: string;
             disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
-            useDynamicAccessTokenSigningKey?: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; session: SessionContainerInterface }> {
-            logDebugMessage("createNewSessionWithoutModifyingResponse: Started");
+            logDebugMessage("createNewSession: Started");
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 userId,
                 disableAntiCsrf === true,
-                useDynamicAccessTokenSigningKey !== undefined
-                    ? useDynamicAccessTokenSigningKey
-                    : config.useDynamicAccessTokenSigningKey,
                 accessTokenPayload,
                 sessionDataInDatabase
             );
+            logDebugMessage("createNewSession: Finished");
+
             const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
             return {
                 status: "OK",

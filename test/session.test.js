@@ -306,7 +306,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -360,7 +359,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}
@@ -441,7 +439,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, false, {}, {});
+        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
         assert.notEqual(response.session, undefined);
         assert.notEqual(response.accessToken, undefined);
         assert.notEqual(response.refreshToken, undefined);
@@ -519,7 +517,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, false, {}, {});
+        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
 
         let response2 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
@@ -559,7 +557,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, false, {}, {});
+        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
@@ -607,7 +605,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //create a single session and  revoke using the session handle
-        let res = await SessionFunctions.createNewSession(s.helpers, "someUniqueUserId", false, false, {}, {});
+        let res = await SessionFunctions.createNewSession(s.helpers, "someUniqueUserId", false, {}, {});
         let res2 = await SessionFunctions.revokeSession(s.helpers, res.session.handle);
         assert(res2 === true);
 
@@ -615,8 +613,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(res3.length === 0);
 
         //create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions
-        await SessionFunctions.createNewSession(s.helpers, "someUniqueUserId", false, false, {}, {});
-        await SessionFunctions.createNewSession(s.helpers, "someUniqueUserId", false, false, {}, {});
+        await SessionFunctions.createNewSession(s.helpers, "someUniqueUserId", false, {}, {});
+        await SessionFunctions.createNewSession(s.helpers, "someUniqueUserId", false, {}, {});
 
         let sessionIdResponse = await SessionFunctions.getAllSessionHandlesForUser(s.helpers, "someUniqueUserId");
         assert(sessionIdResponse.length === 2);
@@ -653,7 +651,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, {});
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
         await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
@@ -693,7 +691,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, {});
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
         await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
@@ -725,7 +723,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, null);
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, null);
 
         let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res2, {});
@@ -775,7 +773,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, null);
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, null);
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res2.sessionDataInDatabase, {});
@@ -818,7 +816,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, {});
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
@@ -859,7 +857,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, {});
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
@@ -892,7 +890,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, null, {});
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, null, {});
 
         let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
         assert.deepStrictEqual(res2, {});
@@ -943,7 +941,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, null, {});
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, null, {});
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
         assert.deepStrictEqual(res2.accessTokenPayload, {});
@@ -985,8 +983,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        s.helpers.config = { antiCsrf: "NONE" };
-        let response = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, {});
+        s.helpers.config = { antiCsrf: "NONE", useDynamicAccessTokenSigningKey: true };
+        let response = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
@@ -1046,7 +1044,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, {});
+        await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
     });
 
     it("test that anti-csrf disabled and sameSite strict does now throw an error", async function () {
@@ -1066,7 +1064,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, {});
+        await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
     });
 
     it("test that custom user id is returned correctly", async function () {
@@ -1093,7 +1091,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
-        let res = await SessionFunctions.createNewSession(s.helpers, "customuserid", false, false, {}, null);
+        let res = await SessionFunctions.createNewSession(s.helpers, "customuserid", false, {}, null);
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
 
@@ -1124,7 +1122,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
-        let res = await SessionFunctions.createNewSession(s.helpers, "", false, false, {}, null);
+        let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, null);
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
 
         assert(typeof res2.status === "string");
@@ -1160,7 +1158,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
-        let res = await SessionFunctions.createNewSession(s.helpers, "someid", false, false, {}, null);
+        let res = await SessionFunctions.createNewSession(s.helpers, "someid", false, {}, null);
 
         let response = await SessionFunctions.revokeAllSessionsForUser(s.helpers, "someid");
         assert(response.length === 1);

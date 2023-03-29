@@ -339,7 +339,6 @@ export async function createNewSessionInRequest({
     config,
     appInfo,
     sessionDataInDatabase,
-    useDynamicAccessTokenSigningKey,
 }: {
     req: any;
     res: any;
@@ -350,7 +349,6 @@ export async function createNewSessionInRequest({
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
-    useDynamicAccessTokenSigningKey: boolean | undefined;
 }) {
     if (!req.wrapperUsed) {
         req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
@@ -401,7 +399,6 @@ export async function createNewSessionInRequest({
         userId,
         accessTokenPayload: finalAccessTokenPayload,
         sessionDataInDatabase,
-        useDynamicAccessTokenSigningKey,
         disableAntiCsrf,
         userContext,
     });

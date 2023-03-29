@@ -36,7 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added new `checkDatabase` param to `verifySession` and `getSession`
 -   Removed `status` from `getJWKS` output (function & API)
 -   Added new optional `useStaticSigningKey` param to `createJWT`
--   Added new optional `useDynamicAccessTokenSigningKey` param to `createNewSession`
 -   Removed deprecated `updateAccessTokenPayload` and `regenerateAccessToken` from the Session recipe interface
 -   Removed `getAccessTokenLifeTimeMS` and `getRefreshTokenLifeTimeMS` functions
 
@@ -49,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Added `createNewSessionWithoutModifyingResponse`, `getSessionWithoutModifyingResponse`, `refreshSessionWithoutModifyingResponse` to the Session recipe.
+-   Added `createNewSessionWithoutRequestResponse`, `getSessionWithoutRequestResponse`, `refreshSessionWithoutRequestResponse` to the Session recipe.
 -   Added `getAllSessionTokensDangerously` to session objects (`SessionContainerInterface`)
 
 ### Migration
@@ -171,7 +170,7 @@ Related functions/prop names have changes (`sessionData` became `sessionDataFrom
 #### If you used to use standard/protected props in the access token payload root:
 
 1. Update you application logic to rename those props (e.g., by adding a prefix)
-2. Update the session recipe config (in this example `sub` is the protected property we are updating by adding tha `app` prefix):
+2. Update the session recipe config (in this example `sub` is the protected property we are updating by adding the `app` prefix):
 
 Before:
 

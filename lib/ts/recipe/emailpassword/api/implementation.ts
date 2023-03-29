@@ -151,15 +151,7 @@ export default function getAPIImplementation(): APIInterface {
             }
             let user = response.user;
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
-                user.id,
-                {},
-                {},
-                undefined,
-                userContext
-            );
+            let session = await Session.createNewSession(options.req, options.res, user.id, {}, {}, userContext);
             return {
                 status: "OK",
                 session,
@@ -197,15 +189,7 @@ export default function getAPIImplementation(): APIInterface {
             }
             let user = response.user;
 
-            let session = await Session.createNewSession(
-                options.req,
-                options.res,
-                user.id,
-                {},
-                {},
-                undefined,
-                userContext
-            );
+            let session = await Session.createNewSession(options.req, options.res, user.id, {}, {}, userContext);
             return {
                 status: "OK",
                 session,

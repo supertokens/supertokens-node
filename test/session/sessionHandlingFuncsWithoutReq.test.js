@@ -30,7 +30,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         await cleanST();
     });
 
-    describe("createNewSessionWithoutModifyingResponse", () => {
+    describe("createNewSessionWithoutRequestResponse", () => {
         it("should create a new session", async () => {
             await startST();
             SuperTokens.init({
@@ -45,7 +45,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init()],
             });
 
-            const res = await Session.createNewSessionWithoutModifyingResponse(
+            const res = await Session.createNewSessionWithoutRequestResponse(
                 "test-user-id",
                 { tokenProp: true },
                 { dbProp: true }
@@ -80,7 +80,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 ],
             });
 
-            const res = await Session.createNewSessionWithoutModifyingResponse(
+            const res = await Session.createNewSessionWithoutRequestResponse(
                 "test-user-id",
                 { tokenProp: true },
                 { dbProp: true }
@@ -98,7 +98,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
     });
 
-    describe("getSessionWithoutModifyingResponse", () => {
+    describe("getSessionWithoutRequestResponse", () => {
         it("should validate basic access token", async () => {
             await startST();
             SuperTokens.init({
@@ -113,12 +113,9 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init()],
             });
 
-            const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
             const tokens = createRes.session.getAllSessionTokensDangerously();
-            const getSession = await Session.getSessionWithoutModifyingResponse(
-                tokens.accessToken,
-                tokens.antiCsrfToken
-            );
+            const getSession = await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken);
             assert.strictEqual(getSession.status, "OK");
             /** @type {import("../../recipe/session").SessionContainer} */
             const session = getSession.session;
@@ -150,12 +147,9 @@ describe(`Session handling functions without modifying response: ${printPath(
                 ],
             });
 
-            const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
             const tokens = createRes.session.getAllSessionTokensDangerously();
-            const getSession = await Session.getSessionWithoutModifyingResponse(
-                tokens.accessToken,
-                tokens.antiCsrfToken
-            );
+            const getSession = await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken);
             assert.strictEqual(getSession.status, "OK");
             /** @type {import("../../recipe/session").SessionContainer} */
             const session = getSession.session;
@@ -168,13 +162,13 @@ describe(`Session handling functions without modifying response: ${printPath(
                 refreshToken: undefined,
             });
 
-            const getSessionWithoutAntiCSRFToken = await Session.getSessionWithoutModifyingResponse(
+            const getSessionWithoutAntiCSRFToken = await Session.getSessionWithoutRequestResponse(
                 tokens.accessToken,
                 undefined
             );
             assert.strictEqual(getSessionWithoutAntiCSRFToken.status, "TRY_REFRESH_TOKEN_ERROR");
 
-            const getSessionWithAntiCSRFDisabled = await Session.getSessionWithoutModifyingResponse(
+            const getSessionWithAntiCSRFDisabled = await Session.getSessionWithoutRequestResponse(
                 tokens.accessToken,
                 undefined,
                 {
@@ -201,7 +195,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 ],
             });
 
-            const res = await Session.getSessionWithoutModifyingResponse("nope");
+            const res = await Session.getSessionWithoutRequestResponse("nope");
             assert.strictEqual(res.status, "TOKEN_VALIDATION_ERROR");
         });
 
@@ -219,9 +213,9 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init()],
             });
 
-            const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
             const tokens = createRes.session.getAllSessionTokensDangerously();
-            const res = await Session.getSessionWithoutModifyingResponse(tokens.accessToken, undefined, {
+            const res = await Session.getSessionWithoutRequestResponse(tokens.accessToken, undefined, {
                 overrideGlobalClaimValidators: () => [
                     { id: "test", validate: () => ({ isValid: false, reason: "test" }) },
                 ],
@@ -238,7 +232,7 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
     });
 
-    describe("refreshSessionWithoutModifyingResponse", () => {
+    describe("refreshSessionWithoutRequestResponse", () => {
         it("should refresh session", async () => {
             await startST();
             SuperTokens.init({
@@ -253,13 +247,13 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init()],
             });
 
-            const createRes = await Session.createNewSessionWithoutModifyingResponse(
+            const createRes = await Session.createNewSessionWithoutRequestResponse(
                 "test-user-id",
                 { tokenProp: true },
                 { dbProp: true }
             );
             const tokens = createRes.session.getAllSessionTokensDangerously();
-            const refreshSession = await Session.refreshSessionWithoutModifyingResponse(
+            const refreshSession = await Session.refreshSessionWithoutRequestResponse(
                 tokens.refreshToken.token,
                 false,
                 tokens.antiCsrfToken
@@ -297,10 +291,10 @@ describe(`Session handling functions without modifying response: ${printPath(
                 ],
             });
 
-            const createRes = await Session.createNewSessionWithoutModifyingResponse("test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
             const tokens = createRes.session.getAllSessionTokensDangerously();
 
-            const refreshSession = await Session.refreshSessionWithoutModifyingResponse(
+            const refreshSession = await Session.refreshSessionWithoutRequestResponse(
                 tokens.refreshToken.token,
                 false,
                 tokens.antiCsrfToken
@@ -311,13 +305,13 @@ describe(`Session handling functions without modifying response: ${printPath(
             const tokensAfterRefresh = session.getAllSessionTokensDangerously();
             assert.strictEqual(tokensAfterRefresh.accessAndFrontTokenUpdated, true);
 
-            const refreshSessionWithoutAntiCSRFToken = await Session.refreshSessionWithoutModifyingResponse(
+            const refreshSessionWithoutAntiCSRFToken = await Session.refreshSessionWithoutRequestResponse(
                 tokensAfterRefresh.refreshToken.token,
                 false
             );
             assert.strictEqual(refreshSessionWithoutAntiCSRFToken.status, "UNAUTHORISED");
 
-            const refreshSessionWithDisabledAntiCSRF = await Session.refreshSessionWithoutModifyingResponse(
+            const refreshSessionWithDisabledAntiCSRF = await Session.refreshSessionWithoutRequestResponse(
                 tokensAfterRefresh.refreshToken.token,
                 true
             );
@@ -344,7 +338,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 ],
             });
 
-            const res = await Session.refreshSessionWithoutModifyingResponse("nope");
+            const res = await Session.refreshSessionWithoutRequestResponse("nope");
             assert.strictEqual(res.status, "UNAUTHORISED");
         });
     });

@@ -40,7 +40,6 @@ export declare function createNewSessionInRequest({
     config,
     appInfo,
     sessionDataInDatabase,
-    useDynamicAccessTokenSigningKey,
 }: {
     req: any;
     res: any;
@@ -51,5 +50,4 @@ export declare function createNewSessionInRequest({
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
-    useDynamicAccessTokenSigningKey: boolean | undefined;
 }): Promise<SessionContainerInterface>;

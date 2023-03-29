@@ -43,7 +43,6 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
-        useDynamicAccessTokenSigningKey?: boolean,
         userContext: any = {}
     ) {
         logDebugMessage("createNewSession: Started");
@@ -61,16 +60,14 @@ export default class SessionWrapper {
             config,
             appInfo,
             sessionDataInDatabase,
-            useDynamicAccessTokenSigningKey,
         });
     }
 
-    static async createNewSessionWithoutModifyingResponse(
+    static async createNewSessionWithoutRequestResponse(
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
-        useDynamicAccessTokenSigningKey?: boolean,
         userContext: any = {}
     ) {
         const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
@@ -89,7 +86,6 @@ export default class SessionWrapper {
             userId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
-            useDynamicAccessTokenSigningKey,
             disableAntiCsrf,
             userContext,
         });
@@ -224,7 +220,7 @@ export default class SessionWrapper {
         });
     }
 
-    static async getSessionWithoutModifyingResponse(
+    static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
@@ -283,7 +279,7 @@ export default class SessionWrapper {
         await refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
     }
 
-    static refreshSessionWithoutModifyingResponse(
+    static refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf: boolean = false,
         antiCsrfToken?: string,
@@ -410,15 +406,15 @@ export default class SessionWrapper {
 export let init = SessionWrapper.init;
 
 export let createNewSession = SessionWrapper.createNewSession;
-export let createNewSessionWithoutModifyingResponse = SessionWrapper.createNewSessionWithoutModifyingResponse;
+export let createNewSessionWithoutRequestResponse = SessionWrapper.createNewSessionWithoutRequestResponse;
 
 export let getSession = SessionWrapper.getSession;
-export let getSessionWithoutModifyingResponse = SessionWrapper.getSessionWithoutModifyingResponse;
+export let getSessionWithoutRequestResponse = SessionWrapper.getSessionWithoutRequestResponse;
 
 export let getSessionInformation = SessionWrapper.getSessionInformation;
 
 export let refreshSession = SessionWrapper.refreshSession;
-export let refreshSessionWithoutModifyingResponse = SessionWrapper.refreshSessionWithoutModifyingResponse;
+export let refreshSessionWithoutRequestResponse = SessionWrapper.refreshSessionWithoutRequestResponse;
 
 export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
 
