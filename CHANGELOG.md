@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.3.0] - 2023-03-30
+
+### Added
+
+-   Adds a telemetry API to the dashboard recipe
+
 ## [13.2.0] - 2023-03-29
 
 ### Changed
