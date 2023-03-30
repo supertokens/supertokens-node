@@ -64,19 +64,18 @@ export function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: stri
     res.setHeader("Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
-export function setFrontTokenInHeaders(res: BaseResponse, frontToken: string) {
-    res.setHeader(frontTokenHeaderKey, frontToken, false);
-    res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);
-}
-
 export function buildFrontToken(userId: string, atExpiry: number, accessTokenPayload: any) {
     const tokenInfo = {
         uid: userId,
         ate: atExpiry,
         up: accessTokenPayload,
     };
-    const frontToken = Buffer.from(JSON.stringify(tokenInfo)).toString("base64");
-    return frontToken;
+    return Buffer.from(JSON.stringify(tokenInfo)).toString("base64");
+}
+
+export function setFrontTokenInHeaders(res: BaseResponse, frontToken: string) {
+    res.setHeader(frontTokenHeaderKey, frontToken, false);
+    res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
 
 export function getCORSAllowedHeaders(): string[] {

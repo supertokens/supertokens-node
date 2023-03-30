@@ -1567,4 +1567,11 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
         session = result.session;
     }
     // API code...
+    if (session) {
+        const tokens = session.getAllSessionTokensDangerously();
+        if (tokens.accessAndFrontTokenUpdated) {
+            resp.set("st-access-token", tokens.accessToken);
+            resp.set("front-token", tokens.frontToken);
+        }
+    }
 }

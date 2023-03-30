@@ -39,7 +39,6 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
 
-        // These can  only ever be
         if (this.reqResInfo !== undefined) {
             // we do not check the output of calling revokeSession
             // before clearing the cookies because we are revoking the

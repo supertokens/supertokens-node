@@ -28,7 +28,6 @@ import {
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
-import { logDebugMessage } from "../../logger";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 // For Express
 export default class SessionWrapper {
@@ -44,7 +43,6 @@ export default class SessionWrapper {
         sessionDataInDatabase: any = {},
         userContext: any = {}
     ) {
-        logDebugMessage("createNewSession: Started");
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const appInfo = recipeInstance.getAppInfo();

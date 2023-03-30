@@ -256,8 +256,8 @@ export async function refreshSessionInRequest({
             type: SessionError.UNAUTHORISED,
         });
     }
-    const disableAntiCsrf = requestTransferMethod === "header";
-    let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+    let disableAntiCsrf = requestTransferMethod === "header";
+    const antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
 
     if (config.antiCsrf === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
         if (getRidFromHeader(req) === undefined) {
@@ -270,6 +270,7 @@ export async function refreshSessionInRequest({
                 },
             });
         }
+        disableAntiCsrf = true;
     }
 
     const result = await recipeInterfaceImpl.refreshSession({
@@ -343,6 +344,7 @@ export async function createNewSessionInRequest({
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
 }) {
+    logDebugMessage("createNewSession: Started");
     if (!req.wrapperUsed) {
         req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
     }
