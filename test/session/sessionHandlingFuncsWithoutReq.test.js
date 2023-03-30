@@ -220,13 +220,20 @@ describe(`Session handling functions without modifying response: ${printPath(
                     { id: "test", validate: () => ({ isValid: false, reason: "test" }) },
                 ],
             });
+            assert.ok(res.error);
+            assert.strictEqual(res.error.type, "INVALID_CLAIMS");
+            // We only want to check the rest in deep equal
+            delete res.error;
             assert.deepStrictEqual(res, {
-                claimValidationErrors: [
-                    {
-                        id: "test",
-                        reason: "test",
-                    },
-                ],
+                response: {
+                    claimValidationErrors: [
+                        {
+                            id: "test",
+                            reason: "test",
+                        },
+                    ],
+                    message: "invalid claim",
+                },
                 status: "CLAIM_VALIDATION_ERROR",
             });
         });
@@ -254,7 +261,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             );
             const tokens = createRes.session.getAllSessionTokensDangerously();
             const refreshSession = await Session.refreshSessionWithoutRequestResponse(
-                tokens.refreshToken.token,
+                tokens.refreshToken,
                 false,
                 tokens.antiCsrfToken
             );
@@ -295,7 +302,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             const tokens = createRes.session.getAllSessionTokensDangerously();
 
             const refreshSession = await Session.refreshSessionWithoutRequestResponse(
-                tokens.refreshToken.token,
+                tokens.refreshToken,
                 false,
                 tokens.antiCsrfToken
             );
@@ -306,13 +313,13 @@ describe(`Session handling functions without modifying response: ${printPath(
             assert.strictEqual(tokensAfterRefresh.accessAndFrontTokenUpdated, true);
 
             const refreshSessionWithoutAntiCSRFToken = await Session.refreshSessionWithoutRequestResponse(
-                tokensAfterRefresh.refreshToken.token,
+                tokensAfterRefresh.refreshToken,
                 false
             );
             assert.strictEqual(refreshSessionWithoutAntiCSRFToken.status, "UNAUTHORISED");
 
             const refreshSessionWithDisabledAntiCSRF = await Session.refreshSessionWithoutRequestResponse(
-                tokensAfterRefresh.refreshToken.token,
+                tokensAfterRefresh.refreshToken,
                 true
             );
             assert.strictEqual(refreshSessionWithDisabledAntiCSRF.status, "OK");

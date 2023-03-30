@@ -1532,7 +1532,7 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
 
         // Note that the return type forces the user to have (or at least notice) error handling
         if (result.status === "CLAIM_VALIDATION_ERROR") {
-            return resp.status(403).json(result); // Or equivalent...
+            return resp.status(403).json(result.response); // Or equivalent...
         } else if (result.status !== "OK") {
             // We could need separate handling here if we expect non-ST access tokens
             return resp.status(401); // Or equivalent...
@@ -1554,13 +1554,7 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
         const result = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
 
         // Note that the return type forces the user to have (or at least notice) error handling
-        if (result.status === "CLAIM_VALIDATION_ERROR") {
-            throw new Session.Error({
-                type: "INVALID_CLAIMS",
-                payload: result.claimValidationErrors,
-                message: "INVALID_CLAIMS",
-            });
-        } else if (result.status !== "OK") {
+        if (result.status !== "OK") {
             // We could need separate handling here if we expect non-ST access tokens
             throw result.error;
         }
@@ -1572,6 +1566,49 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
         if (tokens.accessAndFrontTokenUpdated) {
             resp.set("st-access-token", tokens.accessToken);
             resp.set("front-token", tokens.frontToken);
+        }
+    }
+}
+
+async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
+    const userId = "user-id"; // This would be fetched from somewhere
+
+    const result = await Session.createNewSessionWithoutRequestResponse(userId);
+
+    const tokens = result.session.getAllSessionTokensDangerously();
+    if (tokens.accessAndFrontTokenUpdated) {
+        resp.set("st-access-token", tokens.accessToken);
+        resp.set("front-token", tokens.frontToken);
+        resp.set("st-refresh-token", tokens.refreshToken);
+        if (tokens.antiCsrfToken) {
+            resp.set("anti-csrf", tokens.antiCsrfToken);
+        }
+    }
+}
+
+async function refreshSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
+    const refreshToken = req.headers.authorization?.replace(/^Bearer /, "");
+
+    if (!refreshToken) {
+        // This means that the user doesn't have an active session
+        return resp.status(401);
+    } else {
+        const result = await Session.refreshSessionWithoutRequestResponse(refreshToken, true);
+        if (result.status !== "OK") {
+            return resp
+                .status(401)
+                .set("st-access-token", "")
+                .set("set-refresh-token", "")
+                .set("front-token", "remove"); // Or equivalent...
+        }
+        const tokens = result.session.getAllSessionTokensDangerously();
+        if (tokens.accessAndFrontTokenUpdated) {
+            resp.set("st-access-token", tokens.accessToken);
+            resp.set("front-token", tokens.frontToken);
+            resp.set("st-refresh-token", tokens.refreshToken);
+            if (tokens.antiCsrfToken) {
+                resp.set("anti-csrf", tokens.antiCsrfToken);
+            }
         }
     }
 }

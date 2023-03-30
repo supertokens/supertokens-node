@@ -335,7 +335,7 @@ export interface SessionContainerInterface {
 
     getAllSessionTokensDangerously(): {
         accessToken: string;
-        refreshToken: TokenInfo | undefined;
+        refreshToken: string | undefined;
         antiCsrfToken: string | undefined;
         frontToken: string;
         accessAndFrontTokenUpdated: boolean;

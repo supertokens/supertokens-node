@@ -99,7 +99,7 @@ export default class Session implements SessionContainerInterface {
         return {
             accessToken: this.accessToken,
             accessAndFrontTokenUpdated: this.accessTokenUpdated,
-            refreshToken: this.refreshToken,
+            refreshToken: this.refreshToken?.token,
             frontToken: this.frontToken,
             antiCsrfToken: this.antiCsrfToken,
         };

@@ -60,7 +60,7 @@ export async function sendInvalidClaimResponse(
     response: BaseResponse
 ) {
     sendNon200Response(response, recipeInstance.config.invalidClaimStatusCode, {
-        status: "CLAIM_VALIDATION_ERROR",
+        message: "invalid claim",
         claimValidationErrors,
     });
 }

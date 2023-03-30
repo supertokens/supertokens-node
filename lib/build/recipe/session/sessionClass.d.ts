@@ -34,7 +34,7 @@ export default class Session implements SessionContainerInterface {
     getAllSessionTokensDangerously(): {
         accessToken: string;
         accessAndFrontTokenUpdated: boolean;
-        refreshToken: TokenInfo | undefined;
+        refreshToken: string | undefined;
         frontToken: string;
         antiCsrfToken: string | undefined;
     };
