@@ -229,7 +229,10 @@ export default class Recipe extends RecipeModule {
             let recipeLevelUser = user.loginMethods.find(
                 (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
             );
-            if (recipeLevelUser !== undefined && recipeLevelUser.email !== undefined) {
+            if (recipeLevelUser !== undefined) {
+                if (recipeLevelUser.email === undefined) {
+                    throw new Error("Should never come here");
+                }
                 return {
                     status: "OK",
                     email: recipeLevelUser.email,
