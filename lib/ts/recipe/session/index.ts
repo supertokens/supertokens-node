@@ -16,7 +16,6 @@
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
-    RecipeInterface,
     SessionContainerInterface as SessionContainer,
     SessionInformation,
     APIInterface,
@@ -24,13 +23,12 @@ import {
     SessionClaimValidator,
     SessionClaim,
     ClaimValidationError,
+    RecipeInterface,
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
-import frameworks from "../../framework";
-import SuperTokens from "../../supertokens";
 import { getRequiredClaimValidators } from "./utils";
-
+import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 // For Express
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -43,7 +41,30 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
-        useDynamicAccessTokenSigningKey?: boolean,
+        userContext: any = {}
+    ) {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const config = recipeInstance.config;
+        const appInfo = recipeInstance.getAppInfo();
+
+        return await createNewSessionInRequest({
+            req,
+            res,
+            userContext,
+            recipeInstance,
+            accessTokenPayload,
+            userId,
+            config,
+            appInfo,
+            sessionDataInDatabase,
+        });
+    }
+
+    static async createNewSessionWithoutRequestResponse(
+        userId: string,
+        accessTokenPayload: any = {},
+        sessionDataInDatabase: any = {},
+        disableAntiCsrf: boolean = false,
         userContext: any = {}
     ) {
         const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
@@ -58,20 +79,11 @@ export default class SessionWrapper {
             };
         }
 
-        if (!req.wrapperUsed) {
-            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-        }
-
-        if (!res.wrapperUsed) {
-            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
-            req,
-            res,
             userId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
-            useDynamicAccessTokenSigningKey,
+            disableAntiCsrf,
             userContext,
         });
     }
@@ -190,25 +202,87 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & { sessionRequired: false },
         userContext?: any
     ): Promise<SessionContainer | undefined>;
-    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
-        if (!res.wrapperUsed) {
-            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-        }
-        if (!req.wrapperUsed) {
-            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-        }
-        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const session = await recipeInterfaceImpl.getSession({ req, res, options, userContext });
+    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext?: any) {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const config = recipeInstance.config;
+        const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
 
-        if (session !== undefined) {
+        return getSessionFromRequest({
+            req,
+            res,
+            recipeInterfaceImpl,
+            config,
+            options,
+            userContext,
+        });
+    }
+
+    /**
+     * Tries to validate an access token and build a Session object from it.
+     *
+     * Notes about anti-csrf checking:
+     * - if the `antiCsrf` is set to VIA_HEADER in the Session recipe config you have to handle anti-csrf checking before calling this function and set antiCsrfCheck to false in the options.
+     * - you can disable anti-csrf checks by setting antiCsrf to NONE in the Session recipe config. We only recommend this if you are always getting the access-token from the Authorization header.
+     * - if the antiCsrf check fails the returned satatus will be TRY_REFRESH_TOKEN_ERROR
+     *
+     * Returned statuses:
+     * OK: The session was successfully validated, including claim validation
+     * CLAIM_VALIDATION_ERROR: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
+     * TRY_REFRESH_TOKEN_ERROR: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
+     *  You can send a 401 response to trigger this behaviour if you are using our frontend SDKs
+     * UNAUTHORISED: This means that the access token likely doesn't belong to a SuperTokens session. If this is unexpected, it's best handled by sending a 401 response.
+     *
+     * @param accessToken The access token extracted from the authorization header or cookies
+     * @param antiCsrfToken The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
+     * @param options Same options objects as getSession or verifySession takes, except the `sessionRequired` prop, which is always set to true in this function
+     * @param userContext User context
+     */
+    static async getSessionWithoutRequestResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: Omit<VerifySessionOptions, "sessionRequired">,
+        userContext: any = {}
+    ): Promise<
+        | { status: "OK"; session: SessionContainer }
+        | { status: "UNAUTHORISED"; error: any }
+        | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
+        | {
+              status: "CLAIM_VALIDATION_ERROR";
+              error: any;
+              response: { message: string; claimValidationErrors: ClaimValidationError[] };
+          }
+    > {
+        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const res = await recipeInterfaceImpl.getSession({
+            accessToken,
+            antiCsrfToken,
+            options,
+            userContext,
+        });
+
+        if (res.status === "OK") {
             const claimValidators = await getRequiredClaimValidators(
-                session,
+                res.session,
                 options?.overrideGlobalClaimValidators,
                 userContext
             );
-            await session.assertClaims(claimValidators, userContext);
+            try {
+                await res.session.assertClaims(claimValidators, userContext);
+            } catch (err) {
+                if (Error.isErrorFromSuperTokens(err) && err.type === "INVALID_CLAIMS") {
+                    return {
+                        status: "CLAIM_VALIDATION_ERROR",
+                        error: err,
+                        response: {
+                            message: "invalid claim",
+                            claimValidationErrors: err.payload,
+                        },
+                    };
+                }
+                throw err;
+            }
         }
-        return session;
+        return res;
     }
 
     static getSessionInformation(sessionHandle: string, userContext: any = {}) {
@@ -218,16 +292,27 @@ export default class SessionWrapper {
         });
     }
 
-    static refreshSession(req: any, res: any, userContext: any = {}) {
-        if (!res.wrapperUsed) {
-            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-        }
-        if (!req.wrapperUsed) {
-            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-        }
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res, userContext });
+    static async refreshSession(req: any, res: any, userContext: any = {}) {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const config = recipeInstance.config;
+        const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
+
+        await refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
     }
 
+    static refreshSessionWithoutRequestResponse(
+        refreshToken: string,
+        disableAntiCsrf: boolean = false,
+        antiCsrfToken?: string,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
+            refreshToken,
+            disableAntiCsrf,
+            antiCsrfToken,
+            userContext,
+        });
+    }
     static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
     }
@@ -342,12 +427,15 @@ export default class SessionWrapper {
 export let init = SessionWrapper.init;
 
 export let createNewSession = SessionWrapper.createNewSession;
+export let createNewSessionWithoutRequestResponse = SessionWrapper.createNewSessionWithoutRequestResponse;
 
 export let getSession = SessionWrapper.getSession;
+export let getSessionWithoutRequestResponse = SessionWrapper.getSessionWithoutRequestResponse;
 
 export let getSessionInformation = SessionWrapper.getSessionInformation;
 
 export let refreshSession = SessionWrapper.refreshSession;
+export let refreshSessionWithoutRequestResponse = SessionWrapper.refreshSessionWithoutRequestResponse;
 
 export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
 

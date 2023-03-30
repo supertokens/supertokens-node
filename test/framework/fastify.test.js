@@ -668,9 +668,10 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 },
             })
         );
-        assert(res2.accessToken !== undefined);
-        assert(res2.antiCsrf !== undefined);
-        assert(res2.refreshToken !== undefined);
+
+        assert.notStrictEqual(res2.accessToken, undefined);
+        assert.notStrictEqual(res2.antiCsrf, undefined);
+        assert.notStrictEqual(res2.refreshToken, undefined);
 
         let res3 = extractInfoFromResponse(
             await this.server.inject({
@@ -1134,7 +1135,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //call the updateAccessTokenPayload api to add jwt payload
@@ -1153,7 +1154,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the getAccessTokenPayload api to get jwt payload
@@ -1184,7 +1185,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         // change the value of the inserted jwt payload
@@ -1202,7 +1203,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //retrieve the changed jwt payload

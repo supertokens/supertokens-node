@@ -36,7 +36,17 @@ describe(`sessionClaims/assertClaims: ${printPath("[test/session/claims/assertCl
 
         it("should call validate with the same payload object", async () => {
             const payload = {};
-            const session = new SessionClass(helpers, "testToken", "testHandle", "testUserId", payload, {});
+            const session = new SessionClass(
+                helpers,
+                "testToken",
+                "testToken",
+                undefined,
+                undefined,
+                "testHandle",
+                "testUserId",
+                payload,
+                {}
+            );
             const mock = sinon.mock(session).expects("mergeIntoAccessTokenPayload").never();
             const claim = new StubClaim({ key: "st-c1", validateRes: { isValid: true } });
 

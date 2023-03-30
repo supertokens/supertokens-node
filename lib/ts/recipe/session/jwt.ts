@@ -37,6 +37,7 @@ export type ParsedJWTInfo = {
     header: string;
     payload: any;
     signature: string;
+    kid: string | undefined;
 };
 
 export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo {
@@ -47,6 +48,7 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
 
     // V1&V2 is functionally identical, plus all legacy tokens should be V2 now.
     let version = 2;
+    let kid = undefined;
     // V2 or older tokens did not save the key id;
     // checking header
     if (!HEADERS.has(splittedInput[0])) {
@@ -58,15 +60,17 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
         }
 
         version = Number.parseInt(parsedHeader.version);
+        kid = parsedHeader.kid;
 
         // Number.isInteger returns false for Number.NaN (if it fails to parse the version)
-        if (parsedHeader.typ !== "JWT" || !Number.isInteger(version) || version < 3 || parsedHeader.kid === undefined) {
+        if (parsedHeader.typ !== "JWT" || !Number.isInteger(version) || version < 3 || kid === undefined) {
             throw new Error("JWT header mismatch");
         }
     }
 
     return {
         version,
+        kid,
         rawTokenString: jwt,
         rawPayload: splittedInput[1],
         header: splittedInput[0],

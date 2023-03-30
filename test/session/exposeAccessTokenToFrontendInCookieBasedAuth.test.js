@@ -293,11 +293,6 @@ function getTestExpressApp() {
         }
     });
 
-    app.post("/create-static", async (req, res) => {
-        await Session.createNewSession(req, res, "", req.body.payload, {}, false);
-        res.status(200).send("");
-    });
-
     app.get("/verify", verifySession(), async (req, res) => {
         res.status(200).json({ message: true, sessionHandle: req.session.getHandle(), sessionExists: true });
     });

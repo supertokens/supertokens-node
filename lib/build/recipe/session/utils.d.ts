@@ -1,6 +1,5 @@
 // @ts-nocheck
 import {
-    CreateOrRefreshAPIResponse,
     TypeInput,
     TypeNormalisedInput,
     ClaimValidationError,
@@ -45,18 +44,10 @@ export declare function validateAndNormaliseUserInput(
     config?: TypeInput
 ): TypeNormalisedInput;
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
-export declare function attachTokensToResponse(
-    config: TypeNormalisedInput,
-    res: BaseResponse,
-    response: CreateOrRefreshAPIResponse,
-    transferMethod: TokenTransferMethod
-): void;
 export declare function setAccessTokenInResponse(
     res: BaseResponse,
-    response: {
-        accessToken: CreateOrRefreshAPIResponse["accessToken"];
-        session: CreateOrRefreshAPIResponse["session"];
-    },
+    accessToken: string,
+    frontToken: string,
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod
 ): void;

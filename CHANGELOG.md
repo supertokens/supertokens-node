@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   New access tokens are valid JWTs now
     -   They can be used directly (i.e.: by calling `getAccessToken` on the session) if you need a JWT
     -   The `jwt` prop in the access token payload is removed
+-   Changed the Session recipe interface - createNewSession, getSession and refreshSession overrides now do not take response and request and return status instead of throwing
 
 ### Configuration changes
 
@@ -36,7 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added new `checkDatabase` param to `verifySession` and `getSession`
 -   Removed `status` from `getJWKS` output (function & API)
 -   Added new optional `useStaticSigningKey` param to `createJWT`
--   Added new optional `useDynamicAccessTokenSigningKey` param to `createNewSession`
 -   Removed deprecated `updateAccessTokenPayload` and `regenerateAccessToken` from the Session recipe interface
 -   Removed `getAccessTokenLifeTimeMS` and `getRefreshTokenLifeTimeMS` functions
 
@@ -47,14 +47,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removed the handshake call to improve start-up times
 -   Added support for new access token version
 
-## Migration
+### Added
 
-### If self-hosting core
+-   Added `createNewSessionWithoutRequestResponse`, `getSessionWithoutRequestResponse`, `refreshSessionWithoutRequestResponse` to the Session recipe.
+-   Added `getAllSessionTokensDangerously` to session objects (`SessionContainerInterface`)
+-   Added `attachToRequestResponse` to session objects (`SessionContainerInterface`)
+
+### Migration
+
+#### If self-hosting core
 
 1. You need to update the core version
 2. There are manual migration steps needed. Check out the core changelogs for more details.
 
-### If you used the jwt feature of the session recipe
+#### If you used the jwt feature of the session recipe
 
 1. Add `exposeAccessTokenToFrontendInCookieBasedAuth: true` to the Session recipe config on the backend if you need to access the JWT on the frontend.
 2. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
@@ -85,7 +91,7 @@ if (accessTokenPayload.jwt === undefined) {
 }
 ```
 
-### If you used to set an issuer in the session recipe `jwt` configuration
+#### If you used to set an issuer in the session recipe `jwt` configuration
 
 -   You can add an issuer claim to access tokens by overriding the `createNewSession` function in the session recipe init.
     -   Check out https://supertokens.com/docs/passwordless/common-customizations/sessions/claims/access-token-payload#during-session-creation for more information
@@ -147,7 +153,7 @@ SuperTokens.init({
 });
 ```
 
-### If you used `sessionData` (not `accessTokenPayload`)
+#### If you used `sessionData` (not `accessTokenPayload`)
 
 Related functions/prop names have changes (`sessionData` became `sessionDataFromDatabase`):
 
@@ -155,18 +161,18 @@ Related functions/prop names have changes (`sessionData` became `sessionDataFrom
 -   Renamed `updateSessionData` to `updateSessionDataInDatabase`
 -   Renamed `sessionData` to `sessionDataInDatabase` in `SessionInformation` and the input to `createNewSession`
 
-### If you used to set `access_token_blacklisting` in the core config
+#### If you used to set `access_token_blacklisting` in the core config
 
 -   You should now set `checkDatabase` to true in the verifySession params.
 
-### If you used to set `access_token_signing_key_dynamic` in the core config
+#### If you used to set `access_token_signing_key_dynamic` in the core config
 
 -   You should now set `useDynamicAccessTokenSigningKey` in the Session recipe config.
 
-### If you used to use standard/protected props in the access token payload root:
+#### If you used to use standard/protected props in the access token payload root:
 
 1. Update you application logic to rename those props (e.g., by adding a prefix)
-2. Update the session recipe config (in this example `sub` is the protected property we are updating by adding tha `app` prefix):
+2. Update the session recipe config (in this example `sub` is the protected property we are updating by adding the `app` prefix):
 
 Before:
 
@@ -214,6 +220,60 @@ Session.init({
                         appSub: input.userId + "!!!",
                     },
                 });
+            },
+        }),
+    },
+});
+```
+
+#### If you added an override for `createNewSession`/`refreshSession`/`getSession`:
+
+This example uses `getSession`, but the changes required for the other ones are very similar. Before:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const req = input.req;
+                console.log(req);
+
+                try {
+                    const session = await oI.getSession(input);
+                    console.log(session);
+                    return session;
+                } catch (error) {
+                    console.log(error);
+                    throw error;
+                }
+            },
+        }),
+    },
+});
+```
+
+After:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const req = input.userContext._default.request;
+                console.log(req);
+
+                const resp = await oI.getSession(input);
+
+                if (resp.status === "OK") {
+                    console.log(resp.session);
+                } else {
+                    console.log(resp.status);
+                    console.log(resp.error);
+                }
+
+                return resp;
             },
         }),
     },

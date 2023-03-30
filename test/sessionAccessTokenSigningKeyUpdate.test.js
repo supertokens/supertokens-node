@@ -74,7 +74,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -84,7 +83,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -103,7 +101,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -128,16 +125,13 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken,
-            true,
-            "cookie",
-            "cookie"
+            false
         );
 
         await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
-            true,
             true,
             false
         );
@@ -170,7 +164,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -178,7 +171,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            false,
             false,
             {},
             {}
@@ -190,7 +182,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -200,7 +191,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(newSession.accessToken.token),
                 newSession.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -222,7 +212,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(oldSession.accessToken.token),
                 oldSession.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -255,7 +244,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -266,7 +254,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -276,7 +263,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -296,7 +282,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                     parseJWTWithoutSignatureVerification(response2.accessToken.token),
                     response2.antiCsrfToken,
-                    true,
                     true,
                     false
                 );
@@ -340,7 +325,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -351,7 +335,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -361,7 +344,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 response.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -383,7 +365,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                     parseJWTWithoutSignatureVerification(response2.accessToken.token),
                     response2.antiCsrfToken,
-                    true,
                     true,
                     false
                 );
@@ -424,7 +405,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -434,7 +414,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -459,7 +438,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
                 true,
-                true,
                 false
             );
 
@@ -474,7 +452,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -486,7 +463,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(session2.accessToken.token),
                 session2.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -511,7 +487,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 parseJWTWithoutSignatureVerification(session2.accessToken.token),
                 session2.antiCsrfToken,
                 true,
-                true,
                 false
             );
 
@@ -531,7 +506,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                     parseJWTWithoutSignatureVerification(session.accessToken.token),
                     session.antiCsrfToken,
-                    true,
                     true,
                     false
                 );
@@ -580,7 +554,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            false,
             {},
             {}
         );
@@ -590,7 +563,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
-                true,
                 true,
                 false
             );
@@ -611,7 +583,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 parseJWTWithoutSignatureVerification(session.accessToken.token),
                 session.antiCsrfToken,
-                true,
                 true,
                 false
             );

@@ -12,22 +12,19 @@ export declare type KeyInfo = {
     createdAt: number;
 };
 export declare type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export declare type TokenInfo = {
+    token: string;
+    expiry: number;
+    createdTime: number;
+};
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
         userId: string;
         userDataInJWT: any;
     };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
+    accessToken: TokenInfo;
+    refreshToken: TokenInfo;
     antiCsrfToken: string | undefined;
 };
 export interface ErrorHandlers {
@@ -154,30 +151,58 @@ export interface VerifySessionOptions {
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
         userId: string;
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
-        useDynamicAccessTokenSigningKey?: boolean;
+        disableAntiCsrf?: boolean;
         userContext: any;
-    }): Promise<SessionContainerInterface>;
+    }): Promise<{
+        status: "OK";
+        session: SessionContainerInterface;
+    }>;
     getGlobalClaimValidators(input: {
         userId: string;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
     getSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
-        options?: VerifySessionOptions;
+        accessToken: string;
+        antiCsrfToken?: string;
+        options?: Omit<VerifySessionOptions, "sessionRequired">;
         userContext: any;
-    }): Promise<SessionContainerInterface | undefined>;
+    }): Promise<
+        | {
+              status: "OK";
+              session: SessionContainerInterface;
+          }
+        | {
+              status: "UNAUTHORISED";
+              error: any;
+          }
+        | {
+              status: "TRY_REFRESH_TOKEN_ERROR";
+              error: any;
+          }
+    >;
     refreshSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
+        refreshToken: string;
+        antiCsrfToken?: string;
+        disableAntiCsrf: boolean;
         userContext: any;
-    }): Promise<SessionContainerInterface>;
+    }): Promise<
+        | {
+              status: "OK";
+              session: SessionContainerInterface;
+          }
+        | {
+              status: "UNAUTHORISED";
+              error: any;
+          }
+        | {
+              status: "TOKEN_THEFT_DETECTED";
+              error: any;
+          }
+    >;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionDataFromDatabase
@@ -270,6 +295,13 @@ export interface SessionContainerInterface {
     getUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
+    getAllSessionTokensDangerously(): {
+        accessToken: string;
+        refreshToken: string | undefined;
+        antiCsrfToken: string | undefined;
+        frontToken: string;
+        accessAndFrontTokenUpdated: boolean;
+    };
     getAccessToken(userContext?: any): string;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
@@ -279,6 +311,7 @@ export interface SessionContainerInterface {
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    attachToRequestResponse(reqResInfo: ReqResInfo): Promise<void> | void;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -386,3 +419,8 @@ export declare abstract class SessionClaim<T> {
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
     build(userId: string, userContext?: any): Promise<JSONObject>;
 }
+export declare type ReqResInfo = {
+    res: BaseResponse;
+    req: BaseRequest;
+    transferMethod: TokenTransferMethod;
+};

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, resetAll } = require("../utils");
 const assert = require("assert");
 const { Querier } = require("../../lib/build/querier");
 const express = require("express");
@@ -105,48 +105,6 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             let res = await new Promise((resolve) =>
                 request(app)
                     .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res);
-                        }
-                    })
-            );
-
-            let cookies = extractInfoFromResponse(res);
-            assert(cookies.accessTokenFromAny !== undefined);
-            assert(cookies.refreshTokenFromAny !== undefined);
-            assert(cookies.frontToken !== undefined);
-
-            const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-            assert.strictEqual(parsedToken.version, 3);
-
-            const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
-            assert.strictEqual(typeof parsedHeader.kid, "string");
-            assert(parsedHeader.kid.startsWith("s-"));
-        });
-
-        it("should create a V3 token signed by a static key if set in createNewSession options", async function () {
-            await startST();
-            SuperTokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [Session.init()],
-            });
-
-            const app = getTestExpressApp();
-
-            let res = await new Promise((resolve) =>
-                request(app)
-                    .post("/create-static")
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
@@ -671,6 +629,78 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
             assert.notDeepStrictEqual(resNoDBCheck.body, { message: "unauthorised" });
         });
+
+        it("should not validate token signed by a static key if not set in session recipe config", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        useDynamicAccessTokenSigningKey: false,
+                    }),
+                ],
+            });
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let cookies = extractInfoFromResponse(res);
+            assert(cookies.accessTokenFromAny !== undefined);
+            assert(cookies.refreshTokenFromAny !== undefined);
+            assert(cookies.frontToken !== undefined);
+
+            resetAll();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        useDynamicAccessTokenSigningKey: true,
+                    }),
+                ],
+            });
+
+            const resDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${cookies.accessTokenFromAny}`)
+                    .expect(401)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(resDBCheck.body, { message: "try refresh token" });
+        });
     });
 
     describe("refresh session", () => {
@@ -797,11 +827,6 @@ function getTestExpressApp() {
         } catch (ex) {
             res.status(400).json({ message: ex.message });
         }
-    });
-
-    app.post("/create-static", async (req, res) => {
-        await Session.createNewSession(req, res, "", req.body.payload, {}, false);
-        res.status(200).send("");
     });
 
     app.get("/verify", verifySession(), async (req, res) => {

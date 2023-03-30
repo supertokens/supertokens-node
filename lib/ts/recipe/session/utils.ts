@@ -14,7 +14,6 @@
  */
 
 import {
-    CreateOrRefreshAPIResponse,
     TypeInput,
     TypeNormalisedInput,
     NormalisedErrorHandlers,
@@ -24,7 +23,7 @@ import {
     VerifySessionOptions,
     TokenTransferMethod,
 } from "./types";
-import { setFrontTokenInHeaders, setAntiCsrfTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
+import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH } from "./constants";
@@ -35,7 +34,6 @@ import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";
-import { parseJWTWithoutSignatureVerification } from "./jwt";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -237,38 +235,19 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
     return sameSite;
 }
 
-export function attachTokensToResponse(
-    config: TypeNormalisedInput,
-    res: BaseResponse,
-    response: CreateOrRefreshAPIResponse,
-    transferMethod: TokenTransferMethod
-) {
-    setAccessTokenInResponse(res, response, config, transferMethod);
-    let refreshToken = response.refreshToken;
-    setToken(config, res, "refresh", refreshToken.token, refreshToken.expiry, transferMethod);
-    if (response.antiCsrfToken !== undefined) {
-        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
-    }
-}
-
 export function setAccessTokenInResponse(
     res: BaseResponse,
-    response: {
-        accessToken: CreateOrRefreshAPIResponse["accessToken"];
-        session: CreateOrRefreshAPIResponse["session"];
-    },
+    accessToken: string,
+    frontToken: string,
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod
 ) {
-    const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
-    const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
-
-    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, payload);
+    setFrontTokenInHeaders(res, frontToken);
     setToken(
         config,
         res,
         "access",
-        response.accessToken.token,
+        accessToken,
         // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
         // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
@@ -282,7 +261,7 @@ export function setAccessTokenInResponse(
             config,
             res,
             "access",
-            response.accessToken.token,
+            accessToken,
             // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
             // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
             // Even if the token is expired the presence of the token indicates that the user could have a valid refresh

@@ -53,7 +53,6 @@ export default function getAPIImplementation(): APIInterface {
                 user.id,
                 {},
                 {},
-                undefined,
                 input.userContext
             );
 

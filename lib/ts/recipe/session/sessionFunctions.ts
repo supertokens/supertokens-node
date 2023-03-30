@@ -16,7 +16,7 @@ import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
 import { ParsedJWTInfo } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
@@ -29,7 +29,6 @@ export async function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
-    useDynamicSigningKey: boolean,
     accessTokenPayload: any = {},
     sessionDataInDatabase: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
@@ -41,10 +40,9 @@ export async function createNewSession(
         userId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionDataInDatabase,
-        useDynamicSigningKey,
+        useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
-
     const response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
 
     delete response.status;
@@ -59,13 +57,13 @@ export async function getSession(
     parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
-    containsCustomHeader: boolean,
     alwaysCheckCore: boolean
 ): Promise<{
     session: {
         handle: string;
         userId: string;
         userDataInJWT: any;
+        expiryTime: number;
     };
     accessToken?: {
         token: string;
@@ -135,6 +133,18 @@ export async function getSession(
         }
     }
 
+    if (parsedAccessToken.version >= 3) {
+        const tokenUsesDynamicKey = parsedAccessToken.kid!.startsWith("d-");
+        if (tokenUsesDynamicKey !== helpers.config.useDynamicAccessTokenSigningKey) {
+            logDebugMessage(
+                "getSession: Returning TRY_REFRESH_TOKEN because the access token doesn't match the useDynamicAccessTokenSigningKey in the config"
+            );
+            throw new STError({
+                message: "The access token doesn't match the useDynamicAccessTokenSigningKey setting",
+                type: STError.TRY_REFRESH_TOKEN,
+            });
+        }
+    }
     // If we get here we either have a V2 token that doesn't pass verification or a valid V3> token
     /**
      * anti-csrf check if accesstokenInfo is not undefined,
@@ -165,22 +175,19 @@ export async function getSession(
                 }
             }
         } else if (helpers.config.antiCsrf === "VIA_CUSTOM_HEADER") {
-            if (!containsCustomHeader) {
-                logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
-                throw new STError({
-                    message:
-                        "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
-                    type: STError.TRY_REFRESH_TOKEN,
-                });
-            }
+            // The function should never be called by this (we check this outside the function as well)
+            // There we can add a bit more information to the error, so that's the primary check, this is just making sure.
+            throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
         }
     }
+
     if (accessTokenInfo !== undefined && !alwaysCheckCore && accessTokenInfo.parentRefreshTokenHash1 === undefined) {
         return {
             session: {
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
                 userDataInJWT: accessTokenInfo.userData,
+                expiryTime: accessTokenInfo.expiryTime,
             },
         };
     }
@@ -254,8 +261,7 @@ export async function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    containsCustomHeader: boolean,
-    transferMethod: TokenTransferMethod
+    disableAntiCsrf: boolean
 ): Promise<CreateOrRefreshAPIResponse> {
     let requestBody: {
         refreshToken: string;
@@ -264,20 +270,13 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
-        enableAntiCsrf: transferMethod === "cookie" && helpers.config.antiCsrf === "VIA_TOKEN",
+        enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
 
-    if (helpers.config.antiCsrf === "VIA_CUSTOM_HEADER" && transferMethod === "cookie") {
-        if (!containsCustomHeader) {
-            logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
-            throw new STError({
-                message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
-                type: STError.UNAUTHORISED,
-                payload: {
-                    clearTokens: false, // see https://github.com/supertokens/supertokens-node/issues/141
-                },
-            });
-        }
+    if (helpers.config.antiCsrf === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
+        // The function should never be called by this (we check this outside the function as well)
+        // There we can add a bit more information to the error, so that's the primary check, this is just making sure.
+        throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
     }
 
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);

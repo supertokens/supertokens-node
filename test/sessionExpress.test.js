@@ -1472,7 +1472,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //call the updateAccessTokenPayload api to add jwt payload
@@ -1497,7 +1497,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the getAccessTokenPayload api to get jwt payload
@@ -1540,7 +1540,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         // change the value of the inserted jwt payload
@@ -1564,7 +1564,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //retrieve the changed jwt payload
@@ -2001,14 +2001,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         }
 
         {
-            let res2 = await new Promise((resolve) =>
+            let res2 = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("rid", "session")
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }
@@ -2130,19 +2130,19 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                 createNewSession: async (input) => {
                                     let response = await oI.createNewSession(input);
                                     createNewSessionCalled = true;
-                                    session = response;
+                                    session = response.session;
                                     return response;
                                 },
                                 getSession: async (input) => {
                                     let response = await oI.getSession(input);
                                     getSessionCalled = true;
-                                    session = response;
+                                    session = response.session;
                                     return response;
                                 },
                                 refreshSession: async (input) => {
                                     let response = await oI.refreshSession(input);
                                     refreshSessionCalled = true;
-                                    session = response;
+                                    session = response.session;
                                     return response;
                                 },
                             };
@@ -2414,7 +2414,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                 createNewSession: async (input) => {
                                     let response = await oI.createNewSession(input);
                                     createNewSessionCalled = true;
-                                    session = response;
+                                    session = response.session;
                                     throw {
                                         error: "create new session error",
                                     };

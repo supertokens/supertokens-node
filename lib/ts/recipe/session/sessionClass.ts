@@ -12,10 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseRequest, BaseResponse } from "../../framework";
-import { clearSession } from "./cookieAndHeaders";
+import { buildFrontToken, clearSession, setAntiCsrfTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
 import { Helpers, protectedProps } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
 import { parseJWTWithoutSignatureVerification } from "./jwt";
@@ -24,12 +23,14 @@ export default class Session implements SessionContainerInterface {
     constructor(
         protected helpers: Helpers,
         protected accessToken: string,
+        protected frontToken: string,
+        protected refreshToken: TokenInfo | undefined,
+        protected antiCsrfToken: string | undefined,
         protected sessionHandle: string,
         protected userId: string,
         protected userDataInAccessToken: any,
-        protected res: BaseResponse,
-        protected readonly req: BaseRequest,
-        protected readonly transferMethod: TokenTransferMethod
+        protected reqResInfo: ReqResInfo | undefined,
+        protected accessTokenUpdated: boolean
     ) {}
 
     async revokeSession(userContext?: any) {
@@ -38,13 +39,15 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
 
-        // we do not check the output of calling revokeSession
-        // before clearing the cookies because we are revoking the
-        // current API request's session.
-        // If we instead clear the cookies only when revokeSession
-        // returns true, it can cause this kind of a bug:
-        // https://github.com/supertokens/supertokens-node/issues/343
-        clearSession(this.helpers.config, this.res, this.transferMethod);
+        if (this.reqResInfo !== undefined) {
+            // we do not check the output of calling revokeSession
+            // before clearing the cookies because we are revoking the
+            // current API request's session.
+            // If we instead clear the cookies only when revokeSession
+            // returns true, it can cause this kind of a bug:
+            // https://github.com/supertokens/supertokens-node/issues/343
+            clearSession(this.helpers.config, this.reqResInfo.res, this.reqResInfo.transferMethod);
+        }
     }
 
     async getSessionDataFromDatabase(userContext?: any): Promise<any> {
@@ -92,6 +95,16 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     }
 
+    getAllSessionTokensDangerously() {
+        return {
+            accessToken: this.accessToken,
+            accessAndFrontTokenUpdated: this.accessTokenUpdated,
+            refreshToken: this.refreshToken?.token,
+            frontToken: this.frontToken,
+            antiCsrfToken: this.antiCsrfToken,
+        };
+    }
+
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
         let newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext) };
@@ -125,13 +138,18 @@ export default class Session implements SessionContainerInterface {
             const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
             this.userDataInAccessToken = payload;
             this.accessToken = response.accessToken.token;
-            // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
-            setAccessTokenInResponse(
-                this.res,
-                response as Required<typeof response>,
-                this.helpers.config,
-                this.transferMethod
-            );
+            this.frontToken = buildFrontToken(this.userId, response.accessToken.expiry, payload);
+            this.accessTokenUpdated = true;
+            if (this.reqResInfo !== undefined) {
+                // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
+                setAccessTokenInResponse(
+                    this.reqResInfo.res,
+                    this.accessToken,
+                    this.frontToken,
+                    this.helpers.config,
+                    this.reqResInfo.transferMethod
+                );
+            }
         } else {
             // This case means that the access token has expired between the validation and this update
             // We can't update the access token on the FE, as it will need to call refresh anyway but we handle this as a successful update during this request.
@@ -218,5 +236,28 @@ export default class Session implements SessionContainerInterface {
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
         const update = claim.removeFromPayloadByMerge_internal({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
+    }
+
+    attachToRequestResponse(info: ReqResInfo) {
+        this.reqResInfo = info;
+
+        if (this.accessTokenUpdated) {
+            const { res, transferMethod } = info;
+
+            setAccessTokenInResponse(res, this.accessToken, this.frontToken, this.helpers.config, transferMethod);
+            if (this.refreshToken !== undefined) {
+                setToken(
+                    this.helpers.config,
+                    res,
+                    "refresh",
+                    this.refreshToken.token,
+                    this.refreshToken.expiry,
+                    transferMethod
+                );
+            }
+            if (this.antiCsrfToken !== undefined) {
+                setAntiCsrfTokenInHeaders(res, this.antiCsrfToken);
+            }
+        }
     }
 }

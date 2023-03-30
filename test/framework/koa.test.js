@@ -1304,7 +1304,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //call the updateAccessTokenPayload api to add jwt payload
@@ -1329,7 +1329,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the getAccessTokenPayload api to get jwt payload
@@ -1372,7 +1372,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         // change the value of the inserted jwt payload
@@ -1396,7 +1396,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
-        assert.strictEqual(frontendInfo.up.exp, frontendInfo.ate / 1000);
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
         assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
 
         //retrieve the changed jwt payload
