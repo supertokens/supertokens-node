@@ -587,7 +587,7 @@ export default function getAPIImplementation(): APIInterface {
             let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
 
             if (recipeUser === undefined) {
-                throw new Error("Race condition error - please call this API again");
+                throw new Error("Should never come here");
             }
 
             let session = await Session.createNewSession(
