@@ -71,7 +71,7 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
         websiteDomain: websiteDomain.getAsStringDangerous(),
         apiDomain: apiDomain.getAsStringDangerous(),
         appName,
-        sdk: "supertokens-node",
+        sdk: "node",
         sdkVersion: SDKVersion,
         telemetryId,
         numberOfUsers,
