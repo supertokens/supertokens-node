@@ -214,14 +214,11 @@ export declare type AccountInfoAndEmailWithRecipeId = {
         userId: string;
     };
 };
-export declare type AccountInfo =
-    | {
-          email: string;
-      }
-    | {
-          phoneNumber: string;
-      }
-    | {
-          thirdPartyId: string;
-          thirdPartyUserId: string;
-      };
+export declare type AccountInfo = {
+    email?: string;
+    phoneNumber?: string;
+    thirdParty?: {
+        id: string;
+        userId: string;
+    };
+};
