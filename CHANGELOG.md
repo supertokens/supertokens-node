@@ -7,13 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Breaking changes
+### Changed
 
--   Dashboard recipe no longer accepts `apiKey`, the dashboard only uses email password based login (Refer to the [user dashboard docs](https://supertokens.com/docs/userdashboard/about) to know more)
-
-### Changes
-
--   Adds an analytics API to the dashboard recipe to record telemetry
+-   Updates the example app to also initialise the dashboard
 
 ## [13.1.5] - 2023-03-17
 
