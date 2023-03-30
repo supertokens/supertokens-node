@@ -226,14 +226,11 @@ export type AccountInfoAndEmailWithRecipeId = {
     };
 };
 
-export type AccountInfo =
-    | {
-          email: string;
-      }
-    | {
-          phoneNumber: string;
-      }
-    | {
-          thirdPartyId: string;
-          thirdPartyUserId: string;
-      };
+export type AccountInfo = {
+    email?: string;
+    phoneNumber?: string;
+    thirdParty?: {
+        id: string;
+        userId: string;
+    };
+};
