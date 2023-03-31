@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.4.0] - 2023-03-31
+
+-   Adds APIs to enable search functionality to the dashboard recipe
+
 ## [13.3.0] - 2023-03-30
 
 ### Added
