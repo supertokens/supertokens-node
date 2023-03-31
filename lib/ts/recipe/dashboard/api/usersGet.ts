@@ -72,8 +72,8 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
     }
 
     let paginationToken = options.req.getKeyValueFromQuery("paginationToken");
-
     let usersResponse = await SuperTokens.getInstanceOrThrowError().getUsers({
+        query: { ...options.req.original.query },
         timeJoinedOrder: timeJoinedOrder,
         limit: parseInt(limit),
         paginationToken,

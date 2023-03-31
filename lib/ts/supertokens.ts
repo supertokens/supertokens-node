@@ -156,6 +156,7 @@ export default class SuperTokens {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: object;
     }): Promise<{
         users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
@@ -172,6 +173,7 @@ export default class SuperTokens {
             includeRecipeIdsStr = input.includeRecipeIds.join(",");
         }
         let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+            ...input.query,
             includeRecipeIds: includeRecipeIdsStr,
             timeJoinedOrder: input.timeJoinedOrder,
             limit: input.limit,

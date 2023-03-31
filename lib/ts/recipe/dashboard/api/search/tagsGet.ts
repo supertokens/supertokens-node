@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2022, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -12,23 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export const version = "13.4.0";
 
-export const cdiSupported = [
-    "2.8",
-    "2.9",
-    "2.10",
-    "2.11",
-    "2.12",
-    "2.13",
-    "2.14",
-    "2.15",
-    "2.16",
-    "2.17",
-    "2.18",
-    "2.19",
-    "2.20",
-];
+import { APIInterface, APIOptions } from "../../types";
+import { Querier } from "../../../../querier";
+import NormalisedURLPath from "../../../../normalisedURLPath";
 
-// Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
-export const dashboardVersion = "0.6";
+type TagsResponse = { status: "OK"; tags: string[] };
+
+export const getSearchTags = async (_: APIInterface, options: APIOptions): Promise<TagsResponse> => {
+    let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
+    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {});
+    return tagsResponse;
+};

@@ -23,6 +23,7 @@ import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndN
 import {
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
+    SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
     USERS_COUNT_API,
@@ -56,6 +57,7 @@ import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyToken
 import { userSessionsPost } from "./api/userdetails/userSessionsPost";
 import signIn from "./api/signIn";
 import signOut from "./api/signOut";
+import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
 
 export default class Recipe extends RecipeModule {
@@ -229,6 +231,12 @@ export default class Recipe extends RecipeModule {
                 method: "post",
             },
             {
+                id: SEARCH_TAGS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SEARCH_TAGS_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
                 id: DASHBOARD_ANALYTICS_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_ANALYTICS_API)),
                 disabled: false,
@@ -314,6 +322,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = userPasswordPut;
         } else if (id === USER_EMAIL_VERIFY_TOKEN_API) {
             apiFunction = userEmailVerifyTokenPost;
+        } else if (id === SEARCH_TAGS_API) {
+            apiFunction = getSearchTags;
         } else if (id === SIGN_OUT_API) {
             apiFunction = signOut;
         } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
