@@ -27,6 +27,7 @@ export const cdiSupported = [
     "2.17",
     "2.18",
     "2.19",
+    "2.20",
 ];
 
 // Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
