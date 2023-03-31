@@ -26,3 +26,4 @@ export const USER_SESSIONS_API = "/api/user/sessions";
 export const USER_PASSWORD_API = "/api/user/password";
 export const USER_EMAIL_VERIFY_TOKEN_API = "/api/user/email/verify/token";
 export const SEARCH_TAGS_API = "/api/search/tags";
+export const DASHBOARD_ANALYTICS_API = "/api/analytics";

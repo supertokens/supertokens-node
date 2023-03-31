@@ -14,7 +14,6 @@
  */
 
 import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
-import axios from "axios";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -45,6 +44,8 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
 
     supertokens: undefined | SuperTokensInfo;
+
+    telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
@@ -83,43 +84,8 @@ export default class SuperTokens {
             return func(this.appInfo, this.isInServerlessEnv);
         });
 
-        let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
-
-        if (telemetry) {
-            if (this.isInServerlessEnv) {
-                // see https://github.com/supertokens/supertokens-node/issues/127
-                let randomNum = Math.random() * 10;
-                if (randomNum > 7) {
-                    this.sendTelemetry();
-                }
-            } else {
-                this.sendTelemetry();
-            }
-        }
+        this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }
-
-    sendTelemetry = async () => {
-        try {
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
-            let telemetryId: string | undefined;
-            if (response.exists) {
-                telemetryId = response.telemetryId;
-            }
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.com/0/st/telemetry",
-                data: {
-                    appName: this.appInfo.appName,
-                    websiteDomain: this.appInfo.websiteDomain.getAsStringDangerous(),
-                    telemetryId,
-                },
-                headers: {
-                    "api-version": 2,
-                },
-            });
-        } catch (ignored) {}
-    };
 
     static init(config: TypeInput) {
         if (SuperTokens.instance === undefined) {

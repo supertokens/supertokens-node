@@ -21,6 +21,7 @@ import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import {
+    DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
     SEARCH_TAGS_API,
     SIGN_IN_API,
@@ -57,6 +58,7 @@ import { userSessionsPost } from "./api/userdetails/userSessionsPost";
 import signIn from "./api/signIn";
 import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
+import analyticsPost from "./api/analytics";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -234,6 +236,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "get",
             },
+            {
+                id: DASHBOARD_ANALYTICS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_ANALYTICS_API)),
+                disabled: false,
+                method: "post",
+            },
         ];
     };
 
@@ -318,6 +326,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = getSearchTags;
         } else if (id === SIGN_OUT_API) {
             apiFunction = signOut;
+        } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
+            apiFunction = analyticsPost;
         }
 
         // If the id doesnt match any APIs return false
