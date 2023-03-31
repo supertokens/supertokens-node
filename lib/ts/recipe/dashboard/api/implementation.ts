@@ -43,7 +43,7 @@ export default function getAPIImplementation(): APIInterface {
 
             let isSearchEnabled = false;
             const cdiVersion = await Querier.getNewInstanceOrThrowError(input.options.recipeId).getAPIVersion();
-            if (maxVersion("2.20", cdiVersion) === "2.20") {
+            if (maxVersion("2.20", cdiVersion) === cdiVersion) {
                 // Only enable search if CDI version is 2.20 or above
                 isSearchEnabled = true;
             }
