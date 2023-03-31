@@ -22,6 +22,7 @@ import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import {
     DASHBOARD_API,
+    SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
     USERS_COUNT_API,
@@ -55,6 +56,7 @@ import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyToken
 import { userSessionsPost } from "./api/userdetails/userSessionsPost";
 import signIn from "./api/signIn";
 import signOut from "./api/signOut";
+import { getSearchTags } from "./api/search/tagsGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -226,6 +228,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "post",
             },
+            {
+                id: SEARCH_TAGS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SEARCH_TAGS_API)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -306,6 +314,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = userPasswordPut;
         } else if (id === USER_EMAIL_VERIFY_TOKEN_API) {
             apiFunction = userEmailVerifyTokenPost;
+        } else if (id === SEARCH_TAGS_API) {
+            apiFunction = getSearchTags;
         } else if (id === SIGN_OUT_API) {
             apiFunction = signOut;
         }

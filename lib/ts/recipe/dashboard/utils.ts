@@ -19,6 +19,7 @@ import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
+    SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
     USERS_COUNT_API,
@@ -140,6 +141,9 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 
     if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
         return USER_PASSWORD_API;
+    }
+    if (path.getAsStringDangerous().endsWith(SEARCH_TAGS_API) && method === "get") {
+        return SEARCH_TAGS_API;
     }
 
     return undefined;
