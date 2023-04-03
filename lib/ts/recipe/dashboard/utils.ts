@@ -373,3 +373,17 @@ export async function validateApiKey(input: { req: BaseRequest; config: TypeNorm
 export function getApiPathWithDashboardBase(path: string): string {
     return DASHBOARD_API + path;
 }
+
+export function getParamsfromURL(path: String): { [key: string]: string; } {
+    const queryString: string = path.split('?').pop() ?? "";
+    if (queryString === "") {
+        return {};
+    }
+    const KVPairs: string[] = queryString.split('&');
+    let query: { [key: string]: string; } = {}
+    KVPairs.forEach(el => {
+        const [key, value] = el.split("=");
+        query[key] = value;
+    })
+    return query;
+}

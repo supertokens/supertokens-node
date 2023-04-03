@@ -17,6 +17,7 @@ import STError from "../../../error";
 import SuperTokens from "../../../supertokens";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
+import { getParamsfromURL } from "../utils"
 
 export type Response = {
     status: "OK";
@@ -72,8 +73,9 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
     }
 
     let paginationToken = options.req.getKeyValueFromQuery("paginationToken");
+    const query = getParamsfromURL(options.req.getOriginalURL());
     let usersResponse = await SuperTokens.getInstanceOrThrowError().getUsers({
-        query: { ...options.req.original.query },
+        query,
         timeJoinedOrder: timeJoinedOrder,
         limit: parseInt(limit),
         paginationToken,
