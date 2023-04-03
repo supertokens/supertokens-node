@@ -374,16 +374,14 @@ export function getApiPathWithDashboardBase(path: string): string {
     return DASHBOARD_API + path;
 }
 
-export function getParamsfromURL(path: String): { [key: string]: string; } {
-    const queryString: string = path.split('?').pop() ?? "";
-    if (queryString === "") {
-        return {};
+export function getParamsfromURL(path: string): { [key: string]: string; } {
+    const URLObject = new URL(path);
+    const params = new URLSearchParams(URLObject.search);
+    const searchQuery: {[key: string]: string} = {};
+    for(const [key, value] of params) {
+        if(!['limit', 'timeJoinedOrder', 'paginationToken'].includes(key)) {
+            searchQuery[key] = value;
+        }
     }
-    const KVPairs: string[] = queryString.split('&');
-    let query: { [key: string]: string; } = {}
-    KVPairs.forEach(el => {
-        const [key, value] = el.split("=");
-        query[key] = value;
-    })
-    return query;
+    return searchQuery;
 }
