@@ -24,6 +24,7 @@ const Router = require("@koa/router");
 let { verifySession } = require("../../recipe/session/framework/koa");
 const request = require("supertest");
 let Dashboard = require("../../recipe/dashboard");
+const { createUsers } = require("../utils.js")
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1532,4 +1533,234 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         assert(res.statusCode === 200);
     });
+
+    it("test that tags request respond with correct tags", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+
+
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/search/tags")
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        const tags = res.body.tags;
+        assert(tags.length !== 0);
+    });
+
+    it("test that search results correct output for 'email: t'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(EmailPassword);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    email: 't',
+                    limit: 10
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 5);
+    });
+
+    it("test that search results correct output for multiple search items", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                    },
+                            };
+                            },
+                    },
+                }),
+                EmailPassword.init(),
+                ],
+        });
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(EmailPassword);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    email: 'iresh;john',
+                    limit: 10
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+                );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 1);
+    });
+
+    it("test that search results correct output for 'email: iresh'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                    },
+                            };
+                            },
+                    },
+                }),
+                EmailPassword.init(),
+                ],
+        });
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(EmailPassword);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    email: 'iresh',
+                    limit: 10
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+                );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 0);
+    });
+
+
 });

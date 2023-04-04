@@ -1,0 +1,44 @@
+{
+    "users": [
+        {
+            "recipe": "emailpassword",
+            "email": "test@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "test+1@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "email+ABC@gmail.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "testing@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "test.name@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "debugging@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "random@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "johndoe@testing.weird",
+            "password": "password"
+        }
+    ]
+}
