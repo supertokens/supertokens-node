@@ -36,7 +36,7 @@ const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
 const { join } = require("path");
 
-const users = require('./users.json')
+const users = require("./users.json");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -585,4 +585,4 @@ module.exports.createUsers = async (emailpassword) => {
         const user = usersArray[i];
         await emailpassword.signUp(user.email, user.password);
     }
-}
+};

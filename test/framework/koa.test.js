@@ -24,7 +24,9 @@ const Router = require("@koa/router");
 let { verifySession } = require("../../recipe/session/framework/koa");
 const request = require("supertest");
 let Dashboard = require("../../recipe/dashboard");
-const { createUsers } = require("../utils.js")
+const { createUsers } = require("../utils.js");
+const { Querier } = require("../../lib/ts/querier");
+const { maxVersion } = require("../../lib/ts/utils");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1556,8 +1558,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                                 shouldAllowAccess: async function (input) {
                                     let authHeader = input.req.getHeaderValue("authorization");
                                     return authHeader === "Bearer testapikey";
-
-
                                 },
                             };
                         },
@@ -1565,6 +1565,12 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 }),
             ],
         });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1619,6 +1625,12 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             ],
         });
 
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
         const app = new Koa();
         app.use(KoaFramework.middleware());
         this.server = app.listen(9999);
@@ -1629,8 +1641,8 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
-                    email: 't',
-                    limit: 10
+                    email: "t",
+                    limit: 10,
                 })
                 .set("Content-Type", "application/json")
                 .set("Authorization", "Bearer testapikey")
@@ -1668,14 +1680,20 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                                 shouldAllowAccess: async function (input) {
                                     let authHeader = input.req.getHeaderValue("authorization");
                                     return authHeader === "Bearer testapikey";
-                                    },
+                                },
                             };
-                            },
+                        },
                     },
                 }),
                 EmailPassword.init(),
-                ],
+            ],
         });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1687,8 +1705,8 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
-                    email: 'iresh;john',
-                    limit: 10
+                    email: "iresh;john",
+                    limit: 10,
                 })
                 .set("Content-Type", "application/json")
                 .set("Authorization", "Bearer testapikey")
@@ -1699,7 +1717,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                         resolve(res);
                     }
                 })
-                );
+        );
         assert(res.statusCode === 200);
         assert(res.body.users.length === 1);
     });
@@ -1726,14 +1744,20 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                                 shouldAllowAccess: async function (input) {
                                     let authHeader = input.req.getHeaderValue("authorization");
                                     return authHeader === "Bearer testapikey";
-                                    },
+                                },
                             };
-                            },
+                        },
                     },
                 }),
                 EmailPassword.init(),
-                ],
+            ],
         });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
 
         const app = new Koa();
         app.use(KoaFramework.middleware());
@@ -1745,8 +1769,8 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             request(this.server)
                 .get("/auth/dashboard/api/users")
                 .query({
-                    email: 'iresh',
-                    limit: 10
+                    email: "iresh",
+                    limit: 10,
                 })
                 .set("Content-Type", "application/json")
                 .set("Authorization", "Bearer testapikey")
@@ -1757,10 +1781,8 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                         resolve(res);
                     }
                 })
-                );
+        );
         assert(res.statusCode === 200);
         assert(res.body.users.length === 0);
     });
-
-
 });

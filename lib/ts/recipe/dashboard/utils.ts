@@ -373,15 +373,3 @@ export async function validateApiKey(input: { req: BaseRequest; config: TypeNorm
 export function getApiPathWithDashboardBase(path: string): string {
     return DASHBOARD_API + path;
 }
-
-export function getParamsfromURL(path: string): { [key: string]: string; } {
-    const URLObject = new URL(path);
-    const params = new URLSearchParams(URLObject.search);
-    const searchQuery: {[key: string]: string} = {};
-    for(const [key, value] of params) {
-        if(!['limit', 'timeJoinedOrder', 'paginationToken'].includes(key)) {
-            searchQuery[key] = value;
-        }
-    }
-    return searchQuery;
-}

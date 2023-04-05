@@ -17,7 +17,6 @@ import STError from "../../../error";
 import SuperTokens from "../../../supertokens";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
-import { getParamsfromURL } from "../utils"
 
 export type Response = {
     status: "OK";
@@ -73,7 +72,7 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
     }
 
     let paginationToken = options.req.getKeyValueFromQuery("paginationToken");
-    const query = getParamsfromURL(options.req.getOriginalURL());
+    const query = getSearchParamsFromURL(options.req.getOriginalURL());
     let usersResponse = await SuperTokens.getInstanceOrThrowError().getUsers({
         query,
         timeJoinedOrder: timeJoinedOrder,
@@ -168,4 +167,16 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
         users: usersResponse.users,
         nextPaginationToken: usersResponse.nextPaginationToken,
     };
+}
+
+export function getSearchParamsFromURL(path: string): { [key: string]: string } {
+    const URLObject = new URL(path);
+    const params = new URLSearchParams(URLObject.search);
+    const searchQuery: { [key: string]: string } = {};
+    for (const [key, value] of params) {
+        if (!["limit", "timeJoinedOrder", "paginationToken"].includes(key)) {
+            searchQuery[key] = value;
+        }
+    }
+    return searchQuery;
 }
