@@ -31,6 +31,9 @@ const EmailVerification = require("../../recipe/emailverification");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/fastify");
 let Dashboard = require("../../recipe/dashboard");
+let { createUsers } = require("../utils");
+const { Querier } = require("../../lib/ts/querier");
+const { maxVersion } = require("../../lib/ts/utils");
 
 describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1398,5 +1401,215 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         assert(res2.statusCode === 200);
+    });
+
+    it("test that tags request respond with correct tags", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(FastifyFramework.plugin);
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/search/tags",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(resp.statusCode === 200);
+        const body = resp.json();
+        assert(body.tags.length !== 0);
+    });
+
+    it("test that search results correct output for 'email: t'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(FastifyFramework.plugin);
+        await createUsers(EmailPassword);
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&email=t",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(resp.statusCode === 200);
+        const body = resp.json();
+        assert(body.users.length === 5);
+    });
+
+    it("test that search results correct output for multiple search terms", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(FastifyFramework.plugin);
+        await createUsers(EmailPassword);
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&email=iresh;john",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(resp.statusCode === 200);
+        const body = resp.json();
+        assert(body.users.length === 1);
+    });
+
+    it("test that search results correct output for 'email: iresh'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(FastifyFramework.plugin);
+        await createUsers(EmailPassword);
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&email=iresh",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(resp.statusCode === 200);
+        const body = resp.json();
+        assert(body.users.length === 0);
     });
 });

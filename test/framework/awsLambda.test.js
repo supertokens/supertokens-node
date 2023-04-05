@@ -30,6 +30,7 @@ let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
 let Dashboard = require("../../recipe/dashboard");
+let { createUsers } = require("../utils");
 
 describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, function () {
     beforeEach(async function () {
@@ -632,4 +633,57 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         let result = await middleware()(event, undefined);
         assert(result.statusCode === 200);
     });
+
+    // it("test that search results correct output for 'email: t'", async function () {
+    //     await startST();
+    //     SuperTokens.init({
+    //         framework: "awsLambda",
+    //         supertokens: {
+    //             connectionURI: "http://localhost:8080",
+    //         },
+    //         appInfo: {
+    //             apiDomain: "http://api.supertokens.io",
+    //             appName: "SuperTokens",
+    //             websiteDomain: "http://supertokens.io",
+    //         },
+    //         recipeList: [
+    //             Dashboard.init({
+    //                 apiKey: "testapikey",
+    //                 override: {
+    //                     functions: (original) => {
+    //                         return {
+    //                             ...original,
+    //                             shouldAllowAccess: async function (input) {
+    //                                 let authHeader = input.req.getHeaderValue("authorization");
+    //                                 return authHeader === "Bearer testapikey";
+    //                             },
+    //                         };
+    //                     },
+    //                 },
+    //             }),
+    //             EmailPassword.init()
+    //         ],
+    //     });
+    //
+    //     let proxy = "/dev";
+    //
+    //     await createUsers(EmailPassword);
+    //
+    //     let event = mockLambdaProxyEventV2(
+    //         "/auth/dashboard/api/users",
+    //         "GET",
+    //         {
+    //             Authorization: "Bearer testapikey",
+    //             "Content-Type": "application/json",
+    //         },
+    //         null,
+    //         proxy,
+    //         null,
+    //         "limit=10&email=t"
+    //     );
+    //
+    //     let result = await middleware()(event, undefined);
+    //     assert(result.statusCode === 200);
+    //     assert(result.body.users.length === 5);
+    // });
 });
