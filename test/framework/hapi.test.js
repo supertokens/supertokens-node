@@ -24,8 +24,8 @@ let { verifySession } = require("../../recipe/session/framework/hapi");
 let Dashboard = require("../../recipe/dashboard");
 let EmailPassword = require("../../recipe/emailpassword");
 const { createUsers } = require("../utils.js");
-const { Querier } = require("../../lib/ts/querier");
-const { maxVersion } = require("../../lib/ts/utils");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
     beforeEach(async function () {

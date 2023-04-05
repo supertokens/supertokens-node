@@ -25,8 +25,8 @@ let { verifySession } = require("../../recipe/session/framework/koa");
 const request = require("supertest");
 let Dashboard = require("../../recipe/dashboard");
 const { createUsers } = require("../utils.js");
-const { Querier } = require("../../lib/ts/querier");
-const { maxVersion } = require("../../lib/ts/utils");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {

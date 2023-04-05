@@ -24,8 +24,8 @@ const request = require("supertest");
 const axios = require("axios").default;
 let Dashboard = require("../../recipe/dashboard");
 const { createUsers } = require("../utils.js");
-const { Querier } = require("../../lib/ts/querier");
-const { maxVersion } = require("../../lib/ts/utils");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {

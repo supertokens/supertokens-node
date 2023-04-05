@@ -31,6 +31,8 @@ let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
 let Dashboard = require("../../recipe/dashboard");
 let { createUsers } = require("../utils");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, function () {
     beforeEach(async function () {
@@ -634,56 +636,249 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         assert(result.statusCode === 200);
     });
 
-    // it("test that search results correct output for 'email: t'", async function () {
-    //     await startST();
-    //     SuperTokens.init({
-    //         framework: "awsLambda",
-    //         supertokens: {
-    //             connectionURI: "http://localhost:8080",
-    //         },
-    //         appInfo: {
-    //             apiDomain: "http://api.supertokens.io",
-    //             appName: "SuperTokens",
-    //             websiteDomain: "http://supertokens.io",
-    //         },
-    //         recipeList: [
-    //             Dashboard.init({
-    //                 apiKey: "testapikey",
-    //                 override: {
-    //                     functions: (original) => {
-    //                         return {
-    //                             ...original,
-    //                             shouldAllowAccess: async function (input) {
-    //                                 let authHeader = input.req.getHeaderValue("authorization");
-    //                                 return authHeader === "Bearer testapikey";
-    //                             },
-    //                         };
-    //                     },
-    //                 },
-    //             }),
-    //             EmailPassword.init()
-    //         ],
-    //     });
-    //
-    //     let proxy = "/dev";
-    //
-    //     await createUsers(EmailPassword);
-    //
-    //     let event = mockLambdaProxyEventV2(
-    //         "/auth/dashboard/api/users",
-    //         "GET",
-    //         {
-    //             Authorization: "Bearer testapikey",
-    //             "Content-Type": "application/json",
-    //         },
-    //         null,
-    //         proxy,
-    //         null,
-    //         "limit=10&email=t"
-    //     );
-    //
-    //     let result = await middleware()(event, undefined);
-    //     assert(result.statusCode === 200);
-    //     assert(result.body.users.length === 5);
-    // });
+    it("test that tags request respond with correct tags", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        let proxy = "/dev";
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/search/tags",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            null
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.tags.length !== 0);
+    });
+
+    it("test that search results correct output for 'email: t", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        let proxy = "/dev";
+
+        await createUsers(EmailPassword);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                email: "t",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 5);
+    });
+
+    it("test that search results correct output for multiple search items", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        let proxy = "/dev";
+
+        await createUsers(EmailPassword);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                email: "john;iresh",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 1);
+    });
+
+    it("test that search results correct output for 'email: iresh", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+        let proxy = "/dev";
+
+        await createUsers(EmailPassword);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                email: "iresh",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 0);
+    });
 });

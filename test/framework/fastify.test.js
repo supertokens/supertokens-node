@@ -32,8 +32,8 @@ let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/fastify");
 let Dashboard = require("../../recipe/dashboard");
 let { createUsers } = require("../utils");
-const { Querier } = require("../../lib/ts/querier");
-const { maxVersion } = require("../../lib/ts/utils");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function () {
     beforeEach(async function () {
