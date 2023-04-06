@@ -24,8 +24,11 @@ const request = require("supertest");
 const axios = require("axios").default;
 let Dashboard = require("../../recipe/dashboard");
 const { createUsers } = require("../utils.js");
-const { Querier } = require("../../lib/ts/querier");
-const { maxVersion } = require("../../lib/ts/utils");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
+const Passwordless = require("../../recipe/passwordless");
+const ThirdParty = require("../../recipe/thirdparty");
+const { Apple, Google, Github } = require("../../recipe/thirdparty");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {
@@ -511,5 +514,296 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         assert(result.status === 200);
         assert(result.data.users.length === 0);
+    });
+
+    it("test that search results correct output for 'phone: +1'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "loopback",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.app.start();
+
+        await createUsers(null, Passwordless);
+
+        let result = await axios({
+            url: "/auth/dashboard/api/users",
+            baseURL: "http://localhost:9876",
+            method: "get",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            params: {
+                limit: 10,
+                phone: "+1",
+            },
+        });
+
+        assert(result.status === 200);
+        assert(result.data.users.length === 3);
+    });
+
+    it("test that search results correct output for 'phone: 1('", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "loopback",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.app.start();
+
+        await createUsers(null, Passwordless);
+
+        let result = await axios({
+            url: "/auth/dashboard/api/users",
+            baseURL: "http://localhost:9876",
+            method: "get",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            params: {
+                limit: 10,
+                phone: "1(",
+            },
+        });
+
+        assert(result.status === 200);
+        assert(result.data.users.length === 0);
+    });
+
+    it("test that search results correct output for 'provider: google', phone: 1", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "loopback",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.app.start();
+
+        await createUsers(null, Passwordless, ThirdParty);
+
+        let result = await axios({
+            url: "/auth/dashboard/api/users",
+            baseURL: "http://localhost:9876",
+            method: "get",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            params: {
+                limit: 10,
+                provider: "google",
+                phone: "1",
+            },
+        });
+
+        assert(result.status === 200);
+        assert(result.data.users.length === 0);
+    });
+
+    it("test that search results correct output for 'provider: google'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "loopback",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.app.start();
+
+        await createUsers(null, null, ThirdParty);
+
+        let result = await axios({
+            url: "/auth/dashboard/api/users",
+            baseURL: "http://localhost:9876",
+            method: "get",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            params: {
+                limit: 10,
+                provider: "google",
+            },
+        });
+
+        assert(result.status === 200);
+        assert(result.data.users.length === 3);
     });
 });

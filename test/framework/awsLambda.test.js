@@ -28,9 +28,14 @@ let SuperTokens = require("../../");
 let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
+let Passwordless = require("../../recipe/passwordless");
+let ThirdParty = require("../../recipe/thirdparty");
+let { Apple, Google, Github } = require("../../recipe/thirdparty");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
 let Dashboard = require("../../recipe/dashboard");
 let { createUsers } = require("../utils");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, function () {
     beforeEach(async function () {
@@ -634,56 +639,552 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         assert(result.statusCode === 200);
     });
 
-    // it("test that search results correct output for 'email: t'", async function () {
-    //     await startST();
-    //     SuperTokens.init({
-    //         framework: "awsLambda",
-    //         supertokens: {
-    //             connectionURI: "http://localhost:8080",
-    //         },
-    //         appInfo: {
-    //             apiDomain: "http://api.supertokens.io",
-    //             appName: "SuperTokens",
-    //             websiteDomain: "http://supertokens.io",
-    //         },
-    //         recipeList: [
-    //             Dashboard.init({
-    //                 apiKey: "testapikey",
-    //                 override: {
-    //                     functions: (original) => {
-    //                         return {
-    //                             ...original,
-    //                             shouldAllowAccess: async function (input) {
-    //                                 let authHeader = input.req.getHeaderValue("authorization");
-    //                                 return authHeader === "Bearer testapikey";
-    //                             },
-    //                         };
-    //                     },
-    //                 },
-    //             }),
-    //             EmailPassword.init()
-    //         ],
-    //     });
-    //
-    //     let proxy = "/dev";
-    //
-    //     await createUsers(EmailPassword);
-    //
-    //     let event = mockLambdaProxyEventV2(
-    //         "/auth/dashboard/api/users",
-    //         "GET",
-    //         {
-    //             Authorization: "Bearer testapikey",
-    //             "Content-Type": "application/json",
-    //         },
-    //         null,
-    //         proxy,
-    //         null,
-    //         "limit=10&email=t"
-    //     );
-    //
-    //     let result = await middleware()(event, undefined);
-    //     assert(result.statusCode === 200);
-    //     assert(result.body.users.length === 5);
-    // });
+    it("test that tags request respond with correct tags", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        let proxy = "/dev";
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/search/tags",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            null
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.tags.length !== 0);
+    });
+
+    it("test that search results correct output for 'email: t", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        let proxy = "/dev";
+
+        await createUsers(EmailPassword);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                email: "t",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 5);
+    });
+
+    it("test that search results correct output for multiple search items", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        let proxy = "/dev";
+
+        await createUsers(EmailPassword);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                email: "john;iresh",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 1);
+    });
+
+    it("test that search results correct output for 'email: iresh", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+        let proxy = "/dev";
+
+        await createUsers(EmailPassword);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                email: "iresh",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 0);
+    });
+
+    it("test that search results correct output for 'phone: +1", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+        let proxy = "/dev";
+
+        await createUsers(null, Passwordless);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                phone: "+1",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 3);
+    });
+
+    it("test that search results correct output for 'phone: 1(", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+        let proxy = "/dev";
+
+        await createUsers(null, Passwordless);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                phone: "+1",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 0);
+    });
+
+    it("test that search results correct output for 'provider: google'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+        let proxy = "/dev";
+
+        await createUsers(null, null, ThirdParty);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                provider: "google",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 3);
+    });
+
+    it("test that search results correct output for 'provider: google, phone: 1'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "http://api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "http://supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+        let proxy = "/dev";
+
+        await createUsers(null, null, ThirdParty);
+
+        let event = mockLambdaProxyEventV2(
+            "/auth/dashboard/api/users",
+            "GET",
+            {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+            null,
+            proxy,
+            null,
+            {
+                limit: "10",
+                provider: "google",
+                phone: "1",
+            }
+        );
+
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 200);
+        const body = JSON.parse(result.body);
+        assert(body.users.length === 0);
+    });
 });

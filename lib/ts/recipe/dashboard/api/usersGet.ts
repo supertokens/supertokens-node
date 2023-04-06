@@ -170,7 +170,7 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
 }
 
 export function getSearchParamsFromURL(path: string): { [key: string]: string } {
-    const URLObject = new URL(path);
+    const URLObject = new URL("https://exmaple.com" + path);
     const params = new URLSearchParams(URLObject.search);
     const searchQuery: { [key: string]: string } = {};
     for (const [key, value] of params) {
