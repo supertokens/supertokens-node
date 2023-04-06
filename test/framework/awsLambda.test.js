@@ -1005,7 +1005,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             null,
             {
                 limit: "10",
-                phone: "+1",
+                phone: "1(",
             }
         );
 
