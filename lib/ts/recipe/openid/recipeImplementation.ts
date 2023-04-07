@@ -40,10 +40,12 @@ export default function getRecipeInterface(
         createJWT: async function ({
             payload,
             validitySeconds,
+            useStaticSigningKey,
             userContext,
         }: {
             payload?: any;
             validitySeconds?: number;
+            useStaticSigningKey?: boolean;
             userContext: any;
         }): Promise<
             | {
@@ -62,6 +64,7 @@ export default function getRecipeInterface(
                     iss: issuer,
                     ...payload,
                 },
+                useStaticSigningKey,
                 validitySeconds,
                 userContext,
             });
