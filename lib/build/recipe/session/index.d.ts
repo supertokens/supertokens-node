@@ -162,6 +162,7 @@ export default class SessionWrapper {
     static createJWT(
         payload?: any,
         validitySeconds?: number,
+        useStaticSigningKey?: boolean,
         userContext?: any
     ): Promise<
         | {

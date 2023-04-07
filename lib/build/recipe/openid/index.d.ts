@@ -12,6 +12,7 @@ export default class OpenIdRecipeWrapper {
     static createJWT(
         payload?: any,
         validitySeconds?: number,
+        useStaticSigningKey?: boolean,
         userContext?: any
     ): Promise<
         | {

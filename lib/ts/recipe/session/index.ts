@@ -355,10 +355,11 @@ export default class SessionWrapper {
         });
     }
 
-    static createJWT(payload?: any, validitySeconds?: number, userContext: any = {}) {
+    static createJWT(payload?: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.createJWT({
             payload,
             validitySeconds,
+            useStaticSigningKey,
             userContext,
         });
     }
