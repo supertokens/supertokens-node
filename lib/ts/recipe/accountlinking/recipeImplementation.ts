@@ -18,6 +18,7 @@ import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
+import Recipe from "./recipe";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -250,6 +251,28 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 if (loginMethodInfo === undefined) {
                     throw Error("this error should never be thrown");
                 }
+
+                /**
+                 * We now mark the same email of other linked recipes as verified if the new user's email is verified.
+                 */
+                if (loginMethodInfo.email !== undefined && loginMethodInfo.verified) {
+                    // it is safe to force unwrap loginMethodInfo here because we have already checked that it is not undefined.
+                    let recipeUserIdsForEmailVerificationUpdate = user.loginMethods
+                        .filter((u) => u.email === loginMethodInfo!.email && !u.verified)
+                        .map((l) => l.recipeUserId);
+                    recipeUserIdsForEmailVerificationUpdate = Array.from(
+                        new Set(recipeUserIdsForEmailVerificationUpdate)
+                    );
+
+                    for (let i = 0; i < recipeUserIdsForEmailVerificationUpdate.length; i++) {
+                        await Recipe.getInstanceOrThrowError().markEmailAsVerified({
+                            email: loginMethodInfo.email,
+                            recipeUserId: recipeUserIdsForEmailVerificationUpdate[i],
+                            userContext,
+                        });
+                    }
+                }
+
                 await config.onAccountLinked(
                     user,
                     {
