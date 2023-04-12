@@ -275,31 +275,15 @@ export default class Recipe extends RecipeModule {
         recipeUserId: string;
         userContext: any;
     }): Promise<string> => {
-        let accountInfo: AccountInfo;
-        if (newUser.email !== undefined) {
-            accountInfo = {
-                email: newUser.email,
-            };
-        } else if (newUser.phoneNumber !== undefined) {
-            accountInfo = {
-                phoneNumber: newUser.phoneNumber,
-            };
-        } else if (newUser.thirdParty !== undefined) {
-            accountInfo = {
-                thirdPartyId: newUser.thirdParty.id,
-                thirdPartyUserId: newUser.thirdParty.userId,
-            };
-        } else {
-            throw Error("this error should never be thrown");
-        }
-        let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-            accountInfo,
+        let user = await this.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            recipeUserId,
             userContext,
         });
-        if (users.length === 0) {
+
+        if (user === undefined) {
             return recipeUserId;
         }
-        let primaryUser = users.find((u) => u.isPrimaryUser);
+        let primaryUser = user;
         let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
             newUser,
             primaryUser,
@@ -917,9 +901,10 @@ export default class Recipe extends RecipeModule {
                     ) {
                         primaryUserId = linkAccountsResult.primaryUserId;
                     }
-                    console.log(primaryUserId); // TODO: remove this
+                    console.log(primaryUserId); // TODO NEMI: remove this
 
-                    // TODO: remove session claim if session claim exists
+                    // TODO NEMI: The caller of this function should
+                    // remove session claim if session claim exists
                     // else create a new session
                 }
             }
