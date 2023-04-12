@@ -333,7 +333,7 @@ export default class Recipe extends RecipeModule {
             return primaryUser.id;
         } else if (result.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             return result.primaryUserId;
-        } else if (result.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+        } else if (result.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             return result.primaryUserId;
         } else {
             return primaryUser.id;
@@ -379,7 +379,7 @@ export default class Recipe extends RecipeModule {
               | {
                     accountsLinked: false;
                     reason:
-                        | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                        | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                         | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                     primaryUserId: string;
                 }
@@ -472,7 +472,7 @@ export default class Recipe extends RecipeModule {
                     userContext,
                 });
             } else if (
-                createPrimaryUserResult.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
+                createPrimaryUserResult.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
             ) {
                 /* this can come here if in the following example: 
                 - User creates a primary account (P1) using email R
@@ -614,7 +614,7 @@ export default class Recipe extends RecipeModule {
                 return {
                     createRecipeUser: false,
                     accountsLinked: false,
-                    reason: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    reason: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
                     primaryUserId: primaryUserIfExists.id,
                 };
             }
@@ -661,10 +661,10 @@ export default class Recipe extends RecipeModule {
             };
         }
         if (
-            canLinkAccounts.status === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
+            canLinkAccounts.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
             canLinkAccounts.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
         ) {
-            /* ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR can be possible if 
+            /* ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR can be possible if 
             - existingUser has email E1
             - you try and link an account with email E2
             - there already exists another primary account with email E2
@@ -896,7 +896,7 @@ export default class Recipe extends RecipeModule {
                     let primaryUserId = primaryUser.id;
                     if (
                         linkAccountsResult.status ===
-                            "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
+                            "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
                         linkAccountsResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                     ) {
                         primaryUserId = linkAccountsResult.primaryUserId;
