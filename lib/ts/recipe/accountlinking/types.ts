@@ -177,7 +177,13 @@ export type RecipeInterface = {
               wasRecipeUserDeleted: boolean;
           }
         | {
-              status: "NO_PRIMARY_USER_FOUND";
+              status: "PRIMARY_USER_NOT_FOUND";
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "RECIPE_USER_NOT_FOUND";
           }
     >;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;

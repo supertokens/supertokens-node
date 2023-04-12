@@ -293,20 +293,35 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId: string;
                 userContext: any;
             }
-        ): Promise<{
-            status: "OK";
-            wasRecipeUserDeleted: boolean;
-        }> {
+        ): Promise<
+            | {
+                  status: "OK";
+                  wasRecipeUserDeleted: boolean;
+              }
+            | {
+                  status: "RESTART_FLOW_ERROR";
+              }
+            | {
+                  status: "PRIMARY_USER_NOT_FOUND";
+              }
+            | {
+                  status: "RECIPE_USER_NOT_FOUND";
+              }
+        > {
             let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsForRecipeUserIds({
                 recipeUserIds: [recipeUserId],
                 userContext,
             });
             let primaryUserId = recipeUserIdToPrimaryUserIdMapping[recipeUserId];
             if (primaryUserId === undefined) {
-                throw new Error("input recipeUserId does not exist");
+                return {
+                    status: "RECIPE_USER_NOT_FOUND",
+                };
             }
             if (primaryUserId === null) {
-                throw Error("recipeUserId is not associated with any primaryUserId");
+                return {
+                    status: "PRIMARY_USER_NOT_FOUND",
+                };
             }
             /**
              * primaryUserId === recipeUserId
@@ -318,7 +333,9 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 });
 
                 if (user === undefined) {
-                    throw new Error("Seems like a race condition issue occurred. Please try again");
+                    return {
+                        status: "RESTART_FLOW_ERROR",
+                    };
                 }
                 if (user.loginMethods.length > 1) {
                     await this.deleteUser({

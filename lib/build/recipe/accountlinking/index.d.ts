@@ -104,7 +104,13 @@ export default class Wrapper {
               wasRecipeUserDeleted: boolean;
           }
         | {
-              status: "NO_PRIMARY_USER_FOUND";
+              status: "PRIMARY_USER_NOT_FOUND";
+          }
+        | {
+              status: "RESTART_FLOW_ERROR";
+          }
+        | {
+              status: "RECIPE_USER_NOT_FOUND";
           }
     >;
     static fetchFromAccountToLinkTable(
