@@ -688,7 +688,7 @@ export default class Recipe extends RecipeModule {
             primaryUserId: existingUser.id,
             userContext,
         });
-        if (canLinkAccounts.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
+        if (canLinkAccounts.status === "OK" && canLinkAccounts.accountsAlreadyLinked) {
             return {
                 createRecipeUser: false,
                 accountsLinked: true,
@@ -776,7 +776,7 @@ export default class Recipe extends RecipeModule {
             primaryUserId: existingUser.id,
             userContext,
         });
-        if (linkAccountResponse.status === "OK" || linkAccountResponse.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
+        if (linkAccountResponse.status === "OK") {
             return {
                 createRecipeUser: false,
                 accountsLinked: true,

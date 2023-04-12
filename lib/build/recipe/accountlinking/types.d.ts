@@ -118,15 +118,12 @@ export declare type RecipeInterface = {
     }) => Promise<
         | {
               status: "OK";
+              accountsAlreadyLinked: boolean;
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               description: string;
               primaryUserId: string;
-          }
-        | {
-              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-              description: string;
           }
         | {
               status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -141,14 +138,11 @@ export declare type RecipeInterface = {
     }) => Promise<
         | {
               status: "OK";
+              accountsAlreadyLinked: boolean;
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
-              description: string;
-          }
-        | {
-              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
               description: string;
           }
         | {

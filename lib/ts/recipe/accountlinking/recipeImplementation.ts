@@ -169,15 +169,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         ): Promise<
             | {
                   status: "OK";
+                  accountsAlreadyLinked: boolean;
               }
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   description: string;
                   primaryUserId: string;
-              }
-            | {
-                  status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-                  description: string;
               }
             | {
                   status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -189,6 +186,21 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId,
                 primaryUserId,
             });
+
+            if (result.status === "OK") {
+                return {
+                    status: "OK",
+                    accountsAlreadyLinked: false,
+                };
+            }
+
+            if (result.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
+                return {
+                    status: "OK",
+                    accountsAlreadyLinked: true,
+                };
+            }
+
             return result;
         },
         linkAccounts: async function (
@@ -205,14 +217,11 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         ): Promise<
             | {
                   status: "OK";
+                  accountsAlreadyLinked: boolean;
               }
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNTS_ALREADY_LINKED_ERROR";
                   description: string;
               }
             | {
@@ -253,7 +262,26 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                     },
                     userContext
                 );
+
+                return {
+                    status: "OK",
+                    accountsAlreadyLinked: false,
+                };
+            } else if (accountsLinkingResult.status === "ACCOUNTS_ALREADY_LINKED_ERROR") {
+                let user: User | undefined = await this.getUser({
+                    userId: primaryUserId,
+                    userContext,
+                });
+                if (user === undefined) {
+                    throw Error("this error should never be thrown");
+                }
+
+                return {
+                    status: "OK",
+                    accountsAlreadyLinked: true,
+                };
             }
+
             return accountsLinkingResult;
         },
         unlinkAccounts: async function (
