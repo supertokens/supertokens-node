@@ -22,7 +22,7 @@ import type {
     Callback,
 } from "aws-lambda";
 import { HTTPMethod } from "../../types";
-import { normaliseHttpMethod } from "../../utils";
+import { getFromObjectCaseInsensitive, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { normalizeHeaderValue, getCookieValueFromHeaders, serializeCookieValue } from "../utils";
@@ -31,6 +31,7 @@ import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
 import { parse } from "querystring";
+import { URL } from "url";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;
@@ -116,16 +117,23 @@ export class AWSRequest extends BaseRequest {
         if (this.event.headers === undefined || this.event.headers === null) {
             return undefined;
         }
-        return normalizeHeaderValue(this.event.headers[key]);
+        return normalizeHeaderValue(getFromObjectCaseInsensitive(key, this.event.headers));
     };
 
     getOriginalURL = (): string => {
         let path = (this.event as APIGatewayProxyEvent).path;
+        let queryParams = (this.event as APIGatewayProxyEvent).queryStringParameters as { [key: string]: string };
         if (path === undefined) {
             path = (this.event as APIGatewayProxyEventV2).requestContext.http.path;
             let stage = (this.event as APIGatewayProxyEventV2).requestContext.stage;
             if (stage !== undefined && path.startsWith(`/${stage}`)) {
                 path = path.slice(stage.length + 1);
+            }
+            if (queryParams !== undefined && queryParams !== null) {
+                let urlString = "https://exmaple.com" + path;
+                let url = new URL(urlString);
+                Object.keys(queryParams).forEach((el) => url.searchParams.append(el, queryParams[el]));
+                path = url.pathname + url.search;
             }
         }
         return path;

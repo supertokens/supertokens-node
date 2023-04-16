@@ -16,6 +16,7 @@ let SuperTokens = require("../../");
 let Session = require("../../recipe/session");
 let SuperTokensRaw = require("../../lib/build/supertokens").default;
 let SessionRecipeRaw = require("../../lib/build/recipe/session/recipe").default;
+let DashboardRecipeRaw = require("../../lib/build/recipe/dashboard/recipe").default;
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -163,6 +164,7 @@ app.post("/setAntiCsrf", async (req, res) => {
     if (enableAntiCsrf !== undefined) {
         SuperTokensRaw.reset();
         SessionRecipeRaw.reset();
+        DashboardRecipeRaw.reset();
         SuperTokens.init(getConfig(enableAntiCsrf));
     }
     res.send("success");
@@ -175,6 +177,7 @@ app.post("/setEnableJWT", async (req, res) => {
     if (enableJWT !== undefined) {
         SuperTokensRaw.reset();
         SessionRecipeRaw.reset();
+        DashboardRecipeRaw.reset();
         SuperTokens.init(getConfig(lastSetEnableAntiCSRF, enableJWT));
     }
     res.send("success");
@@ -196,6 +199,7 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
 
     SuperTokensRaw.reset();
     SessionRecipeRaw.reset();
+    DashboardRecipeRaw.reset();
     SuperTokens.init(getConfig(lastSetEnableAntiCSRF, currentEnableJWT, jwtPropertyName));
 
     res.send("");

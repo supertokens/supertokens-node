@@ -19,9 +19,11 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
+import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import {
+    DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
+    SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
     USERS_COUNT_API,
@@ -55,6 +57,8 @@ import { userEmailVerifyTokenPost } from "./api/userdetails/userEmailVerifyToken
 import { userSessionsPost } from "./api/userdetails/userSessionsPost";
 import signIn from "./api/signIn";
 import signOut from "./api/signOut";
+import { getSearchTags } from "./api/search/tagsGet";
+import analyticsPost from "./api/analytics";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -117,10 +121,128 @@ export default class Recipe extends RecipeModule {
          * handles a specific API path and method and then returns the ID.
          *
          * For the dashboard recipe this logic is fully custom and handled inside the
-         * `returnAPIIdIfCanHandleRequest` method of this class. Since this array is never
-         * used for this recipe, we simply return an empty array.
+         * `returnAPIIdIfCanHandleRequest` method of this class.
+         *
+         * For most frameworks this array is redundant because the `returnAPIIdIfCanHandleRequest` is used.
+         * But for frameworks such as Hapi that require all APIs to be declared up front, this array is used
+         * to make sure that the framework does not return a 404
          */
-        return [];
+        return [
+            {
+                id: DASHBOARD_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: SIGN_IN_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SIGN_IN_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: VALIDATE_KEY_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(VALIDATE_KEY_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: SIGN_OUT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SIGN_OUT_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: USERS_LIST_GET_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERS_LIST_GET_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USERS_COUNT_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USERS_COUNT_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
+                method: "delete",
+            },
+            {
+                id: USER_EMAIL_VERIFY_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_EMAIL_VERIFY_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_EMAIL_VERIFY_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_EMAIL_VERIFY_API)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: USER_METADATA_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_METADATA_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_METADATA_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_METADATA_API)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: USER_SESSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_SESSIONS_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: USER_SESSIONS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_SESSIONS_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: USER_PASSWORD_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_PASSWORD_API)),
+                disabled: false,
+                method: "put",
+            },
+            {
+                id: USER_EMAIL_VERIFY_TOKEN_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_EMAIL_VERIFY_TOKEN_API)),
+                disabled: false,
+                method: "post",
+            },
+            {
+                id: SEARCH_TAGS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SEARCH_TAGS_API)),
+                disabled: false,
+                method: "get",
+            },
+            {
+                id: DASHBOARD_ANALYTICS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_ANALYTICS_API)),
+                disabled: false,
+                method: "post",
+            },
+        ];
     };
 
     handleAPIRequest = async (
@@ -200,8 +322,12 @@ export default class Recipe extends RecipeModule {
             apiFunction = userPasswordPut;
         } else if (id === USER_EMAIL_VERIFY_TOKEN_API) {
             apiFunction = userEmailVerifyTokenPost;
+        } else if (id === SEARCH_TAGS_API) {
+            apiFunction = getSearchTags;
         } else if (id === SIGN_OUT_API) {
             apiFunction = signOut;
+        } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
+            apiFunction = analyticsPost;
         }
 
         // If the id doesnt match any APIs return false

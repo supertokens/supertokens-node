@@ -34,3 +34,4 @@ export declare function validateApiKey(input: {
     config: TypeNormalisedInput;
     userContext: any;
 }): Promise<boolean>;
+export declare function getApiPathWithDashboardBase(path: string): string;

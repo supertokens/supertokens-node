@@ -19,6 +19,7 @@ import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
+    SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
     USERS_COUNT_API,
@@ -30,6 +31,7 @@ import {
     USER_PASSWORD_API,
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
+    DASHBOARD_ANALYTICS_API,
 } from "./constants";
 import {
     APIInterface,
@@ -60,7 +62,6 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 
     return {
-        apiKey: config === undefined ? undefined : config.apiKey,
         override,
         authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
     };
@@ -140,6 +141,13 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 
     if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
         return USER_PASSWORD_API;
+    }
+    if (path.getAsStringDangerous().endsWith(SEARCH_TAGS_API) && method === "get") {
+        return SEARCH_TAGS_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(DASHBOARD_ANALYTICS_API) && method === "post") {
+        return DASHBOARD_ANALYTICS_API;
     }
 
     return undefined;
@@ -360,4 +368,8 @@ export async function validateApiKey(input: { req: BaseRequest; config: TypeNorm
     }
 
     return apiKeyHeaderValue === input.config.apiKey;
+}
+
+export function getApiPathWithDashboardBase(path: string): string {
+    return DASHBOARD_API + path;
 }

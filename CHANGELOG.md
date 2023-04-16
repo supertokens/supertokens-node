@@ -280,6 +280,43 @@ Session.init({
 });
 ```
 
+## [13.4.1] - 2023-04-11
+
+-   Modified email templates to make them render fine in outlook.
+
+## [13.4.0] - 2023-03-31
+
+-   Adds APIs to enable search functionality to the dashboard recipe
+
+## [13.3.0] - 2023-03-30
+
+### Added
+
+-   Adds a telemetry API to the dashboard recipe
+
+## [13.2.0] - 2023-03-29
+
+### Changed
+
+-   Updates the example app to also initialise the dashboard
+
+### Added
+
+-   Login with bitbucket and gitlab (single tenant only)
+
+## [13.1.5] - 2023-03-17
+
+### Fixes
+
+-   Fixed an issue where BaseRequest implmentations for frameworks such as AWS Lambda would not consider case sensitivity when fetching request headers
+-   Fixes an issue where dashboard recipe APIs would return 404 for Hapi
+
+## [13.1.4] - 2023-03-16
+
+### Fixes
+
+-   Fixes an issue where importing recipes without importing the package index file would cause crashes
+
 ## [13.1.3] - 2023-03-08
 
 ### Changed
