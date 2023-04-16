@@ -57,6 +57,13 @@ export default function getRecipeInterface(
             })
         );
 
+    /**
+        This function fetches all JWKs from the first available core instance. This combines the other JWKS functions to become
+        error resistant.
+
+        Every core instance a backend is connected to is expected to connect to the same database and use the same key set for
+        token verification. Otherwise, the result of session verification would depend on which core is currently available.
+    */
     const combinedJWKS: ReturnType<typeof createRemoteJWKSet> = async (...args) => {
         let lastError = undefined;
         if (JWKS.length === 0) {
