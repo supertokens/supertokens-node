@@ -97,6 +97,10 @@ export default class Wrapper {
 
     static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
 
+    static Bitbucket = thirdPartyProviders.Bitbucket;
+
+    static GitLab = thirdPartyProviders.GitLab;
+
     // static Okta = thirdPartyProviders.Okta;
 
     // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
@@ -142,6 +146,10 @@ export let Apple = Wrapper.Apple;
 export let Discord = Wrapper.Discord;
 
 export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+
+export let Bitbucket = Wrapper.Bitbucket;
+
+export let GitLab = Wrapper.GitLab;
 
 // export let Okta = Wrapper.Okta;
 

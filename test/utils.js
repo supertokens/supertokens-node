@@ -34,6 +34,9 @@ let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
+const { join } = require("path");
+
+const users = require("./users.json");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -560,4 +563,53 @@ module.exports.mockRequest = () => {
         header: (key) => headers[key],
     };
     return req;
+};
+
+module.exports.getAllFilesInDirectory = (path) => {
+    return fs
+        .readdirSync(path, {
+            withFileTypes: true,
+        })
+        .flatMap((file) => {
+            if (file.isDirectory()) {
+                return this.getAllFilesInDirectory(join(path, file.name));
+            } else {
+                return join(path, file.name);
+            }
+        });
+};
+
+module.exports.createUsers = async (emailpassword = null, passwordless = null, thirdparty = null) => {
+    const usersArray = users.users;
+    for (let i = 0; i < usersArray.length; i++) {
+        const user = usersArray[i];
+        if (user.recipe === "emailpassword" && emailpassword !== null) {
+            await emailpassword.signUp(user.email, user.password);
+        }
+        if (user.recipe === "passwordless" && passwordless !== null) {
+            if (user.email !== undefined) {
+                const codeResponse = await passwordless.createCode({
+                    email: user.email,
+                });
+                await passwordless.consumeCode({
+                    preAuthSessionId: codeResponse.preAuthSessionId,
+                    deviceId: codeResponse.deviceId,
+                    userInputCode: codeResponse.userInputCode,
+                });
+            } else {
+                const codeResponse = await passwordless.createCode({
+                    phoneNumber: user.phone,
+                });
+                await passwordless.consumeCode({
+                    preAuthSessionId: codeResponse.preAuthSessionId,
+                    deviceId: codeResponse.deviceId,
+                    userInputCode: codeResponse.userInputCode,
+                });
+            }
+        }
+
+        if (user.recipe === "thirdparty" && thirdparty !== null) {
+            await thirdparty.signInUp(user.provider, user.userId, user.email);
+        }
+    }
 };

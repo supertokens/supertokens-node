@@ -1,0 +1,147 @@
+{
+    "users": [
+        {
+            "recipe": "emailpassword",
+            "email": "test@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "test+1@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "email+ABC@gmail.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "testing@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "test.name@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "debugging@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "random@supertokens.com",
+            "password": "password"
+        },
+        {
+            "recipe": "emailpassword",
+            "email": "johndoe@testing.weird",
+            "password": "password"
+        },
+
+        {
+            "recipe": "passwordless",
+            "email": "test@supertokens.com"
+        },
+        {
+            "recipe": "passwordless",
+            "email": "test+1@supertokens.com"
+        },
+        {
+            "recipe": "passwordless",
+            "email": "passwordless+ABC@gmail.com"
+        },
+        {
+            "recipe": "passwordless",
+            "email": "testing@supertokens.com"
+        },
+        {
+            "recipe": "passwordless",
+            "email": "test.name@supertokens.com"
+        },
+        {
+            "recipe": "passwordless",
+            "email": "debugging@supertokens.com"
+        },
+        {
+            "recipe": "passwordless",
+            "email": "random@supertokens.com"
+        },
+        {
+            "recipe": "passwordless",
+            "email": "johndoe@testing.weird"
+        },
+
+        {
+            "recipe": "passwordless",
+            "phone": "+12029182132"
+        },
+        {
+            "recipe": "passwordless",
+            "phone": "+15059842706"
+        },
+        {
+            "recipe": "passwordless",
+            "phone": "+3585010760278"
+        },
+        {
+            "recipe": "passwordless",
+            "phone": "+918709241809"
+        },
+        {
+            "recipe": "passwordless",
+            "phone": "+12642354793"
+        },
+
+        {
+            "recipe": "thirdparty",
+            "provider": "google",
+            "email": "test@supertokens.com",
+            "userId": "774b9318-a91e-4773-80c5-65f0823c5ee7"
+        },
+        {
+            "recipe": "thirdparty",
+            "provider": "google",
+            "email": "test+1@supertokens.com",
+            "userId": "479d3bb5-371e-4d6b-914b-b6cd8f3787a5"
+        },
+        {
+            "recipe": "thirdparty",
+            "provider": "google",
+            "email": "thirdparty+ABC@gmail.com",
+            "userId": "648f3b76-4a5e-4f62-a181-ee09b6f3f1bb"
+        },
+        {
+            "recipe": "thirdparty",
+            "provider": "github",
+            "email": "782657849@qq.com",
+            "userId": "8a479a89-5f0b-465a-9ae0-a0e4f3dd4e6e"
+        },
+        {
+            "recipe": "thirdparty",
+            "provider": "github",
+            "email": "test.name@supertokens.com",
+            "userId": "cea30444-49fa-485f-a6ca-7e1c98c3836c"
+        },
+        {
+            "recipe": "thirdparty",
+            "provider": "apple",
+            "email": "debugging@supertokens.com",
+            "userId": "c529222e-1f96-4499-a2ab-103f9612a06b"
+        },
+        {
+            "recipe": "thirdparty",
+            "provider": "custom",
+            "email": "random@supertokens.com",
+            "userId": "3134f0f1-bb30-455d-a151-12615e1f8f95"
+        },
+        {
+            "recipe": "thirdparty",
+            "provider": "kakao",
+            "email": "johndoe@testing.weird",
+            "userId": "305773f6-2857-4591-93e9-9ed68c1936c6"
+        }
+    ]
+}

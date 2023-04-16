@@ -1342,7 +1342,6 @@ Supertokens.init({
     },
     recipeList: [
         Dashboard.init({
-            apiKey: "",
             override: {
                 functions: () => {
                     return {
@@ -1366,9 +1365,9 @@ Supertokens.init({
     ],
 });
 
-Dashboard.init({
-    apiKey: "",
-});
+Dashboard.init();
+Dashboard.init(undefined);
+Dashboard.init({});
 
 Session.init({
     getTokenTransferMethod: () => "cookie",
