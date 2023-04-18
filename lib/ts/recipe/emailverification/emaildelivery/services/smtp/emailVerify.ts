@@ -862,10 +862,10 @@ export function getEmailVerifyEmailHTML(appName: string, email: string, verifica
                                                                         <div
                                                                             style="background-color:#fafafa; border-top: 1px solid #ddd; padding-left: 15%; padding-right: 15%; padding-bottom: 24px; padding-top: 24px">
                                                                             <p
-                                                                                style="max-width: 394px !important; font-family: 'Hevetica', sans-serif; font-size: 14px; line-height: 23px; font-weight:400;  text-align: center; color: #808080;">
+                                                                                style="font-family: 'Hevetica', sans-serif; font-size: 14px; line-height: 23px; font-weight:400;  text-align: center; color: #808080;">
                                                                                 Alternatively, you can directly paste this link
                                                                                 in your browser <br>
-                                                                                <a style="font-family: 'Helvetica', sans-serif, sans-serif; text-align: center; word-break: break-all; font-weight: 400; font-size: 14px; line-height: 23px; color: #007aff !important;"
+                                                                                <a style="max-width: 394px !important; margin: auto; font-family: 'Helvetica', sans-serif, sans-serif; text-align: center; word-break: break-all; font-weight: 400; font-size: 14px; line-height: 23px; color: #007aff !important;"
                                                                                     target="_blank"
                                                                                     href="${verificationLink}">${verificationLink}</a>
                                                                             </p>
