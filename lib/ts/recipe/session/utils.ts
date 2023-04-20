@@ -207,7 +207,7 @@ export function validateAndNormaliseUserInput(
     let accessTokenPayloadJWTPropertyName = "jwt";
     let issuer: string | undefined;
 
-    if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
+    if (config !== undefined && config.jwt !== undefined && config.jwt.enable) {
         enableJWT = true;
         let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
         issuer = config.jwt.issuer;

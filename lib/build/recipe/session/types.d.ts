@@ -104,6 +104,7 @@ export declare type TypeInput = {
 };
 export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
+    accessTokenPath?: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;

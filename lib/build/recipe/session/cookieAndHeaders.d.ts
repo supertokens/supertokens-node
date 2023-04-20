@@ -32,14 +32,12 @@ export declare function setToken(
 export declare function setHeader(res: BaseResponse, name: string, value: string): void;
 /**
  *
+ * @param config
  * @param res
  * @param name
  * @param value
- * @param domain
- * @param secure
- * @param httpOnly
  * @param expires
- * @param path
+ * @param pathType
  */
 export declare function setCookie(
     config: TypeNormalisedInput,
