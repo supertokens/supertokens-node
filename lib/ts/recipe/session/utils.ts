@@ -28,7 +28,7 @@ import { setFrontTokenInHeaders, setAntiCsrfTokenInHeaders, setToken, getAuthMod
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH } from "./constants";
-import NormalisedURLPath from "../../normalisedURLPath";
+import NormalisedURLPath, { normaliseURLPathOrThrowError } from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
@@ -133,7 +133,10 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.cookieDomain === undefined
             ? undefined
             : normaliseSessionScopeOrThrowError(config.cookieDomain);
-
+    let accessTokenPath =
+        config === undefined || config.accessTokenPath === undefined
+            ? normaliseURLPathOrThrowError("/")
+            : config.accessTokenPath;
     let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
     let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
 
@@ -207,7 +210,7 @@ export function validateAndNormaliseUserInput(
     let accessTokenPayloadJWTPropertyName = "jwt";
     let issuer: string | undefined;
 
-    if (config !== undefined && config.jwt !== undefined && config.jwt.enable) {
+    if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
         enableJWT = true;
         let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
         issuer = config.jwt.issuer;
@@ -229,6 +232,7 @@ export function validateAndNormaliseUserInput(
 
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
+        accessTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(accessTokenPath)),
         getTokenTransferMethod:
             config?.getTokenTransferMethod === undefined
                 ? defaultGetTokenTransferMethod

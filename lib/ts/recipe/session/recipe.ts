@@ -74,7 +74,7 @@ export default class SessionRecipe extends RecipeModule {
 
         this.isInServerlessEnv = isInServerlessEnv;
 
-        if (this.config.jwt.enable) {
+        if (this.config.jwt.enable === true) {
             this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {
                 issuer: this.config.jwt.issuer,
                 override: this.config.override.openIdFeature,

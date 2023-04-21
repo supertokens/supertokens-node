@@ -8,3 +8,4 @@ export default class NormalisedURLPath {
     equals: (other: NormalisedURLPath) => boolean;
     isARecipePath: () => boolean;
 }
+export declare function normaliseURLPathOrThrowError(input: string): string;

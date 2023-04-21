@@ -143,12 +143,14 @@ export function setHeader(res: BaseResponse, name: string, value: string) {
 
 /**
  *
- * @param config
  * @param res
  * @param name
  * @param value
+ * @param domain
+ * @param secure
+ * @param httpOnly
  * @param expires
- * @param pathType
+ * @param path
  */
 export function setCookie(
     config: TypeNormalisedInput,
@@ -165,7 +167,8 @@ export function setCookie(
     if (pathType === "refreshTokenPath") {
         path = config.refreshTokenPath.getAsStringDangerous();
     } else if (pathType === "accessTokenPath") {
-        path = config.accessTokenPath ? config.accessTokenPath.getAsStringDangerous() : "/";
+        path =
+            config.accessTokenPath.getAsStringDangerous() === "" ? "/" : config.accessTokenPath.getAsStringDangerous();
     }
     let httpOnly = true;
 
