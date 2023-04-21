@@ -82,7 +82,7 @@ if (accessTokenPayload.jwt === undefined) {
 
 ```tsx
 let jwt = null;
-const accessTokenPayload = await session.getAccessTokenPayload();
+const accessTokenPayload = await session.getAccessTokenPayloadSecurely();
 if (accessTokenPayload.jwt === undefined) {
     jwt = await session.getAccessToken();
 } else {
