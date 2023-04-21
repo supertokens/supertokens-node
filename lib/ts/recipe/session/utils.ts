@@ -28,7 +28,7 @@ import { setFrontTokenInHeaders, setAntiCsrfTokenInHeaders, setToken, getAuthMod
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH } from "./constants";
-import NormalisedURLPath, { normaliseURLPathOrThrowError } from "../../normalisedURLPath";
+import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
@@ -135,8 +135,8 @@ export function validateAndNormaliseUserInput(
             : normaliseSessionScopeOrThrowError(config.cookieDomain);
     let accessTokenPath =
         config === undefined || config.accessTokenPath === undefined
-            ? normaliseURLPathOrThrowError("/")
-            : config.accessTokenPath;
+            ? new NormalisedURLPath("/")
+            : new NormalisedURLPath(config.accessTokenPath);
     let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
     let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
 
@@ -232,7 +232,7 @@ export function validateAndNormaliseUserInput(
 
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
-        accessTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(accessTokenPath)),
+        accessTokenPath,
         getTokenTransferMethod:
             config?.getTokenTransferMethod === undefined
                 ? defaultGetTokenTransferMethod

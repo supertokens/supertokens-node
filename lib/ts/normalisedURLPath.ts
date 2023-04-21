@@ -43,7 +43,7 @@ export default class NormalisedURLPath {
     };
 }
 
-export function normaliseURLPathOrThrowError(input: string): string {
+function normaliseURLPathOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
 
     try {
