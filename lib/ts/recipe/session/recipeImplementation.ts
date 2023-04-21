@@ -13,7 +13,6 @@ import * as SessionFunctions from "./sessionFunctions";
 import { buildFrontToken } from "./cookieAndHeaders";
 import { validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
-import STError from "./error";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { JSONObject, NormalisedAppinfo } from "../../types";
@@ -94,7 +93,7 @@ export default function getRecipeInterface(
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
             userContext: any;
-        }): Promise<{ status: "OK"; session: SessionContainerInterface }> {
+        }): Promise<SessionContainerInterface> {
             logDebugMessage("createNewSession: Started");
 
             let response = await SessionFunctions.createNewSession(
@@ -107,21 +106,18 @@ export default function getRecipeInterface(
             logDebugMessage("createNewSession: Finished");
 
             const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
-            return {
-                status: "OK",
-                session: new Session(
-                    helpers,
-                    response.accessToken.token,
-                    buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
-                    response.refreshToken,
-                    response.antiCsrfToken,
-                    response.session.handle,
-                    response.session.userId,
-                    payload,
-                    undefined,
-                    true
-                ),
-            };
+            return new Session(
+                helpers,
+                response.accessToken.token,
+                buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
+                response.refreshToken,
+                response.antiCsrfToken,
+                response.session.handle,
+                response.session.userId,
+                payload,
+                undefined,
+                true
+            );
         },
 
         getGlobalClaimValidators: async function (input: {
@@ -137,13 +133,9 @@ export default function getRecipeInterface(
         }: {
             accessToken: string;
             antiCsrfToken?: string;
-            options?: Omit<VerifySessionOptions, "sessionRequired">;
+            options?: VerifySessionOptions;
             userContext: any;
-        }): Promise<
-            | { status: "OK"; session: SessionContainerInterface }
-            | { status: "UNAUTHORISED"; error: any }
-            | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
-        > {
+        }): Promise<SessionContainerInterface | undefined> {
             if (options?.antiCsrfCheck !== false && config.antiCsrf === "VIA_CUSTOM_HEADER") {
                 throw new Error(
                     "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
@@ -156,29 +148,26 @@ export default function getRecipeInterface(
                 accessToken = parseJWTWithoutSignatureVerification(accessTokenString);
                 validateAccessTokenStructure(accessToken.payload, accessToken.version);
             } catch (error) {
-                logDebugMessage("getSession: Returning UNAUTHORISED because parsing failed");
-                return { status: "UNAUTHORISED", error };
+                if (options?.sessionRequired === false) {
+                    logDebugMessage(
+                        "getSession: Returning undefined because parsing failed and sessionRequired is false"
+                    );
+                    return undefined;
+                }
+                throw new SessionError({
+                    message: "Token parsing failed",
+                    type: "UNAUTHORISED",
+                    payload: { clearTokens: false },
+                });
             }
 
-            let response;
-            try {
-                response = await SessionFunctions.getSession(
-                    helpers,
-                    accessToken,
-                    antiCsrfToken,
-                    options?.antiCsrfCheck !== false,
-                    options?.checkDatabase === true
-                );
-            } catch (error) {
-                if (error instanceof STError && error.type === STError.TRY_REFRESH_TOKEN) {
-                    logDebugMessage(
-                        "getSession: Returning TRY_REFRESH_TOKEN_ERROR because of an exception during getSession"
-                    );
-                    return { status: "TRY_REFRESH_TOKEN_ERROR", error };
-                }
-                logDebugMessage("getSession: Returning UNAUTHORISED because of an exception during getSession");
-                return { status: "UNAUTHORISED", error };
-            }
+            const response = await SessionFunctions.getSession(
+                helpers,
+                accessToken,
+                antiCsrfToken,
+                options?.antiCsrfCheck !== false,
+                options?.checkDatabase === true
+            );
 
             logDebugMessage("getSession: Success!");
             const payload =
@@ -202,7 +191,7 @@ export default function getRecipeInterface(
                 response.accessToken !== undefined
             );
 
-            return { status: "OK", session };
+            return session;
         },
 
         validateClaims: async function (
@@ -296,11 +285,7 @@ export default function getRecipeInterface(
                 antiCsrfToken,
                 disableAntiCsrf,
             }: { refreshToken: string; antiCsrfToken?: string; disableAntiCsrf: boolean; userContext: any }
-        ): Promise<
-            | { status: "OK"; session: SessionContainerInterface }
-            | { status: "UNAUTHORISED"; error: any }
-            | { status: "TOKEN_THEFT_DETECTED"; error: any }
-        > {
+        ): Promise<SessionContainerInterface> {
             if (disableAntiCsrf !== true && config.antiCsrf === "VIA_CUSTOM_HEADER") {
                 throw new Error(
                     "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
@@ -308,52 +293,28 @@ export default function getRecipeInterface(
             }
             logDebugMessage("refreshSession: Started");
 
-            try {
-                let response = await SessionFunctions.refreshSession(
-                    helpers,
-                    refreshToken,
-                    antiCsrfToken,
-                    disableAntiCsrf
-                );
+            const response = await SessionFunctions.refreshSession(
+                helpers,
+                refreshToken,
+                antiCsrfToken,
+                disableAntiCsrf
+            );
 
-                logDebugMessage("refreshSession: Success!");
+            logDebugMessage("refreshSession: Success!");
 
-                const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
-                return {
-                    status: "OK",
-                    session: new Session(
-                        helpers,
-                        response.accessToken.token,
-                        buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
-                        response.refreshToken,
-                        response.antiCsrfToken,
-                        response.session.handle,
-                        response.session.userId,
-                        payload,
-                        undefined,
-                        true
-                    ),
-                };
-            } catch (err) {
-                if (err instanceof SessionError) {
-                    if (err.type === STError.TOKEN_THEFT_DETECTED) {
-                        return {
-                            status: "TOKEN_THEFT_DETECTED",
-                            error: err,
-                        };
-                    }
-                    return { status: "UNAUTHORISED", error: err };
-                }
-
-                return {
-                    status: "UNAUTHORISED",
-                    error: new SessionError({
-                        message: (err as any).message,
-                        type: "UNAUTHORISED",
-                        payload: { clearTokens: false },
-                    }),
-                };
-            }
+            const payload = parseJWTWithoutSignatureVerification(response.accessToken.token).payload;
+            return new Session(
+                helpers,
+                response.accessToken.token,
+                buildFrontToken(response.session.userId, response.accessToken.expiry, payload),
+                response.refreshToken,
+                response.antiCsrfToken,
+                response.session.handle,
+                response.session.userId,
+                payload,
+                undefined,
+                true
+            );
         },
 
         regenerateAccessToken: async function (

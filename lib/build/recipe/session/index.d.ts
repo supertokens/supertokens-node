@@ -30,10 +30,7 @@ export default class SessionWrapper {
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        session: SessionContainer;
-    }>;
+    ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(
         sessionHandle: string,
         overrideGlobalClaimValidators?: (
@@ -101,33 +98,23 @@ export default class SessionWrapper {
      * @param options Same options objects as getSession or verifySession takes, except the `sessionRequired` prop, which is always set to true in this function
      * @param userContext User context
      */
+    static getSessionWithoutRequestResponse(accessToken: string, antiCsrfToken?: string): Promise<SessionContainer>;
     static getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
-        options?: Omit<VerifySessionOptions, "sessionRequired">,
+        options?: VerifySessionOptions & {
+            sessionRequired?: true;
+        },
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              session: SessionContainer;
-          }
-        | {
-              status: "UNAUTHORISED";
-              error: any;
-          }
-        | {
-              status: "TRY_REFRESH_TOKEN_ERROR";
-              error: any;
-          }
-        | {
-              status: "CLAIM_VALIDATION_ERROR";
-              error: any;
-              response: {
-                  message: string;
-                  claimValidationErrors: ClaimValidationError[];
-              };
-          }
-    >;
+    ): Promise<SessionContainer>;
+    static getSessionWithoutRequestResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: VerifySessionOptions & {
+            sessionRequired: false;
+        },
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
     static refreshSession(req: any, res: any, userContext?: any): Promise<void>;
     static refreshSessionWithoutRequestResponse(
@@ -135,20 +122,7 @@ export default class SessionWrapper {
         disableAntiCsrf?: boolean,
         antiCsrfToken?: string,
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              session: SessionContainer;
-          }
-        | {
-              status: "UNAUTHORISED";
-              error: any;
-          }
-        | {
-              status: "TOKEN_THEFT_DETECTED";
-              error: any;
-          }
-    >;
+    ): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;

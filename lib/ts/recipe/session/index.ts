@@ -239,50 +239,44 @@ export default class SessionWrapper {
      */
     static async getSessionWithoutRequestResponse(
         accessToken: string,
+        antiCsrfToken?: string
+    ): Promise<SessionContainer>;
+    static async getSessionWithoutRequestResponse(
+        accessToken: string,
         antiCsrfToken?: string,
-        options?: Omit<VerifySessionOptions, "sessionRequired">,
+        options?: VerifySessionOptions & { sessionRequired?: true },
+        userContext?: any
+    ): Promise<SessionContainer>;
+    static async getSessionWithoutRequestResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: VerifySessionOptions & { sessionRequired: false },
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
+    static async getSessionWithoutRequestResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: VerifySessionOptions,
         userContext: any = {}
-    ): Promise<
-        | { status: "OK"; session: SessionContainer }
-        | { status: "UNAUTHORISED"; error: any }
-        | { status: "TRY_REFRESH_TOKEN_ERROR"; error: any }
-        | {
-              status: "CLAIM_VALIDATION_ERROR";
-              error: any;
-              response: { message: string; claimValidationErrors: ClaimValidationError[] };
-          }
-    > {
+    ): Promise<SessionContainer | undefined> {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const res = await recipeInterfaceImpl.getSession({
+        const session = await recipeInterfaceImpl.getSession({
             accessToken,
             antiCsrfToken,
             options,
             userContext,
         });
 
-        if (res.status === "OK") {
+        if (session !== undefined) {
             const claimValidators = await getRequiredClaimValidators(
-                res.session,
+                session,
                 options?.overrideGlobalClaimValidators,
                 userContext
             );
-            try {
-                await res.session.assertClaims(claimValidators, userContext);
-            } catch (err) {
-                if (Error.isErrorFromSuperTokens(err) && err.type === "INVALID_CLAIMS") {
-                    return {
-                        status: "CLAIM_VALIDATION_ERROR",
-                        error: err,
-                        response: {
-                            message: "invalid claim",
-                            claimValidationErrors: err.payload,
-                        },
-                    };
-                }
-                throw err;
-            }
+
+            await session.assertClaims(claimValidators, userContext);
         }
-        return res;
+        return session;
     }
 
     static getSessionInformation(sessionHandle: string, userContext: any = {}) {

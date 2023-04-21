@@ -156,10 +156,7 @@ export declare type RecipeInterface = {
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        session: SessionContainerInterface;
-    }>;
+    }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
         userId: string;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
@@ -168,41 +165,15 @@ export declare type RecipeInterface = {
     getSession(input: {
         accessToken: string;
         antiCsrfToken?: string;
-        options?: Omit<VerifySessionOptions, "sessionRequired">;
+        options?: VerifySessionOptions;
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              session: SessionContainerInterface;
-          }
-        | {
-              status: "UNAUTHORISED";
-              error: any;
-          }
-        | {
-              status: "TRY_REFRESH_TOKEN_ERROR";
-              error: any;
-          }
-    >;
+    }): Promise<SessionContainerInterface | undefined>;
     refreshSession(input: {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              session: SessionContainerInterface;
-          }
-        | {
-              status: "UNAUTHORISED";
-              error: any;
-          }
-        | {
-              status: "TOKEN_THEFT_DETECTED";
-              error: any;
-          }
-    >;
+    }): Promise<SessionContainerInterface>;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionDataFromDatabase
