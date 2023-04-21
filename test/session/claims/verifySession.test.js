@@ -646,7 +646,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
 
 function validateErrorResp(resp, errors) {
     assert.ok(resp.body);
-    assert.strictEqual(resp.body.status, "CLAIM_VALIDATION_ERROR");
+    assert.strictEqual(resp.body.message, "invalid claim");
     assert.deepStrictEqual(resp.body.claimValidationErrors, errors);
 }
 

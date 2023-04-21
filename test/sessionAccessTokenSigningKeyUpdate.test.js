@@ -56,7 +56,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, things are still fine", async function () {
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
+        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -127,6 +127,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             response.antiCsrfToken,
             false
         );
+        assert.strictEqual(requestSpy.callCount, 1);
 
         await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
@@ -142,11 +143,11 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             1500
         );
         assert(verifyState2 !== undefined);
-        assert.strictEqual(requestSpy.callCount, 1);
+        assert.strictEqual(requestSpy.callCount, 2);
     });
 
     it("check that if signing key changes, after new key is fetched - via token query, old tokens don't query the core", async function () {
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
+        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -226,7 +227,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
+        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -305,7 +306,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
+        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -387,7 +388,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("test reducing access token signing key update interval time", async function () {
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.0041"); // 10 seconds
+        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.0041"); // 10 seconds
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -527,7 +528,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     });
 
     it("no access token signing key update", async function () {
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.0011"); // 4 seconds
+        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.0011"); // 4 seconds
         await setKeyValueInConfig("access_token_signing_key_dynamic", "false");
         await startST();
         SuperTokens.init({

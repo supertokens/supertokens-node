@@ -821,7 +821,6 @@ ThirdParty.init({
 import { TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
-import SessionError from "../../lib/build/recipe/session/error";
 import SuperTokensError from "../../lib/build/error";
 
 let app = express();
@@ -833,28 +832,25 @@ let sessionConfig: SessionTypeInput = {
             return {
                 getSession: originalImpl.getSession,
                 createNewSession: async (input) => {
-                    let { session } = await originalImpl.createNewSession(input);
+                    let session = await originalImpl.createNewSession(input);
                     return {
-                        status: "OK",
-                        session: {
-                            getAccessToken: session.getAccessToken,
-                            getHandle: session.getHandle,
-                            getAccessTokenPayload: session.getAccessTokenPayload,
-                            getSessionDataFromDatabase: session.getSessionDataFromDatabase,
-                            getUserId: session.getUserId,
-                            revokeSession: session.revokeSession,
-                            updateSessionDataInDatabase: session.updateSessionDataInDatabase,
-                            mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
-                            assertClaims: session.assertClaims,
-                            fetchAndSetClaim: session.fetchAndSetClaim,
-                            setClaimValue: session.setClaimValue,
-                            getClaimValue: session.getClaimValue,
-                            removeClaim: session.removeClaim,
-                            getExpiry: session.getExpiry,
-                            getTimeCreated: session.getTimeCreated,
-                            getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
-                            attachToRequestResponse: session.attachToRequestResponse,
-                        },
+                        getAccessToken: session.getAccessToken,
+                        getHandle: session.getHandle,
+                        getAccessTokenPayload: session.getAccessTokenPayload,
+                        getSessionDataFromDatabase: session.getSessionDataFromDatabase,
+                        getUserId: session.getUserId,
+                        revokeSession: session.revokeSession,
+                        updateSessionDataInDatabase: session.updateSessionDataInDatabase,
+                        mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
+                        assertClaims: session.assertClaims,
+                        fetchAndSetClaim: session.fetchAndSetClaim,
+                        setClaimValue: session.setClaimValue,
+                        getClaimValue: session.getClaimValue,
+                        removeClaim: session.removeClaim,
+                        getExpiry: session.getExpiry,
+                        getTimeCreated: session.getTimeCreated,
+                        getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
+                        attachToRequestResponse: session.attachToRequestResponse,
                     };
                 },
                 getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
@@ -1225,15 +1221,13 @@ Session.init({
             return {
                 ...originalImplementation,
                 refreshSession: async function (input) {
-                    let result = await originalImplementation.refreshSession(input);
+                    let session = await originalImplementation.refreshSession(input);
 
-                    if (result.status === "OK") {
-                        await result.session.mergeIntoAccessTokenPayload({
-                            lastTokenRefresh: Date.now(),
-                        });
-                    }
+                    await session.mergeIntoAccessTokenPayload({
+                        lastTokenRefresh: Date.now(),
+                    });
 
-                    return result;
+                    return session;
                 },
                 getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
                     ...claimValidatorsAddedByOtherRecipes,
@@ -1379,14 +1373,14 @@ Session.init({
         functions: (oI) => ({
             ...oI,
             getSession: async (input) => {
-                const result = await oI.getSession(input);
-                if (result.status === "OK") {
-                    const origPayload = result.session.getAccessTokenPayload();
+                const session = await oI.getSession(input);
+                if (session !== undefined) {
+                    const origPayload = session.getAccessTokenPayload();
                     if (origPayload.appSub === undefined) {
-                        await result.session.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
+                        await session.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
                     }
                 }
-                return result;
+                return session;
             },
             createNewSession: async (input) => {
                 return oI.createNewSession({
@@ -1527,16 +1521,22 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
         // This means that the user doesn't have an active session
         return resp.status(401).json({ message: "try again " }); // Or equivalent...
     } else {
-        const result = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
-
-        // Note that the return type forces the user to have (or at least notice) error handling
-        if (result.status === "CLAIM_VALIDATION_ERROR") {
-            return resp.status(403).json(result.response); // Or equivalent...
-        } else if (result.status !== "OK") {
-            // We could need separate handling here if we expect non-ST access tokens
-            return resp.status(401); // Or equivalent...
+        try {
+            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
+        } catch (ex) {
+            if (Session.Error.isErrorFromSuperTokens(ex)) {
+                if (ex.type === Session.Error.INVALID_CLAIMS) {
+                    return resp.status(403).json({
+                        message: "invalid claim",
+                        claimValidationErrors: ex.payload,
+                    }); // Or equivalent...
+                } else {
+                    resp.status(401);
+                }
+            } else {
+                throw ex;
+            }
         }
-        session = result.session;
     }
     // API code...
 }
@@ -1550,14 +1550,7 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
         // This means that the user doesn't have an active session
         return resp.status(401).json({ message: "try again " });
     } else {
-        const result = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
-
-        // Note that the return type forces the user to have (or at least notice) error handling
-        if (result.status !== "OK") {
-            // We could need separate handling here if we expect non-ST access tokens
-            throw result.error;
-        }
-        session = result.session;
+        session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
     }
     // API code...
     if (session) {
@@ -1572,9 +1565,9 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
 async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
     const userId = "user-id"; // This would be fetched from somewhere
 
-    const result = await Session.createNewSessionWithoutRequestResponse(userId);
+    const session = await Session.createNewSessionWithoutRequestResponse(userId);
 
-    const tokens = result.session.getAllSessionTokensDangerously();
+    const tokens = session.getAllSessionTokensDangerously();
     if (tokens.accessAndFrontTokenUpdated) {
         resp.set("st-access-token", tokens.accessToken);
         resp.set("front-token", tokens.frontToken);
@@ -1592,15 +1585,24 @@ async function refreshSessionWithoutRequestResponse(req: express.Request, resp: 
         // This means that the user doesn't have an active session
         return resp.status(401);
     } else {
-        const result = await Session.refreshSessionWithoutRequestResponse(refreshToken, true);
-        if (result.status !== "OK") {
-            return resp
-                .status(401)
-                .set("st-access-token", "")
-                .set("set-refresh-token", "")
-                .set("front-token", "remove"); // Or equivalent...
+        let session;
+
+        try {
+            session = await Session.refreshSessionWithoutRequestResponse(refreshToken, true);
+        } catch (ex) {
+            if (Session.Error.isErrorFromSuperTokens(ex)) {
+                return resp
+                    .status(401)
+                    .set("st-access-token", "")
+                    .set("set-refresh-token", "")
+                    .set("front-token", "remove"); // Or equivalent...
+            } else {
+                throw ex;
+            }
         }
-        const tokens = result.session.getAllSessionTokensDangerously();
+
+        const tokens = session.getAllSessionTokensDangerously();
+
         if (tokens.accessAndFrontTokenUpdated) {
             resp.set("st-access-token", tokens.accessToken);
             resp.set("front-token", tokens.frontToken);

@@ -26,7 +26,7 @@ import {
 import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
-import { REFRESH_API_PATH } from "./constants";
+import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import { isAnIpAddress } from "../../utils";
@@ -250,9 +250,9 @@ export function setAccessTokenInResponse(
         accessToken,
         // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
         // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-        // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-        // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-        Date.now() + 3153600000000,
+        // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
+        // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
+        Date.now() + hundredYearsInMs,
         transferMethod
     );
 
@@ -264,9 +264,9 @@ export function setAccessTokenInResponse(
             accessToken,
             // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
             // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-            // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-            // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-            Date.now() + 3153600000000,
+            // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
+            // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
+            Date.now() + hundredYearsInMs,
             "header"
         );
     }

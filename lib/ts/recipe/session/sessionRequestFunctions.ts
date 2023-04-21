@@ -151,18 +151,13 @@ export async function getSessionFromRequest({
     }
 
     logDebugMessage("getSession: Value of doAntiCsrfCheck is: " + doAntiCsrfCheck);
-    const result = await recipeInterfaceImpl.getSession({
+    const session = await recipeInterfaceImpl.getSession({
         accessToken: accessToken.rawTokenString,
         antiCsrfToken,
         options: { ...options, antiCsrfCheck: doAntiCsrfCheck },
         userContext,
     });
 
-    if (result.status === "TRY_REFRESH_TOKEN_ERROR" || result.status === "UNAUTHORISED") {
-        throw result.error;
-    }
-
-    const session = result.session;
     if (session !== undefined) {
         const claimValidators = await getRequiredClaimValidators(
             session,
@@ -170,12 +165,13 @@ export async function getSessionFromRequest({
             userContext
         );
         await session.assertClaims(claimValidators, userContext);
+
+        await session.attachToRequestResponse({
+            req,
+            res,
+            transferMethod: requestTransferMethod,
+        });
     }
-    await session.attachToRequestResponse({
-        req,
-        res,
-        transferMethod: requestTransferMethod,
-    });
     return session;
 }
 
@@ -273,14 +269,19 @@ export async function refreshSessionInRequest({
         disableAntiCsrf = true;
     }
 
-    const result = await recipeInterfaceImpl.refreshSession({
-        refreshToken: refreshToken,
-        antiCsrfToken,
-        disableAntiCsrf,
-        userContext,
-    });
-    if (result.status !== "OK") {
-        if (result.status === "TOKEN_THEFT_DETECTED" || result.error.clearTokens === true) {
+    let session;
+    try {
+        session = await recipeInterfaceImpl.refreshSession({
+            refreshToken: refreshToken,
+            antiCsrfToken,
+            disableAntiCsrf,
+            userContext,
+        });
+    } catch (ex) {
+        if (
+            SessionError.isErrorFromSuperTokens(ex) &&
+            (ex.type === SessionError.TOKEN_THEFT_DETECTED || ex.payload.clearTokens === true)
+        ) {
             // We clear the LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME here because we want to limit the scope of this legacy/migration code
             // so the token clearing functions in the error handlers do not
             if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
@@ -290,13 +291,7 @@ export async function refreshSessionInRequest({
                 setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
             }
         }
-
-        if (result.status === "TOKEN_THEFT_DETECTED") {
-            throw result.error;
-        }
-        if (result.status === "UNAUTHORISED") {
-            throw result.error;
-        }
+        throw ex;
     }
     logDebugMessage("refreshSession: Attaching refreshed session info as " + requestTransferMethod);
 
@@ -306,7 +301,7 @@ export async function refreshSessionInRequest({
             clearSession(config, res, transferMethod);
         }
     }
-    await result.session.attachToRequestResponse({
+    await session.attachToRequestResponse({
         req,
         res,
         transferMethod: requestTransferMethod,
@@ -320,7 +315,7 @@ export async function refreshSessionInRequest({
         setCookie(config, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
     }
 
-    return result.session;
+    return session;
 }
 
 export async function createNewSessionInRequest({
@@ -390,7 +385,7 @@ export async function createNewSessionInRequest({
         );
     }
     const disableAntiCsrf = outputTransferMethod === "header";
-    const result = await recipeInstance.recipeInterfaceImpl.createNewSession({
+    const session = await recipeInstance.recipeInterfaceImpl.createNewSession({
         userId,
         accessTokenPayload: finalAccessTokenPayload,
         sessionDataInDatabase,
@@ -407,13 +402,12 @@ export async function createNewSessionInRequest({
     }
     logDebugMessage("createNewSession: Cleared old tokens");
 
-    if (result.status === "OK") {
-        await result.session.attachToRequestResponse({
-            req,
-            res,
-            transferMethod: outputTransferMethod,
-        });
-        logDebugMessage("createNewSession: Attached new tokens to res");
-    }
-    return result.session;
+    await session.attachToRequestResponse({
+        req,
+        res,
+        transferMethod: outputTransferMethod,
+    });
+    logDebugMessage("createNewSession: Attached new tokens to res");
+
+    return session;
 }

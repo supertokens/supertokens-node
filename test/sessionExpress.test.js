@@ -2130,19 +2130,19 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                 createNewSession: async (input) => {
                                     let response = await oI.createNewSession(input);
                                     createNewSessionCalled = true;
-                                    session = response.session;
+                                    session = response;
                                     return response;
                                 },
                                 getSession: async (input) => {
                                     let response = await oI.getSession(input);
                                     getSessionCalled = true;
-                                    session = response.session;
+                                    session = response;
                                     return response;
                                 },
                                 refreshSession: async (input) => {
                                     let response = await oI.refreshSession(input);
                                     refreshSessionCalled = true;
-                                    session = response.session;
+                                    session = response;
                                     return response;
                                 },
                             };
@@ -2414,7 +2414,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                 createNewSession: async (input) => {
                                     let response = await oI.createNewSession(input);
                                     createNewSessionCalled = true;
-                                    session = response.session;
+                                    session = response;
                                     throw {
                                         error: "create new session error",
                                     };
