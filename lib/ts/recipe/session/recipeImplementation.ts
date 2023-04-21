@@ -397,7 +397,7 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            let newAccessTokenPayload = { ...sessionInfo.accessTokenPayload };
+            let newAccessTokenPayload = { ...sessionInfo.customClaimsInAccessTokenPayload };
             for (const key of protectedProps) {
                 delete newAccessTokenPayload[key];
             }
@@ -470,7 +470,7 @@ export default function getRecipeInterface(
 
             return {
                 status: "OK",
-                value: input.claim.getValueFromPayload(sessionInfo.accessTokenPayload, input.userContext),
+                value: input.claim.getValueFromPayload(sessionInfo.customClaimsInAccessTokenPayload, input.userContext),
             };
         },
 

@@ -395,7 +395,7 @@ export type SessionInformation = {
     userId: string;
     sessionDataInDatabase: any;
     expiry: number;
-    accessTokenPayload: any;
+    customClaimsInAccessTokenPayload: any;
     timeCreated: number;
 };
 

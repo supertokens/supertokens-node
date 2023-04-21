@@ -131,7 +131,7 @@ export default class SessionWrapper {
 
         let claimValidationResponse = await recipeImpl.validateClaims({
             userId: sessionInfo.userId,
-            accessTokenPayload: sessionInfo.accessTokenPayload,
+            accessTokenPayload: sessionInfo.customClaimsInAccessTokenPayload,
             claimValidators,
             userContext,
         });

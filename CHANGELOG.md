@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   They can be used directly (i.e.: by calling `getAccessToken` on the session) if you need a JWT
     -   The `jwt` prop in the access token payload is removed
 -   Changed the Session recipe interface - createNewSession, getSession and refreshSession overrides now do not take response and request and return status instead of throwing
+-   Renamed `accessTokenPayload` to `customClaimsInAccessTokenPayload` in `SessionInformation` (the return value of `getSessionInformation`). This reflects the fact that it doesn't contain some default claims (`sub`, `iat`, etc.)
 
 ### Configuration changes
 

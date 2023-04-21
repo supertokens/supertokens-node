@@ -242,7 +242,7 @@ export async function getSessionInformation(
     if (response.status === "OK") {
         // Change keys to make them more readable
         response["sessionDataInDatabase"] = response.userDataInDatabase;
-        response["accessTokenPayload"] = response.userDataInJWT;
+        response["customClaimsInAccessTokenPayload"] = response.userDataInJWT;
 
         delete response.userDataInDatabase;
         delete response.userDataInJWT;
