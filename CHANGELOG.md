@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [13.4.2] - 2023-18-11
+## [13.5.0] - 2023-04-22
+
+-   Adds new config to change the access token's path
+
+## [13.4.2] - 2023-04-11
 
 -   Modified email templates to make them render fine in gmail.
 

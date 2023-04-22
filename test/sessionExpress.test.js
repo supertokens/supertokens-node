@@ -745,6 +745,53 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
     });
 
+    it("test that if default accessTokenPath is used, then path of accessToken from session is equal to slash", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+        const app = express();
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "", {}, {});
+            res.status(200).send("");
+        });
+        const res = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
+        cookies = cookies === undefined ? [] : cookies;
+
+        const paths = cookies.filter((item) => item.startsWith("sAccessToken"))[0].split("; ");
+        assert.strictEqual(
+            ["path", "Path"].flatMap((need) => paths.filter((actual) => actual.startsWith(need)))[0].split("=")[1],
+            "/"
+        );
+    });
+
     it("test signout API works", async function () {
         await startST();
         SuperTokens.init({
