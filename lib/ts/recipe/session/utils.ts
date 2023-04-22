@@ -133,7 +133,10 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.cookieDomain === undefined
             ? undefined
             : normaliseSessionScopeOrThrowError(config.cookieDomain);
-
+    let accessTokenPath =
+        config === undefined || config.accessTokenPath === undefined
+            ? new NormalisedURLPath("/")
+            : new NormalisedURLPath(config.accessTokenPath);
     let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
     let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
 
@@ -229,6 +232,7 @@ export function validateAndNormaliseUserInput(
 
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
+        accessTokenPath,
         getTokenTransferMethod:
             config?.getTokenTransferMethod === undefined
                 ? defaultGetTokenTransferMethod

@@ -78,7 +78,7 @@ export type TokenTransferMethod = "header" | "cookie";
 export type TypeInput = {
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
-
+    accessTokenPath?: string;
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
@@ -129,6 +129,7 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
+    accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;

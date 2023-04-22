@@ -690,6 +690,38 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", accessTokenPath: "/access" })],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath.getAsStringDangerous() === "/access");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath.getAsStringDangerous() === "");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
                     apiBasePath: "/custom/a",
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
