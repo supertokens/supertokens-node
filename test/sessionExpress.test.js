@@ -1473,7 +1473,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1498,7 +1498,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
@@ -1541,7 +1541,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1565,7 +1565,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 7);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
