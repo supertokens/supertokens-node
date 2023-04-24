@@ -67,9 +67,15 @@ export default class SessionWrapper {
         disableAntiCsrf: boolean = false,
         userContext: any = {}
     ) {
-        const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
+        const appInfo = recipeInstance.getAppInfo();
+        const issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
 
-        let finalAccessTokenPayload = accessTokenPayload;
+        let finalAccessTokenPayload = {
+            ...accessTokenPayload,
+            iss: issuer,
+        };
 
         for (const claim of claimsAddedByOtherRecipes) {
             const update = await claim.build(userId, userContext);

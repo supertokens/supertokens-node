@@ -351,8 +351,12 @@ export async function createNewSessionInRequest({
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
 
     const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
+    const issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
 
-    let finalAccessTokenPayload = accessTokenPayload;
+    let finalAccessTokenPayload = {
+        ...accessTokenPayload,
+        iss: issuer,
+    };
 
     for (const claim of claimsAddedByOtherRecipes) {
         const update = await claim.build(userId, userContext);

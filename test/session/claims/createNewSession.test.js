@@ -67,7 +67,8 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             const res = await Session.createNewSession(mockRequest(), response, "someId");
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 8);
+            assert.equal(Object.keys(payload).length, 9);
+            assert.ok(payload["iss"], "http://api.supertokens.io/auth");
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 1000);
@@ -110,7 +111,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             const response = mockResponse();
             const res = await Session.createNewSession(mockRequest(), response, "someId");
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 7);
+            assert.equal(Object.keys(payload).length, 8);
         });
 
         it("should merge claims and the passed access token payload obj", async function () {
