@@ -58,6 +58,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             const payload = res.getAccessTokenPayload();
             assert.strictEqual(payload.sub, "test-user-id");
             assert.strictEqual(payload.tokenProp, true);
+            assert.strictEqual(payload.iss, "https://api.supertokens.io/auth");
 
             assert.deepStrictEqual(await res.getSessionDataFromDatabase(), { dbProp: true });
         });

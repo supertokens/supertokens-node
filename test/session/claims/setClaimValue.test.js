@@ -148,7 +148,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
 
             const payloadAfter = (await Session.getSessionInformation(res.getHandle()))
                 .customClaimsInAccessTokenPayload;
-            assert.equal(Object.keys(payloadAfter).length, 1);
+            assert.equal(Object.keys(payloadAfter).length, 2);
             assert.ok(payloadAfter["st-true"]);
             assert.equal(payloadAfter["st-true"].v, false);
             assert(payloadAfter["st-true"].t > payload["st-true"].t);
