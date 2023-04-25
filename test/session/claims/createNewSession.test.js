@@ -159,7 +159,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             assert.strictEqual(Object.keys(payloadParam).length, 1);
 
             const payload = res.getAccessTokenPayload();
-            assert.strictEqual(Object.keys(payload).length, 12); // 5 + 7 standard
+            assert.strictEqual(Object.keys(payload).length, 13); // 5 + 8 standard
             // We have the prop from the payload param
             assert.strictEqual(payload["initial"], true);
             // We have the boolean claim

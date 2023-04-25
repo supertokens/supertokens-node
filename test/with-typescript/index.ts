@@ -1,6 +1,6 @@
 import * as express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface, SessionClaimValidator } from "../../recipe/session";
+import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
@@ -1522,7 +1522,9 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
         return resp.status(401).json({ message: "try again " }); // Or equivalent...
     } else {
         try {
+            const options: VerifySessionOptions = {};
             session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
+            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { ...options });
         } catch (ex) {
             if (Session.Error.isErrorFromSuperTokens(ex)) {
                 if (ex.type === Session.Error.INVALID_CLAIMS) {

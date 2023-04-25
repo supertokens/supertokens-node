@@ -1590,12 +1590,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 "antiCsrfToken",
                 "exp",
                 "iat",
+                "iss",
                 "parentRefreshTokenHash1",
                 "refreshTokenHash1",
                 "sessionHandle",
                 "sub",
             ])
         );
+        assert.strictEqual(response2.body.iss, "https://api.supertokens.io/auth");
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(app)

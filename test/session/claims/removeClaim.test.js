@@ -139,7 +139,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
 
             const payloadAfter = (await Session.getSessionInformation(session.getHandle()))
                 .customClaimsInAccessTokenPayload;
-            assert.equal(Object.keys(payloadAfter).length, 0);
+            assert.equal(Object.keys(payloadAfter).length, 1);
         });
 
         it("should work ok for not existing handle", async function () {

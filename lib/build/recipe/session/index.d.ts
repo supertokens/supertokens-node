@@ -78,6 +78,12 @@ export default class SessionWrapper {
         },
         userContext?: any
     ): Promise<SessionContainer | undefined>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions,
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
     /**
      * Tries to validate an access token and build a Session object from it.
      *
@@ -113,6 +119,12 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired: false;
         },
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
+    static getSessionWithoutRequestResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: VerifySessionOptions,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;

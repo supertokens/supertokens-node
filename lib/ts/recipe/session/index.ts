@@ -208,6 +208,12 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & { sessionRequired: false },
         userContext?: any
     ): Promise<SessionContainer | undefined>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions,
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
     static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext?: any) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
@@ -257,6 +263,12 @@ export default class SessionWrapper {
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired: false },
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
+    static async getSessionWithoutRequestResponse(
+        accessToken: string,
+        antiCsrfToken?: string,
+        options?: VerifySessionOptions,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
