@@ -82,7 +82,7 @@ if (accessTokenPayload.jwt === undefined) {
 
 ```tsx
 let jwt = null;
-const accessTokenPayload = await session.getAccessTokenPayloadSecurely();
+const accessTokenPayload = await session.getAccessTokenPayload();
 if (accessTokenPayload.jwt === undefined) {
     jwt = await session.getAccessToken();
 } else {
@@ -102,8 +102,8 @@ if (accessTokenPayload.jwt === undefined) {
 Before:
 
 ```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
 
 SuperTokens.init({
     appInfo: {
@@ -125,8 +125,8 @@ SuperTokens.init({
 After:
 
 ```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
 
 SuperTokens.init({
     appInfo: {
