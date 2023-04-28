@@ -125,12 +125,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         await signUPRequest(app, "test1@gmail.com", "testPass123");
         await signUPRequest(app, "test2@gmail.com", "testPass123");
         await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "iresh@gmail.com", "testPass123");
+        await signUPRequest(app, "john@gmail.com", "testPass123");
 
-        let users = await getUsersOldestFirst({ query: { email: "nemi" } });
+        let users = await getUsersOldestFirst({ query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
 
-        users = await getUsersOldestFirst({ query: { email: "iresh" } });
+        users = await getUsersOldestFirst({ query: { email: "john" } });
         assert.strictEqual(users.users.length, 1);
     });
 
@@ -223,12 +223,12 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         await signUPRequest(app, "test1@gmail.com", "testPass123");
         await signUPRequest(app, "test2@gmail.com", "testPass123");
         await signUPRequest(app, "test3@gmail.com", "testPass123");
-        await signUPRequest(app, "iresh@gmail.com", "testPass123");
+        await signUPRequest(app, "john@gmail.com", "testPass123");
 
-        let users = await getUsersNewestFirst({ query: { email: "nemi" } });
+        let users = await getUsersNewestFirst({ query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
 
-        users = await getUsersNewestFirst({ query: { email: "iresh" } });
+        users = await getUsersNewestFirst({ query: { email: "john" } });
         assert.strictEqual(users.users.length, 1);
     });
 
