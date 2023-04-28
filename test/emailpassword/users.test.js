@@ -22,6 +22,7 @@ let EmailPassword = require("../../recipe/emailpassword");
 let { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
 let { middleware, errorHandler } = require("../../framework/express");
+const express = require("express");
 
 describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, function () {
     beforeEach(async function () {
@@ -99,6 +100,40 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         }
     });
 
+    it("test getUsersOldestFirst with search queries", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
+        });
+
+        const express = require("express");
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+        await signUPRequest(app, "test1@gmail.com", "testPass123");
+        await signUPRequest(app, "test2@gmail.com", "testPass123");
+        await signUPRequest(app, "test3@gmail.com", "testPass123");
+        await signUPRequest(app, "iresh@gmail.com", "testPass123");
+
+        let users = await getUsersOldestFirst({ query: { email: "nemi" } });
+        assert.strictEqual(users.users.length, 0);
+
+        users = await getUsersOldestFirst({ query: { email: "iresh" } });
+        assert.strictEqual(users.users.length, 1);
+    });
+
     it("test getUsersNewestFirst", async function () {
         await startST();
         STExpress.init({
@@ -161,6 +196,40 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
                 throw err;
             }
         }
+    });
+
+    it("test getUsersNewestFirst with search queries", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
+        });
+
+        const express = require("express");
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+        await signUPRequest(app, "test1@gmail.com", "testPass123");
+        await signUPRequest(app, "test2@gmail.com", "testPass123");
+        await signUPRequest(app, "test3@gmail.com", "testPass123");
+        await signUPRequest(app, "iresh@gmail.com", "testPass123");
+
+        let users = await getUsersNewestFirst({ query: { email: "nemi" } });
+        assert.strictEqual(users.users.length, 0);
+
+        users = await getUsersNewestFirst({ query: { email: "iresh" } });
+        assert.strictEqual(users.users.length, 1);
     });
 
     it("test getUserCount", async function () {
