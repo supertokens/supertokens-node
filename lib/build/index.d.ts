@@ -10,6 +10,7 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: object;
     }): Promise<{
         users: {
             recipeId: string;
@@ -21,6 +22,7 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: object;
     }): Promise<{
         users: {
             recipeId: string;
