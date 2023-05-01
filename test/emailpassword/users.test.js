@@ -121,6 +121,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
 
         app.use(errorHandler());
 
+        const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
+        if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
+            return;
+        }
+
         await signUPRequest(app, "test@gmail.com", "testPass123");
         await signUPRequest(app, "test1@gmail.com", "testPass123");
         await signUPRequest(app, "test2@gmail.com", "testPass123");
@@ -218,6 +223,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         app.use(middleware());
 
         app.use(errorHandler());
+
+        const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
+        if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
+            return;
+        }
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
         await signUPRequest(app, "test1@gmail.com", "testPass123");
