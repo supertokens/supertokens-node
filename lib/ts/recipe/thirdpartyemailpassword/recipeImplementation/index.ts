@@ -6,12 +6,14 @@ import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
+import { TypeInputFormField } from "../../emailpassword/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
-    thirdPartyQuerier?: Querier
+    thirdPartyQuerier?: Querier,
+    formFields?: TypeInputFormField[] | undefined
 ): RecipeInterface {
-    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier);
+    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier, formFields);
     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
     if (thirdPartyQuerier !== undefined) {
         originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
@@ -106,13 +108,14 @@ export default function getRecipeInterface(
                 email?: string;
                 password?: string;
                 userContext: any;
-            },
-            options?: {
-                applyPasswordPolicy: boolean;
+                applyPasswordPolicy?: boolean;
             }
-        ): Promise<{
-            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PASSWORD_VALIDATION_FAILED";
-        }> {
+        ): Promise<
+            | {
+                  status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+        > {
             let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {
                 return {
@@ -121,7 +124,8 @@ export default function getRecipeInterface(
             } else if (user.thirdParty !== undefined) {
                 throw new Error("Cannot update email or password of a user who signed up using third party login.");
             }
-            return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input, options);
+            // @ts-ignore
+            return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input);
         },
     };
 }

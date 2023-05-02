@@ -1,10 +1,12 @@
-import { NormalisedFormField, RecipeInterface, User } from "./types";
+import { RecipeInterface, TypeInputFormField, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import EmailPassword from "./recipe";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    formFields: TypeInputFormField[] | undefined
+): RecipeInterface {
     return {
         signUp: async function ({
             email,
@@ -117,27 +119,29 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return response;
         },
 
-        updateEmailOrPassword: async function (
-            input: {
-                userId: string;
-                email?: string;
-                password?: string;
-            },
-            options: {
-                applyPasswordPolicy: boolean;
-            } = { applyPasswordPolicy: true }
-        ): Promise<{
-            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PASSWORD_VALIDATION_FAILED";
-        }> {
-            if (options.applyPasswordPolicy) {
-                const formFields: NormalisedFormField[] = EmailPassword.getInstanceOrThrowError().config.signUpFeature
-                    .formFields;
-                const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
-                const error = await passwordField.validate(input.password);
-                if (!!error) {
-                    return {
-                        status: "PASSWORD_VALIDATION_FAILED",
-                    };
+        updateEmailOrPassword: async function (input: {
+            userId: string;
+            email?: string;
+            password?: string;
+            applyPasswordPolicy?: boolean;
+        }): Promise<
+            | {
+                  status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+        > {
+            if (input.applyPasswordPolicy) {
+                if (formFields !== undefined) {
+                    const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
+                    if (passwordField.validate !== undefined) {
+                        const error = await passwordField.validate(input.password);
+                        if (error !== undefined) {
+                            return {
+                                status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                                failureReason: error,
+                            };
+                        }
+                    }
                 }
             }
             let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {

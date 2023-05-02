@@ -144,19 +144,21 @@ export declare type RecipeInterface = {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
-    updateEmailOrPassword(
-        input: {
-            userId: string;
-            email?: string;
-            password?: string;
-            userContext: any;
-        },
-        options?: {
-            applyPasswordPolicy: boolean;
-        }
-    ): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PASSWORD_VALIDATION_FAILED";
-    }>;
+    updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+        userContext: any;
+        applyPasswordPolicy?: boolean;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
 };
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;

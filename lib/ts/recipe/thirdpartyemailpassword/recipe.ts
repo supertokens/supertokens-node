@@ -77,7 +77,8 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(
                 RecipeImplementation(
                     Querier.getNewInstanceOrThrowError(EmailPasswordRecipe.RECIPE_ID),
-                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
+                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID),
+                    config.signUpFeature?.formFields
                 )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
