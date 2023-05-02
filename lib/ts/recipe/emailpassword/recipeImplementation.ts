@@ -5,7 +5,7 @@ import { FORM_FIELD_PASSWORD_ID } from "./constants";
 
 export default function getRecipeInterface(
     querier: Querier,
-    getEmailPasswordConfig?: () => TypeNormalisedInput
+    getEmailPasswordConfig: () => TypeNormalisedInput
 ): RecipeInterface {
     return {
         signUp: async function ({
@@ -131,19 +131,15 @@ export default function getRecipeInterface(
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
             if (input.applyPasswordPolicy || input.applyPasswordPolicy === undefined) {
-                if (getEmailPasswordConfig !== undefined) {
-                    let formFields = getEmailPasswordConfig().signUpFeature.formFields;
-                    if (formFields !== undefined) {
-                        const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
-                        if (passwordField.validate !== undefined) {
-                            const error = await passwordField.validate(input.password);
-                            if (error !== undefined) {
-                                return {
-                                    status: "PASSWORD_POLICY_VIOLATED_ERROR",
-                                    failureReason: error,
-                                };
-                            }
-                        }
+                let formFields = getEmailPasswordConfig().signUpFeature.formFields;
+                if (formFields !== undefined) {
+                    const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
+                    const error = await passwordField.validate(input.password);
+                    if (error !== undefined) {
+                        return {
+                            status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                            failureReason: error,
+                        };
                     }
                 }
             }

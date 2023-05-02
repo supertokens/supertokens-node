@@ -10,8 +10,8 @@ import { TypeNormalisedInput } from "../../emailpassword/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
-    thirdPartyQuerier?: Querier,
-    getEmailPasswordConfig?: () => TypeNormalisedInput
+    getEmailPasswordConfig: () => TypeNormalisedInput,
+    thirdPartyQuerier?: Querier
 ): RecipeInterface {
     let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier, getEmailPasswordConfig);
     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
