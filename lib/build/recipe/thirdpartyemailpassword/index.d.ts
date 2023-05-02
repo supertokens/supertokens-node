@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
@@ -7,89 +6,47 @@ import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static thirdPartySignInUp(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: string,
-        userContext?: any
-    ): Promise<{
+    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext?: any): Promise<{
         status: "OK";
         createdNewUser: boolean;
         user: User;
     }>;
-    static getUserByThirdPartyInfo(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        userContext?: any
-    ): Promise<User | undefined>;
-    static emailPasswordSignUp(
-        email: string,
-        password: string,
-        doAccountLinking?: boolean,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: import("../emailpassword").User;
-          }
-        | {
-              status: "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-    >;
-    static emailPasswordSignIn(
-        email: string,
-        password: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              user: import("../emailpassword").User;
-          }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
-    >;
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext?: any): Promise<User | undefined>;
+    static emailPasswordSignUp(email: string, password: string, doAccountLinking?: boolean, userContext?: any): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: import("../emailpassword").User;
+    } | {
+        status: "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
+    static emailPasswordSignIn(email: string, password: string, userContext?: any): Promise<{
+        status: "OK";
+        user: import("../emailpassword").User;
+    } | {
+        status: "WRONG_CREDENTIALS_ERROR";
+    }>;
     static getUserById(userId: string, userContext?: any): Promise<import("../emailpassword").User | User | undefined>;
     static getUsersByEmail(email: string, userContext?: any): Promise<(import("../emailpassword").User | User)[]>;
-    static createResetPasswordToken(
-        userId: string,
-        email: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "UNKNOWN_USER_ID_ERROR";
-          }
-    >;
-    static resetPasswordUsingToken(
-        token: string,
-        newPassword: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-    >;
+    static createResetPasswordToken(userId: string, email: string, userContext?: any): Promise<{
+        status: "OK";
+        token: string;
+    } | {
+        status: "UNKNOWN_USER_ID_ERROR";
+    }>;
+    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any): Promise<{
+        status: "OK";
+        email: string;
+        userId: string;
+    } | {
+        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
         password?: string;
         userContext?: any;
     }): Promise<{
-        status:
-            | "OK"
-            | "UNKNOWN_USER_ID_ERROR"
-            | "EMAIL_ALREADY_EXISTS_ERROR"
-            | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
     }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
@@ -97,11 +54,9 @@ export default class Wrapper {
     static Apple: typeof import("../thirdparty/providers/apple").default;
     static Discord: typeof import("../thirdparty/providers/discord").default;
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
-    static sendEmail(
-        input: TypeEmailPasswordEmailDeliveryInput & {
-            userContext?: any;
-        }
-    ): Promise<void>;
+    static sendEmail(input: TypeEmailPasswordEmailDeliveryInput & {
+        userContext?: any;
+    }): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

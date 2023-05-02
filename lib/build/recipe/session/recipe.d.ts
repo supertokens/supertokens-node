@@ -1,14 +1,5 @@
-// @ts-nocheck
 import RecipeModule from "../../recipeModule";
-import {
-    TypeInput,
-    TypeNormalisedInput,
-    RecipeInterface,
-    APIInterface,
-    VerifySessionOptions,
-    SessionClaimValidator,
-    SessionClaim,
-} from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, VerifySessionOptions, SessionClaimValidator, SessionClaim } from "./types";
 import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -33,19 +24,9 @@ export default class SessionRecipe extends RecipeModule {
     addClaimValidatorFromOtherRecipe: (builder: SessionClaimValidator) => void;
     getClaimValidatorsAddedByOtherRecipes: () => SessionClaimValidator[];
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (
-        id: string,
-        req: BaseRequest,
-        res: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod
-    ) => Promise<boolean>;
+    handleAPIRequest: (id: string, req: BaseRequest, res: BaseResponse, path: NormalisedURLPath, method: HTTPMethod) => Promise<boolean>;
     handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    verifySession: (
-        options: VerifySessionOptions | undefined,
-        request: BaseRequest,
-        response: BaseResponse
-    ) => Promise<import("./types").SessionContainerInterface | undefined>;
+    verifySession: (options: VerifySessionOptions | undefined, request: BaseRequest, response: BaseResponse) => Promise<import("./types").SessionContainerInterface | undefined>;
 }

@@ -1,27 +1,17 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signInUp(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: string,
-        userContext?: any
-    ): Promise<{
+    static signInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext?: any): Promise<{
         status: "OK";
         createdNewUser: boolean;
         user: User;
     }>;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
     static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
-    static getUserByThirdPartyInfo(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        userContext?: any
-    ): Promise<User | undefined>;
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext?: any): Promise<User | undefined>;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;
     static Facebook: typeof import("./providers/facebook").default;

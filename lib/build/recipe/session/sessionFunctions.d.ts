@@ -1,28 +1,14 @@
-// @ts-nocheck
 import { ParsedJWTInfo } from "./jwt";
 import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
  */
-export declare function createNewSession(
-    helpers: Helpers,
-    userId: string,
-    disableAntiCsrf: boolean,
-    recipeUserId?: string,
-    accessTokenPayload?: any,
-    sessionData?: any
-): Promise<CreateOrRefreshAPIResponse>;
+export declare function createNewSession(helpers: Helpers, userId: string, disableAntiCsrf: boolean, recipeUserId?: string, accessTokenPayload?: any, sessionData?: any): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
  */
-export declare function getSession(
-    helpers: Helpers,
-    parsedAccessToken: ParsedJWTInfo,
-    antiCsrfToken: string | undefined,
-    doAntiCsrfCheck: boolean,
-    containsCustomHeader: boolean
-): Promise<{
+export declare function getSession(helpers: Helpers, parsedAccessToken: ParsedJWTInfo, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean, containsCustomHeader: boolean): Promise<{
     session: {
         handle: string;
         userId: string;
@@ -39,21 +25,12 @@ export declare function getSession(
  * @description Retrieves session information from storage for a given session handle
  * @returns session data stored in the database, including userData and access token payload, or undefined if sessionHandle is invalid
  */
-export declare function getSessionInformation(
-    helpers: Helpers,
-    sessionHandle: string
-): Promise<SessionInformation | undefined>;
+export declare function getSessionInformation(helpers: Helpers, sessionHandle: string): Promise<SessionInformation | undefined>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  */
-export declare function refreshSession(
-    helpers: Helpers,
-    refreshToken: string,
-    antiCsrfToken: string | undefined,
-    containsCustomHeader: boolean,
-    transferMethod: TokenTransferMethod
-): Promise<CreateOrRefreshAPIResponse>;
+export declare function refreshSession(helpers: Helpers, refreshToken: string, antiCsrfToken: string | undefined, containsCustomHeader: boolean, transferMethod: TokenTransferMethod): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
@@ -76,13 +53,5 @@ export declare function revokeMultipleSessions(helpers: Helpers, sessionHandles:
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export declare function updateSessionData(
-    helpers: Helpers,
-    sessionHandle: string,
-    newSessionData: any
-): Promise<boolean>;
-export declare function updateAccessTokenPayload(
-    helpers: Helpers,
-    sessionHandle: string,
-    newAccessTokenPayload: any
-): Promise<boolean>;
+export declare function updateSessionData(helpers: Helpers, sessionHandle: string, newSessionData: any): Promise<boolean>;
+export declare function updateAccessTokenPayload(helpers: Helpers, sessionHandle: string, newAccessTokenPayload: any): Promise<boolean>;

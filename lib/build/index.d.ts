@@ -1,4 +1,3 @@
-// @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { User } from "./types";
@@ -29,30 +28,24 @@ export default class SuperTokensWrapper {
         externalUserId: string;
         externalUserIdInfo?: string;
         force?: boolean;
-    }): Promise<
-        | {
-              status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
-          }
-        | {
-              status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
-              doesSuperTokensUserIdExist: boolean;
-              doesExternalUserIdExist: boolean;
-          }
-    >;
+    }): Promise<{
+        status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
+    } | {
+        status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
+        doesSuperTokensUserIdExist: boolean;
+        doesExternalUserIdExist: boolean;
+    }>;
     static getUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
-    }): Promise<
-        | {
-              status: "OK";
-              superTokensUserId: string;
-              externalUserId: string;
-              externalUserIdInfo: string | undefined;
-          }
-        | {
-              status: "UNKNOWN_MAPPING_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        superTokensUserId: string;
+        externalUserId: string;
+        externalUserIdInfo: string | undefined;
+    } | {
+        status: "UNKNOWN_MAPPING_ERROR";
+    }>;
     static deleteUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
@@ -70,11 +63,7 @@ export default class SuperTokensWrapper {
     }>;
     static getUser(userId: string, userContext?: any): Promise<User | undefined>;
     static listUsersByAccountInfo(accountInfo: AccountInfo, userContext?: any): Promise<User[]>;
-    static deleteUser(
-        userId: string,
-        removeAllLinkedAccounts?: boolean,
-        userContext?: any
-    ): Promise<{
+    static deleteUser(userId: string, removeAllLinkedAccounts?: boolean, userContext?: any): Promise<{
         status: "OK";
     }>;
 }

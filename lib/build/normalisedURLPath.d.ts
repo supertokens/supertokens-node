@@ -1,4 +1,3 @@
-// @ts-nocheck
 export default class NormalisedURLPath {
     private value;
     constructor(url: string);
