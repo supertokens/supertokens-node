@@ -30,11 +30,12 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
           }
@@ -46,11 +47,12 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
                   | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
           }
@@ -62,6 +64,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
+              accountsAlreadyLinked: boolean;
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -69,11 +72,7 @@ export default class Wrapper {
               primaryUserId: string;
           }
         | {
-              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-              description: string;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
           }
@@ -85,6 +84,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
+              accountsAlreadyLinked: boolean;
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -92,11 +92,7 @@ export default class Wrapper {
               description: string;
           }
         | {
-              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-              description: string;
-          }
-        | {
-              status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
           }
@@ -110,7 +106,8 @@ export default class Wrapper {
               wasRecipeUserDeleted: boolean;
           }
         | {
-              status: "NO_PRIMARY_USER_FOUND";
+              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
+              description: string;
           }
     >;
     static fetchFromAccountToLinkTable(

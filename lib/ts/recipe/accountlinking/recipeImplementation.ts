@@ -114,11 +114,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         ): Promise<
             | {
                   status: "OK";
+                  wasAlreadyAPrimaryUser: boolean;
               }
             | {
                   status:
                       | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
               }
@@ -142,11 +143,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             | {
                   status: "OK";
                   user: User;
+                  wasAlreadyAPrimaryUser: boolean;
               }
             | {
                   status:
                       | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
               }
@@ -169,6 +171,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         ): Promise<
             | {
                   status: "OK";
+                  accountsAlreadyLinked: boolean;
               }
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -176,11 +179,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   primaryUserId: string;
               }
             | {
-                  status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
               }
@@ -189,6 +188,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId,
                 primaryUserId,
             });
+
             return result;
         },
         linkAccounts: async function (
@@ -205,6 +205,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         ): Promise<
             | {
                   status: "OK";
+                  accountsAlreadyLinked: boolean;
               }
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -212,11 +213,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
             | {
-                  status: "ACCOUNTS_ALREADY_LINKED_ERROR";
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
               }
@@ -228,7 +225,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                     primaryUserId,
                 }
             );
-            if (accountsLinkingResult.status === "OK") {
+            if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
                 await Session.revokeAllSessionsForUser(recipeUserId, userContext);
                 let user: User | undefined = await this.getUser({
                     userId: primaryUserId,
@@ -241,19 +238,10 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 if (loginMethodInfo === undefined) {
                     throw Error("this error should never be thrown");
                 }
-                await config.onAccountLinked(
-                    user,
-                    {
-                        recipeId: loginMethodInfo.recipeId,
-                        recipeUserId: loginMethodInfo.recipeUserId,
-                        timeJoined: loginMethodInfo.timeJoined,
-                        email: loginMethodInfo.email,
-                        phoneNumber: loginMethodInfo.phoneNumber,
-                        thirdParty: loginMethodInfo.thirdParty,
-                    },
-                    userContext
-                );
+
+                await config.onAccountLinked(user, loginMethodInfo, userContext);
             }
+
             return accountsLinkingResult;
         },
         unlinkAccounts: async function (
@@ -265,24 +253,35 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId: string;
                 userContext: any;
             }
-        ): Promise<{
-            status: "OK";
-            wasRecipeUserDeleted: boolean;
-        }> {
+        ): Promise<
+            | {
+                  status: "OK";
+                  wasRecipeUserDeleted: boolean;
+              }
+            | {
+                  status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
+                  description: string;
+              }
+        > {
             let recipeUserIdToPrimaryUserIdMapping = await this.getPrimaryUserIdsForRecipeUserIds({
                 recipeUserIds: [recipeUserId],
                 userContext,
             });
             let primaryUserId = recipeUserIdToPrimaryUserIdMapping[recipeUserId];
             if (primaryUserId === undefined) {
-                throw new Error("input recipeUserId does not exist");
+                return {
+                    status: "RECIPE_USER_NOT_FOUND_ERROR",
+                    description: "No user exists with the provided recipeUserId",
+                };
             }
             if (primaryUserId === null) {
-                throw Error("recipeUserId is not associated with any primaryUserId");
+                return {
+                    status: "PRIMARY_USER_NOT_FOUND_ERROR",
+                    description:
+                        "The input recipeUserId is not linked to any primary user, or is not a primary user itself",
+                };
             }
-            /**
-             * primaryUserId === recipeUserId
-             */
+
             if (primaryUserId === recipeUserId) {
                 let user = await this.getUser({
                     userId: primaryUserId,
@@ -290,9 +289,16 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 });
 
                 if (user === undefined) {
-                    throw new Error("Seems like a race condition issue occurred. Please try again");
+                    // this can happen cause of some race condition..
+                    return this.unlinkAccounts({
+                        recipeUserId,
+                        userContext,
+                    });
                 }
                 if (user.loginMethods.length > 1) {
+                    // we delete the user here cause if we didn't
+                    // do that, then it would result in the primary user ID having the same
+                    // user ID as the recipe user ID, but they are not linked. So this is not allowed.
                     await this.deleteUser({
                         userId: recipeUserId,
                         removeAllLinkedAccounts: false,
@@ -314,14 +320,9 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             );
             if (accountsUnlinkingResult.status === "OK") {
                 await Session.revokeAllSessionsForUser(recipeUserId, userContext);
-            } else {
-                throw Error(`error thrown from core while unlinking accounts: ${accountsUnlinkingResult.status}`);
             }
 
-            return {
-                status: "OK",
-                wasRecipeUserDeleted: false,
-            };
+            return accountsUnlinkingResult;
         },
         getUser: async function (this: RecipeInterface, { userId }: { userId: string }): Promise<User | undefined> {
             let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user"), {
