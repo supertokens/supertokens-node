@@ -3,15 +3,25 @@ import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static getUserMetadata(userId: string, userContext?: any): Promise<{
+    static getUserMetadata(
+        userId: string,
+        userContext?: any
+    ): Promise<{
         status: "OK";
         metadata: any;
     }>;
-    static updateUserMetadata(userId: string, metadataUpdate: JSONObject, userContext?: any): Promise<{
+    static updateUserMetadata(
+        userId: string,
+        metadataUpdate: JSONObject,
+        userContext?: any
+    ): Promise<{
         status: "OK";
         metadata: JSONObject;
     }>;
-    static clearUserMetadata(userId: string, userContext?: any): Promise<{
+    static clearUserMetadata(
+        userId: string,
+        userContext?: any
+    ): Promise<{
         status: "OK";
     }>;
 }

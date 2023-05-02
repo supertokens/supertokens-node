@@ -7,8 +7,17 @@ export declare function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAp
 export declare function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined;
 export declare function sendUnauthorisedAccess(res: BaseResponse): void;
 export declare function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser;
-export declare function getUserForRecipeId(userId: string, recipeId: string): Promise<{
+export declare function getUserForRecipeId(
+    userId: string,
+    recipeId: string
+): Promise<{
     user: RecipeLevelUserWithFirstAndLastName | undefined;
-    recipe: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless" | undefined;
+    recipe:
+        | "emailpassword"
+        | "thirdparty"
+        | "passwordless"
+        | "thirdpartyemailpassword"
+        | "thirdpartypasswordless"
+        | undefined;
 }>;
 export declare function isRecipeInitialised(recipeId: RecipeIdForUser): boolean;

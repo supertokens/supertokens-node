@@ -19,9 +19,17 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     setClaimValue<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(this: SessionClassWithJWT, claim: SessionClaim<any>, userContext?: any): Promise<void>;
-    mergeIntoAccessTokenPayload(this: SessionClassWithJWT, accessTokenPayloadUpdate: any, userContext?: any): Promise<void>;
+    mergeIntoAccessTokenPayload(
+        this: SessionClassWithJWT,
+        accessTokenPayloadUpdate: any,
+        userContext?: any
+    ): Promise<void>;
     /**
      * @deprecated use mergeIntoAccessTokenPayload instead
      */
-    updateAccessTokenPayload(this: SessionClassWithJWT, newAccessTokenPayload: any | undefined, userContext?: any): Promise<void>;
+    updateAccessTokenPayload(
+        this: SessionClassWithJWT,
+        newAccessTokenPayload: any | undefined,
+        userContext?: any
+    ): Promise<void>;
 }

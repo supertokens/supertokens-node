@@ -5,28 +5,51 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
-    static createEmailVerificationToken(userId: string, email?: string, userContext?: any): Promise<{
-        status: "OK";
-        token: string;
-    } | {
-        status: "EMAIL_ALREADY_VERIFIED_ERROR";
-    }>;
-    static verifyEmailUsingToken(token: string, userContext?: any): Promise<{
-        status: "OK";
-        user: User;
-    } | {
-        status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-    }>;
+    static createEmailVerificationToken(
+        userId: string,
+        email?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    static verifyEmailUsingToken(
+        token: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+    >;
     static isEmailVerified(userId: string, email?: string, userContext?: any): Promise<boolean>;
-    static revokeEmailVerificationTokens(userId: string, email?: string, userContext?: any): Promise<{
+    static revokeEmailVerificationTokens(
+        userId: string,
+        email?: string,
+        userContext?: any
+    ): Promise<{
         status: string;
     }>;
-    static unverifyEmail(userId: string, email?: string, userContext?: any): Promise<{
+    static unverifyEmail(
+        userId: string,
+        email?: string,
+        userContext?: any
+    ): Promise<{
         status: string;
     }>;
-    static sendEmail(input: TypeEmailVerificationEmailDeliveryInput & {
-        userContext?: any;
-    }): Promise<void>;
+    static sendEmail(
+        input: TypeEmailVerificationEmailDeliveryInput & {
+            userContext?: any;
+        }
+    ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

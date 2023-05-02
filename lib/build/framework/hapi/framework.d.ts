@@ -16,7 +16,12 @@ export declare class HapiRequest extends BaseRequest {
     getOriginalURL: () => string;
 }
 export interface ExtendedResponseToolkit extends ResponseToolkit {
-    lazyHeaderBindings: (h: ResponseToolkit, key: string, value: string | undefined, allowDuplicateKey: boolean) => void;
+    lazyHeaderBindings: (
+        h: ResponseToolkit,
+        key: string,
+        value: string | undefined,
+        allowDuplicateKey: boolean
+    ) => void;
 }
 export declare class HapiResponse extends BaseResponse {
     private response;
@@ -28,7 +33,16 @@ export declare class HapiResponse extends BaseResponse {
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     removeHeader: (key: string) => void;
-    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
+    setCookie: (
+        key: string,
+        value: string,
+        domain: string | undefined,
+        secure: boolean,
+        httpOnly: boolean,
+        expires: number,
+        path: string,
+        sameSite: "strict" | "lax" | "none"
+    ) => void;
     /**
      * @param {number} statusCode
      */

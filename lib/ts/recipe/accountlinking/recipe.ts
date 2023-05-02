@@ -392,12 +392,12 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }): Promise<
         | {
-            status: "OK" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-        }
+              status: "OK" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+          }
         | {
-            status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-            description: string;
-        }
+              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+              description: string;
+          }
     > => {
         // In order to link the newUser to the session user,
         // we need to first make sure that the session user

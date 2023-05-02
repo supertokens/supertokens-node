@@ -88,19 +88,26 @@ export type RecipeInterface = {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        user: User
-    } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
 
     // this function is meant only for creating the recipe in the core and nothing else.
     createNewRecipeUser(input: {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{
-        status: "OK"; user: User
-    } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
 
     signIn(input: {
         email: string;
@@ -124,10 +131,10 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<
         | {
-            status: "OK";
-            email: string;
-            userId: string;
-        }
+              status: "OK";
+              email: string;
+              userId: string;
+          }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
 
@@ -136,15 +143,15 @@ export type RecipeInterface = {
         email?: string;
         password?: string;
         userContext: any;
-    }): Promise<{
-        status:
-        | "OK"
-        | "UNKNOWN_USER_ID_ERROR"
-        | "EMAIL_ALREADY_EXISTS_ERROR"
-    } | {
-        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-        reason: string
-    }>;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
 };
 
 export type APIOptions = {
@@ -160,130 +167,130 @@ export type APIOptions = {
 
 export type APIInterface = {
     emailExistsGET:
-    | undefined
-    | ((input: {
-        email: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            exists: boolean;
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              email: string;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
 
     generatePasswordResetTokenPOST:
-    | undefined
-    | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-        }
-        | {
-            status: "PASSWORD_RESET_NOT_ALLOWED";
-            reason: string;
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED";
+                    reason: string;
+                }
+              | GeneralErrorResponse
+          >);
 
     passwordResetPOST:
-    | undefined
-    | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        token: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            email: string;
-            userId: string;
-        }
-        | {
-            status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              token: string;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    email: string;
+                    userId: string;
+                }
+              | {
+                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
 
     signInPOST:
-    | undefined
-    | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            user: User;
-            session: SessionContainerInterface;
-        }
-        | {
-            status: "WRONG_CREDENTIALS_ERROR";
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    session: SessionContainerInterface;
+                }
+              | {
+                    status: "WRONG_CREDENTIALS_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
 
     signUpPOST:
-    | undefined
-    | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            user: User;
-            session: SessionContainerInterface;
-        }
-        | {
-            status: "EMAIL_ALREADY_EXISTS_ERROR";
-        }
-        | {
-            status: "SIGNUP_NOT_ALLOWED";
-            reason: string;
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    session: SessionContainerInterface;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
+                    reason: string;
+                }
+              | GeneralErrorResponse
+          >);
 
     linkAccountToExistingAccountPOST:
-    | undefined
-    | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            user: User;
-            session: SessionContainerInterface;
-            wereAccountsAlreadyLinked: boolean;
-        }
-        | {
-            status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-            description: string;
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    session: SessionContainerInterface;
+                    wereAccountsAlreadyLinked: boolean;
+                }
+              | {
+                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | GeneralErrorResponse
+          >);
 };
 
 export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {

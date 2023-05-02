@@ -14,22 +14,39 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction;
     static getInstanceOrThrowError(): Recipe;
     getAPIsHandled(): APIHandled[];
-    handleAPIRequest(_id: string, _req: BaseRequest, _response: BaseResponse, _path: normalisedURLPath, _method: HTTPMethod): Promise<boolean>;
+    handleAPIRequest(
+        _id: string,
+        _req: BaseRequest,
+        _response: BaseResponse,
+        _path: normalisedURLPath,
+        _method: HTTPMethod
+    ): Promise<boolean>;
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    createPrimaryUserIdOrLinkAccounts: ({ recipeUserId, isVerified, checkAccountsToLinkTableAsWell, userContext, }: {
+    createPrimaryUserIdOrLinkAccounts: ({
+        recipeUserId,
+        isVerified,
+        checkAccountsToLinkTableAsWell,
+        userContext,
+    }: {
         recipeUserId: string;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<string>;
-    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({ recipeUserId, checkAccountsToLinkTableAsWell, userContext, }: {
+    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
+        recipeUserId,
+        checkAccountsToLinkTableAsWell,
+        userContext,
+    }: {
         recipeUserId: string;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<User | undefined>;
-    transformUserInfoIntoVerifiedAndUnverifiedBucket: (user: User) => {
+    transformUserInfoIntoVerifiedAndUnverifiedBucket: (
+        user: User
+    ) => {
         verified: {
             emails: string[];
             phoneNumbers: string[];
@@ -39,19 +56,30 @@ export default class Recipe extends RecipeModule {
             phoneNumbers: string[];
         };
     };
-    isSignUpAllowed: ({ newUser, userContext, }: {
+    isSignUpAllowed: ({
+        newUser,
+        userContext,
+    }: {
         newUser: AccountInfoWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
-    linkAccountsWithUserFromSession: ({ session, newUser, createRecipeUserFunc, userContext, }: {
+    linkAccountsWithUserFromSession: ({
+        session,
+        newUser,
+        createRecipeUserFunc,
+        userContext,
+    }: {
         session: SessionContainer;
         newUser: AccountInfoWithRecipeId;
         createRecipeUserFunc: (newUser: AccountInfoWithRecipeId) => Promise<void>;
         userContext: any;
-    }) => Promise<{
-        status: "OK" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-    } | {
-        status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-        description: string;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+          }
+        | {
+              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+              description: string;
+          }
+    >;
 }

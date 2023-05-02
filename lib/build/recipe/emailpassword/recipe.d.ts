@@ -15,14 +15,26 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput>;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput | undefined, ingredients: {
-        emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput> | undefined;
-    });
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput | undefined,
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput> | undefined;
+        }
+    );
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: BaseRequest, res: BaseResponse, _path: NormalisedURLPath, _method: HTTPMethod) => Promise<boolean>;
+    handleAPIRequest: (
+        id: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        _path: NormalisedURLPath,
+        _method: HTTPMethod
+    ) => Promise<boolean>;
     handleError: (err: STError, _request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
