@@ -192,18 +192,6 @@ export type RecipeInterface = {
     >;
 };
 
-export type RecipeLevelUser = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    timeJoined: number;
-    recipeUserId: string;
-    email?: string;
-    phoneNumber?: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
-};
-
 export type AccountInfo = {
     email?: string;
     phoneNumber?: string;
@@ -216,3 +204,8 @@ export type AccountInfo = {
 export type AccountInfoWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
 } & AccountInfo;
+
+export type RecipeLevelUser = {
+    timeJoined: number;
+    recipeUserId: string;
+} & AccountInfoWithRecipeId;

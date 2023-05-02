@@ -182,17 +182,6 @@ export declare type RecipeInterface = {
           }
     >;
 };
-export declare type RecipeLevelUser = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    timeJoined: number;
-    recipeUserId: string;
-    email?: string;
-    phoneNumber?: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
-};
 export declare type AccountInfo = {
     email?: string;
     phoneNumber?: string;
@@ -204,3 +193,7 @@ export declare type AccountInfo = {
 export declare type AccountInfoWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
 } & AccountInfo;
+export declare type RecipeLevelUser = {
+    timeJoined: number;
+    recipeUserId: string;
+} & AccountInfoWithRecipeId;
