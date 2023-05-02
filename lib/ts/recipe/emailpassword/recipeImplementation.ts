@@ -132,7 +132,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             if (options.applyPasswordPolicy) {
                 const formFields: NormalisedFormField[] = EmailPassword.getInstanceOrThrowError().config.signUpFeature
                     .formFields;
-                const passwordField = formFields.filter((el) => (el.id = FORM_FIELD_PASSWORD_ID))[0];
+                const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
                 const error = await passwordField.validate(input.password);
                 if (!!error) {
                     return {
