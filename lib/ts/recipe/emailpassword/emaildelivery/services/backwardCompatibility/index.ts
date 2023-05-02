@@ -25,7 +25,6 @@ export default class BackwardCompatibilityService
         createAndSendCustomEmail: (
             user: {
                 id: string;
-                recipeUserId: string;
                 email: string;
             },
             passwordResetURLWithToken: string,
@@ -51,7 +50,7 @@ export default class BackwardCompatibilityService
             if (!this.isInServerlessEnv) {
                 this.resetPasswordUsingTokenFeature
                     .createAndSendCustomEmail(input.user, input.passwordResetLink, input.userContext)
-                    .catch((_) => {});
+                    .catch((_) => { });
             } else {
                 // see https://github.com/supertokens/supertokens-node/pull/135
                 await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
@@ -60,6 +59,6 @@ export default class BackwardCompatibilityService
                     input.userContext
                 );
             }
-        } catch (_) {}
+        } catch (_) { }
     };
 }
