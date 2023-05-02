@@ -384,14 +384,16 @@ export default class Recipe extends RecipeModule {
         session,
         newUser,
         createRecipeUserFunc,
+        verifyCredentialsFunc,
         userContext,
     }: {
         session: SessionContainer;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: () => Promise<
+        createRecipeUserFunc: () => Promise<void>;
+        verifyCredentialsFunc: () => Promise<
             | { status: "OK" }
             | {
-                  status: "CUSTOM_RESPONSE_FROM_CREATE_USER";
+                  status: "CUSTOM_RESPONSE";
                   resp: T;
               }
         >;
@@ -411,7 +413,7 @@ export default class Recipe extends RecipeModule {
               recipeUserId: string;
           }
         | {
-              status: "CUSTOM_RESPONSE_FROM_CREATE_USER";
+              status: "CUSTOM_RESPONSE";
               resp: T;
           }
     > => {
@@ -513,6 +515,7 @@ export default class Recipe extends RecipeModule {
                     session,
                     newUser,
                     createRecipeUserFunc,
+                    verifyCredentialsFunc,
                     userContext,
                 });
             } else if (
@@ -597,19 +600,24 @@ export default class Recipe extends RecipeModule {
             }
 
             // we create the new recipe user
-            let respFromCreateRecipeUserFunc = await createRecipeUserFunc();
-            if (respFromCreateRecipeUserFunc.status === "CUSTOM_RESPONSE_FROM_CREATE_USER") {
-                // this means that we could not create a recipe user for some reason..
-                return respFromCreateRecipeUserFunc;
-            }
+            await createRecipeUserFunc();
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
             return await this.linkAccountsWithUserFromSession({
                 session,
                 newUser,
                 createRecipeUserFunc,
+                verifyCredentialsFunc,
                 userContext,
             });
+        } else {
+            // since the user already exists, we should first verify the credentials
+            // before continuing to link the accounts.
+            let verifyResult = await verifyCredentialsFunc();
+            if (verifyResult.status === "CUSTOM_RESPONSE") {
+                return verifyResult;
+            }
+            // this means that the verification was fine and we can continue..
         }
 
         // we check if the userObjThatHasSameAccountInfoAndRecipeIdAsNewUser is

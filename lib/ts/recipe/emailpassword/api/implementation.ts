@@ -41,68 +41,39 @@ export default function getAPIImplementation(): APIInterface {
             const email = formFields.filter((f) => f.id === "email")[0].value;
             const password = formFields.filter((f) => f.id === "password")[0].value;
 
-            // if a user already exists with the input email, we first
-            // verify the credentials. We do this instead of relying just on
-            // createRecipeUserFunc below cause createRecipeUserFunc is only called
-            // when the user does not exist. This is to prevent a user from
-            // passing in wrong credentials for an existing user and getting their
-            // account linked
-            const usersWithSameEmail = await listUsersByAccountInfo(
-                {
-                    email,
-                },
-                userContext
-            );
-
-            const newUser = usersWithSameEmail.find((user) => {
-                return (
-                    user.loginMethods.find((lM) => {
-                        return lM.recipeId === "emailpassword" && lM.email === email;
-                    }) !== undefined
-                );
-            });
-
-            if (newUser !== undefined) {
-                let signInResult = await options.recipeImplementation.signIn({
+            const createRecipeUserFunc = async (): Promise<void> => {
+                await options.recipeImplementation.createNewRecipeUser({
                     email,
                     password,
                     userContext,
                 });
-                if (signInResult.status === "WRONG_CREDENTIALS_ERROR") {
-                    return signInResult;
-                }
-            }
+                // we ignore the result from the above cause after this, function returns,
+                // the linkAccountsWithUserFromSession anyway does recursion..
+            };
 
-            const createRecipeUserFunc = async (): Promise<
+            const verifyCredentialsFunc = async (): Promise<
                 | { status: "OK" }
                 | {
-                      status: "CUSTOM_RESPONSE_FROM_CREATE_USER";
-                      resp: { status: "WRONG_CREDENTIALS_ERROR" };
+                      status: "CUSTOM_RESPONSE";
+                      resp: {
+                          status: "WRONG_CREDENTIALS_ERROR";
+                      };
                   }
             > => {
-                let result = await options.recipeImplementation.createNewRecipeUser({
+                const signInResult = await options.recipeImplementation.signIn({
                     email,
                     password,
                     userContext,
                 });
-                if (result.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                    // this can happen in a race condition wherein the user is already created
-                    // by the time it reaches here in the function call for linkAccountsWithUserFromSession
-                    let signInResult = await options.recipeImplementation.signIn({
-                        email,
-                        password,
-                        userContext,
-                    });
-                    if (signInResult.status === "WRONG_CREDENTIALS_ERROR") {
-                        return {
-                            status: "CUSTOM_RESPONSE_FROM_CREATE_USER",
-                            resp: signInResult,
-                        };
-                    }
+
+                if (signInResult.status === "OK") {
+                    return { status: "OK" };
+                } else {
+                    return {
+                        status: "CUSTOM_RESPONSE",
+                        resp: signInResult,
+                    };
                 }
-                return {
-                    status: "OK",
-                };
             };
 
             let accountLinkingInstance = await AccountLinking.getInstanceOrThrowError();
@@ -115,9 +86,10 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "emailpassword",
                 },
                 createRecipeUserFunc,
+                verifyCredentialsFunc,
                 userContext,
             });
-            if (result.status === "CUSTOM_RESPONSE_FROM_CREATE_USER") {
+            if (result.status === "CUSTOM_RESPONSE") {
                 return result.resp;
             } else if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
                 // this will store in the db that these need to be linked,
