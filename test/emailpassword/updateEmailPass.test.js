@@ -132,7 +132,8 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             password: "test",
         });
 
-        assert(res2.status === "PASSWORD_VALIDATION_FAILED");
+        assert(res2.status === "PASSWORD_POLICY_VIOLATED_ERROR");
+        assert(res2.failureReason === "Password should be greater than 5 characters");
     });
 
     it("test updateEmailPass with passing password validation", async function () {
@@ -203,25 +204,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "email",
-                            },
-                            {
-                                id: "password",
-                                validate: async (value) => {
-                                    if (value.length < 5) return "Password should be greater than 5 characters";
-                                    return undefined;
-                                },
-                            },
-                        ],
-                    },
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
 
         let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
@@ -247,5 +230,6 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         });
 
         assert(res2.status === "PASSWORD_POLICY_VIOLATED_ERROR");
+        assert(res2.failureReason === "Password must contain at least 8 characters, including a number");
     });
 });

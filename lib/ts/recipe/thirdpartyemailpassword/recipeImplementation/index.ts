@@ -6,14 +6,14 @@ import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
-import { TypeInputFormField } from "../../emailpassword/types";
+import { TypeNormalisedInput } from "../../emailpassword/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
     thirdPartyQuerier?: Querier,
-    formFields?: TypeInputFormField[] | undefined
+    getEmailPasswordConfig?: () => TypeNormalisedInput
 ): RecipeInterface {
-    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier, formFields);
+    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier, getEmailPasswordConfig);
     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
     if (thirdPartyQuerier !== undefined) {
         originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
@@ -124,7 +124,6 @@ export default function getRecipeInterface(
             } else if (user.thirdParty !== undefined) {
                 throw new Error("Cannot update email or password of a user who signed up using third party login.");
             }
-            // @ts-ignore
             return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input);
         },
     };

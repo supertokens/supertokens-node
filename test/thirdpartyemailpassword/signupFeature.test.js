@@ -947,10 +947,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             let r3 = await ThirdPartyEmailPassword.updateEmailOrPassword({
                 userId: signUpUserInfo.id,
                 email: "test2@example.com",
-                password: "haha",
+                password: "test",
             });
 
             assert(r3.status === "PASSWORD_POLICY_VIOLATED_ERROR");
+            assert(r3.failureReason === "Password should be greater than 5 characters");
         }
     });
 });
