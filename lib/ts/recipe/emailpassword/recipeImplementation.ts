@@ -2,55 +2,57 @@ import { RecipeInterface } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { getUser, listUsersByAccountInfo } from "../..";
-import EmailVerification from "../emailverification/recipe";
+import { getUser } from "../..";
 import { User } from "../../types";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        signUp: async function ({
+        signUp: async function (this: RecipeInterface, {
             email,
             password,
-            doAccountLinking,
             userContext,
         }: {
             email: string;
             password: string;
-            doAccountLinking: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
-                email,
-                password,
+        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            // this function does not check if there is some primary user where the email
+            // of that primary user is unverified (isSignUpAllowed function logic) cause
+            // that is checked in the API layer before calling this function.
+            // This is the recipe function layer which can be
+            // called by the user manually as well if they want to. So we allow them to do that.
+            let response = await this.createNewRecipeUser({
+                email, password, userContext
             });
-            if (response.status === "OK") {
-                let createdNewUser = true;
-                if (doAccountLinking) {
-                    let primaryUserId = await AccountLinking.getInstanceOrThrowError().doPostSignUpAccountLinkingOperations(
-                        {
-                            newUser: {
-                                email,
-                                recipeId: "emailpassword",
-                            },
-                            newUserVerified: false,
-                            recipeUserId: response.user.id,
-                            userContext,
-                        }
-                    );
-                    if (response.user.id !== primaryUserId) {
-                        createdNewUser = false;
-                    }
-                    response.user.id = primaryUserId;
-                }
-                return {
-                    ...response,
-                    createdNewUser,
-                };
-            } else {
-                return {
-                    status: "EMAIL_ALREADY_EXISTS_ERROR",
-                };
+            if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                return response;
             }
+
+            let userId = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts({
+                // we can use index 0 cause this is a new recipe user
+                recipeUserId: response.user.loginMethods[0].recipeUserId,
+                checkAccountsToLinkTableAsWell: true,
+                isVerified: false,
+                userContext,
+            });
+
+            return {
+                status: "OK",
+                user: (await getUser(userId, userContext))!
+            };
+        },
+
+        createNewRecipeUser: async function (input: {
+            email: string;
+            password: string;
+            userContext: any;
+        }): Promise<{
+            status: "OK"; user: User
+        } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
+                email: input.email,
+                password: input.password,
+            });
         },
 
         signIn: async function ({
@@ -73,32 +75,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
         },
 
-        getUserById: async function ({ userId }: { userId: string }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                userId,
-            });
-            if (response.status === "OK") {
-                return {
-                    ...response.user,
-                };
-            } else {
-                return undefined;
-            }
-        },
-
-        getUserByEmail: async function ({ email }: { email: string }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                email,
-            });
-            if (response.status === "OK") {
-                return {
-                    ...response.user,
-                };
-            } else {
-                return undefined;
-            }
-        },
-
         createResetPasswordToken: async function ({
             userId,
             email,
@@ -106,6 +82,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userId: string;
             email: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+            // the input user ID can be a recipe or a primary user ID.
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
                 userId,
                 email,
@@ -122,26 +99,21 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
         },
 
-        resetPasswordUsingToken: async function ({
+        consumePasswordResetToken: async function ({
             token,
-            newPassword,
         }: {
             token: string;
-            newPassword: string;
         }): Promise<
             | {
-                  status: "OK";
-                  userId: string;
-                  email: string;
-              }
+                status: "OK";
+                userId: string;
+                email: string;
+            }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset"), {
-                method: "token",
+            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token/consume"), {
                 token,
-                newPassword,
             });
-            return response;
         },
 
         updateEmailOrPassword: async function (input: {
@@ -150,68 +122,19 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             password?: string;
         }): Promise<{
             status:
-                | "OK"
-                | "UNKNOWN_USER_ID_ERROR"
-                | "EMAIL_ALREADY_EXISTS_ERROR"
-                | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR";
+        } | {
+            status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+            reason: string
         }> {
-            let markEmailAsVerified = false;
-            if (input.email !== undefined) {
-                let userForUserId = await getUser(input.userId);
-                if (userForUserId !== undefined && userForUserId.isPrimaryUser) {
-                    let usersForEmail = await listUsersByAccountInfo({
-                        email: input.email,
-                    });
-                    if (usersForEmail !== undefined) {
-                        let primaryUserFromEmailUsers = usersForEmail.find((u) => u.isPrimaryUser);
-                        if (primaryUserFromEmailUsers !== undefined) {
-                            if (primaryUserFromEmailUsers.id !== userForUserId.id) {
-                                return {
-                                    status: "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING",
-                                };
-                            }
-                            markEmailAsVerified = true;
-                        }
-                    }
-                }
-            }
-            let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
+            // the input can be primary or recipe level user id.
+            return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                 userId: input.userId,
                 email: input.email,
                 password: input.password,
             });
-            if (response.status === "OK") {
-                if (markEmailAsVerified && input.email !== undefined) {
-                    const emailVerificationInstance = EmailVerification.getInstance();
-                    if (emailVerificationInstance) {
-                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                            {
-                                userId: input.userId,
-                                email: input.email,
-                                userContext: undefined,
-                            }
-                        );
-
-                        if (tokenResponse.status === "OK") {
-                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                                token: tokenResponse.token,
-                                userContext: undefined,
-                            });
-                        }
-                    }
-                }
-                return {
-                    status: "OK",
-                };
-            } else if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                return {
-                    status: "EMAIL_ALREADY_EXISTS_ERROR",
-                };
-            } else {
-                return {
-                    status: "UNKNOWN_USER_ID_ERROR",
-                };
-            }
         },
     };
 }
