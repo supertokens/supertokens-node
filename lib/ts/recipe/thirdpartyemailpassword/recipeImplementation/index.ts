@@ -106,8 +106,13 @@ export default function getRecipeInterface(
                 email?: string;
                 password?: string;
                 userContext: any;
+            },
+            options?: {
+                applyPasswordPolicy: boolean;
             }
-        ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        ): Promise<{
+            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PASSWORD_VALIDATION_FAILED";
+        }> {
             let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {
                 return {
@@ -116,7 +121,7 @@ export default function getRecipeInterface(
             } else if (user.thirdParty !== undefined) {
                 throw new Error("Cannot update email or password of a user who signed up using third party login.");
             }
-            return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input);
+            return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input, options);
         },
     };
 }

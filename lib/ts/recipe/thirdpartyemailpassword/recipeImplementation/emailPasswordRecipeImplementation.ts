@@ -49,13 +49,20 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return recipeInterface.resetPasswordUsingToken(input);
         },
 
-        updateEmailOrPassword: async function (input: {
-            userId: string;
-            email?: string;
-            password?: string;
-            userContext: any;
-        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            return recipeInterface.updateEmailOrPassword(input);
+        updateEmailOrPassword: async function (
+            input: {
+                userId: string;
+                email?: string;
+                password?: string;
+                userContext: any;
+            },
+            options: {
+                applyPasswordPolicy: boolean;
+            } = { applyPasswordPolicy: true }
+        ): Promise<{
+            status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PASSWORD_VALIDATION_FAILED";
+        }> {
+            return recipeInterface.updateEmailOrPassword(input, options);
         },
     };
 }

@@ -75,13 +75,18 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
-    static updateEmailOrPassword(input: {
-        userId: string;
-        email?: string;
-        password?: string;
-        userContext?: any;
-    }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+    static updateEmailOrPassword(
+        input: {
+            userId: string;
+            email?: string;
+            password?: string;
+            userContext?: any;
+        },
+        options?: {
+            applyPasswordPolicy: boolean;
+        }
+    ): Promise<{
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR" | "PASSWORD_VALIDATION_FAILED";
     }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;

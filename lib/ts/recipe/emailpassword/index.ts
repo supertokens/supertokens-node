@@ -67,11 +67,17 @@ export default class Wrapper {
         });
     }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
-            userContext: {},
-            ...input,
-        });
+    static updateEmailOrPassword(
+        input: { userId: string; email?: string; password?: string; userContext?: any },
+        options?: { applyPasswordPolicy: boolean }
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword(
+            {
+                userContext: {},
+                ...input,
+            },
+            options
+        );
     }
 
     static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
