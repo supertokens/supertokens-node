@@ -42,7 +42,11 @@ export default function getAPIImplementation(): APIInterface {
             const password = formFields.filter((f) => f.id === "password")[0].value;
 
             // if a user already exists with the input email, we first
-            // verify the credentials.
+            // verify the credentials. We do this instead of relying just on
+            // createRecipeUserFunc below cause createRecipeUserFunc is only called
+            // when the user does not exist. This is to prevent a user from
+            // passing in wrong credentials for an existing user and getting their
+            // account linked
             const usersWithSameEmail = await listUsersByAccountInfo(
                 {
                     email,
