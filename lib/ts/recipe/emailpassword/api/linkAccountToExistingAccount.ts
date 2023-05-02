@@ -29,7 +29,6 @@ export default async function linkAccountToExistingAccountAPI(
         return false;
     }
 
-    // step 1
     let formFields: {
         id: string;
         value: string;
@@ -59,16 +58,8 @@ export default async function linkAccountToExistingAccountAPI(
     } else if (result.status === "GENERAL_ERROR") {
         send200Response(options.res, result);
     } else {
-        throw new STError({
-            type: STError.FIELD_ERROR,
-            payload: [
-                {
-                    id: "email",
-                    error: "This email already exists. Please sign in instead.",
-                },
-            ],
-            message: "Error in input formFields",
-        });
+        // status: NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR | ACCOUNT_LINKING_NOT_ALLOWED_ERROR
+        send200Response(options.res, result);
     }
     return true;
 }
