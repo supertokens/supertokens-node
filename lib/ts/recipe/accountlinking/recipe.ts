@@ -549,29 +549,24 @@ export default class Recipe extends RecipeModule {
             userContext,
         });
 
-        let newUserIsVerified = false;
-        const userObjThatHasSameAccountInfoAndRecipeIdAsNewUser = usersArrayThatHaveSameAccountInfoAsNewUser.find((u) =>
-            u.loginMethods.find((lU) => {
-                let found = false;
-                if (lU.recipeId !== newUser.recipeId) {
-                    return false;
-                }
-                if (newUser.recipeId === "thirdparty") {
-                    if (lU.thirdParty === undefined) {
+        const userObjThatHasSameAccountInfoAndRecipeIdAsNewUser = usersArrayThatHaveSameAccountInfoAsNewUser.find(
+            (u) =>
+                u.loginMethods.find((lU) => {
+                    if (lU.recipeId !== newUser.recipeId) {
                         return false;
                     }
-                    found =
-                        lU.thirdParty.id === newUser.thirdParty!.id &&
-                        lU.thirdParty.userId === newUser.thirdParty!.userId;
-                } else {
-                    found = lU.email === newUser.email || newUser.phoneNumber === newUser.phoneNumber;
-                }
-                if (!found) {
-                    return false;
-                }
-                newUserIsVerified = lU.verified;
-                return true;
-            })
+                    if (newUser.recipeId === "thirdparty") {
+                        if (lU.thirdParty === undefined) {
+                            return false;
+                        }
+                        return (
+                            lU.thirdParty.id === newUser.thirdParty!.id &&
+                            lU.thirdParty.userId === newUser.thirdParty!.userId
+                        );
+                    } else {
+                        return lU.email === newUser.email || newUser.phoneNumber === newUser.phoneNumber;
+                    }
+                }) !== undefined
         );
 
         if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser === undefined) {
@@ -629,7 +624,10 @@ export default class Recipe extends RecipeModule {
             // this means that the existing user does not share anything in common with the new user
             // in terms of account info. So we check for email verification status..
 
-            if (!newUserIsVerified && shouldDoAccountLinking.shouldRequireVerification) {
+            if (
+                !userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.loginMethods[0].verified &&
+                shouldDoAccountLinking.shouldRequireVerification
+            ) {
                 // we stop the flow and ask the user to verify this email first.
                 // the recipe ID is the userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id
                 // cause above we checked that userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser is false.

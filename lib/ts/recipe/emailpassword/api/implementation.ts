@@ -94,7 +94,6 @@ export default function getAPIImplementation(): APIInterface {
         },
         emailExistsGET: async function ({
             email,
-            options,
             userContext,
         }: {
             email: string;
@@ -107,11 +106,25 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
+            let usersWithSameEmail = await listUsersByAccountInfo(
+                {
+                    email,
+                },
+                userContext
+            );
+
+            let exists =
+                usersWithSameEmail.find((user) => {
+                    return (
+                        user.loginMethods.find((lM) => {
+                            return lM.recipeId === "emailpassword" && lM.email === email;
+                        }) !== undefined
+                    );
+                }) !== undefined;
 
             return {
                 status: "OK",
-                exists: user !== undefined,
+                exists,
             };
         },
         generatePasswordResetTokenPOST: async function ({
