@@ -33,22 +33,78 @@ export default function getAPIImplementation(): APIInterface {
                   status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                   description: string;
               }
+            | {
+                  status: "WRONG_CREDENTIALS_ERROR";
+              }
             | GeneralErrorResponse
         > {
             const email = formFields.filter((f) => f.id === "email")[0].value;
             const password = formFields.filter((f) => f.id === "password")[0].value;
-            const createRecipeUserFunc = async () => {
-                await options.recipeImplementation.createNewRecipeUser({
+
+            // if a user already exists with the input email, we first
+            // verify the credentials.
+            const usersWithSameEmail = await listUsersByAccountInfo(
+                {
+                    email,
+                },
+                userContext
+            );
+
+            const newUser = usersWithSameEmail.find((user) => {
+                return (
+                    user.loginMethods.find((lM) => {
+                        return lM.recipeId === "emailpassword" && lM.email === email;
+                    }) !== undefined
+                );
+            });
+
+            if (newUser !== undefined) {
+                let signInResult = await options.recipeImplementation.signIn({
                     email,
                     password,
                     userContext,
                 });
-                // we ignore the error from the above function call cause it's either successful.
-                // or it says that the email already exists. In either case, the linkAccountsWithUserFromSession
-                // function will recurse and things will be fine anyway.
+                if (signInResult.status === "WRONG_CREDENTIALS_ERROR") {
+                    return signInResult;
+                }
+            }
+
+            const createRecipeUserFunc = async (): Promise<
+                | { status: "OK" }
+                | {
+                      status: "CUSTOM_RESPONSE_FROM_CREATE_USER";
+                      resp: { status: "WRONG_CREDENTIALS_ERROR" };
+                  }
+            > => {
+                let result = await options.recipeImplementation.createNewRecipeUser({
+                    email,
+                    password,
+                    userContext,
+                });
+                if (result.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                    // this can happen in a race condition wherein the user is already created
+                    // by the time it reaches here in the function call for linkAccountsWithUserFromSession
+                    let signInResult = await options.recipeImplementation.signIn({
+                        email,
+                        password,
+                        userContext,
+                    });
+                    if (signInResult.status === "WRONG_CREDENTIALS_ERROR") {
+                        return {
+                            status: "CUSTOM_RESPONSE_FROM_CREATE_USER",
+                            resp: signInResult,
+                        };
+                    }
+                }
+                return {
+                    status: "OK",
+                };
             };
+
             let accountLinkingInstance = await AccountLinking.getInstanceOrThrowError();
-            let result = await accountLinkingInstance.linkAccountsWithUserFromSession({
+            let result = await accountLinkingInstance.linkAccountsWithUserFromSession<{
+                status: "WRONG_CREDENTIALS_ERROR";
+            }>({
                 session,
                 newUser: {
                     email,
@@ -57,8 +113,9 @@ export default function getAPIImplementation(): APIInterface {
                 createRecipeUserFunc,
                 userContext,
             });
-
-            if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+            if (result.status === "CUSTOM_RESPONSE_FROM_CREATE_USER") {
+                return result.resp;
+            } else if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
                 // this will store in the db that these need to be linked,
                 // and after verification, it will link these accounts.
                 let toLinkResult = await storeIntoAccountToLinkTable(

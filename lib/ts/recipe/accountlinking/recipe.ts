@@ -380,7 +380,7 @@ export default class Recipe extends RecipeModule {
         return false;
     };
 
-    linkAccountsWithUserFromSession = async ({
+    linkAccountsWithUserFromSession = async <T>({
         session,
         newUser,
         createRecipeUserFunc,
@@ -388,7 +388,13 @@ export default class Recipe extends RecipeModule {
     }: {
         session: SessionContainer;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: () => Promise<void>;
+        createRecipeUserFunc: () => Promise<
+            | { status: "OK" }
+            | {
+                  status: "CUSTOM_RESPONSE_FROM_CREATE_USER";
+                  resp: T;
+              }
+        >;
         userContext: any;
     }): Promise<
         | {
@@ -403,6 +409,10 @@ export default class Recipe extends RecipeModule {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
               recipeUserId: string;
+          }
+        | {
+              status: "CUSTOM_RESPONSE_FROM_CREATE_USER";
+              resp: T;
           }
     > => {
         // In order to link the newUser to the session user,
@@ -587,7 +597,11 @@ export default class Recipe extends RecipeModule {
             }
 
             // we create the new recipe user
-            await createRecipeUserFunc();
+            let respFromCreateRecipeUserFunc = await createRecipeUserFunc();
+            if (respFromCreateRecipeUserFunc.status === "CUSTOM_RESPONSE_FROM_CREATE_USER") {
+                // this means that we could not create a recipe user for some reason..
+                return respFromCreateRecipeUserFunc;
+            }
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
             return await this.linkAccountsWithUserFromSession({
