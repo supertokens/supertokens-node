@@ -20,7 +20,7 @@ import { SessionContainer } from "../session";
 export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
-        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
         session: SessionContainer | undefined,
         userContext: any
@@ -44,7 +44,7 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
-        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
         session: SessionContainer | undefined,
         userContext: any
@@ -103,6 +103,7 @@ export type RecipeInterface = {
     }) => Promise<
         | {
               status: "OK";
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
@@ -119,6 +120,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
@@ -177,13 +179,8 @@ export type RecipeInterface = {
               wasRecipeUserDeleted: boolean;
           }
         | {
-              status: "PRIMARY_USER_NOT_FOUND";
-          }
-        | {
-              status: "RESTART_FLOW_ERROR";
-          }
-        | {
-              status: "RECIPE_USER_NOT_FOUND";
+              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
+              description: string;
           }
     >;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
@@ -216,8 +213,7 @@ export type RecipeLevelUser = {
     };
 };
 
-export type AccountInfoAndEmailWithRecipeId = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+export type AccountInfo = {
     email?: string;
     phoneNumber?: string;
     thirdParty?: {
@@ -226,14 +222,6 @@ export type AccountInfoAndEmailWithRecipeId = {
     };
 };
 
-export type AccountInfo =
-    | {
-          email: string;
-      }
-    | {
-          phoneNumber: string;
-      }
-    | {
-          thirdPartyId: string;
-          thirdPartyUserId: string;
-      };
+export type AccountInfoWithRecipeId = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+} & AccountInfo;

@@ -30,6 +30,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
@@ -46,6 +47,7 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
@@ -104,13 +106,8 @@ export default class Wrapper {
               wasRecipeUserDeleted: boolean;
           }
         | {
-              status: "PRIMARY_USER_NOT_FOUND";
-          }
-        | {
-              status: "RESTART_FLOW_ERROR";
-          }
-        | {
-              status: "RECIPE_USER_NOT_FOUND";
+              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
+              description: string;
           }
     >;
     static fetchFromAccountToLinkTable(

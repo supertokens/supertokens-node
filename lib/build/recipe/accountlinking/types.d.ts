@@ -5,7 +5,7 @@ import { SessionContainer } from "../session";
 export declare type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
-        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
         session: SessionContainer | undefined,
         userContext: any
@@ -28,7 +28,7 @@ export declare type TypeInput = {
 export declare type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
-        newAccountInfo: AccountInfoAndEmailWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
         session: SessionContainer | undefined,
         userContext: any
@@ -86,6 +86,7 @@ export declare type RecipeInterface = {
     }) => Promise<
         | {
               status: "OK";
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
@@ -102,6 +103,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              wasAlreadyAPrimaryUser: boolean;
           }
         | {
               status:
@@ -160,13 +162,8 @@ export declare type RecipeInterface = {
               wasRecipeUserDeleted: boolean;
           }
         | {
-              status: "PRIMARY_USER_NOT_FOUND";
-          }
-        | {
-              status: "RESTART_FLOW_ERROR";
-          }
-        | {
-              status: "RECIPE_USER_NOT_FOUND";
+              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
+              description: string;
           }
     >;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
@@ -205,8 +202,7 @@ export declare type RecipeLevelUser = {
         userId: string;
     };
 };
-export declare type AccountInfoAndEmailWithRecipeId = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+export declare type AccountInfo = {
     email?: string;
     phoneNumber?: string;
     thirdParty?: {
@@ -214,14 +210,6 @@ export declare type AccountInfoAndEmailWithRecipeId = {
         userId: string;
     };
 };
-export declare type AccountInfo =
-    | {
-          email: string;
-      }
-    | {
-          phoneNumber: string;
-      }
-    | {
-          thirdPartyId: string;
-          thirdPartyUserId: string;
-      };
+export declare type AccountInfoWithRecipeId = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+} & AccountInfo;
