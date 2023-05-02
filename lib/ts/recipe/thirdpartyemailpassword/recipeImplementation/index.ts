@@ -6,12 +6,14 @@ import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
+import { TypeNormalisedInput } from "../../emailpassword/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
+    getEmailPasswordConfig: () => TypeNormalisedInput,
     thirdPartyQuerier?: Querier
 ): RecipeInterface {
-    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier);
+    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier, getEmailPasswordConfig);
     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
     if (thirdPartyQuerier !== undefined) {
         originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
@@ -106,8 +108,14 @@ export default function getRecipeInterface(
                 email?: string;
                 password?: string;
                 userContext: any;
+                applyPasswordPolicy?: boolean;
             }
-        ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        ): Promise<
+            | {
+                  status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+        > {
             let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {
                 return {
