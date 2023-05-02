@@ -43,7 +43,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { getUser } from "../../"
+import { getUser } from "../../";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -87,8 +87,8 @@ export default class Recipe extends RecipeModule {
         this.emailDelivery =
             ingredients.emailDelivery === undefined
                 ? new EmailDeliveryIngredient(
-                    this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
-                )
+                      this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
+                  )
                 : ingredients.emailDelivery;
 
         PostSuperTokensInitCallbacks.addPostInitCallback(() => {

@@ -95,23 +95,20 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
         ): Promise<
             | {
-                status: "OK";
-                wasAlreadyAPrimaryUser: boolean;
-            }
+                  status: "OK";
+                  wasAlreadyAPrimaryUser: boolean;
+              }
             | {
-                status:
-                | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                primaryUserId: string;
-                description: string;
-            }
+                  status:
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
         > {
-            return await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/primary/check"),
-                {
-                    recipeUserId,
-                }
-            );
+            return await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary/check"), {
+                recipeUserId,
+            });
         },
 
         createPrimaryUser: async function (
@@ -123,17 +120,17 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
         ): Promise<
             | {
-                status: "OK";
-                user: User;
-                wasAlreadyAPrimaryUser: boolean;
-            }
+                  status: "OK";
+                  user: User;
+                  wasAlreadyAPrimaryUser: boolean;
+              }
             | {
-                status:
-                | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                primaryUserId: string;
-                description: string;
-            }
+                  status:
+                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
         > {
             return await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
                 recipeUserId,
@@ -151,19 +148,19 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
         ): Promise<
             | {
-                status: "OK";
-                accountsAlreadyLinked: boolean;
-            }
+                  status: "OK";
+                  accountsAlreadyLinked: boolean;
+              }
             | {
-                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                description: string;
-                primaryUserId: string;
-            }
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  description: string;
+                  primaryUserId: string;
+              }
             | {
-                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                primaryUserId: string;
-                description: string;
-            }
+                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
         > {
             let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link/check"), {
                 recipeUserId,
@@ -186,19 +183,19 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
         ): Promise<
             | {
-                status: "OK";
-                accountsAlreadyLinked: boolean;
-            }
+                  status: "OK";
+                  accountsAlreadyLinked: boolean;
+              }
             | {
-                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                primaryUserId: string;
-                description: string;
-            }
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
             | {
-                status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                primaryUserId: string;
-                description: string;
-            }
+                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+                  description: string;
+              }
         > {
             let accountsLinkingResult = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/accountlinking/user/link"),
@@ -238,13 +235,13 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
         ): Promise<
             | {
-                status: "OK";
-                wasRecipeUserDeleted: boolean;
-            }
+                  status: "OK";
+                  wasRecipeUserDeleted: boolean;
+              }
             | {
-                status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
-                description: string;
-            }
+                  status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
+                  description: string;
+              }
         > {
             let accountsUnlinkingResult = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
@@ -324,13 +321,13 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             primaryUserId: string;
         }): Promise<
             | {
-                status: "OK";
-                didInsertNewRow: boolean;
-            }
+                  status: "OK";
+                  didInsertNewRow: boolean;
+              }
             | {
-                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-                primaryUserId: string;
-            }
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+                  primaryUserId: string;
+              }
         > {
             let result = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
@@ -341,6 +338,5 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             );
             return result;
         },
-
     };
 }

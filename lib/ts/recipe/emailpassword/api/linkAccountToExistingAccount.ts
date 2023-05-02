@@ -24,7 +24,6 @@ export default async function linkAccountToExistingAccountAPI(
     apiImplementation: APIInterface,
     options: APIOptions
 ): Promise<boolean> {
-
     if (apiImplementation.linkAccountToExistingAccountPOST === undefined) {
         return false;
     }

@@ -53,9 +53,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userContext: any;
         }): Promise<
             | {
-                status: "OK";
-                user: User;
-            }
+                  status: "OK";
+                  user: User;
+              }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
@@ -97,10 +97,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             token: string;
         }): Promise<
             | {
-                status: "OK";
-                userId: string;
-                email: string;
-            }
+                  status: "OK";
+                  userId: string;
+                  email: string;
+              }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
             return await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token/consume"), {
@@ -114,12 +114,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             password?: string;
         }): Promise<
             | {
-                status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-            }
+                  status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+              }
             | {
-                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-                reason: string;
-            }
+                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                  reason: string;
+              }
         > {
             // the input can be primary or recipe level user id.
             return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
