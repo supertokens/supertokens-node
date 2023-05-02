@@ -603,6 +603,25 @@ export default class Recipe extends RecipeModule {
             });
         }
 
+        // we check if the userObjThatHasSameAccountInfoAndRecipeIdAsNewUser is
+        // a primary user or not, and if it is, then it means that our newUser
+        // is already linked so we can return early.
+
+        if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser) {
+            if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id === existingUser.id) {
+                // this means that the accounts we want to link are already linked.
+                return {
+                    status: "OK",
+                    wereAccountsAlreadyLinked: true,
+                };
+            } else {
+                return {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
+                    description: "New user is already linked to another account",
+                };
+            }
+        }
+
         // now we check about the email verification of the new user. If it's verified, we proceed
         // to try and link the accounts, and if not, we send email verification error ONLY if the email
         // or phone number of the new account is different compared to the existing account.
@@ -611,14 +630,9 @@ export default class Recipe extends RecipeModule {
             // in terms of account info. So we check for email verification status..
 
             if (!newUserIsVerified && shouldDoAccountLinking.shouldRequireVerification) {
-                if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser) {
-                    // TODO: investigate if this can ever happen and eliminate it.
-                    // If this happens, it means that somehow, the new user to be linked is already linked,
-                    // and is not verified. The part of it being already linked is possible,
-                    // but that part of it not being verified and being linked is weird.
-                    throw new Error("Should never come here.");
-                }
                 // we stop the flow and ask the user to verify this email first.
+                // the recipe ID is the userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id
+                // cause above we checked that userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser is false.
                 return {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
                     primaryUserId: existingUser.id,
