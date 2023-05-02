@@ -16,7 +16,6 @@
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "..";
-import STError from "../error";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 import Session from "../../session";
 
@@ -52,7 +51,7 @@ export default async function linkAccountToExistingAccountAPI(
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
-            user: result.user,
+            wereAccountsAlreadyLinked: result.wereAccountsAlreadyLinked,
         });
     } else if (result.status === "GENERAL_ERROR") {
         send200Response(options.res, result);

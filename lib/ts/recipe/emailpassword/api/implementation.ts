@@ -7,9 +7,7 @@ import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
-import { linkAccounts } from "../../accountlinking";
-import { EmailVerificationClaim } from "../../emailverification/emailVerificationClaim";
-import { getEmailVerifyLink } from "../../emailverification/utils";
+import { linkAccounts, storeIntoAccountToLinkTable } from "../../accountlinking";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -29,178 +27,70 @@ export default function getAPIImplementation(): APIInterface {
         }): Promise<
             | {
                   status: "OK";
-                  user: User;
-                  createdNewRecipeUser: boolean;
-                  session: SessionContainerInterface;
                   wereAccountsAlreadyLinked: boolean;
               }
             | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                  isNotVerifiedAccountFromInputSession: boolean;
+                  status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                   description: string;
               }
             | GeneralErrorResponse
         > {
-            let email = formFields.filter((f) => f.id === "email")[0].value;
-            let result = await AccountLinking.getInstanceOrThrowError().accountLinkPostSignInViaSession({
+            const email = formFields.filter((f) => f.id === "email")[0].value;
+            const password = formFields.filter((f) => f.id === "password")[0].value;
+            const createRecipeUserFunc = async () => {
+                await options.recipeImplementation.createNewRecipeUser({
+                    email,
+                    password,
+                    userContext,
+                });
+                // we ignore the error from the above function call cause it's either successful.
+                // or it says that the email already exists. In either case, the linkAccountsWithUserFromSession
+                // function will recurse and things will be fine anyway.
+            };
+            let accountLinkingInstance = await AccountLinking.getInstanceOrThrowError();
+            let result = await accountLinkingInstance.linkAccountsWithUserFromSession({
                 session,
                 newUser: {
                     email,
                     recipeId: "emailpassword",
                 },
-                newUserVerified: false,
+                createRecipeUserFunc,
                 userContext,
             });
-            let createdNewRecipeUser = false;
-            if (result.createRecipeUser) {
-                let password = formFields.filter((f) => f.id === "password")[0].value;
 
-                let response = await options.recipeImplementation.signUp({
-                    email,
-                    password,
-                    doAccountLinking: false,
-                    userContext,
-                });
-                if (response.status !== "OK") {
-                    throw Error(
-                        `this error should never be thrown while creating a new user during accountLinkPostSignInViaSession flow: ${response.status}`
-                    );
-                }
-                createdNewRecipeUser = true;
-                if (result.updateAccountLinkingClaim === "ADD_CLAIM") {
-                    const emailVerificationInstance = EmailVerification.getInstance();
-                    if (emailVerificationInstance !== undefined) {
-                        let emailVerificationResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                            {
-                                userId: response.user.id,
-                                email,
-                                userContext,
-                            }
-                        );
-                        if (emailVerificationResponse.status !== "EMAIL_ALREADY_VERIFIED_ERROR") {
-                            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
-                            let emailVerifyLink = getEmailVerifyLink({
-                                appInfo: options.appInfo,
-                                token: emailVerificationResponse.token,
-                                recipeId: options.recipeId,
-                            });
-                            await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                                type: "EMAIL_VERIFICATION",
-                                user: {
-                                    id: response.user.id,
-                                    email,
-                                },
-                                emailVerifyLink,
-                                userContext,
-                            });
-                        }
-                    }
-                    await session.setClaimValue(AccountLinkingClaim, response.user.id, userContext);
-                    return {
-                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
-                        isNotVerifiedAccountFromInputSession: false,
-                        description: "",
-                    };
-                } else {
-                    result = await AccountLinking.getInstanceOrThrowError().accountLinkPostSignInViaSession({
-                        session,
-                        newUser: {
-                            email,
-                            recipeId: "emailpassword",
-                        },
-                        newUserVerified: false,
-                        userContext,
-                    });
-                }
-            }
-            if (result.createRecipeUser) {
-                throw Error(
-                    `this error should never be thrown after creating a new user during accountLinkPostSignInViaSession flow`
+            if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+                // this will store in the db that these need to be linked,
+                // and after verification, it will link these accounts.
+                let toLinkResult = await storeIntoAccountToLinkTable(
+                    result.recipeUserId,
+                    result.primaryUserId,
+                    userContext
                 );
-            }
-            if (!result.accountsLinked && "reason" in result) {
-                if (result.reason === "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
-                    const emailVerificationInstance = EmailVerification.getInstance();
-                    if (emailVerificationInstance !== undefined) {
-                        let emailVerificationResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                            {
-                                userId: result.userId,
-                                email,
-                                userContext,
-                            }
-                        );
-                        if (emailVerificationResponse.status !== "EMAIL_ALREADY_VERIFIED_ERROR") {
-                            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
-                            let emailVerifyLink = getEmailVerifyLink({
-                                appInfo: options.appInfo,
-                                token: emailVerificationResponse.token,
-                                recipeId: options.recipeId,
-                            });
-                            await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                                type: "EMAIL_VERIFICATION",
-                                user: {
-                                    id: result.userId,
-                                    email,
-                                },
-                                emailVerifyLink,
-                                userContext,
-                            });
-                        }
+                if (toLinkResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                    if (toLinkResult.primaryUserId === result.primaryUserId) {
+                        // this is some sort of a race condition issue, so we just ignore it
+                        // since we already linked to the session's account anyway...
+                        return {
+                            status: "OK",
+                            wereAccountsAlreadyLinked: true,
+                        };
+                    } else {
+                        return {
+                            status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
+                            description:
+                                "Input user is already linked to another account. Please try again or contact support.",
+                        };
                     }
-                    return {
-                        status: "ACCOUNT_NOT_VERIFIED_ERROR",
-                        isNotVerifiedAccountFromInputSession: true,
-                        description: "",
-                    };
                 }
-                if (
-                    result.reason === "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
-                    result.reason === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                ) {
-                    return {
-                        status: result.reason,
-                        description: "",
-                        primaryUserId: result.primaryUserId,
-                    };
-                }
+                // status: "OK"
+                await session.fetchAndSetClaim(AccountLinkingClaim, userContext);
                 return {
-                    status: result.reason,
-                    description: "",
+                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                    description: "Before accounts can be linked, the new account must be verified",
                 };
             }
-            let wereAccountsAlreadyLinked = false;
-            if (result.updateAccountLinkingClaim === "REMOVE_CLAIM") {
-                await session.removeClaim(AccountLinkingClaim, userContext);
-            } else {
-                wereAccountsAlreadyLinked = true;
-            }
-            let user = await getUser(session.getUserId());
-            if (user === undefined) {
-                throw Error(
-                    "this error should never be thrown. Can't find primary user with userId: " + session.getUserId()
-                );
-            }
-            return {
-                status: "OK",
-                user,
-                createdNewRecipeUser,
-                wereAccountsAlreadyLinked,
-                session,
-            };
+            // status: "OK" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
+            return result;
         },
         emailExistsGET: async function ({
             email,

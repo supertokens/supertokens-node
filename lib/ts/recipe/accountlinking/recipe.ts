@@ -388,15 +388,21 @@ export default class Recipe extends RecipeModule {
     }: {
         session: SessionContainer;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: (newUser: AccountInfoWithRecipeId) => Promise<void>;
+        createRecipeUserFunc: () => Promise<void>;
         userContext: any;
     }): Promise<
         | {
-              status: "OK" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              status: "OK";
+              wereAccountsAlreadyLinked: boolean;
           }
         | {
               status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
               description: string;
+          }
+        | {
+              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              primaryUserId: string;
+              recipeUserId: string;
           }
     > => {
         // In order to link the newUser to the session user,
@@ -586,7 +592,7 @@ export default class Recipe extends RecipeModule {
             }
 
             // we create the new recipe user
-            await createRecipeUserFunc(newUser);
+            await createRecipeUserFunc();
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
             return await this.linkAccountsWithUserFromSession({
@@ -605,9 +611,18 @@ export default class Recipe extends RecipeModule {
             // in terms of account info. So we check for email verification status..
 
             if (!newUserIsVerified && shouldDoAccountLinking.shouldRequireVerification) {
+                if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser) {
+                    // TODO: investigate if this can ever happen and eliminate it.
+                    // If this happens, it means that somehow, the new user to be linked is already linked,
+                    // and is not verified. The part of it being already linked is possible,
+                    // but that part of it not being verified and being linked is weird.
+                    throw new Error("Should never come here.");
+                }
                 // we stop the flow and ask the user to verify this email first.
                 return {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                    primaryUserId: existingUser.id,
+                    recipeUserId: userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id,
                 };
             }
         }
@@ -621,6 +636,7 @@ export default class Recipe extends RecipeModule {
         if (linkAccountResponse.status === "OK") {
             return {
                 status: "OK",
+                wereAccountsAlreadyLinked: linkAccountResponse.accountsAlreadyLinked,
             };
         } else if (linkAccountResponse.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             // this means that the the new user is already linked to some other primary user ID,

@@ -281,8 +281,6 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
-                    session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                 }
               | {
