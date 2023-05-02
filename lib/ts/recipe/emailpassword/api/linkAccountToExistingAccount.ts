@@ -48,16 +48,7 @@ export default async function linkAccountToExistingAccountAPI(
         options,
         userContext,
     });
-    if (result.status === "OK") {
-        send200Response(options.res, {
-            status: "OK",
-            wereAccountsAlreadyLinked: result.wereAccountsAlreadyLinked,
-        });
-    } else if (result.status === "GENERAL_ERROR") {
-        send200Response(options.res, result);
-    } else {
-        // status: NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR | ACCOUNT_LINKING_NOT_ALLOWED_ERROR
-        send200Response(options.res, result);
-    }
+    // status: NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR | ACCOUNT_LINKING_NOT_ALLOWED_ERROR | WRONG_CREDENTIALS_ERROR | GENERAL_ERROR | "OK"
+    send200Response(options.res, result);
     return true;
 }
