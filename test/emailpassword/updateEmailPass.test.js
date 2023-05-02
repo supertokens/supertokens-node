@@ -66,14 +66,12 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
 
         let res = await signIn("test@gmail.com", "testPass123");
 
-        await updateEmailOrPassword(
-            {
-                userId: res.user.id,
-                email: "test2@gmail.com",
-                password: "testPass",
-            },
-            { applyPasswordPolicy: false }
-        );
+        await updateEmailOrPassword({
+            userId: res.user.id,
+            email: "test2@gmail.com",
+            password: "testPass",
+            applyPasswordPolicy: false,
+        });
 
         let res2 = await signIn("test2@gmail.com", "testPass");
 
@@ -192,5 +190,62 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         });
 
         assert(res2.status === "OK");
+    });
+
+    it("test updateEmailPass with failing default password validation", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "email",
+                            },
+                            {
+                                id: "password",
+                                validate: async (value) => {
+                                    if (value.length < 5) return "Password should be greater than 5 characters";
+                                    return undefined;
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
+        const express = require("express");
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+
+        let res = await signIn("test@gmail.com", "testPass123");
+
+        const res2 = await updateEmailOrPassword({
+            userId: res.user.id,
+            email: "test2@gmail.com",
+            password: "1",
+        });
+
+        assert(res2.status === "PASSWORD_POLICY_VIOLATED_ERROR");
     });
 });

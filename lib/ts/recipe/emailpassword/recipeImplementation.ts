@@ -130,7 +130,7 @@ export default function getRecipeInterface(
               }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
-            if (input.applyPasswordPolicy) {
+            if (input.applyPasswordPolicy || input.applyPasswordPolicy === undefined) {
                 if (formFields !== undefined) {
                     const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
                     if (passwordField.validate !== undefined) {
