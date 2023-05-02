@@ -51,27 +51,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             });
             return result.userIdMapping;
         },
-        addNewRecipeUserIdWithoutPrimaryUserId: async function (
-            this: RecipeInterface,
-            {
-                recipeUserId,
-                recipeId,
-                timeJoined,
-            }: {
-                recipeUserId: string;
-                recipeId: "emailpassword" | "thirdparty" | "passwordless";
-                timeJoined: number;
-            }
-        ): Promise<{
-            status: "OK";
-            createdNewEntry: boolean;
-        }> {
-            return querier.sendPutRequest(new NormalisedURLPath("/recipe/accountlinking/user"), {
-                recipeUserId,
-                recipeId,
-                timeJoined,
-            });
-        },
         getUsers: async function (
             this: RecipeInterface,
             {

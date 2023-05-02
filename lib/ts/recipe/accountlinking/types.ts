@@ -78,15 +78,6 @@ export type RecipeInterface = {
     }) => Promise<{
         [recipeUserId: string]: string | null; // if recipeUserId doesn't have a primaryUserId, then it will be mapped to `null`. If the input recipeUserId doesn't exist, then it won't be a part of the map
     }>;
-    addNewRecipeUserIdWithoutPrimaryUserId: (input: {
-        recipeUserId: string;
-        recipeId: "emailpassword" | "thirdparty" | "passwordless";
-        timeJoined: number;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        createdNewEntry: boolean;
-    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;

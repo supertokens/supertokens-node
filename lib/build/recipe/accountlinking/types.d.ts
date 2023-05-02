@@ -61,15 +61,6 @@ export declare type RecipeInterface = {
     }) => Promise<{
         [recipeUserId: string]: string | null;
     }>;
-    addNewRecipeUserIdWithoutPrimaryUserId: (input: {
-        recipeUserId: string;
-        recipeId: "emailpassword" | "thirdparty" | "passwordless";
-        timeJoined: number;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        createdNewEntry: boolean;
-    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;

@@ -32,20 +32,6 @@ export default class Wrapper {
         });
     }
 
-    static async addNewRecipeUserIdWithoutPrimaryUserId(
-        recipeUserId: string,
-        recipeId: "emailpassword" | "thirdparty" | "passwordless",
-        timeJoined: number,
-        userContext?: any
-    ) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addNewRecipeUserIdWithoutPrimaryUserId({
-            recipeUserId,
-            recipeId,
-            timeJoined,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
     static async canCreatePrimaryUserId(recipeUserId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.canCreatePrimaryUserId({
             recipeUserId,
@@ -104,7 +90,6 @@ export default class Wrapper {
 export const init = Wrapper.init;
 export const getRecipeUserIdsForPrimaryUserIds = Wrapper.getRecipeUserIdsForPrimaryUserIds;
 export const getPrimaryUserIdsForRecipeUserIds = Wrapper.getPrimaryUserIdsForRecipeUserIds;
-export const addNewRecipeUserIdWithoutPrimaryUserId = Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
 export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
 export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;

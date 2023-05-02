@@ -15,15 +15,6 @@ export default class Wrapper {
     ): Promise<{
         [recipeUserId: string]: string | null;
     }>;
-    static addNewRecipeUserIdWithoutPrimaryUserId(
-        recipeUserId: string,
-        recipeId: "emailpassword" | "thirdparty" | "passwordless",
-        timeJoined: number,
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-        createdNewEntry: boolean;
-    }>;
     static canCreatePrimaryUserId(
         recipeUserId: string,
         userContext?: any
@@ -132,7 +123,6 @@ export default class Wrapper {
 export declare const init: typeof Recipe.init;
 export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
 export declare const getPrimaryUserIdsForRecipeUserIds: typeof Wrapper.getPrimaryUserIdsForRecipeUserIds;
-export declare const addNewRecipeUserIdWithoutPrimaryUserId: typeof Wrapper.addNewRecipeUserIdWithoutPrimaryUserId;
 export declare const canCreatePrimaryUserId: typeof Wrapper.canCreatePrimaryUserId;
 export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
