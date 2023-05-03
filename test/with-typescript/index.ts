@@ -1522,7 +1522,6 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
         return resp.status(401).json({ message: "try again " }); // Or equivalent...
     } else {
         try {
-            const options: VerifySessionOptions = {};
             const session1 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
                 antiCsrfCheck: false,
             });
@@ -1534,6 +1533,9 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
             const session4 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
                 sessionRequired: x,
             });
+            const options: VerifySessionOptions = {};
+            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
+            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { ...options });
         } catch (ex) {
             if (Session.Error.isErrorFromSuperTokens(ex)) {
                 if (ex.type === Session.Error.INVALID_CLAIMS) {
