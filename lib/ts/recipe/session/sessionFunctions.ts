@@ -205,6 +205,7 @@ export async function getSession(
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
         delete response.status;
+        response.session.expiryTime = response.accessToken.expiry;
         return response;
     } else if (response.status === "UNAUTHORISED") {
         logDebugMessage("getSession: Returning UNAUTHORISED because of core response");

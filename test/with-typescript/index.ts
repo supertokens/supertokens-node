@@ -1523,8 +1523,17 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
     } else {
         try {
             const options: VerifySessionOptions = {};
-            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
-            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { ...options });
+            const session1 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                antiCsrfCheck: false,
+            });
+            const session2 = await Session.getSessionWithoutRequestResponse(accessToken, undefined);
+            const session3 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                sessionRequired: false,
+            });
+            let x: boolean | undefined;
+            const session4 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                sessionRequired: x,
+            });
         } catch (ex) {
             if (Session.Error.isErrorFromSuperTokens(ex)) {
                 if (ex.type === Session.Error.INVALID_CLAIMS) {

@@ -456,6 +456,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
             assert.deepStrictEqual(res.body, {
                 message: true,
+                payload: {},
                 sessionExists: true,
                 sessionHandle: legacySessionResp.session.handle,
             });
@@ -544,6 +545,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert.deepStrictEqual(resNoDBCheck.body, {
                 message: true,
                 sessionExists: true,
+                payload: {},
                 sessionHandle: legacySessionResp.session.handle,
             });
         });
@@ -830,11 +832,21 @@ function getTestExpressApp() {
     });
 
     app.get("/verify", verifySession(), async (req, res) => {
-        res.status(200).json({ message: true, sessionHandle: req.session.getHandle(), sessionExists: true });
+        res.status(200).json({
+            message: true,
+            sessionHandle: req.session.getHandle(),
+            sessionExists: true,
+            payload: req.session.getAccessTokenPayload(),
+        });
     });
 
     app.get("/verify-checkdb", verifySession({ checkDatabase: true }), async (req, res) => {
-        res.status(200).json({ message: true, sessionHandle: req.session.getHandle(), sessionExists: true });
+        res.status(200).json({
+            message: true,
+            sessionHandle: req.session.getHandle(),
+            sessionExists: true,
+            payload: req.session.getAccessTokenPayload(),
+        });
     });
 
     app.get("/verify-optional", verifySession({ sessionRequired: false }), async (req, res) => {
