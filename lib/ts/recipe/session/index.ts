@@ -237,7 +237,7 @@ export default class SessionWrapper {
      * - you can disable anti-csrf checks by setting antiCsrf to NONE in the Session recipe config. We only recommend this if you are always getting the access-token from the Authorization header.
      * - if the antiCsrf check fails the returned satatus will be TRY_REFRESH_TOKEN_ERROR
      *
-     * Returned statuses:
+     * Results:
      * OK: The session was successfully validated, including claim validation
      * CLAIM_VALIDATION_ERROR: While the access token is valid, one or more claim validators have failed. Our frontend SDKs expect a 403 response the contents matching the value returned from this function.
      * TRY_REFRESH_TOKEN_ERROR: This means, that the access token structure was valid, but it didn't pass validation for some reason and the user should call the refresh API.
