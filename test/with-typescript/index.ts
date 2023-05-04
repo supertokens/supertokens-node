@@ -1522,6 +1522,17 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
         return resp.status(401).json({ message: "try again " }); // Or equivalent...
     } else {
         try {
+            const session1 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                antiCsrfCheck: false,
+            });
+            const session2 = await Session.getSessionWithoutRequestResponse(accessToken, undefined);
+            const session3 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                sessionRequired: false,
+            });
+            let x: boolean | undefined;
+            const session4 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                sessionRequired: x,
+            });
             const options: VerifySessionOptions = {};
             session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
             session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { ...options });

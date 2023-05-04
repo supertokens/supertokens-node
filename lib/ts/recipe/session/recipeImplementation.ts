@@ -171,9 +171,11 @@ export default function getRecipeInterface(
 
             logDebugMessage("getSession: Success!");
             const payload =
-                response.accessToken !== undefined
-                    ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
-                    : accessToken.payload;
+                accessToken.version >= 3
+                    ? response.accessToken !== undefined
+                        ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
+                        : accessToken.payload
+                    : response.session.userDataInJWT;
             const session = new Session(
                 helpers,
                 response.accessToken !== undefined ? response.accessToken.token : accessTokenString,

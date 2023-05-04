@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking Changes
 
 -   Added support for CDI version `2.21`
--   Dropped support for CDI version `2.8`-`2.18`
+-   Dropped support for CDI version `2.8`-`2.20`
 -   Changed the interface and configuration of the Session recipe, see below for details. If you do not use the Session recipe directly and do not provide custom configuration, then no migration is necessary.
 -   `getAccessTokenPayload` will now return standard (`sub`, `iat`, `exp`) claims and some SuperTokens specific claims along the user defined ones in `getAccessTokenPayload`.
 -   Some claim names are now prohibited in the root level of the access token payload
@@ -82,7 +82,7 @@ if (accessTokenPayload.jwt === undefined) {
 
 ```tsx
 let jwt = null;
-const accessTokenPayload = await session.getAccessTokenPayloadSecurely();
+const accessTokenPayload = await session.getAccessTokenPayload();
 if (accessTokenPayload.jwt === undefined) {
     jwt = await session.getAccessToken();
 } else {
@@ -102,8 +102,8 @@ if (accessTokenPayload.jwt === undefined) {
 Before:
 
 ```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
 
 SuperTokens.init({
     appInfo: {
@@ -125,8 +125,8 @@ SuperTokens.init({
 After:
 
 ```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
 
 SuperTokens.init({
     appInfo: {
