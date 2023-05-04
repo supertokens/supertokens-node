@@ -13,6 +13,7 @@
  * under the License.
  */
 import axios from "axios";
+import fetch from "node-fetch";
 
 import { getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
@@ -193,10 +194,14 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios.get(url, {
-                    params,
+                let response = await fetch(url + new URLSearchParams(params).toString(), {
+                    method: "GET",
                     headers,
                 });
+                return {
+                    status: 200,
+                    data: await response.json(),
+                };
             },
             this.__hosts?.length || 0
         );

@@ -43,6 +43,7 @@
         "jsonwebtoken": "^9.0.0",
         "jwks-rsa": "^2.0.5",
         "libphonenumber-js": "^1.9.44",
+        "node-fetch": "^3.3.1",
         "nodemailer": "^6.7.2",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
