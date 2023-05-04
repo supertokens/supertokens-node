@@ -74,7 +74,10 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         }
 
         if (passwordResetResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
-            return passwordResetResponse;
+            return {
+                status: "INVALID_PASSWORD_ERROR",
+                error: passwordResetResponse.failureReason,
+            };
         }
 
         return {
@@ -99,7 +102,10 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
     }
 
     if (passwordResetResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
-        return passwordResetResponse;
+        return {
+            status: "INVALID_PASSWORD_ERROR",
+            error: passwordResetResponse.failureReason,
+        };
     }
 
     return {
