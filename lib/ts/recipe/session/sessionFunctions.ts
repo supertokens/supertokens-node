@@ -108,16 +108,17 @@ export async function getSession(
          * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
          * the loop we just return TRY_REFRESH_TOKEN
          */
-        let payload = parsedAccessToken.payload;
-
-        const timeCreated = sanitizeNumberInput(payload.timeCreated);
-        const expiryTime = sanitizeNumberInput(payload.expiryTime);
-
-        if (expiryTime === undefined || timeCreated == undefined) {
-            throw err;
-        }
 
         if (parsedAccessToken.version < 3) {
+            let payload = parsedAccessToken.payload;
+
+            const timeCreated = sanitizeNumberInput(payload.timeCreated);
+            const expiryTime = sanitizeNumberInput(payload.expiryTime);
+
+            if (expiryTime === undefined || timeCreated == undefined) {
+                throw err;
+            }
+
             if (expiryTime < Date.now()) {
                 throw err;
             }
