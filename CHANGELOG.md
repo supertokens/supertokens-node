@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [14.0.0] - 2023-05-04
+
 ### Breaking Changes
 
 -   Added support for CDI version `2.21`
