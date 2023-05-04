@@ -96,9 +96,11 @@ export default function getRecipeInterface(
 
         resetPasswordUsingToken: async function ({
             token,
+            applyPasswordPolicy,
             newPassword,
         }: {
             token: string;
+            applyPasswordPolicy?: boolean;
             newPassword: string;
         }): Promise<
             | {
@@ -110,7 +112,19 @@ export default function getRecipeInterface(
                   userId?: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
+            if (applyPasswordPolicy || applyPasswordPolicy === undefined) {
+                let formFields = getEmailPasswordConfig().signUpFeature.formFields;
+                const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
+                const error = await passwordField.validate(newPassword);
+                if (error !== undefined) {
+                    return {
+                        status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                        failureReason: error,
+                    };
+                }
+            }
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset"), {
                 method: "token",
                 token,

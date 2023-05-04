@@ -48,6 +48,7 @@ export default class Wrapper {
     static resetPasswordUsingToken(
         token: string,
         newPassword: string,
+        applyPasswordPolicy?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -56,6 +57,10 @@ export default class Wrapper {
           }
         | {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
           }
     >;
     static updateEmailOrPassword(input: {

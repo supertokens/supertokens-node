@@ -4,7 +4,6 @@ import EmailPasswordRecipe from "../../../emailpassword/recipe";
 import EmailPassword from "../../../emailpassword";
 import ThirdPartyEmailPasswordRecipe from "../../../thirdpartyemailpassword/recipe";
 import ThirdPartyEmailPassword from "../../../thirdpartyemailpassword";
-import { FORM_FIELD_PASSWORD_ID } from "../../../emailpassword/constants";
 
 type Response =
     | {
@@ -13,6 +12,10 @@ type Response =
     | {
           status: "INVALID_PASSWORD_ERROR";
           error: string;
+      }
+    | {
+          status: "PASSWORD_POLICY_VIOLATED_ERROR";
+          failureReason: string;
       };
 
 export const userPasswordPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
@@ -54,19 +57,6 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
     }
 
     if (recipeToUse === "emailpassword") {
-        let passwordFormFields = EmailPasswordRecipe.getInstanceOrThrowError().config.signUpFeature.formFields.filter(
-            (field) => field.id === FORM_FIELD_PASSWORD_ID
-        );
-
-        let passwordValidationError = await passwordFormFields[0].validate(newPassword);
-
-        if (passwordValidationError !== undefined) {
-            return {
-                status: "INVALID_PASSWORD_ERROR",
-                error: passwordValidationError,
-            };
-        }
-
         const passwordResetToken = await EmailPassword.createResetPasswordToken(userId);
 
         if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
@@ -83,21 +73,12 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
             throw new Error("Should never come here");
         }
 
+        if (passwordResetResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+            return passwordResetResponse;
+        }
+
         return {
             status: "OK",
-        };
-    }
-
-    let passwordFormFields = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError().config.signUpFeature.formFields.filter(
-        (field) => field.id === FORM_FIELD_PASSWORD_ID
-    );
-
-    let passwordValidationError = await passwordFormFields[0].validate(newPassword);
-
-    if (passwordValidationError !== undefined) {
-        return {
-            status: "INVALID_PASSWORD_ERROR",
-            error: passwordValidationError,
         };
     }
 
@@ -115,6 +96,10 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
 
     if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
         throw new Error("Should never come here");
+    }
+
+    if (passwordResetResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+        return passwordResetResponse;
     }
 
     return {

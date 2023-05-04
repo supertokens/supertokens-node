@@ -45,7 +45,12 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return recipeInterface.createResetPasswordToken(input);
         },
 
-        resetPasswordUsingToken: async function (input: { token: string; newPassword: string; userContext: any }) {
+        resetPasswordUsingToken: async function (input: {
+            token: string;
+            newPassword: string;
+            applyPasswordPolicy?: boolean;
+            userContext: any;
+        }) {
             return recipeInterface.resetPasswordUsingToken(input);
         },
 

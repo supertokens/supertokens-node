@@ -108,6 +108,7 @@ export default function getAPIImplementation(): APIInterface {
                   userId?: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | GeneralErrorResponse
         > {
             let newPassword = formFields.filter((f) => f.id === "password")[0].value;

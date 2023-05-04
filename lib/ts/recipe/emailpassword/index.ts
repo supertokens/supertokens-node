@@ -59,10 +59,16 @@ export default class Wrapper {
         });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any) {
+    static resetPasswordUsingToken(
+        token: string,
+        newPassword: string,
+        applyPasswordPolicy?: boolean,
+        userContext?: any
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
             token,
             newPassword,
+            applyPasswordPolicy,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

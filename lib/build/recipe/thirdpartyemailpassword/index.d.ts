@@ -74,6 +74,10 @@ export default class Wrapper {
         | {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
     >;
     static Google: typeof import("../thirdparty/providers/google").default;
     static updateEmailOrPassword(input: {

@@ -14,7 +14,6 @@
  */
 
 import { send200Response } from "../../../utils";
-import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
@@ -30,10 +29,7 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
     let formFields: {
         id: string;
         value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
-        (await options.req.getJSONBody()).formFields
-    );
+    }[] = (await options.req.getJSONBody()).formFields;
 
     let token = (await options.req.getJSONBody()).token;
     if (token === undefined) {

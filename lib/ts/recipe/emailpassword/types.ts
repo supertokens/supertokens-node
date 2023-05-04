@@ -122,6 +122,7 @@ export type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        applyPasswordPolicy?: boolean;
         userContext: any;
     }): Promise<
         | {
@@ -133,6 +134,7 @@ export type RecipeInterface = {
               userId?: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+        | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
     >;
 
     updateEmailOrPassword(input: {
@@ -209,6 +211,7 @@ export type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
               | GeneralErrorResponse
           >);
 
