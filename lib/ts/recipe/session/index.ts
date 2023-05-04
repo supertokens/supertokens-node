@@ -304,12 +304,12 @@ export default class SessionWrapper {
         });
     }
 
-    static async refreshSession(req: any, res: any, userContext: any = {}) {
+    static refreshSession(req: any, res: any, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
 
-        await refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
+        return refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
     }
 
     static refreshSessionWithoutRequestResponse(

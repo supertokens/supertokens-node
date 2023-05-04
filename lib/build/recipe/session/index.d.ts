@@ -128,7 +128,7 @@ export default class SessionWrapper {
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
-    static refreshSession(req: any, res: any, userContext?: any): Promise<void>;
+    static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
     static refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf?: boolean,
