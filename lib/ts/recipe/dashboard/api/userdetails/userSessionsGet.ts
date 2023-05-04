@@ -3,7 +3,7 @@ import STError from "../../../../error";
 import Session from "../../../session";
 
 type SessionType = {
-    sessionData: any;
+    sessionDataInDatabase: any;
     accessTokenPayload: any;
     userId: string;
     expiry: number;
@@ -38,7 +38,9 @@ export const userSessionsGet: APIFunction = async (_: APIInterface, options: API
                     const sessionResponse = await Session.getSessionInformation(response[i]);
 
                     if (sessionResponse !== undefined) {
-                        sessions[i] = sessionResponse;
+                        const accessTokenPayload = sessionResponse.customClaimsInAccessTokenPayload;
+                        delete sessionResponse.customClaimsInAccessTokenPayload;
+                        sessions[i] = { ...sessionResponse, accessTokenPayload };
                     }
 
                     res();

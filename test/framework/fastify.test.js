@@ -675,9 +675,10 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 },
             })
         );
-        assert(res2.accessToken !== undefined);
-        assert(res2.antiCsrf !== undefined);
-        assert(res2.refreshToken !== undefined);
+
+        assert.notStrictEqual(res2.accessToken, undefined);
+        assert.notStrictEqual(res2.antiCsrf, undefined);
+        assert.notStrictEqual(res2.refreshToken, undefined);
 
         let res3 = extractInfoFromResponse(
             await this.server.inject({
@@ -964,7 +965,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                await req.session.updateSessionData({ key: "value" });
+                await req.session.updateSessionDataInDatabase({ key: "value" });
                 return res.send("").code(200);
             }
         );
@@ -975,7 +976,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                let sessionData = await req.session.getSessionData();
+                let sessionData = await req.session.getSessionDataFromDatabase();
                 return res.send(sessionData).code(200);
             }
         );
@@ -986,14 +987,14 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                await req.session.updateSessionData(null);
+                await req.session.updateSessionDataInDatabase(null);
                 return res.send("").code(200);
             }
         );
 
         this.server.post("/updateSessionDataInvalidSessionHandle", async (req, res) => {
             return res
-                .send({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                .send({ success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })) })
                 .code(200);
         });
 
@@ -1092,7 +1093,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             },
             async (req, res) => {
                 let accessTokenBefore = req.session.accessToken;
-                await req.session.updateAccessTokenPayload({ key: "value" });
+                await req.session.mergeIntoAccessTokenPayload({ key: "value" });
                 let accessTokenAfter = req.session.accessToken;
                 let statusCode =
                     accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
@@ -1117,14 +1118,14 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                await req.session.updateAccessTokenPayload(null);
+                await req.session.mergeIntoAccessTokenPayload({ key: null });
                 return res.send("").code(200);
             }
         );
 
         this.server.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
             return res
-                .send({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                .send({ success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })) })
                 .code(200);
         });
 
@@ -1140,7 +1141,9 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1156,7 +1159,10 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await this.server.inject({
@@ -1184,7 +1190,10 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
         frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1200,7 +1209,9 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //retrieve the changed jwt payload
         let response3 = await this.server.inject({
@@ -1213,7 +1224,18 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         //check the value of the retrieved
-        assert.deepStrictEqual(response3.json(), {});
+        assert.deepStrictEqual(
+            new Set(Object.keys(response3.json())),
+            new Set([
+                "antiCsrfToken",
+                "exp",
+                "iat",
+                "parentRefreshTokenHash1",
+                "refreshTokenHash1",
+                "sessionHandle",
+                "sub",
+            ])
+        );
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await this.server.inject({
             method: "post",

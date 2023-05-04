@@ -6,6 +6,7 @@ export default class Wrapper {
     static createJWT(
         payload: any,
         validitySeconds?: number,
+        useStaticSigningKey?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -19,7 +20,6 @@ export default class Wrapper {
     static getJWKS(
         userContext?: any
     ): Promise<{
-        status: "OK";
         keys: JsonWebKey[];
     }>;
 }

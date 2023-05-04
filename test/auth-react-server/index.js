@@ -171,14 +171,14 @@ app.get("/sessioninfo", verifySession(), async (req, res) => {
             sessionHandle: session.getHandle(),
             userId: session.getUserId(),
             accessTokenPayload: session.getJWTPayload(),
-            sessionData: await session.getSessionData(),
+            sessionData: await session.getSessionDataFromDatabase(),
         });
     } else {
         res.send({
             sessionHandle: session.getHandle(),
             userId: session.getUserId(),
             accessTokenPayload: session.getAccessTokenPayload(),
-            sessionData: await session.getSessionData(),
+            sessionData: await session.getSessionDataFromDatabase(),
         });
     }
 });

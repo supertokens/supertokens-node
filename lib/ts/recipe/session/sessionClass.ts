@@ -12,22 +12,25 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseRequest, BaseResponse } from "../../framework";
-import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
+import { buildFrontToken, clearSession, setAntiCsrfTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface, TokenTransferMethod } from "./types";
-import { Helpers } from "./recipeImplementation";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResInfo, TokenInfo } from "./types";
+import { Helpers, protectedProps } from "./recipeImplementation";
+import { setAccessTokenInResponse } from "./utils";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 
 export default class Session implements SessionContainerInterface {
     constructor(
         protected helpers: Helpers,
         protected accessToken: string,
+        protected frontToken: string,
+        protected refreshToken: TokenInfo | undefined,
+        protected antiCsrfToken: string | undefined,
         protected sessionHandle: string,
         protected userId: string,
         protected userDataInAccessToken: any,
-        protected res: BaseResponse,
-        protected readonly req: BaseRequest,
-        protected readonly transferMethod: TokenTransferMethod
+        protected reqResInfo: ReqResInfo | undefined,
+        protected accessTokenUpdated: boolean
     ) {}
 
     async revokeSession(userContext?: any) {
@@ -36,16 +39,18 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
 
-        // we do not check the output of calling revokeSession
-        // before clearing the cookies because we are revoking the
-        // current API request's session.
-        // If we instead clear the cookies only when revokeSession
-        // returns true, it can cause this kind of a bug:
-        // https://github.com/supertokens/supertokens-node/issues/343
-        clearSession(this.helpers.config, this.res, this.transferMethod);
+        if (this.reqResInfo !== undefined) {
+            // we do not check the output of calling revokeSession
+            // before clearing the cookies because we are revoking the
+            // current API request's session.
+            // If we instead clear the cookies only when revokeSession
+            // returns true, it can cause this kind of a bug:
+            // https://github.com/supertokens/supertokens-node/issues/343
+            clearSession(this.helpers.config, this.reqResInfo.res, this.reqResInfo.transferMethod);
+        }
     }
 
-    async getSessionData(userContext?: any): Promise<any> {
+    async getSessionDataFromDatabase(userContext?: any): Promise<any> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -56,12 +61,12 @@ export default class Session implements SessionContainerInterface {
                 type: STError.UNAUTHORISED,
             });
         }
-        return sessionInfo.sessionData;
+        return sessionInfo.sessionDataInDatabase;
     }
 
-    async updateSessionData(newSessionData: any, userContext?: any) {
+    async updateSessionDataInDatabase(newSessionData: any, userContext?: any) {
         if (
-            !(await this.helpers.getRecipeImpl().updateSessionData({
+            !(await this.helpers.getRecipeImpl().updateSessionDataInDatabase({
                 sessionHandle: this.sessionHandle,
                 newSessionData,
                 userContext: userContext === undefined ? {} : userContext,
@@ -90,16 +95,70 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     }
 
+    getAllSessionTokensDangerously() {
+        return {
+            accessToken: this.accessToken,
+            accessAndFrontTokenUpdated: this.accessTokenUpdated,
+            refreshToken: this.refreshToken?.token,
+            frontToken: this.frontToken,
+            antiCsrfToken: this.antiCsrfToken,
+        };
+    }
+
     // Any update to this function should also be reflected in the respective JWT version
     async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
-        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        let newAccessTokenPayload = { ...this.getAccessTokenPayload(userContext) };
+        for (const key of protectedProps) {
+            delete newAccessTokenPayload[key];
+        }
+
+        newAccessTokenPayload = { ...newAccessTokenPayload, ...accessTokenPayloadUpdate };
+
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
-                delete updatedPayload[key];
+                delete newAccessTokenPayload[key];
             }
         }
 
-        await this.updateAccessTokenPayload(updatedPayload, userContext);
+        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
+            accessToken: this.getAccessToken(),
+            newAccessTokenPayload,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+
+        if (response === undefined) {
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
+            });
+        }
+
+        if (response.accessToken !== undefined) {
+            const respToken = parseJWTWithoutSignatureVerification(response.accessToken.token);
+            const payload = respToken.version < 3 ? response.session.userDataInJWT : respToken.payload;
+            this.userDataInAccessToken = payload;
+            this.accessToken = response.accessToken.token;
+            this.frontToken = buildFrontToken(this.userId, response.accessToken.expiry, payload);
+            this.accessTokenUpdated = true;
+            if (this.reqResInfo !== undefined) {
+                // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
+                setAccessTokenInResponse(
+                    this.reqResInfo.res,
+                    this.accessToken,
+                    this.frontToken,
+                    this.helpers.config,
+                    this.reqResInfo.transferMethod
+                );
+            }
+        } else {
+            // This case means that the access token has expired between the validation and this update
+            // We can't update the access token on the FE, as it will need to call refresh anyway but we handle this as a successful update during this request.
+            // the changes will be reflected on the FE after refresh is called
+            this.userDataInAccessToken = {
+                ...this.getAccessTokenPayload(),
+                ...response.session.userDataInJWT,
+            };
+        }
     }
 
     async getTimeCreated(userContext?: any): Promise<number> {
@@ -140,6 +199,10 @@ export default class Session implements SessionContainerInterface {
         });
 
         if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
+            for (const key of protectedProps) {
+                delete validateClaimResponse.accessTokenPayloadUpdate[key];
+            }
+
             await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
         }
 
@@ -175,42 +238,26 @@ export default class Session implements SessionContainerInterface {
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload
-     */
-    async updateAccessTokenPayload(newAccessTokenPayload: any, userContext: any): Promise<void> {
-        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
-            accessToken: this.getAccessToken(),
-            newAccessTokenPayload,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (response === undefined) {
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
-        }
-        this.userDataInAccessToken = response.session.userDataInJWT;
-        if (response.accessToken !== undefined) {
-            this.accessToken = response.accessToken.token;
-            setFrontTokenInHeaders(
-                this.res,
-                response.session.userId,
-                response.accessToken.expiry,
-                response.session.userDataInJWT
-            );
-            setToken(
-                this.helpers.config,
-                this.res,
-                "access",
-                response.accessToken.token,
-                // We set the expiration to 100 years, because we can't really access the expiration of the refresh token everywhere we are setting it.
-                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
-                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
-                // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
-                Date.now() + 3153600000000,
-                this.transferMethod
-            );
+    attachToRequestResponse(info: ReqResInfo) {
+        this.reqResInfo = info;
+
+        if (this.accessTokenUpdated) {
+            const { res, transferMethod } = info;
+
+            setAccessTokenInResponse(res, this.accessToken, this.frontToken, this.helpers.config, transferMethod);
+            if (this.refreshToken !== undefined) {
+                setToken(
+                    this.helpers.config,
+                    res,
+                    "refresh",
+                    this.refreshToken.token,
+                    this.refreshToken.expiry,
+                    transferMethod
+                );
+            }
+            if (this.antiCsrfToken !== undefined) {
+                setAntiCsrfTokenInHeaders(res, this.antiCsrfToken);
+            }
         }
     }
 }

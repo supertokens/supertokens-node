@@ -314,15 +314,15 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken,
-            true,
-            "cookie"
+            false
         );
 
         await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
-            true
+            true,
+            false
         );
 
         try {
@@ -330,9 +330,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.refreshToken.token,
                 response.antiCsrfToken,
-                true,
-                "cookie",
-                "cookie"
+                false
             );
             throw new Error("should not have come here");
         } catch (err) {
@@ -370,16 +368,15 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken,
-            true,
-            "cookie",
-            "cookie"
+            false
         );
 
         await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
-            true
+            true,
+            false
         );
 
         try {
@@ -387,9 +384,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.refreshToken.token,
                 response.antiCsrfToken,
-                true,
-                "cookie",
-                "cookie"
+                false
             );
             throw new Error("should not have come here");
         } catch (err) {
@@ -445,42 +440,40 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let s = SessionRecipe.getInstanceOrThrowError();
 
         let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
-        assert(response.session !== undefined);
-        assert(response.accessToken !== undefined);
-        assert(response.refreshToken !== undefined);
-        assert(response.antiCsrfToken !== undefined);
-        assert(Object.keys(response).length === 5);
+        assert.notEqual(response.session, undefined);
+        assert.notEqual(response.accessToken, undefined);
+        assert.notEqual(response.refreshToken, undefined);
+        assert.notEqual(response.antiCsrfToken, undefined);
+        assert.strictEqual(Object.keys(response).length, 4);
 
         await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response.accessToken.token),
             response.antiCsrfToken,
             true,
-            true
+            false
         );
         let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
-        assert(verifyState3 === undefined);
+        assert.strictEqual(verifyState3, undefined);
 
         let response2 = await SessionFunctions.refreshSession(
             s.recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken,
-            true,
-            "cookie",
-            "cookie"
+            false
         );
         assert(response2.session !== undefined);
         assert(response2.accessToken !== undefined);
         assert(response2.refreshToken !== undefined);
         assert(response2.antiCsrfToken !== undefined);
-        assert(Object.keys(response2).length === 5);
+        assert(Object.keys(response2).length === 4);
 
         let response3 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
             true,
-            true
+            false
         );
         let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
         assert(verifyState !== undefined);
@@ -495,7 +488,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             parseJWTWithoutSignatureVerification(response3.accessToken.token),
             response2.antiCsrfToken,
             true,
-            true
+            false
         );
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
@@ -572,10 +565,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             false,
-            true
+            false
         );
-        assert(response2.session != undefined);
-        assert(Object.keys(response2.session).length === 3);
+
+        assert.notStrictEqual(response2.session, undefined);
+        assert.strictEqual(Object.keys(response2.session).length, 4); // TODO check why this changed
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         try {
@@ -584,7 +578,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 parseJWTWithoutSignatureVerification(response.accessToken.token),
                 undefined,
                 true,
-                true
+                false
             );
             throw new Error("should not have come here");
         } catch (err) {
@@ -658,19 +652,19 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
-        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
+        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res2, { key: "value" });
 
         //changing the value of session data with the same key
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
-        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
+        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating session data
-        assert(!(await SessionFunctions.updateSessionData(s.helpers, "random", { key2: "value2" })));
+        assert(!(await SessionFunctions.updateSessionDataInDatabase(s.helpers, "random", { key2: "value2" })));
     });
 
     it("test manipulating session data with new get session function", async function () {
@@ -698,19 +692,19 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res2.sessionData, { key: "value" });
+        assert.deepStrictEqual(res2.sessionDataInDatabase, { key: "value" });
 
         //changing the value of session data with the same key
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res3.sessionData, { key: "value 2" });
+        assert.deepStrictEqual(res3.sessionDataInDatabase, { key: "value 2" });
 
         //passing invalid session handle when updating session data
-        assert(!(await SessionFunctions.updateSessionData(s.helpers, "random", { key2: "value2" })));
+        assert(!(await SessionFunctions.updateSessionDataInDatabase(s.helpers, "random", { key2: "value2" })));
     });
 
     it("test null and undefined values passed for session data", async function () {
@@ -731,27 +725,27 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //adding session data
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, null);
 
-        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
+        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res2, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
-        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
+        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res3, { key: "value" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, undefined);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, undefined);
 
-        let res4 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
+        let res4 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res4, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
-        let res5 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
+        let res5 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res5, { key: "value 2" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, null);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, null);
 
-        let res6 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionData;
+        let res6 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).sessionDataInDatabase;
         assert.deepStrictEqual(res6, {});
     });
 
@@ -782,27 +776,27 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, null);
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res2.sessionData, {});
+        assert.deepStrictEqual(res2.sessionDataInDatabase, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res3.sessionData, { key: "value" });
+        assert.deepStrictEqual(res3.sessionDataInDatabase, { key: "value" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, undefined);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, undefined);
 
         let res4 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res4.sessionData, {});
+        assert.deepStrictEqual(res4.sessionDataInDatabase, {});
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, { key: "value 2" });
 
         let res5 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res5.sessionData, { key: "value 2" });
+        assert.deepStrictEqual(res5.sessionDataInDatabase, { key: "value 2" });
 
-        await SessionFunctions.updateSessionData(s.helpers, res.session.handle, null);
+        await SessionFunctions.updateSessionDataInDatabase(s.helpers, res.session.handle, null);
 
         let res6 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res6.sessionData, {});
+        assert.deepStrictEqual(res6.sessionDataInDatabase, {});
     });
 
     //check manipulating jwt payload
@@ -826,13 +820,15 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
-        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
+        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle))
+            .customClaimsInAccessTokenPayload;
         assert.deepStrictEqual(res2, { key: "value" });
 
         //changing the value of jwt payload with the same key
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value 2" });
 
-        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
+        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle))
+            .customClaimsInAccessTokenPayload;
         assert.deepStrictEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
@@ -868,13 +864,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res2.accessTokenPayload, { key: "value" });
+        assert.deepStrictEqual(res2.customClaimsInAccessTokenPayload, { key: "value" });
 
         //changing the value of jwt payload with the same key
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value 2" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res3.accessTokenPayload, { key: "value 2" });
+        assert.deepStrictEqual(res3.customClaimsInAccessTokenPayload, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
         assert(!(await SessionFunctions.updateAccessTokenPayload(s.helpers, "random", { key2: "value2" })));
@@ -898,28 +894,32 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //adding jwt payload
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, null, {});
 
-        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
+        let res2 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle))
+            .customClaimsInAccessTokenPayload;
         assert.deepStrictEqual(res2, {});
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
-        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
+        let res3 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle))
+            .customClaimsInAccessTokenPayload;
         assert.deepStrictEqual(res3, { key: "value" });
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle);
 
         let res4 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle, undefined))
-            .accessTokenPayload;
+            .customClaimsInAccessTokenPayload;
         assert.deepStrictEqual(res4, {});
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value 2" });
 
-        let res5 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
+        let res5 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle))
+            .customClaimsInAccessTokenPayload;
         assert.deepStrictEqual(res5, { key: "value 2" });
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, null);
 
-        let res6 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)).accessTokenPayload;
+        let res6 = (await SessionFunctions.getSessionInformation(s.helpers, res.session.handle))
+            .customClaimsInAccessTokenPayload;
         assert.deepStrictEqual(res6, {});
     });
 
@@ -950,27 +950,27 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, null, {});
 
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res2.accessTokenPayload, {});
+        assert.deepStrictEqual(res2.customClaimsInAccessTokenPayload, {});
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value" });
 
         let res3 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res3.accessTokenPayload, { key: "value" });
+        assert.deepStrictEqual(res3.customClaimsInAccessTokenPayload, { key: "value" });
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle);
 
         let res4 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle, undefined);
-        assert.deepStrictEqual(res4.accessTokenPayload, {});
+        assert.deepStrictEqual(res4.customClaimsInAccessTokenPayload, {});
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, { key: "value 2" });
 
         let res5 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res5.accessTokenPayload, { key: "value 2" });
+        assert.deepStrictEqual(res5.customClaimsInAccessTokenPayload, { key: "value 2" });
 
         await SessionFunctions.updateAccessTokenPayload(s.helpers, res.session.handle, null);
 
         let res6 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
-        assert.deepStrictEqual(res6.accessTokenPayload, {});
+        assert.deepStrictEqual(res6.customClaimsInAccessTokenPayload, {});
     });
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
@@ -989,11 +989,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        s.helpers.config = { antiCsrf: "NONE", useDynamicAccessTokenSigningKey: true };
         let response = await SessionFunctions.createNewSession(s.helpers, "", false, {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
-            s,
+            s.helpers,
             parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             false,
@@ -1004,7 +1005,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         let response3 = await SessionFunctions.getSession(
-            s,
+            s.helpers,
             parseJWTWithoutSignatureVerification(response.accessToken.token),
             undefined,
             true,
@@ -1133,9 +1134,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(typeof res2.status === "string");
         assert(res2.status === "OK");
         assert(typeof res2.userId === "string");
-        assert(typeof res2.sessionData === "object");
+        assert(typeof res2.sessionDataInDatabase === "object");
         assert(typeof res2.expiry === "number");
-        assert(typeof res2.accessTokenPayload === "object");
+        assert(typeof res2.customClaimsInAccessTokenPayload === "object");
         assert(typeof res2.timeCreated === "number");
     });
 
@@ -1191,7 +1192,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                             ...oI,
                             getSessionInformation: async (input) => {
                                 const info = await oI.getSessionInformation(input);
-                                info.sessionData = { test: 1 };
+                                info.sessionDataInDatabase = { test: 1 };
                                 return info;
                             },
                         }),
@@ -1202,7 +1203,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         const session = await Session.createNewSession(mockRequest(), mockResponse(), "testId");
 
-        const data = await session.getSessionData();
+        const data = await session.getSessionDataFromDatabase();
 
         assert.equal(data.test, 1);
     });

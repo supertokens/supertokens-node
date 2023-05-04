@@ -182,13 +182,13 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         app.use(errorHandler());
 
-        let response = await new Promise((resolve) =>
+        let response = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signout")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(res);
                     }

@@ -93,25 +93,13 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
                         functions: function (oI) {
                             return {
                                 ...oI,
-                                createNewSession: async function ({
-                                    req,
-                                    res,
-                                    userId,
-                                    accessTokenPayload,
-                                    sessionData,
-                                }) {
-                                    accessTokenPayload = {
+                                createNewSession: async function (input) {
+                                    input.accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oI.createNewSession({
-                                        req,
-                                        res,
-                                        userId,
-                                        accessTokenPayload,
-                                        sessionData,
-                                    });
+                                    return await oI.createNewSession(input);
                                 },
                             };
                         },
@@ -272,7 +260,7 @@ app.post(
     "/update-jwt",
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        await req.session.updateAccessTokenPayload(req.body);
+        await req.session.mergeIntoAccessTokenPayload(req.body);
         res.json(req.session.getAccessTokenPayload());
     }
 );
@@ -396,7 +384,7 @@ app.post(
     "/update-jwt-with-handle",
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        await Session.updateAccessTokenPayload(req.session.getHandle(), req.body);
+        await Session.mergeIntoAccessTokenPayload(req.session.getHandle(), req.body);
         res.json(req.session.getAccessTokenPayload());
     }
 );

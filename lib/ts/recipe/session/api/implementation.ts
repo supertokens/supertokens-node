@@ -3,7 +3,7 @@ import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
 import { GeneralErrorResponse } from "../../../types";
-import { getRequiredClaimValidators } from "../utils";
+import { getSessionFromRequest, refreshSessionInRequest } from "../sessionRequestFunctions";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -14,10 +14,12 @@ export default function getAPIInterface(): APIInterface {
             options: APIOptions;
             userContext: any;
         }): Promise<SessionContainerInterface> {
-            return await options.recipeImplementation.refreshSession({
+            return refreshSessionInRequest({
                 req: options.req,
                 res: options.res,
                 userContext,
+                config: options.config,
+                recipeInterfaceImpl: options.recipeImplementation,
             });
         },
 
@@ -40,29 +42,22 @@ export default function getAPIInterface(): APIInterface {
             let refreshTokenPath = options.config.refreshTokenPath;
 
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
-                return options.recipeImplementation.refreshSession({
+                return refreshSessionInRequest({
                     req: options.req,
                     res: options.res,
                     userContext,
+                    config: options.config,
+                    recipeInterfaceImpl: options.recipeImplementation,
                 });
             } else {
-                const session = await options.recipeImplementation.getSession({
+                return getSessionFromRequest({
                     req: options.req,
                     res: options.res,
                     options: verifySessionOptions,
+                    config: options.config,
+                    recipeInterfaceImpl: options.recipeImplementation,
                     userContext,
                 });
-                if (session !== undefined) {
-                    const claimValidators = await getRequiredClaimValidators(
-                        session,
-                        verifySessionOptions?.overrideGlobalClaimValidators,
-                        userContext
-                    );
-
-                    await session.assertClaims(claimValidators, userContext);
-                }
-
-                return session;
             }
         },
 

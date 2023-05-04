@@ -180,7 +180,8 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                 })
         );
         assert(response.status === 200);
-        assert(works && signUpContextWorks);
+        assert(works);
+        assert(signUpContextWorks);
     });
 
     it("testing default context across interface and recipe function", async function () {
@@ -281,6 +282,8 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
                 })
         );
         assert(response.status === 200);
-        assert(signInContextWorks && signInAPIContextWorks && createNewSessionContextWorks);
+        assert(signInContextWorks);
+        assert(signInAPIContextWorks);
+        assert(createNewSessionContextWorks);
     });
 });

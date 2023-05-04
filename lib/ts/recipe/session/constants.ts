@@ -19,3 +19,5 @@ export const REFRESH_API_PATH = "/session/refresh";
 export const SIGNOUT_API_PATH = "/signout";
 
 export const availableTokenTransferMethods: TokenTransferMethod[] = ["cookie", "header"];
+
+export const hundredYearsInMs = 3153600000000;
