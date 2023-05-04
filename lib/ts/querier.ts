@@ -51,16 +51,21 @@ export class Querier {
         let response = await this.sendRequestHelper(
             new NormalisedURLPath("/apiversion"),
             "GET",
-            (url: string) => {
+            async (url: string) => {
                 let headers: any = {};
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         "api-key": Querier.apiKey,
                     };
                 }
-                return axios.get(url, {
+                let response = await fetch(url, {
+                    method: "GET",
                     headers,
                 });
+                return {
+                    status: 200,
+                    data: await response.json(),
+                };
             },
             this.__hosts?.length || 0
         );
