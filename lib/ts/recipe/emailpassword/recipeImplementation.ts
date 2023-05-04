@@ -132,7 +132,7 @@ export default function getRecipeInterface(
         > {
             if (input.applyPasswordPolicy || input.applyPasswordPolicy === undefined) {
                 let formFields = getEmailPasswordConfig().signUpFeature.formFields;
-                if (formFields !== undefined) {
+                if (input.password !== undefined) {
                     const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
                     const error = await passwordField.validate(input.password);
                     if (error !== undefined) {
