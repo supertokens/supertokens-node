@@ -1649,7 +1649,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware without error handler added", async function () {
-        await setKeyValueInConfig("access_token_validity", 2);
+        await setKeyValueInConfig("access_token_validity", 5);
         await startST();
         SuperTokens.init({
             supertokens: {
