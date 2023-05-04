@@ -13,8 +13,6 @@
  * under the License.
  */
 
-import { URL } from "url";
-
 export default class NormalisedURLPath {
     private value: string;
 
