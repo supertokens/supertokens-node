@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Refactored how access token validation is done
 -   Removed the handshake call to improve start-up times
 -   Added support for new access token version
+-   Added optional password policy check in `updateEmailOrPassword`
 
 ### Added
 
@@ -282,6 +283,18 @@ Session.init({
     },
 });
 ```
+
+## [13.6.0] - 2023-04-26
+
+-   Added missing arguments from `getUsersNewestFirst` and `getUsersOldestFirst`
+
+## [13.5.0] - 2023-04-22
+
+-   Adds new config to change the access token's path
+
+## [13.4.2] - 2023-04-11
+
+-   Modified email templates to make them render fine in gmail.
 
 ## [13.4.1] - 2023-04-11
 
