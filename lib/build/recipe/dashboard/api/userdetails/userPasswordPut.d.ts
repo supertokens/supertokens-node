@@ -7,10 +7,6 @@ declare type Response =
     | {
           status: "INVALID_PASSWORD_ERROR";
           error: string;
-      }
-    | {
-          status: "PASSWORD_POLICY_VIOLATED_ERROR";
-          failureReason: string;
       };
 export declare const userPasswordPut: (_: APIInterface, options: APIOptions) => Promise<Response>;
 export {};
