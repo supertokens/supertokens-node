@@ -18,6 +18,8 @@ import NormalisedURLPath from '../../../normalisedURLPath'
 import SuperTokens from '../../../supertokens'
 import { DASHBOARD_API } from '../constants'
 import { APIInterface, AuthMode } from '../types'
+import { Querier } from '../../../querier'
+import { maxVersion } from '../../../utils'
 
 export default function getAPIImplementation(): APIInterface {
   return {
@@ -38,6 +40,13 @@ export default function getAPIImplementation(): APIInterface {
       if (superTokensInstance.supertokens !== undefined)
         connectionURI = superTokensInstance.supertokens.connectionURI
 
+      let isSearchEnabled = false
+      const cdiVersion = await Querier.getNewInstanceOrThrowError(input.options.recipeId).getAPIVersion()
+      if (maxVersion('2.20', cdiVersion) === cdiVersion) {
+        // Only enable search if CDI version is 2.20 or above
+        isSearchEnabled = true
+      }
+
       return `
             <html>
                 <head>
@@ -49,6 +58,7 @@ export default function getAPIImplementation(): APIInterface {
                             .getAsStringDangerous()}"
                         window.connectionURI = "${connectionURI}"
                         window.authMode = "${authMode}"
+                        window.isSearchEnabled = "${isSearchEnabled}"
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">

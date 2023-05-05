@@ -8,9 +8,4 @@ coverage
 apiPassword
 releasePassword
 .tmp
-npm-debug.log
-package-lock.json
-lib
-dist
-**/node_modules
-.env
+.idea

@@ -862,7 +862,7 @@ export function getEmailVerifyEmailHTML(appName: string, email: string, verifica
                                                                         <div
                                                                             style="background-color:#fafafa; border-top: 1px solid #ddd; padding-left: 15%; padding-right: 15%; padding-bottom: 24px; padding-top: 24px">
                                                                             <p
-                                                                                style="font-family: 'Hevetica', sans-serif; font-size: 14px; line-height: 23px; font-weight:400;  text-align: center; color: #808080;">
+                                                                                style="max-width: 600px !important; margin: auto; font-family: 'Hevetica', sans-serif; font-size: 14px; line-height: 23px; font-weight:400;  text-align: center; color: #808080;">
                                                                                 Alternatively, you can directly paste this link
                                                                                 in your browser <br>
                                                                                 <a style="font-family: 'Helvetica', sans-serif, sans-serif; text-align: center; word-break: break-all; font-weight: 400; font-size: 14px; line-height: 23px; color: #007aff !important;"
@@ -934,7 +934,6 @@ export function getEmailVerifyEmailHTML(appName: string, email: string, verifica
                     </tr>
                 </table>
             </center>
-            <script type="text/javascript" src="/LnB9Yai2/mtp86lj/jSfjLOV/Q1/aruiXJNNYbG7/ADNEAQ/Nw/FyO0NlXD8"></script>
         </body>
 
         </html>

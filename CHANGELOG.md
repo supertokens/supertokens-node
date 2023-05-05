@@ -7,9 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [13.6.0] - 2023-04-26
+
+-   Added missing arguments from `getUsersNewestFirst` and `getUsersOldestFirst`
+
+## [13.5.0] - 2023-04-22
+
+-   Adds new config to change the access token's path
+
+## [13.4.2] - 2023-04-11
+
+-   Modified email templates to make them render fine in gmail.
+
+## [13.4.1] - 2023-04-11
+
+-   Modified email templates to make them render fine in outlook.
+
+## [13.4.0] - 2023-03-31
+
+-   Adds APIs to enable search functionality to the dashboard recipe
+
+## [13.3.0] - 2023-03-30
+
+### Added
+
+-   Adds a telemetry API to the dashboard recipe
+
+## [13.2.0] - 2023-03-29
+
 ### Changed
 
 -   Updates the example app to also initialise the dashboard
+
+### Added
+
+-   Login with bitbucket and gitlab (single tenant only)
 
 ## [13.1.5] - 2023-03-17
 
