@@ -16,8 +16,6 @@
 import SuperTokens from './supertokens'
 import SuperTokensError from './error'
 
-export { SuperTokensError }
-
 // For Express
 export default class SuperTokensWrapper {
   static init = SuperTokens.init
@@ -36,6 +34,7 @@ export default class SuperTokensWrapper {
     limit?: number
     paginationToken?: string
     includeRecipeIds?: string[]
+    query?: object
   }): Promise<{
     users: { recipeId: string; user: any }[]
     nextPaginationToken?: string
@@ -50,6 +49,7 @@ export default class SuperTokensWrapper {
     limit?: number
     paginationToken?: string
     includeRecipeIds?: string[]
+    query?: object
   }): Promise<{
     users: { recipeId: string; user: any }[]
     nextPaginationToken?: string

@@ -13,6 +13,7 @@
  * under the License.
  */
 import { parse } from 'querystring'
+import { URL } from 'url'
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
@@ -96,7 +97,7 @@ export class AWSRequest extends BaseRequest {
     const cookies = (this.event as APIGatewayProxyEventV2).cookies
     if (
       (this.event.headers === undefined || this.event.headers === null)
-            && (cookies === undefined || cookies === null)
+      && (cookies === undefined || cookies === null)
     )
       return undefined
 
@@ -121,11 +122,19 @@ export class AWSRequest extends BaseRequest {
 
   getOriginalURL = (): string => {
     let path = (this.event as APIGatewayProxyEvent).path
+    const queryParams = (this.event as APIGatewayProxyEvent).queryStringParameters as { [key: string]: string }
     if (path === undefined) {
       path = (this.event as APIGatewayProxyEventV2).requestContext.http.path
       const stage = (this.event as APIGatewayProxyEventV2).requestContext.stage
       if (stage !== undefined && path.startsWith(`/${stage}`))
         path = path.slice(stage.length + 1)
+
+      if (queryParams !== undefined && queryParams !== null) {
+        const urlString = `https://exmaple.com${path}`
+        const url = new URL(urlString)
+        Object.keys(queryParams).forEach(el => url.searchParams.append(el, queryParams[el]))
+        path = url.pathname + url.search
+      }
     }
     return path
   }
@@ -209,8 +218,8 @@ export class AWSResponse extends BaseResponse {
   }
 
   /**
-     * @param {number} statusCode
-     */
+   * @param {number} statusCode
+   */
   setStatusCode = (statusCode: number) => {
     if (!this.statusSet) {
       this.statusCode = statusCode
@@ -289,6 +298,7 @@ export class AWSResponse extends BaseResponse {
       const cookieHeader = headsersInMultiValueHeaders.find(h => h.toLowerCase() === COOKIE_HEADER.toLowerCase())
       if (cookieHeader === undefined)
         multiValueHeaders[COOKIE_HEADER] = supertokensCookies
+
       else
         multiValueHeaders[cookieHeader].push(...supertokensCookies)
 
@@ -327,9 +337,9 @@ export const middleware = (handler?: Handler): Handler => {
         return response.sendResponse(handlerResult)
       }
       /**
-             * it reaches this point only if the API route was not exposed by
-             * the SDK and user didn't provide a handler
-             */
+       * it reaches this point only if the API route was not exposed by
+       * the SDK and user didn't provide a handler
+       */
       response.setStatusCode(404)
       response.sendJSONResponse({
         error: `The middleware couldn't serve the API path ${request.getOriginalURL()}, method: ${request.getMethod()}. If this is an unexpected behaviour, please create an issue here: https://github.com/supertokens/supertokens-node/issues`,

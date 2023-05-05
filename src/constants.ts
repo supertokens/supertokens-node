@@ -12,21 +12,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-exports.version = '13.6.0'
-exports.cdiSupported = [
-  '2.8',
-  '2.9',
-  '2.10',
-  '2.11',
-  '2.12',
-  '2.13',
-  '2.14',
-  '2.15',
-  '2.16',
-  '2.17',
-  '2.18',
-  '2.19',
-  '2.20',
-]
-// Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
-exports.dashboardVersion = '0.6'
+
+export const HEADER_RID = 'rid'
+export const HEADER_FDI = 'fdi-version'

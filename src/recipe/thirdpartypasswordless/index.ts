@@ -82,17 +82,17 @@ export default class Wrapper {
 
   static consumeCode(
     input:
-            | {
-              preAuthSessionId: string
-              userInputCode: string
-              deviceId: string
-              userContext?: any
-            }
-            | {
-              preAuthSessionId: string
-              linkCode: string
-              userContext?: any
-            },
+      | {
+        preAuthSessionId: string
+        userInputCode: string
+        deviceId: string
+        userContext?: any
+      }
+      | {
+        preAuthSessionId: string
+        linkCode: string
+        userContext?: any
+      },
   ) {
     return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input })
   }
@@ -115,14 +115,14 @@ export default class Wrapper {
 
   static revokeAllCodes(
     input:
-            | {
-              email: string
-              userContext?: any
-            }
-            | {
-              phoneNumber: string
-              userContext?: any
-            },
+      | {
+        email: string
+        userContext?: any
+      }
+      | {
+        phoneNumber: string
+        userContext?: any
+      },
   ) {
     return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({ userContext: {}, ...input })
   }
@@ -155,28 +155,28 @@ export default class Wrapper {
 
   static createMagicLink(
     input:
-            | {
-              email: string
-              userContext?: any
-            }
-            | {
-              phoneNumber: string
-              userContext?: any
-            },
+      | {
+        email: string
+        userContext?: any
+      }
+      | {
+        phoneNumber: string
+        userContext?: any
+      },
   ) {
     return Recipe.getInstanceOrThrowError().passwordlessRecipe.createMagicLink({ userContext: {}, ...input })
   }
 
   static passwordlessSignInUp(
     input:
-            | {
-              email: string
-              userContext?: any
-            }
-            | {
-              phoneNumber: string
-              userContext?: any
-            },
+      | {
+        email: string
+        userContext?: any
+      }
+      | {
+        phoneNumber: string
+        userContext?: any
+      },
   ) {
     return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({ userContext: {}, ...input })
   }
@@ -192,6 +192,10 @@ export default class Wrapper {
   static Discord = thirdPartyProviders.Discord
 
   static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces
+
+  static Bitbucket = thirdPartyProviders.Bitbucket
+
+  static GitLab = thirdPartyProviders.GitLab
 
   // static Okta = thirdPartyProviders.Okta;
 
@@ -261,6 +265,10 @@ export const Apple = Wrapper.Apple
 export const Discord = Wrapper.Discord
 
 export const GoogleWorkspaces = Wrapper.GoogleWorkspaces
+
+export const Bitbucket = Wrapper.Bitbucket
+
+export const GitLab = Wrapper.GitLab
 
 // export let Okta = Wrapper.Okta;
 

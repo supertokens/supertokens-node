@@ -12,13 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
 import * as expressFramework from './express'
 import * as fastifyFramework from './fastify'
 import * as hapiFramework from './hapi'
 import * as loopbackFramework from './loopback'
 import * as koaFramework from './koa'
 import * as awsLambdaFramework from './awsLambda'
+
+export { BaseRequest } from './request'
+export { BaseResponse } from './response'
 
 export default {
   express: expressFramework,

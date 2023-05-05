@@ -17,15 +17,16 @@ import OverrideableBuilder from 'overrideableBuilder'
 import RecipeModule from '../../recipeModule'
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from '../../types'
 import NormalisedURLPath from '../../normalisedURLPath'
-import { BaseRequest } from '../../framework/request'
-import { BaseResponse } from '../../framework/response'
+import { BaseRequest, BaseResponse } from '../../framework'
 import error from '../../error'
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from './types'
 import RecipeImplementation from './recipeImplementation'
 import APIImplementation from './api/implementation'
 import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from './utils'
 import {
+  DASHBOARD_ANALYTICS_API,
   DASHBOARD_API,
+  SEARCH_TAGS_API,
   SIGN_IN_API,
   SIGN_OUT_API,
   USERS_COUNT_API,
@@ -56,6 +57,8 @@ import { userEmailVerifyTokenPost } from './api/userdetails/userEmailVerifyToken
 import { userSessionsPost } from './api/userdetails/userSessionsPost'
 import signIn from './api/signIn'
 import signOut from './api/signOut'
+import { getSearchTags } from './api/search/tagsGet'
+import analyticsPost from './api/analytics'
 
 export default class Recipe extends RecipeModule {
   private static instance: Recipe | undefined = undefined
@@ -115,16 +118,16 @@ export default class Recipe extends RecipeModule {
 
   getAPIsHandled = (): APIHandled[] => {
     /**
-       * Normally this array is used by the SDK to decide whether or not the recipe
-       * handles a specific API path and method and then returns the ID.
-       *
-       * For the dashboard recipe this logic is fully custom and handled inside the
-       * `returnAPIIdIfCanHandleRequest` method of this class.
-       *
-       * For most frameworks this array is redundant because the `returnAPIIdIfCanHandleRequest` is used.
-       * But for frameworks such as Hapi that require all APIs to be declared up front, this array is used
-       * to make sure that the framework does not return a 404
-       */
+     * Normally this array is used by the SDK to decide whether or not the recipe
+     * handles a specific API path and method and then returns the ID.
+     *
+     * For the dashboard recipe this logic is fully custom and handled inside the
+     * `returnAPIIdIfCanHandleRequest` method of this class.
+     *
+     * For most frameworks this array is redundant because the `returnAPIIdIfCanHandleRequest` is used.
+     * But for frameworks such as Hapi that require all APIs to be declared up front, this array is used
+     * to make sure that the framework does not return a 404
+     */
     return [
       {
         id: DASHBOARD_API,
@@ -228,6 +231,18 @@ export default class Recipe extends RecipeModule {
         disabled: false,
         method: 'post',
       },
+      {
+        id: SEARCH_TAGS_API,
+        pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(SEARCH_TAGS_API)),
+        disabled: false,
+        method: 'get',
+      },
+      {
+        id: DASHBOARD_ANALYTICS_API,
+        pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_ANALYTICS_API)),
+        disabled: false,
+        method: 'post',
+      },
     ]
   }
 
@@ -304,8 +319,14 @@ export default class Recipe extends RecipeModule {
     else if (id === USER_EMAIL_VERIFY_TOKEN_API) {
       apiFunction = userEmailVerifyTokenPost
     }
+    else if (id === SEARCH_TAGS_API) {
+      apiFunction = getSearchTags
+    }
     else if (id === SIGN_OUT_API) {
       apiFunction = signOut
+    }
+    else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === 'post') {
+      apiFunction = analyticsPost
     }
 
     // If the id doesnt match any APIs return false

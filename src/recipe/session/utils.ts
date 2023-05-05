@@ -17,10 +17,8 @@ import { URL } from 'url'
 import NormalisedURLPath from '../../normalisedURLPath'
 import { NormalisedAppinfo } from '../../types'
 import { isAnIpAddress, sendNon200Response, sendNon200ResponseWithMessage } from '../../utils'
-import { BaseRequest } from '../../framework/request'
-import { BaseResponse } from '../../framework/response'
+import { BaseRequest, BaseResponse } from '../../framework'
 import { logDebugMessage } from '../../logger'
-import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from './with-jwt/constants'
 import {
   APIInterface, ClaimValidationError,
   CreateOrRefreshAPIResponse,
@@ -33,6 +31,7 @@ import {
   TypeNormalisedInput,
   VerifySessionOptions,
 } from './types'
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from './with-jwt/constants'
 import { REFRESH_API_PATH } from './constants'
 import SessionRecipe from './recipe'
 import { getAuthModeFromHeader, setAntiCsrfTokenInHeaders, setFrontTokenInHeaders, setToken } from './cookieAndHeaders'
@@ -129,7 +128,10 @@ export function validateAndNormaliseUserInput(
         = (config === undefined || config.cookieDomain === undefined)
           ? undefined
           : normaliseSessionScopeOrThrowError(config.cookieDomain)
-
+  const accessTokenPath
+    = (config === undefined || config.accessTokenPath === undefined)
+      ? new NormalisedURLPath('/')
+      : new NormalisedURLPath(config.accessTokenPath)
   const protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous())
   const protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous())
 
@@ -221,10 +223,11 @@ export function validateAndNormaliseUserInput(
 
   return {
     refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
+    accessTokenPath,
     getTokenTransferMethod:
-            config?.getTokenTransferMethod === undefined
-              ? defaultGetTokenTransferMethod
-              : config.getTokenTransferMethod,
+      config?.getTokenTransferMethod === undefined
+        ? defaultGetTokenTransferMethod
+        : config.getTokenTransferMethod,
     cookieDomain,
     cookieSameSite,
     cookieSecure,

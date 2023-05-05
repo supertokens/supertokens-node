@@ -13,8 +13,7 @@
  * under the License.
  */
 import { HEADER_RID } from '../../constants'
-import { BaseRequest } from '../../framework/request'
-import { BaseResponse } from '../../framework/response'
+import { BaseRequest, BaseResponse } from '../../framework'
 import { availableTokenTransferMethods } from './constants'
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from './types'
 
@@ -165,11 +164,13 @@ export function setCookie(
   const secure = config.cookieSecure
   const sameSite = config.cookieSameSite
   let path = ''
-  if (pathType === 'refreshTokenPath')
+  if (pathType === 'refreshTokenPath') {
     path = config.refreshTokenPath.getAsStringDangerous()
-  else if (pathType === 'accessTokenPath')
-    path = '/'
-
+  }
+  else if (pathType === 'accessTokenPath') {
+    path
+      = config.accessTokenPath.getAsStringDangerous() === '' ? '/' : config.accessTokenPath.getAsStringDangerous()
+  }
   const httpOnly = true
 
   return res.setCookie(name, value, domain, secure, httpOnly, expires, path, sameSite)

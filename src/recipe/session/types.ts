@@ -13,8 +13,7 @@
  * under the License.
  */
 import OverrideableBuilder from 'overrideableBuilder'
-import { BaseRequest } from '../../framework/request'
-import { BaseResponse } from '../../framework/response'
+import { BaseRequest, BaseResponse } from '../../framework'
 import NormalisedURLPath from '../../normalisedURLPath'
 import { APIInterface as JWTAPIInterface, RecipeInterface as JWTRecipeInterface } from '../jwt/types'
 import { APIInterface as OpenIdAPIInterface, RecipeInterface as OpenIdRecipeInterface } from '../openid/types'
@@ -78,7 +77,7 @@ export type TokenTransferMethod = 'header' | 'cookie'
 export interface TypeInput {
   sessionExpiredStatusCode?: number
   invalidClaimStatusCode?: number
-
+  accessTokenPath?: string
   cookieSecure?: boolean
   cookieSameSite?: 'strict' | 'lax' | 'none'
   cookieDomain?: string
@@ -129,6 +128,7 @@ export interface TypeInput {
 
 export interface TypeNormalisedInput {
   refreshTokenPath: NormalisedURLPath
+  accessTokenPath: NormalisedURLPath
   cookieDomain: string | undefined
   cookieSameSite: 'strict' | 'lax' | 'none'
   cookieSecure: boolean
@@ -239,12 +239,12 @@ export interface RecipeInterface {
     userContext: any
   }): Promise<SessionContainerInterface>
   /**
-     * Used to retrieve all session information for a given session handle. Can be used in place of:
-     * - getSessionData
-     * - getAccessTokenPayload
-     *
-     * Returns undefined if the sessionHandle does not exist
-     */
+   * Used to retrieve all session information for a given session handle. Can be used in place of:
+   * - getSessionData
+   * - getAccessTokenPayload
+   *
+   * Returns undefined if the sessionHandle does not exist
+   */
   getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>
 
   revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>
@@ -259,9 +259,9 @@ export interface RecipeInterface {
   updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>
 
   /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
-     */
+   * @deprecated Use mergeIntoAccessTokenPayload instead
+   * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
+   */
   updateAccessTokenPayload(input: {
     sessionHandle: string
     newAccessTokenPayload: any
@@ -275,28 +275,28 @@ export interface RecipeInterface {
   }): Promise<boolean>
 
   /**
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
-     */
+   * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
+   */
   regenerateAccessToken(input: {
     accessToken: string
     newAccessTokenPayload?: any
     userContext: any
   }): Promise<
-        | {
-          status: 'OK'
-          session: {
-            handle: string
-            userId: string
-            userDataInJWT: any
-          }
-          accessToken?: {
-            token: string
-            expiry: number
-            createdTime: number
-          }
-        }
-        | undefined
-    >
+    | {
+      status: 'OK'
+      session: {
+        handle: string
+        userId: string
+        userDataInJWT: any
+      }
+      accessToken?: {
+        token: string
+        expiry: number
+        createdTime: number
+      }
+    }
+    | undefined
+  >
 
   getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>
 
@@ -335,14 +335,14 @@ export interface RecipeInterface {
     claim: SessionClaim<T>
     userContext: any
   }): Promise<
-        | {
-          status: 'SESSION_DOES_NOT_EXIST_ERROR'
-        }
-        | {
-          status: 'OK'
-          value: T | undefined
-        }
-    >
+    | {
+      status: 'SESSION_DOES_NOT_EXIST_ERROR'
+    }
+    | {
+      status: 'OK'
+      value: T | undefined
+    }
+  >
 
   removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>
 }
@@ -363,10 +363,10 @@ export interface SessionContainerInterface {
   getAccessToken(userContext?: any): string
 
   /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     */
+   * @deprecated Use mergeIntoAccessTokenPayload instead
+   */
   updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>
-  mergeIntoAccessTokenPayload(accessTokenPayloadUpdate?: JSONObject, userContext?: any): Promise<void>
+  mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>
 
   getTimeCreated(userContext?: any): Promise<number>
 
@@ -390,10 +390,10 @@ export interface APIOptions {
 
 export interface APIInterface {
   /**
-     * We do not add a GeneralErrorResponse response to this API
-     * since it's not something that is directly called by the user on the
-     * frontend anyway
-     */
+   * We do not add a GeneralErrorResponse response to this API
+   * since it's not something that is directly called by the user on the
+   * frontend anyway
+   */
   refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<SessionContainerInterface>)
 
   signOutPOST:
@@ -407,11 +407,11 @@ export interface APIInterface {
     session: SessionContainerInterface | undefined
     userContext: any
   }) => Promise<
-              | {
-                status: 'OK'
-              }
-              | GeneralErrorResponse
-          >)
+    | {
+      status: 'OK'
+    }
+    | GeneralErrorResponse
+  >)
 
   verifySession(input: {
     verifySessionOptions: VerifySessionOptions | undefined
@@ -440,56 +440,56 @@ export type SessionClaimValidator = (
   {
     claim: SessionClaim<any>
     /**
-           * Decides if we need to refetch the claim value before checking the payload with `isValid`.
-           * E.g.: if the information in the payload is expired, or is not sufficient for this check.
-           */
+     * Decides if we need to refetch the claim value before checking the payload with `isValid`.
+     * E.g.: if the information in the payload is expired, or is not sufficient for this check.
+     */
     shouldRefetch: (payload: any, userContext: any) => Promise<boolean> | boolean
   }
   | {}
 ) & {
   id: string
   /**
-     * Decides if the claim is valid based on the payload (and not checking DB or anything else)
-     */
+   * Decides if the claim is valid based on the payload (and not checking DB or anything else)
+   */
   validate: (payload: any, userContext: any) => Promise<ClaimValidationResult>
 }
 
 export abstract class SessionClaim<T> {
-  constructor(public readonly key: string) {}
+  constructor(public readonly key: string) { }
 
   /**
-     * This methods fetches the current value of this claim for the user.
-     * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
-     * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
-     */
+   * This methods fetches the current value of this claim for the user.
+   * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
+   * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
+   */
   abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined
 
   /**
-     * Saves the provided value into the payload, by cloning and updating the entire object.
-     *
-     * @returns The modified payload object
-     */
+   * Saves the provided value into the payload, by cloning and updating the entire object.
+   *
+   * @returns The modified payload object
+   */
   abstract addToPayload_internal(payload: JSONObject, value: T, userContext: any): JSONObject
 
   /**
-     * Removes the claim from the payload by setting it to null, so mergeIntoAccessTokenPayload clears it
-     *
-     * @returns The modified payload object
-     */
+   * Removes the claim from the payload by setting it to null, so mergeIntoAccessTokenPayload clears it
+   *
+   * @returns The modified payload object
+   */
   abstract removeFromPayloadByMerge_internal(payload: JSONObject, userContext?: any): JSONObject
 
   /**
-     * Removes the claim from the payload, by cloning and updating the entire object.
-     *
-     * @returns The modified payload object
-     */
+   * Removes the claim from the payload, by cloning and updating the entire object.
+   *
+   * @returns The modified payload object
+   */
   abstract removeFromPayload(payload: JSONObject, userContext?: any): JSONObject
 
   /**
-     * Gets the value of the claim stored in the payload
-     *
-     * @returns Claim value
-     */
+   * Gets the value of the claim stored in the payload
+   *
+   * @returns Claim value
+   */
   abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined
 
   async build(userId: string, userContext?: any): Promise<JSONObject> {
