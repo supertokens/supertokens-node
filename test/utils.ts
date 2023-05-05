@@ -35,6 +35,9 @@ import { Querier } from 'supertokens-node/querier'
 import { maxVersion } from 'supertokens-node/utils'
 import { OpenIdRecipe } from 'supertokens-node/recipe/openid/recipe'
 
+import users from './users.json'
+
+
 export async function executeCommand(cmd: string): Promise<{ stdout: string; stderr: string }> {
   const cwd = process.cwd()
   return new Promise((resolve, reject) => {
@@ -579,3 +582,39 @@ export const getAllFilesInDirectory = (path: any): any => {
         return join(path, file.name)
     })
 }
+
+
+export const createUsers = async (emailpassword: any, passwordless: any, thirdparty: any) => {
+  const usersArray = users.users;
+  for (let i = 0; i < usersArray.length; i++) {
+    const user = usersArray[i];
+    if (user.recipe === "emailpassword" && emailpassword !== null) {
+      await emailpassword.signUp(user.email, user.password);
+    }
+    if (user.recipe === "passwordless" && passwordless !== null) {
+      if (user.email !== undefined) {
+        const codeResponse = await passwordless.createCode({
+          email: user.email,
+        });
+        await passwordless.consumeCode({
+          preAuthSessionId: codeResponse.preAuthSessionId,
+          deviceId: codeResponse.deviceId,
+          userInputCode: codeResponse.userInputCode,
+        });
+      } else {
+        const codeResponse = await passwordless.createCode({
+          phoneNumber: user.phone,
+        });
+        await passwordless.consumeCode({
+          preAuthSessionId: codeResponse.preAuthSessionId,
+          deviceId: codeResponse.deviceId,
+          userInputCode: codeResponse.userInputCode,
+        });
+      }
+    }
+
+    if (user.recipe === "thirdparty" && thirdparty !== null) {
+      await thirdparty.signInUp(user.provider, user.userId, user.email);
+    }
+  }
+};

@@ -21,6 +21,7 @@ import EmailPassword from 'supertokens-node/recipe/emailpassword'
 import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, signUPRequest, startST } from '../utils'
+import express from 'express'
 
 describe(`usersTest: ${printPath('[test/emailpassword/users.test.js]')}`, () => {
   beforeEach(async () => {
@@ -98,6 +99,46 @@ describe(`usersTest: ${printPath('[test/emailpassword/users.test.js]')}`, () => 
     }
   })
 
+  it("test getUsersOldestFirst with search queries", async function () {
+    await startST();
+    STExpress.init({
+      supertokens: {
+        connectionURI: "http://localhost:8080",
+      },
+      appInfo: {
+        apiDomain: "api.supertokens.io",
+        appName: "SuperTokens",
+        websiteDomain: "supertokens.io",
+      },
+      recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
+    });
+
+    const express = require("express");
+    const app = express();
+
+    app.use(middleware());
+
+    app.use(errorHandler());
+
+    const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
+    if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
+      return;
+    }
+
+    await signUPRequest(app, "test@gmail.com", "testPass123");
+    await signUPRequest(app, "test1@gmail.com", "testPass123");
+    await signUPRequest(app, "test2@gmail.com", "testPass123");
+    await signUPRequest(app, "test3@gmail.com", "testPass123");
+    await signUPRequest(app, "john@gmail.com", "testPass123");
+
+    let users = await getUsersOldestFirst({ query: { email: "doe" } });
+    assert.strictEqual(users.users.length, 0);
+
+    users = await getUsersOldestFirst({ query: { email: "john" } });
+    assert.strictEqual(users.users.length, 1);
+  });
+
+
   it('test getUsersNewestFirst', async () => {
     await startST()
     STExpress.init({
@@ -161,6 +202,45 @@ describe(`usersTest: ${printPath('[test/emailpassword/users.test.js]')}`, () => 
         throw err
     }
   })
+
+  it("test getUsersNewestFirst with search queries", async function () {
+    await startST();
+    STExpress.init({
+      supertokens: {
+        connectionURI: "http://localhost:8080",
+      },
+      appInfo: {
+        apiDomain: "api.supertokens.io",
+        appName: "SuperTokens",
+        websiteDomain: "supertokens.io",
+      },
+      recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
+    });
+
+    const express = require("express");
+    const app = express();
+
+    app.use(middleware());
+
+    app.use(errorHandler());
+
+    const cdiVersion = await Querier.getNewInstanceOrThrowError("emailpassword").getAPIVersion();
+    if (maxVersion("2.20", cdiVersion) !== cdiVersion) {
+      return;
+    }
+
+    await signUPRequest(app, "test@gmail.com", "testPass123");
+    await signUPRequest(app, "test1@gmail.com", "testPass123");
+    await signUPRequest(app, "test2@gmail.com", "testPass123");
+    await signUPRequest(app, "test3@gmail.com", "testPass123");
+    await signUPRequest(app, "john@gmail.com", "testPass123");
+
+    let users = await getUsersNewestFirst({ query: { email: "doe" } });
+    assert.strictEqual(users.users.length, 0);
+
+    users = await getUsersNewestFirst({ query: { email: "john" } });
+    assert.strictEqual(users.users.length, 1);
+  });
 
   it('test getUserCount', async () => {
     await startST()

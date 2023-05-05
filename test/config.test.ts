@@ -693,6 +693,39 @@ describe(`configTest: ${printPath('[test/config.test.js]')}`, () => {
     {
       STExpress.init({
         supertokens: {
+          connectionURI: "http://localhost:8080",
+        },
+        appInfo: {
+          apiDomain: "api.supertokens.io",
+          appName: "SuperTokens",
+          websiteDomain: "supertokens.io",
+        },
+        recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", accessTokenPath: "/access" })],
+      });
+      assert(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath.getAsStringDangerous() === "/access");
+      resetAll();
+    }
+
+    {
+      STExpress.init({
+        supertokens: {
+          connectionURI: "http://localhost:8080",
+        },
+        appInfo: {
+          apiDomain: "api.supertokens.io",
+          appName: "SuperTokens",
+          websiteDomain: "supertokens.io",
+        },
+        recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
+      });
+      assert(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath.getAsStringDangerous() === "");
+      resetAll();
+    }
+
+
+    {
+      STExpress.init({
+        supertokens: {
           connectionURI: 'http://localhost:8080',
         },
         appInfo: {
@@ -1517,4 +1550,58 @@ describe(`configTest: ${printPath('[test/config.test.js]')}`, () => {
     }
     assert(errorCaught)
   })
+
+
+  it("Check that telemetry is set to true properly", async function () {
+    await startST();
+    STExpress.init({
+      supertokens: {
+        connectionURI: "http://localhost:8080",
+      },
+      appInfo: {
+        apiDomain: "api.supertokens.io",
+        appName: "SuperTokens",
+        websiteDomain: "supertokens.io",
+      },
+      recipeList: [Session.init()],
+      telemetry: true,
+    });
+
+    assert(SuperTokens.getInstanceOrThrowError().telemetryEnabled === true);
+  });
+
+  it("Check that telemetry is set to false by default", async function () {
+    await startST();
+    STExpress.init({
+      supertokens: {
+        connectionURI: "http://localhost:8080",
+      },
+      appInfo: {
+        apiDomain: "api.supertokens.io",
+        appName: "SuperTokens",
+        websiteDomain: "supertokens.io",
+      },
+      recipeList: [Session.init()],
+    });
+
+    assert(SuperTokens.getInstanceOrThrowError().telemetryEnabled === false);
+  });
+
+  it("Check that telemetry is set to false properly", async function () {
+    await startST();
+    STExpress.init({
+      supertokens: {
+        connectionURI: "http://localhost:8080",
+      },
+      appInfo: {
+        apiDomain: "api.supertokens.io",
+        appName: "SuperTokens",
+        websiteDomain: "supertokens.io",
+      },
+      recipeList: [Session.init()],
+      telemetry: false,
+    });
+
+    assert(SuperTokens.getInstanceOrThrowError().telemetryEnabled === false);
+  });
 })

@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import axios from 'axios'
 import { HTTPMethod, NormalisedAppinfo, SuperTokensInfo, TypeInput } from './types'
 import {
   getRidFromHeader,
@@ -27,13 +26,11 @@ import RecipeModule from './recipeModule'
 import { HEADER_FDI, HEADER_RID } from './constants'
 import NormalisedURLDomain from './normalisedURLDomain'
 import NormalisedURLPath from './normalisedURLPath'
-
+import { BaseRequest, BaseResponse } from './framework'
 import { TypeFramework } from './framework/types'
 import STError from './error'
 import { logDebugMessage } from './logger'
 import { PostSuperTokensInitCallbacks } from './postSuperTokensInitCallbacks'
-import { BaseRequest } from './framework/request'
-import { BaseResponse } from './framework/response'
 
 export default class SuperTokens {
   private static instance: SuperTokens | undefined
@@ -47,6 +44,8 @@ export default class SuperTokens {
   recipeModules: RecipeModule[]
 
   supertokens: undefined | SuperTokensInfo
+
+  telemetryEnabled: boolean
 
   constructor(config: TypeInput) {
     logDebugMessage('Started SuperTokens with debug logging (supertokens.init called)')
@@ -84,43 +83,7 @@ export default class SuperTokens {
       return func(this.appInfo, this.isInServerlessEnv)
     })
 
-    const telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== 'testing' : config.telemetry
-
-    if (telemetry) {
-      if (this.isInServerlessEnv) {
-        // see https://github.com/supertokens/supertokens-node/issues/127
-        const randomNum = Math.random() * 10
-        if (randomNum > 7)
-          this.sendTelemetry()
-      }
-      else {
-        this.sendTelemetry()
-      }
-    }
-  }
-
-  sendTelemetry = async () => {
-    try {
-      const querier = Querier.getNewInstanceOrThrowError(undefined)
-      const response = await querier.sendGetRequest(new NormalisedURLPath('/telemetry'), {})
-      let telemetryId: string | undefined
-      if (response.exists)
-        telemetryId = response.telemetryId
-
-      await axios({
-        method: 'POST',
-        url: 'https://api.supertokens.com/0/st/telemetry',
-        data: {
-          appName: this.appInfo.appName,
-          websiteDomain: this.appInfo.websiteDomain.getAsStringDangerous(),
-          telemetryId,
-        },
-        headers: {
-          'api-version': 2,
-        },
-      })
-    }
-    catch (ignored) {}
+    this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== 'testing' : config.telemetry
   }
 
   static init(config: TypeInput) {
@@ -192,6 +155,7 @@ export default class SuperTokens {
     limit?: number
     paginationToken?: string
     includeRecipeIds?: string[]
+    query?: object
   }): Promise<{
     users: { recipeId: string; user: any }[]
     nextPaginationToken?: string
@@ -208,6 +172,7 @@ export default class SuperTokens {
       includeRecipeIdsStr = input.includeRecipeIds.join(',')
 
     const response = await querier.sendGetRequest(new NormalisedURLPath('/users'), {
+      ...input.query,
       includeRecipeIds: includeRecipeIdsStr,
       timeJoinedOrder: input.timeJoinedOrder,
       limit: input.limit,
@@ -243,15 +208,15 @@ export default class SuperTokens {
     externalUserIdInfo?: string
     force?: boolean
   }): Promise<
-        | {
-          status: 'OK' | 'UNKNOWN_SUPERTOKENS_USER_ID_ERROR'
-        }
-        | {
-          status: 'USER_ID_MAPPING_ALREADY_EXISTS_ERROR'
-          doesSuperTokensUserIdExist: boolean
-          doesExternalUserIdExist: boolean
-        }
-    > {
+    | {
+      status: 'OK' | 'UNKNOWN_SUPERTOKENS_USER_ID_ERROR'
+    }
+    | {
+      status: 'USER_ID_MAPPING_ALREADY_EXISTS_ERROR'
+      doesSuperTokensUserIdExist: boolean
+      doesExternalUserIdExist: boolean
+    }
+  > {
     const querier = Querier.getNewInstanceOrThrowError(undefined)
     const cdiVersion = await querier.getAPIVersion()
     if (maxVersion('2.15', cdiVersion) === cdiVersion) {
@@ -272,16 +237,16 @@ export default class SuperTokens {
     userId: string
     userIdType?: 'SUPERTOKENS' | 'EXTERNAL' | 'ANY'
   }): Promise<
-        | {
-          status: 'OK'
-          superTokensUserId: string
-          externalUserId: string
-          externalUserIdInfo: string | undefined
-        }
-        | {
-          status: 'UNKNOWN_MAPPING_ERROR'
-        }
-    > {
+    | {
+      status: 'OK'
+      superTokensUserId: string
+      externalUserId: string
+      externalUserIdInfo: string | undefined
+    }
+    | {
+      status: 'UNKNOWN_MAPPING_ERROR'
+    }
+  > {
     const querier = Querier.getNewInstanceOrThrowError(undefined)
     const cdiVersion = await querier.getAPIVersion()
     if (maxVersion('2.15', cdiVersion) === cdiVersion) {
@@ -349,7 +314,7 @@ export default class SuperTokens {
     if (!path.startsWith(this.appInfo.apiBasePath)) {
       logDebugMessage(
         `middleware: Not handling because request path did not start with config path. Request path: ${
-                     path.getAsStringDangerous()}`,
+         path.getAsStringDangerous()}`,
       )
       return false
     }
@@ -383,9 +348,9 @@ export default class SuperTokens {
       if (id === undefined) {
         logDebugMessage(
           `middleware: Not handling because recipe doesn't handle request path or method. Request path: ${
-                         path.getAsStringDangerous()
-                         }, request method: ${
-                         method}`,
+           path.getAsStringDangerous()
+           }, request method: ${
+           method}`,
         )
         // the matched recipe doesn't handle this path and http method
         return false

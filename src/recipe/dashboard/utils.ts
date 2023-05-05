@@ -13,8 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest } from '../../framework/request'
-import { BaseResponse } from '../../framework/response'
+import { BaseRequest, BaseResponse } from '../../framework'
 import NormalisedURLPath from '../../normalisedURLPath'
 import { HTTPMethod, NormalisedAppinfo } from '../../types'
 import { sendNon200ResponseWithMessage } from '../../utils'
@@ -39,7 +38,9 @@ import {
   TypeNormalisedInput,
 } from './types'
 import {
+  DASHBOARD_ANALYTICS_API,
   DASHBOARD_API,
+  SEARCH_TAGS_API,
   SIGN_IN_API,
   SIGN_OUT_API,
   USERS_COUNT_API,
@@ -61,7 +62,6 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
   }
 
   return {
-    apiKey: config === undefined ? undefined : config.apiKey,
     override,
     authMode: (config !== undefined && config.apiKey) ? 'api-key' : 'email-password',
   }
@@ -127,6 +127,12 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 
   if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === 'put')
     return USER_PASSWORD_API
+
+  if (path.getAsStringDangerous().endsWith(SEARCH_TAGS_API) && method === 'get')
+    return SEARCH_TAGS_API
+
+  if (path.getAsStringDangerous().endsWith(DASHBOARD_ANALYTICS_API) && method === 'post')
+    return DASHBOARD_ANALYTICS_API
 
   return undefined
 }
@@ -301,14 +307,14 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
       EmailPasswordRecipe.getInstanceOrThrowError()
       isRecipeInitialised = true
     }
-    catch (_) {}
+    catch (_) { }
 
     if (!isRecipeInitialised) {
       try {
         ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError()
         isRecipeInitialised = true
       }
-      catch (_) {}
+      catch (_) { }
     }
   }
   else if (recipeId === 'passwordless') {
@@ -316,14 +322,14 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
       PasswordlessRecipe.getInstanceOrThrowError()
       isRecipeInitialised = true
     }
-    catch (_) {}
+    catch (_) { }
 
     if (!isRecipeInitialised) {
       try {
         ThirdPartyPasswordlessRecipe.getInstanceOrThrowError()
         isRecipeInitialised = true
       }
-      catch (_) {}
+      catch (_) { }
     }
   }
   else if (recipeId === 'thirdparty') {
@@ -331,14 +337,14 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
       ThirdPartyRecipe.getInstanceOrThrowError()
       isRecipeInitialised = true
     }
-    catch (_) {}
+    catch (_) { }
 
     if (!isRecipeInitialised) {
       try {
         ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError()
         isRecipeInitialised = true
       }
-      catch (_) {}
+      catch (_) { }
     }
 
     if (!isRecipeInitialised) {
@@ -346,7 +352,7 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
         ThirdPartyPasswordlessRecipe.getInstanceOrThrowError()
         isRecipeInitialised = true
       }
-      catch (_) {}
+      catch (_) { }
     }
   }
 

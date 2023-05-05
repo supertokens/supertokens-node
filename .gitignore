@@ -14,3 +14,5 @@ lib
 dist
 **/node_modules
 .env
+.idea
+.env

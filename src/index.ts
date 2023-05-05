@@ -36,6 +36,7 @@ export default class SuperTokensWrapper {
     limit?: number
     paginationToken?: string
     includeRecipeIds?: string[]
+    query?: object
   }): Promise<{
     users: { recipeId: string; user: any }[]
     nextPaginationToken?: string
@@ -50,6 +51,7 @@ export default class SuperTokensWrapper {
     limit?: number
     paginationToken?: string
     includeRecipeIds?: string[]
+    query?: object
   }): Promise<{
     users: { recipeId: string; user: any }[]
     nextPaginationToken?: string
