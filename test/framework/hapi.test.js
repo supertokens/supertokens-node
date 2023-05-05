@@ -1269,6 +1269,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 "refreshTokenHash1",
                 "sessionHandle",
                 "sub",
+                "iss",
             ])
         );
 

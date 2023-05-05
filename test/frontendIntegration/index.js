@@ -26,6 +26,8 @@ let noOfTimesGetSessionCalledDuringTest = 0;
 let noOfTimesRefreshAttemptedDuringTest = 0;
 let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
+const { Querier } = require("../../lib/build/querier");
+const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 let supertokens_node_version = require("../../lib/build/version").version;
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
@@ -59,6 +61,53 @@ const maxVersion = function (version1, version2) {
 };
 
 function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
+    if (enableJWT && maxVersion(supertokens_node_version, "14.0") === supertokens_node_version) {
+        return {
+            appInfo: {
+                appName: "SuperTokens",
+                apiDomain: "0.0.0.0:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
+                websiteDomain: "http://localhost.org:8080",
+            },
+            supertokens: {
+                connectionURI: "http://localhost:9000",
+            },
+            recipeList: [
+                Session.init({
+                    getTokenTransferMethod: process.env.TRANSFER_METHOD ? () => process.env.TRANSFER_METHOD : undefined,
+                    exposeAccessTokenToFrontendInCookieBasedAuth: true,
+                    errorHandlers: {
+                        onUnauthorised: (err, req, res) => {
+                            res.setStatusCode(401);
+                            res.sendJSONResponse({});
+                        },
+                    },
+                    antiCsrf: enableAntiCsrf ? "VIA_TOKEN" : "NONE",
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: undefined,
+                            };
+                        },
+                        functions: function (oI) {
+                            return {
+                                ...oI,
+                                createNewSession: async function (input) {
+                                    input.accessTokenPayload = {
+                                        ...input.accessTokenPayload,
+                                        customClaim: "customValue",
+                                    };
+
+                                    return await oI.createNewSession(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        };
+    }
+
     if (maxVersion(supertokens_node_version, "8.3.0") === supertokens_node_version && enableJWT) {
         return {
             appInfo: {
@@ -190,6 +239,7 @@ app.get("/featureFlags", async (req, res) => {
         sessionJwt:
             maxVersion(supertokens_node_version, "8.3") === supertokens_node_version && currentEnableJWT === true,
         sessionClaims: maxVersion(supertokens_node_version, "12.0") === supertokens_node_version,
+        v3AccessToken: maxVersion(supertokens_node_version, "14.0") === supertokens_node_version,
     });
 });
 
@@ -209,6 +259,41 @@ app.post("/login", async (req, res) => {
     let userId = req.body.userId;
     let session = await Session.createNewSession(req, res, userId);
     res.send(session.getUserId());
+});
+
+app.post("/login-2.18", async (req, res) => {
+    // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+    // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+    Querier.apiVersion = "2.18";
+    const payload = req.body.payload || {};
+    const userId = req.body.userId;
+    const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+        new NormalisedURLPath("/recipe/session"),
+        {
+            userId,
+            enableAntiCsrf: false,
+            userDataInJWT: payload,
+            userDataInDatabase: {},
+        }
+    );
+    Querier.apiVersion = undefined;
+
+    const legacyAccessToken = legacySessionResp.accessToken.token;
+    const legacyRefreshToken = legacySessionResp.refreshToken.token;
+
+    res.set("st-access-token", legacyAccessToken)
+        .set("st-refresh-token", legacyRefreshToken)
+        .set(
+            "front-token",
+            Buffer.from(
+                JSON.stringify({
+                    uid: userId,
+                    ate: Date.now() + 3600000,
+                    up: payload,
+                })
+            ).toString("base64")
+        )
+        .send();
 });
 
 app.post("/beforeeach", async (req, res) => {
@@ -260,7 +345,13 @@ app.post(
     "/update-jwt",
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        await req.session.mergeIntoAccessTokenPayload(req.body);
+        let clearing = {};
+        for (const key of Object.keys(req.session.getAccessTokenPayload())) {
+            if (!isProtectedPropName(key)) {
+                clearing[key] = null;
+            }
+        }
+        await req.session.mergeIntoAccessTokenPayload({ ...clearing, ...req.body });
         res.json(req.session.getAccessTokenPayload());
     }
 );
@@ -384,7 +475,14 @@ app.post(
     "/update-jwt-with-handle",
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        await Session.mergeIntoAccessTokenPayload(req.session.getHandle(), req.body);
+        const info = await Session.getSessionInformation(req.session.getHandle());
+        let clearing = {};
+
+        for (const key of Object.keys(info.customClaimsInAccessTokenPayload)) {
+            clearing[key] = null;
+        }
+
+        await Session.mergeIntoAccessTokenPayload(req.session.getHandle(), { ...clearing, ...req.body });
         res.json(req.session.getAccessTokenPayload());
     }
 );
@@ -402,3 +500,15 @@ app.use(async (err, req, res, next) => {
 app.listen(process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT, "0.0.0.0", () => {
     console.log("app started");
 });
+
+isProtectedPropName = function (name) {
+    return [
+        "sub",
+        "iat",
+        "exp",
+        "sessionHandle",
+        "parentRefreshTokenHash1",
+        "refreshTokenHash1",
+        "antiCsrfToken",
+    ].includes(name);
+};

@@ -206,7 +206,10 @@ export async function getSession(
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
         delete response.status;
-        response.session.expiryTime = response.accessToken.expiry;
+        response.session.expiryTime =
+            response.accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
+            accessTokenInfo?.expiryTime || // if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
+            parsedAccessToken.payload["expiryTime"]; // if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
         return response;
     } else if (response.status === "UNAUTHORISED") {
         logDebugMessage("getSession: Returning UNAUTHORISED because of core response");
