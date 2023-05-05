@@ -38,7 +38,7 @@ import { cleanST, killAllST, printPath, setupST, signUPRequest, startST } from '
  *        - (later) token is not of type string from input
  */
 
-describe(`passwordreset: ${printPath('[test/emailpassword/passwordreset.test.js]')}`, () => {
+describe(`passwordreset: ${printPath('[test/emailpassword/passwordreset.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

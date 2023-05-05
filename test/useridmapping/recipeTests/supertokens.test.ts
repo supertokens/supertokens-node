@@ -10,7 +10,7 @@ import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../../utils'
 
 describe(`userIdMapping with supertokens recipe: ${printPath(
-    '[test/useridmapping/recipeTests/supertokens.test.js]',
+    '[test/useridmapping/recipeTests/supertokens.test.ts]',
 )}`, () => {
   beforeEach(async () => {
     await killAllST()

@@ -9,7 +9,7 @@ import { afterAll, beforeEach, describe, it } from 'vitest'
 import { areArraysEqual, cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
 describe(`getRolesThatHavePermissions: ${printPath(
-    '[test/userroles/getRolesThatHavePermissions.test.js]',
+    '[test/userroles/getRolesThatHavePermissions.test.ts]',
 )}`, () => {
   beforeEach(async () => {
     await killAllST()

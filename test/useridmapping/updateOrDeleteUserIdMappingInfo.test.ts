@@ -9,7 +9,7 @@ import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
 describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
-    '[test/useridmapping/updateOrDeleteUserIdMappingInfo.test.js]',
+    '[test/useridmapping/updateOrDeleteUserIdMappingInfo.test.ts]',
 )}`, () => {
   beforeEach(async () => {
     await killAllST()

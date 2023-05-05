@@ -29,7 +29,7 @@ import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, signUPRequest, startST } from '../utils'
 
-describe(`signupTest: ${printPath('[test/thirdpartyemailpassword/signupFeature.test.js]')}`, () => {
+describe(`signupTest: ${printPath('[test/thirdpartyemailpassword/signupFeature.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   let customProvider2: TypeProvider
   let customProvider3: TypeProvider

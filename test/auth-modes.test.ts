@@ -159,7 +159,7 @@ function getTestApp(endpoints: any) {
   return app
 }
 
-describe(`auth-modes: ${printPath('[test/auth-modes.test.js]')}`, () => {
+describe(`auth-modes: ${printPath('[test/auth-modes.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

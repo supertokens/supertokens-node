@@ -34,7 +34,7 @@ import {
   startST,
 } from '../utils'
 
-describe(`signinupTest: ${printPath('[test/thirdpartypasswordless/signinupFeature.test.js]')}`, () => {
+describe(`signinupTest: ${printPath('[test/thirdpartypasswordless/signinupFeature.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   let customProvider2: TypeProvider
   let customProvider3: TypeProvider

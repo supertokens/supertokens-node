@@ -24,7 +24,7 @@ import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, signUPRequest, startST } from '../utils'
 
-describe(`overrideTest: ${printPath('[test/thirdpartyemailpassword/override.test.js]')}`, () => {
+describe(`overrideTest: ${printPath('[test/thirdpartyemailpassword/override.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

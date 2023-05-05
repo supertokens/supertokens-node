@@ -35,7 +35,7 @@ import {
   startST,
 } from '../utils'
 
-describe(`signinFeature: ${printPath('[test/thirdpartyemailpassword/signinFeature.test.js]')}`, () => {
+describe(`signinFeature: ${printPath('[test/thirdpartyemailpassword/signinFeature.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   beforeAll(() => {
     customProvider1 = {

@@ -23,7 +23,7 @@ import { afterAll, afterEach, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, mockRequest, mockResponse, printPath, setupST, startST } from '../../utils'
 import { TrueClaim } from './testClaims'
 
-describe(`sessionClaims/removeClaim: ${printPath('[test/session/claims/removeClaim.test.js]')}`, () => {
+describe(`sessionClaims/removeClaim: ${printPath('[test/session/claims/removeClaim.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

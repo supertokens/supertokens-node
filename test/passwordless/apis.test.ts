@@ -24,7 +24,7 @@ import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, isCDIVersionCompatible, killAllST, printPath, setKeyValueInConfig, setupST, startST } from '../utils'
 
-describe(`apisFunctions: ${printPath('[test/passwordless/apis.test.js]')}`, () => {
+describe(`apisFunctions: ${printPath('[test/passwordless/apis.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

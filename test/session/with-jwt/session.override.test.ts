@@ -35,7 +35,7 @@ import {
 /**
  * Test that overriding the session recipe functions and apis still work when the JWT feature is enabled
  */
-describe(`session: ${printPath('[test/session/with-jwt/session.override.test.js]')}`, () => {
+describe(`session: ${printPath('[test/session/with-jwt/session.override.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

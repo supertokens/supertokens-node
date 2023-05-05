@@ -21,7 +21,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../../utils'
 
-describe(`session-jwt-functions: ${printPath('[test/session/with-jwt/jwtFunctions.test.js]')}`, () => {
+describe(`session-jwt-functions: ${printPath('[test/session/with-jwt/jwtFunctions.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

@@ -30,7 +30,7 @@ import {
   startST,
 } from './utils'
 
-describe(`middleware2: ${printPath('[test/middleware2.test.js]')}`, () => {
+describe(`middleware2: ${printPath('[test/middleware2.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

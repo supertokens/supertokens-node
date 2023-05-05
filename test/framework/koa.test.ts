@@ -37,7 +37,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import ThirdParty from 'supertokens-node/recipe/thirdparty'
 import Passwordless from 'supertokens-node/recipe/passwordless'
 
-describe(`Koa: ${printPath('[test/framework/koa.test.js]')}`, () => {
+describe(`Koa: ${printPath('[test/framework/koa.test.ts]')}`, () => {
   let server: Server<typeof IncomingMessage, typeof ServerResponse>
   beforeEach(async () => {
     await killAllST()

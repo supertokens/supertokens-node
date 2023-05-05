@@ -20,7 +20,7 @@ import { PROCESS_STATE, ProcessState } from 'supertokens-node/processState'
 import ST from 'supertokens-node'
 import { cleanST, killAllST, printPath, setupST, startST } from './utils'
 
-describe(`Handshake: ${printPath('[test/handshake.test.js]')}`, () => {
+describe(`Handshake: ${printPath('[test/handshake.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

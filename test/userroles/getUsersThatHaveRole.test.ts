@@ -8,7 +8,7 @@ import SessionRecipe from 'supertokens-node/recipe/session/recipe'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { areArraysEqual, cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`getUsersThatHaveRole: ${printPath('[test/userroles/getUsersThatHaveRole.test.js]')}`, () => {
+describe(`getUsersThatHaveRole: ${printPath('[test/userroles/getUsersThatHaveRole.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

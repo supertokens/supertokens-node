@@ -30,7 +30,7 @@ import {
   startST,
 } from '../utils'
 
-describe(`usersTest: ${printPath('[test/thirdpartypasswordless/users.test.js]')}`, () => {
+describe(`usersTest: ${printPath('[test/thirdpartypasswordless/users.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   beforeAll(() => {
     customProvider1 = {

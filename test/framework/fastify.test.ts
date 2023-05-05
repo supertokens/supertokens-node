@@ -39,7 +39,10 @@ import { createUsers } from '../utils'
 import { Querier } from 'supertokens-node/querier'
 import { maxVersion } from 'supertokens-node/utils'
 
-describe(`Fastify: ${printPath('[test/framework/fastify.test.js]')}`, () => {
+import Passwordless from 'supertokens-node/recipe/passwordless'
+
+
+describe(`Fastify: ${printPath('[test/framework/fastify.test.ts]')}`, () => {
   let server: FastifyInstance
   beforeEach(async () => {
     await killAllST()

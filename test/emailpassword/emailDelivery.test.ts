@@ -27,7 +27,7 @@ import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import express from 'express'
 import { cleanST, delay, extractInfoFromResponse, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`emailDelivery: ${printPath('[test/emailpassword/emailDelivery.test.js]')}`, () => {
+describe(`emailDelivery: ${printPath('[test/emailpassword/emailDelivery.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

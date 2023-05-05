@@ -32,7 +32,7 @@ import {
   startST,
 } from '../utils'
 
-describe(`overrideTest: ${printPath('[test/thirdpartypasswordless/override.test.js]')}`, () => {
+describe(`overrideTest: ${printPath('[test/thirdpartypasswordless/override.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   beforeAll(() => {
     customProvider1 = {

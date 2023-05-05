@@ -27,7 +27,7 @@ import EmailVerification from 'supertokens-node/recipe/emailverification'
 import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { cleanST, extractInfoFromResponse, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`signinupTest: ${printPath('[test/thirdparty/signinupFeature.test.js]')}`, () => {
+describe(`signinupTest: ${printPath('[test/thirdparty/signinupFeature.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   let customProvider2: TypeProvider
   let customProvider3: TypeProvider

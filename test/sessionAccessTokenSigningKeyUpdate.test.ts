@@ -42,7 +42,7 @@ import {
 */
 
 describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
-    '[test/sessionAccessTokenSigningKeyUpdate.test.js]',
+    '[test/sessionAccessTokenSigningKeyUpdate.test.ts]',
 )}`, () => {
   beforeEach(async () => {
     await killAllST()

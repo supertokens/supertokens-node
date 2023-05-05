@@ -25,7 +25,7 @@ import ThirdPartyPasswordlessRecipe from 'supertokens-node/recipe/thirdpartypass
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, generateRandomCode, isCDIVersionCompatible, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`config tests: ${printPath('[test/thirdpartypasswordless/config.test.js]')}`, () => {
+describe(`config tests: ${printPath('[test/thirdpartypasswordless/config.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

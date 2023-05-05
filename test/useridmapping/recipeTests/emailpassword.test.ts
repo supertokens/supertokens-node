@@ -9,7 +9,7 @@ import { ProcessState } from 'supertokens-node/processState'
 import { cleanST, killAllST, printPath, setupST, startST } from '../../utils'
 
 describe(`userIdMapping with emailpassword: ${printPath(
-    '[test/useridmapping/recipeTests/emailpassword.test.js]',
+    '[test/useridmapping/recipeTests/emailpassword.test.ts]',
 )}`, () => {
   beforeEach(async () => {
     await killAllST()

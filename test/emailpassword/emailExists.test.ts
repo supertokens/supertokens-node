@@ -38,7 +38,7 @@ TODO:
    - pass an array instead of string in the email
 */
 
-describe(`emailExists: ${printPath('[test/emailpassword/emailExists.test.js]')}`, () => {
+describe(`emailExists: ${printPath('[test/emailpassword/emailExists.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

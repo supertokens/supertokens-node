@@ -9,7 +9,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`createUserIdMappingTest: ${printPath('[test/useridmapping/createUserIdMapping.test.js]')}`, () => {
+describe(`createUserIdMappingTest: ${printPath('[test/useridmapping/createUserIdMapping.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

@@ -25,7 +25,7 @@ import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`overrideTest: ${printPath('[test/thirdparty/override.test.js]')}`, () => {
+describe(`overrideTest: ${printPath('[test/thirdparty/override.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   beforeAll(() => {
     customProvider1 = {

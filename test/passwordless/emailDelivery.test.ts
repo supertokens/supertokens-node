@@ -26,7 +26,7 @@ import express from 'express'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, delay, isCDIVersionCompatible, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`emailDelivery: ${printPath('[test/passwordless/emailDelivery.test.js]')}`, () => {
+describe(`emailDelivery: ${printPath('[test/passwordless/emailDelivery.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

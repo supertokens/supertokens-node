@@ -19,7 +19,7 @@ import { PrimitiveClaim } from 'supertokens-node/recipe/session/claims'
 import { afterEach, describe, it } from 'vitest'
 import { printPath } from '../../utils'
 
-describe(`sessionClaims/primitiveClaim: ${printPath('[test/session/claims/primitiveClaim.test.js]')}`, () => {
+describe(`sessionClaims/primitiveClaim: ${printPath('[test/session/claims/primitiveClaim.test.ts]')}`, () => {
   describe('PrimitiveClaim', () => {
     afterEach(() => {
       sinon.restore()

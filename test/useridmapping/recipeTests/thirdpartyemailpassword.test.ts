@@ -9,7 +9,7 @@ import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../../utils'
 
 describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
-    '[test/useridmapping/recipeTests/thirdpartyemailpassword.test.js]',
+    '[test/useridmapping/recipeTests/thirdpartyemailpassword.test.ts]',
 )}`, () => {
   beforeEach(async () => {
     await killAllST()

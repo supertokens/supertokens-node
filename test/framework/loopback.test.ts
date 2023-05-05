@@ -33,7 +33,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import ThirdParty from 'supertokens-node/recipe/thirdparty'
 import Passwordless from 'supertokens-node/recipe/passwordless'
 
-describe(`Loopback: ${printPath('[test/framework/loopback.test.js]')}`, () => {
+describe(`Loopback: ${printPath('[test/framework/loopback.test.ts]')}`, () => {
   let server: RestApplication
   beforeEach(async () => {
     await killAllST()

@@ -11,7 +11,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`apiTest: ${printPath('[test/openid/api.test.js]')}`, () => {
+describe(`apiTest: ${printPath('[test/openid/api.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

@@ -11,7 +11,7 @@ import { afterAll, beforeEach, describe, it } from 'vitest'
 import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`getJWKS: ${printPath('[test/jwt/getJWKS.test.js]')}`, () => {
+describe(`getJWKS: ${printPath('[test/jwt/getJWKS.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

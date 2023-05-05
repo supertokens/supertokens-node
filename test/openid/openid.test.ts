@@ -9,7 +9,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import OpenId from 'supertokens-node/recipe/openid'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`openIdTest: ${printPath('[test/openid/openid.test.js]')}`, () => {
+describe(`openIdTest: ${printPath('[test/openid/openid.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

@@ -8,7 +8,7 @@ import { Querier } from 'supertokens-node/querier'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`getUsersByEmail: ${printPath('[test/thirdparty/getUsersByEmailFeature.test.js]')}`, () => {
+describe(`getUsersByEmail: ${printPath('[test/thirdparty/getUsersByEmailFeature.test.ts]')}`, () => {
   const MockThirdPartyProvider: TypeProvider = {
     id: 'mock',
   }

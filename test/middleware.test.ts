@@ -37,7 +37,7 @@ import {
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
  */
 
-describe(`middleware: ${printPath('[test/middleware.test.js]')}`, () => {
+describe(`middleware: ${printPath('[test/middleware.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

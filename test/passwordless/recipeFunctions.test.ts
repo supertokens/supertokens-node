@@ -21,7 +21,7 @@ import { ProcessState } from 'supertokens-node/processState'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, isCDIVersionCompatible, killAllST, printPath, setKeyValueInConfig, setupST, startST } from '../utils'
 
-describe(`recipeFunctions: ${printPath('[test/passwordless/recipeFunctions.test.js]')}`, () => {
+describe(`recipeFunctions: ${printPath('[test/passwordless/recipeFunctions.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

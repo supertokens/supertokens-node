@@ -18,7 +18,7 @@ import { humaniseMilliseconds } from 'supertokens-node/utils'
 import { describe, it } from 'vitest'
 import { printPath } from './utils'
 
-describe(`Humanise: ${printPath('[test/humanise.test.js]')}`, () => {
+describe(`Humanise: ${printPath('[test/humanise.test.ts]')}`, () => {
   it('test humanise milliseconds', () => {
     assert(humaniseMilliseconds(1000) === '1 second')
     assert(humaniseMilliseconds(59000) === '59 seconds')

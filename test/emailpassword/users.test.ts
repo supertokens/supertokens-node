@@ -23,7 +23,7 @@ import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, signUPRequest, startST } from '../utils'
 import express from 'express'
 
-describe(`usersTest: ${printPath('[test/emailpassword/users.test.js]')}`, () => {
+describe(`usersTest: ${printPath('[test/emailpassword/users.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

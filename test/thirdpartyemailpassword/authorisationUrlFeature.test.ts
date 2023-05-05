@@ -25,7 +25,7 @@ import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { TypeProvider } from 'supertokens-node/recipe/thirdpartyemailpassword'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`authorisationTest: ${printPath('[test/thirdpartyemailpassword/authorisationFeature.test.js]')}`, () => {
+describe(`authorisationTest: ${printPath('[test/thirdpartyemailpassword/authorisationFeature.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   let customProvider2: TypeProvider
   beforeAll(() => {

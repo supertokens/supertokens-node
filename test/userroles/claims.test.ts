@@ -8,7 +8,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, mockRequest, mockResponse, printPath, setupST, startST } from '../utils'
 
-describe(`claimsTest: ${printPath('[test/userroles/claims.test.js]')}`, () => {
+describe(`claimsTest: ${printPath('[test/userroles/claims.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

@@ -25,7 +25,7 @@ import PasswordlessRecipe from 'supertokens-node/recipe/passwordless/recipe'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, generateRandomCode, isCDIVersionCompatible, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`config tests: ${printPath('[test/passwordless/config.test.js]')}`, () => {
+describe(`config tests: ${printPath('[test/passwordless/config.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

@@ -46,7 +46,7 @@ import {
 - check that Access-Control-Expose-Headers header is being set properly during create, use and destroy session**** only for express
 */
 
-describe(`session: ${printPath('[test/session.test.js]')}`, () => {
+describe(`session: ${printPath('[test/session.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

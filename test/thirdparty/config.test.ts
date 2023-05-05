@@ -24,7 +24,7 @@ import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
  * TODO
  * - check with different inputs
  */
-describe(`configTest: ${printPath('[test/thirdparty/config.test.js]')}`, () => {
+describe(`configTest: ${printPath('[test/thirdparty/config.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

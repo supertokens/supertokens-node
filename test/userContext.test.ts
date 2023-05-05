@@ -30,7 +30,7 @@ import {
   startST,
 } from './utils'
 
-describe(`userContext: ${printPath('[test/userContext.test.js]')}`, () => {
+describe(`userContext: ${printPath('[test/userContext.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

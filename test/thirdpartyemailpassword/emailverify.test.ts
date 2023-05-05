@@ -35,7 +35,7 @@ import {
   startST,
 } from '../utils'
 
-describe(`emailverify: ${printPath('[test/thirdpartyemailpassword/emailverify.test.js]')}`, () => {
+describe(`emailverify: ${printPath('[test/thirdpartyemailpassword/emailverify.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   beforeAll(() => {
     customProvider1 = {

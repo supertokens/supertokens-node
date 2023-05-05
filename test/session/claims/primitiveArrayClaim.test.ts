@@ -20,7 +20,7 @@ import { afterEach, describe, it } from 'vitest'
 import { printPath } from '../../utils'
 
 describe(`sessionClaims/primitiveArrayClaim: ${printPath(
-    '[test/session/claims/primitiveArrayClaim.test.js]',
+    '[test/session/claims/primitiveArrayClaim.test.ts]',
 )}`, () => {
   describe('PrimitiveArrayClaim', () => {
     afterEach(() => {

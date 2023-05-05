@@ -12,12 +12,11 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      '**/test/**',
       '**/docs/**',
-      'vitest/utils.ts',
+      'test/utils.ts',
     ],
     include: [
-      './vitest/**/*.test.ts',
+      './test/**/*.test.ts',
     ],
     singleThread: true,
     hookTimeout: 61000,

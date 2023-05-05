@@ -385,7 +385,7 @@ function resetTestRecipies() {
   TestRecipe3Duplicate.reset()
 }
 
-describe(`recipeModuleManagerTest: ${printPath('[test/recipeModuleManager.test.js]')}`, () => {
+describe(`recipeModuleManagerTest: ${printPath('[test/recipeModuleManager.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

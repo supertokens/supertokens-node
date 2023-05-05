@@ -18,7 +18,7 @@ import { defaultEmailValidator, defaultPasswordValidator } from 'supertokens-nod
 import { describe, it } from 'vitest'
 import { printPath } from '../utils'
 
-describe(`formFieldValidator: ${printPath('[test/emailpassword/formFieldValidator.test.js]')}`, () => {
+describe(`formFieldValidator: ${printPath('[test/emailpassword/formFieldValidator.test.ts]')}`, () => {
   it('checking email validator', async () => {
     assert((await defaultEmailValidator('test@supertokens.io')) === undefined)
     assert((await defaultEmailValidator('nsdafa@gmail.com')) === undefined)

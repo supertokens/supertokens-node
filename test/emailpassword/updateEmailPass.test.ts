@@ -24,7 +24,7 @@ import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, signUPRequest, startST } from '../utils'
 
-describe(`updateEmailPassTest: ${printPath('[test/emailpassword/updateEmailPass.test.js]')}`, () => {
+describe(`updateEmailPassTest: ${printPath('[test/emailpassword/updateEmailPass.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

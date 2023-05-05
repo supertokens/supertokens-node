@@ -31,7 +31,7 @@ import {
   startST,
 } from './utils'
 
-describe(`sessionExpress: ${printPath('[test/sessionExpress.test.js]')}`, () => {
+describe(`sessionExpress: ${printPath('[test/sessionExpress.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

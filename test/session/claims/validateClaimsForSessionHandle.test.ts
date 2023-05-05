@@ -23,7 +23,7 @@ import { cleanST, killAllST, mockRequest, mockResponse, printPath, setupST, star
 import { TrueClaim, UndefinedClaim } from './testClaims'
 
 describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
-    '[test/session/claims/validateClaimsForSessionHandle.test.js]',
+    '[test/session/claims/validateClaimsForSessionHandle.test.ts]',
 )}`, () => {
   beforeEach(async () => {
     await killAllST()

@@ -65,7 +65,7 @@ async function nextApiHandlerWithVerifySession(req: any, res: any) {
     res.status(404).send('Not found')
 }
 
-describe(`NextJS Middleware Test: ${printPath('[test/nextjs.test.js]')}`, () => {
+describe(`NextJS Middleware Test: ${printPath('[test/nextjs.test.ts]')}`, () => {
   describe('with superTokensNextWrapper', () => {
     beforeAll(async () => {
       process.env.user = undefined

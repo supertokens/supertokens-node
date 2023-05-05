@@ -42,7 +42,7 @@ import {
  *        - (later) check that createAndSendCustomEmail works fine
  */
 
-describe(`emailverify: ${printPath('[test/emailpassword/emailverify.test.js]')}`, () => {
+describe(`emailverify: ${printPath('[test/emailpassword/emailverify.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

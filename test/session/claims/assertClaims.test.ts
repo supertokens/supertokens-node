@@ -21,7 +21,7 @@ import { afterEach, describe, it } from 'vitest'
 import { printPath } from '../../utils'
 import { StubClaim } from './testClaims'
 
-describe(`sessionClaims/assertClaims: ${printPath('[test/session/claims/assertClaims.test.js]')}`, () => {
+describe(`sessionClaims/assertClaims: ${printPath('[test/session/claims/assertClaims.test.ts]')}`, () => {
   describe('SessionClass.assertClaims', () => {
     afterEach(() => {
       sinon.restore()

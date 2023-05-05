@@ -29,7 +29,7 @@ import {
   startST,
 } from '../utils'
 
-describe(`deleteUser: ${printPath('[test/emailpassword/deleteUser.test.js]')}`, () => {
+describe(`deleteUser: ${printPath('[test/emailpassword/deleteUser.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

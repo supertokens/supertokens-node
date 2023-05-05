@@ -21,7 +21,7 @@ import ThirdPartyEmailPasswordRecipe from 'supertokens-node/recipe/thirdpartyema
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`configTest: ${printPath('[test/thirdpartyemailpassword/config.test.js]')}`, () => {
+describe(`configTest: ${printPath('[test/thirdpartyemailpassword/config.test.ts]')}`, () => {
   let customProvider: TypeProvider
   beforeAll(() => {
     customProvider = {

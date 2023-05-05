@@ -8,7 +8,7 @@ import { ProcessState } from 'supertokens-node/processState'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { areArraysEqual, cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`getRolesForUser: ${printPath('[test/userroles/getRolesForUser.test.js]')}`, () => {
+describe(`getRolesForUser: ${printPath('[test/userroles/getRolesForUser.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

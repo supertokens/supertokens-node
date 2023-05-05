@@ -44,7 +44,7 @@ const privateKey = '-----BEGIN EC PRIVATE KEY-----\nMHQCAQEEIP92u8DjfW31UDDudzWt
  *   - pass additional/wrong config and check that error gets thrown
  *   - test passing scopes in config
  */
-describe(`providerTest: ${printPath('[test/thirdparty/provider.test.js]')}`, () => {
+describe(`providerTest: ${printPath('[test/thirdparty/provider.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

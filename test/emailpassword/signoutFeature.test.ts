@@ -33,7 +33,7 @@ import {
   startST,
 } from '../utils'
 
-describe(`signoutFeature: ${printPath('[test/emailpassword/signoutFeature.test.js]')}`, () => {
+describe(`signoutFeature: ${printPath('[test/emailpassword/signoutFeature.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

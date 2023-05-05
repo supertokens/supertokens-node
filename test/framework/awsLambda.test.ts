@@ -38,7 +38,7 @@ import { createUsers } from '../utils'
 import { Querier } from 'supertokens-node/querier'
 import { maxVersion } from 'supertokens-node/utils'
 
-describe(`AWS Lambda: ${printPath('[test/framework/awsLambda.test.js]')}`, () => {
+describe(`AWS Lambda: ${printPath('[test/framework/awsLambda.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

@@ -35,7 +35,7 @@ import Passwordless from 'supertokens-node/recipe/passwordless'
 import EmailPassword from 'supertokens-node/recipe/emailpassword'
 
 
-describe(`Hapi: ${printPath('[test/framework/hapi.test.js]')}`, () => {
+describe(`Hapi: ${printPath('[test/framework/hapi.test.ts]')}`, () => {
   let server: Hapi.Server
   beforeEach(async () => {
     await killAllST()

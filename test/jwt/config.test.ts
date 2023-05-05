@@ -7,7 +7,7 @@ import { maxVersion } from 'supertokens-node/utils'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`configTest: ${printPath('[test/jwt/config.test.js]')}`, () => {
+describe(`configTest: ${printPath('[test/jwt/config.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

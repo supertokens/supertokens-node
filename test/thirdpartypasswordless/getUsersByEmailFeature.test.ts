@@ -20,7 +20,7 @@ import ThirdPartyPasswordless, { TypeProvider, getUsersByEmail, thirdPartySignIn
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, isCDIVersionCompatible, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`getUsersByEmail: ${printPath('[test/thirdpartypasswordless/getUsersByEmailFeature.test.js]')}`, () => {
+describe(`getUsersByEmail: ${printPath('[test/thirdpartypasswordless/getUsersByEmailFeature.test.ts]')}`, () => {
   const MockThirdPartyProvider: TypeProvider = {
     id: 'mock',
   }

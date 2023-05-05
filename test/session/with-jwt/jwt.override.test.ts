@@ -28,7 +28,7 @@ import { cleanST, killAllST, printPath, setupST, startST } from '../../utils'
 /**
  * Test that overriding the jwt recipe functions and apis still work when the JWT feature is enabled
  */
-describe(`session-with-jwt: ${printPath('[test/session/with-jwt/jwt.override.test.js]')}`, () => {
+describe(`session-with-jwt: ${printPath('[test/session/with-jwt/jwt.override.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

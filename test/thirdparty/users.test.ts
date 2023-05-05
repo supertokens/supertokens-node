@@ -24,7 +24,7 @@ import { TypeProvider } from 'supertokens-node/recipe/thirdparty'
 import express from 'express'
 import { cleanST, killAllST, printPath, setupST, signInUPCustomRequest, startST } from '../utils'
 
-describe(`usersTest: ${printPath('[test/thirdparty/users.test.js]')}`, () => {
+describe(`usersTest: ${printPath('[test/thirdparty/users.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   beforeAll(() => {
     customProvider1 = {

@@ -46,7 +46,7 @@ import {
   startST,
 } from './utils'
 
-describe(`configTest: ${printPath('[test/config.test.js]')}`, () => {
+describe(`configTest: ${printPath('[test/config.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

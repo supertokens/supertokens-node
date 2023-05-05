@@ -25,7 +25,7 @@ import axios from 'axios'
 import { afterAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setKeyValueInConfig, setupST, startST } from './utils'
 
-describe(`Querier: ${printPath('[test/querier.test.js]')}`, () => {
+describe(`Querier: ${printPath('[test/querier.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

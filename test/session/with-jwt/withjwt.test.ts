@@ -37,7 +37,7 @@ import {
   startST,
 } from '../../utils'
 
-describe(`session-with-jwt: ${printPath('[test/session/with-jwt/withjwt.test.js]')}`, () => {
+describe(`session-with-jwt: ${printPath('[test/session/with-jwt/withjwt.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

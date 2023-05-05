@@ -8,7 +8,7 @@ import { Querier } from 'supertokens-node/querier'
 import { maxVersion } from 'supertokens-node/utils'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`configTest: ${printPath('[test/openid/config.test.js]')}`, () => {
+describe(`configTest: ${printPath('[test/openid/config.test.ts]')}`, () => {
   beforeEach(async () => {
     await killAllST()
     await setupST()

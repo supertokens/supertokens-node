@@ -27,7 +27,7 @@ import express from 'express'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, delay, extractInfoFromResponse, isCDIVersionCompatible, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`emailDelivery: ${printPath('[test/thirdpartypasswordless/emailDelivery.test.js]')}`, () => {
+describe(`emailDelivery: ${printPath('[test/thirdpartypasswordless/emailDelivery.test.ts]')}`, () => {
   let customProvider: TypeProvider
   beforeAll(() => {
     customProvider = {

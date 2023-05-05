@@ -25,7 +25,7 @@ import { errorHandler, middleware } from 'supertokens-node/framework/express'
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
 import { cleanST, killAllST, printPath, setupST, startST } from '../utils'
 
-describe(`authorisationTest: ${printPath('[test/thirdparty/authorisationFeature.test.js]')}`, () => {
+describe(`authorisationTest: ${printPath('[test/thirdparty/authorisationFeature.test.ts]')}`, () => {
   let customProvider1: TypeProvider
   let customProvider2: TypeProvider
   beforeAll(() => {
