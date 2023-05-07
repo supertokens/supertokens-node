@@ -4,7 +4,6 @@ export declare function createAndSendCustomEmail(
 ): (
     user: {
         id: string;
-        recipeUserId?: string;
         email: string;
     },
     passwordResetURLWithToken: string

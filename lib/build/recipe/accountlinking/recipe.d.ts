@@ -63,23 +63,43 @@ export default class Recipe extends RecipeModule {
         newUser: AccountInfoWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
-    linkAccountsWithUserFromSession: ({
+    linkAccountsWithUserFromSession: <T>({
         session,
         newUser,
         createRecipeUserFunc,
+        verifyCredentialsFunc,
         userContext,
     }: {
         session: SessionContainer;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: (newUser: AccountInfoWithRecipeId) => Promise<void>;
+        createRecipeUserFunc: () => Promise<void>;
+        verifyCredentialsFunc: () => Promise<
+            | {
+                  status: "OK";
+              }
+            | {
+                  status: "CUSTOM_RESPONSE";
+                  resp: T;
+              }
+        >;
         userContext: any;
     }) => Promise<
         | {
-              status: "OK" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              status: "OK";
+              wereAccountsAlreadyLinked: boolean;
           }
         | {
               status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
               description: string;
+          }
+        | {
+              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              primaryUserId: string;
+              recipeUserId: string;
+          }
+        | {
+              status: "CUSTOM_RESPONSE";
+              resp: T;
           }
     >;
 }

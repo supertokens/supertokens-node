@@ -65,23 +65,23 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
-        /**
-         * we now do account-linking in the recipe implementation of
-         * this function. If someone wants to call this function
-         * manually and wants the any other account with the same email
-         * to be linked automatically, all they need to do is pass this
-         * boolean. If the user doesn't want to do automatic account linking
-         * while calling this function, they can pass false. Default value
-         * of the parameter would be false. So if we are moving the account
-         * linking part to be part of this function, ideally we should keep
-         * this boolean parameter
-         */
-        doAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    createNewRecipeUser(input: {
+        email: string;
+        password: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
               user: User;
           }
         | {
@@ -101,18 +101,10 @@ export declare type RecipeInterface = {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUserByEmail(input: { email: string; userContext: any }): Promise<User | undefined>;
     /**
-     * We do not make email optional here cause we want to
-     * allow passing in primaryUserId. If we make email optional,
-     * and if the user provides a primaryUserId, then it may result in two problems:
-     *  - there is no recipeUserId = input primaryUserId, in this case,
-     *    this function will throw an error
-     *  - There is a recipe userId = input primaryUserId, but that recipe has no email,
-     *    or has wrong email compared to what the user wanted to generate a reset token for.
-     *
-     * And we want to allow primaryUserId being passed in.
+     * We pass in the email as well to this function cause the input userId
+     * may not be associated with an emailpassword account. In this case, we
+     * need to know which email to use to create an emailpassword account later on.
      */
     createResetPasswordToken(input: {
         userId: string;
@@ -127,9 +119,8 @@ export declare type RecipeInterface = {
               status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
-    resetPasswordUsingToken(input: {
+    consumePasswordResetToken(input: {
         token: string;
-        newPassword: string;
         userContext: any;
     }): Promise<
         | {
@@ -146,13 +137,15 @@ export declare type RecipeInterface = {
         email?: string;
         password?: string;
         userContext: any;
-    }): Promise<{
-        status:
-            | "OK"
-            | "UNKNOWN_USER_ID_ERROR"
-            | "EMAIL_ALREADY_EXISTS_ERROR"
-            | "EMAIL_CHANGE_NOT_ALLOWED_DUE_TO_ACCOUNT_LINKING";
-    }>;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -211,7 +204,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     email: string;
-                    userId: string;
+                    user: User;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -251,7 +244,6 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     user: User;
-                    createdNewUser: boolean;
                     session: SessionContainerInterface;
                 }
               | {
@@ -276,29 +268,14 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
-                    createdNewRecipeUser: boolean;
-                    session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                 }
               | {
-                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
+                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                     description: string;
                 }
               | {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                    isNotVerifiedAccountFromInputSession: boolean;
-                    description: string;
+                    status: "WRONG_CREDENTIALS_ERROR";
                 }
               | GeneralErrorResponse
           >);
@@ -307,7 +284,6 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
-        recipeUserId: string;
         email: string;
     };
     passwordResetLink: string;
