@@ -8,6 +8,7 @@ import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { linkAccounts, storeIntoAccountToLinkTable } from "../../accountlinking";
+import { RecipeLevelUser } from "../../accountlinking/types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -178,9 +179,54 @@ export default function getAPIImplementation(): APIInterface {
             | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
             | GeneralErrorResponse
         > {
-            let email = formFields.filter((f) => f.id === "email")[0].value;
-            let userIdForPasswordReset: string | undefined = undefined;
-            let recipeUserId: string;
+            const email = formFields.filter((f) => f.id === "email")[0].value;
+
+            // this function will be reused in different parts of the flow below..
+            async function generateAndSendPasswordResetToken(
+                userId: string
+            ): Promise<
+                | {
+                      status: "OK";
+                  }
+                | { status: "PASSWORD_RESET_NOT_ALLOWED"; reason: string }
+                | GeneralErrorResponse
+            > {
+                // the user ID here can be primary or recipe level.
+                let response = await options.recipeImplementation.createResetPasswordToken({
+                    userId,
+                    email,
+                    userContext,
+                });
+                if (response.status === "UNKNOWN_USER_ID_ERROR") {
+                    logDebugMessage(`Password reset email not sent, unknown user id: ${userId}`);
+                    return {
+                        status: "OK",
+                    };
+                }
+
+                let passwordResetLink =
+                    options.appInfo.websiteDomain.getAsStringDangerous() +
+                    options.appInfo.websiteBasePath.getAsStringDangerous() +
+                    "/reset-password?token=" +
+                    response.token +
+                    "&rid=" +
+                    options.recipeId;
+
+                logDebugMessage(`Sending password reset email to ${email}`);
+                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    type: "PASSWORD_RESET",
+                    user: {
+                        id: userId,
+                        email,
+                    },
+                    passwordResetLink,
+                    userContext,
+                });
+
+                return {
+                    status: "OK",
+                };
+            }
 
             /**
              * check if primaryUserId is linked with this email
@@ -188,186 +234,153 @@ export default function getAPIImplementation(): APIInterface {
             let users = await listUsersByAccountInfo({
                 email,
             });
-            if (users !== undefined) {
-                let primaryUser = users.find((u) => u.isPrimaryUser);
-                if (primaryUser !== undefined) {
-                    /**
-                     * checking if emailpassword user exists for the input email and associated with the primaryUserId
-                     */
-                    let epUser = primaryUser.loginMethods.find((l) => l.recipeId === "emailpassword");
-                    if (epUser === undefined) {
-                        /**
-                         * this means no emailpassword user is associated with the primaryUserId which
-                         * has the input email as identifying info
-                         * now checking if emailpassword user exists for the input email
-                         */
-                        let epRecipeUser = users.find(
-                            (u) => u.loginMethods.find((l) => l.recipeId === "emailpassword") !== undefined
-                        );
-                        if (epRecipeUser === undefined) {
-                            /**
-                             * this means that there is no emailpassword recipe user for the input email
-                             * so we check is account linking is enabled for the given email and primaryUserId
-                             */
-                            let shouldDoAccountLinking = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
-                                {
-                                    email,
-                                    recipeId: "emailpassword",
-                                },
-                                primaryUser,
-                                undefined,
-                                userContext
-                            );
-                            if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-                                /**
-                                 * here, reset password token generation is not allowed
-                                 * and we have decided to return "OK" status
-                                 */
-                                return {
-                                    status: "OK",
-                                };
-                            }
-                            let identitiesForPrimaryUser = AccountLinking.getInstanceOrThrowError().transformUserInfoIntoVerifiedAndUnverifiedBucket(
-                                primaryUser
-                            );
-                            /**
-                             * if input email doens't belong to the verified indentity for the primaryUser,
-                             * we need to check shouldRequireVerification boolean
-                             */
-                            if (!identitiesForPrimaryUser.verified.emails.includes(email)) {
-                                if (shouldDoAccountLinking.shouldRequireVerification) {
-                                    /**
-                                     * here, reset password token generation is not allowed
-                                     * an
-                                     */
-                                    return {
-                                        status: "OK",
-                                    };
-                                }
-                            }
-                            userIdForPasswordReset = primaryUser.id;
-                            recipeUserId = primaryUser.id;
-                        } else {
-                            /**
-                             * this means emailpassword user associated with the input email exists but it
-                             * is currently not associated with the primaryUserId we found in the
-                             * previous step. We simply generate password reset token for such user
-                             */
-                            userIdForPasswordReset = epRecipeUser.id;
-                            recipeUserId = epRecipeUser.id;
-                        }
-                    } else {
-                        /**
-                         * the primaryUserId associated with the email has a linked
-                         * emailpassword recipe user with same email
-                         */
-                        recipeUserId = epUser.recipeUserId;
-                        /**
-                         * checking for shouldDoAccountLinking
-                         */
-                        let shouldDoAccountLinking = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
-                            {
-                                email,
-                                recipeId: "emailpassword",
-                            },
-                            primaryUser,
-                            undefined,
-                            userContext
-                        );
-                        let shouldRequireVerification = shouldDoAccountLinking.shouldAutomaticallyLink
-                            ? shouldDoAccountLinking.shouldRequireVerification
-                            : false;
-                        if (shouldRequireVerification) {
-                            /**
-                             * if verification is required, we check if this is EP user is
-                             * the only user associated with the primaryUserId.
-                             */
-                            if (primaryUser.loginMethods.length > 1) {
-                                /**
-                                 * checking if the email belongs to the verified identities for the
-                                 * primary user
-                                 */
-                                let identitiesForPrimaryUser = AccountLinking.getInstanceOrThrowError().transformUserInfoIntoVerifiedAndUnverifiedBucket(
-                                    primaryUser
-                                );
-                                if (!identitiesForPrimaryUser.verified.emails.includes(email)) {
-                                    /**
-                                     * the email is not verified for any account linked to the primary user.
-                                     * so we check if there exists any account linked with the primary user
-                                     * which doesn't have this email as identifying info
-                                     */
-                                    let differentIdentityUser = primaryUser.loginMethods.find((u) => u.email !== email);
-                                    if (differentIdentityUser !== undefined) {
-                                        /**
-                                         * if any such user found, we return status to contact support
-                                         */
-                                        return {
-                                            status: "GENERAL_ERROR",
-                                            message: "Password Reset Not Allowed. Please contact support.",
-                                        };
-                                    }
-                                }
-                            }
-                        }
-                        userIdForPasswordReset = primaryUser.id;
-                    }
-                } else {
-                    /**
-                     * no primaryUser exists for the given email. So we just find the
-                     * associated emailpasword user, if exists
-                     */
-                    let epRecipeUser = users.find(
-                        (u) => u.loginMethods.find((l) => l.recipeId === "emailpassword") !== undefined
-                    );
-                    if (epRecipeUser === undefined) {
-                        return {
-                            status: "OK",
-                        };
-                    }
-                    userIdForPasswordReset = epRecipeUser.id;
-                    recipeUserId = epRecipeUser.id;
+
+            // we find the recipe user ID of the email password account from the user's list
+            // for later use.
+            let emailPasswordAccount: RecipeLevelUser | undefined = undefined;
+            for (let i = 0; i < users.length; i++) {
+                let emailPasswordAccountTmp = users[i].loginMethods.find(
+                    (l) => l.recipeId === "emailpassword" && l.email === email
+                );
+                if (emailPasswordAccount !== undefined) {
+                    emailPasswordAccount = emailPasswordAccountTmp;
+                    break;
                 }
+            }
+
+            // we find the primary user ID from the user's list for later use.
+            let primaryUserAssociatedWithEmail = users.find((u) => u.isPrimaryUser);
+
+            // first we check if there even exists a primary user that has the input email
+            // if not, then we do the regular flow for password reset.
+            if (primaryUserAssociatedWithEmail === undefined) {
+                if (emailPasswordAccount === undefined) {
+                    logDebugMessage(`Password reset email not sent, unknown user email: ${email}`);
+                    return {
+                        status: "OK",
+                    };
+                }
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId);
+            }
+
+            // Now we need to check that if there exists any email password user at all
+            // for the input email. If not, then it implies that when the token is consumed,
+            // then we will create a new user - so we should only generate the token if
+            // the criteria for the new user is met.
+            if (emailPasswordAccount === undefined) {
+                // this means that there is no email password user that exists for the input email.
+                // So we check for the sign up condition and only go ahead if that condition is
+                // met.
+                let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                    newUser: {
+                        recipeId: "emailpassword",
+                        email,
+                    },
+                    userContext,
+                });
+                if (isSignUpAllowed) {
+                    // notice that we pass in the primary user ID here. This means that
+                    // we will be creating a new email password account with the token
+                    // is consumed and linking it to this primary user.
+                    return await generateAndSendPasswordResetToken(primaryUserAssociatedWithEmail.id);
+                } else {
+                    logDebugMessage(
+                        `Password reset email not sent, isSignUpAllowed returned false for email: ${email}`
+                    );
+                    return {
+                        status: "OK",
+                    };
+                }
+            }
+
+            // At this point, we know that some email password user exists with this email
+            // and also some primary user ID exist. We now need to find out if they are linked
+            // together or not. If they are linked together, then we can just generate the token
+            // else we check for more security conditions (since we will be linking them post token generation)
+
+            let areTheTwoAccountsLinked =
+                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                    return lm.recipeUserId === emailPasswordAccount!.recipeUserId;
+                }) !== undefined;
+
+            if (areTheTwoAccountsLinked) {
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+            }
+
+            // Here we know that the two accounts are NOT linked. We now need to check for an
+            // extra security measure here to make sure that the input email in the primary user
+            // is verified, and if not, we need to make sure that there is no other email / phone number
+            // associated with the primary user account. If there is, then we do not proceed.
+
+            /*
+            This security measure helps prevent the following attack:
+            An attacker has email A and they create an account using TP and it doesn't matter if A is verified or not. Now they create another account using EP with email A and verifies it. Both these accounts are linked. Now the attacker changes the email for EP recipe to B which makes the EP account unverified, but it's still linked.
+
+            If the real owner of B tries to signup using EP, it will say that the account already exists so they may try to reset password which should be denied because then they will end up getting access to attacker's account and verify the EP account.
+
+            The problem with this situation is if the EP account is verified, it will allow further sign-ups with email B which will also be linked to this primary account (that the attacker had created with email A).
+
+            It is important to realise that the attacker had created another account with A because if they hadn't done that, then they wouldn't have access to this account after the real user resets the password which is why it is important to check there is another non-EP account linked to the primary such that the email is not the same as B.
+
+            Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should allow reset password token generation because user has already proven that the owns the email B
+            */
+
+            // But first, this only matters it the user cares about checking for email verification status..
+
+            let shouldDoAccountLinkingResponse = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+                emailPasswordAccount,
+                primaryUserAssociatedWithEmail,
+                undefined,
+                userContext
+            );
+
+            if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
+                // here we will go ahead with the token generation cause
+                // even when the token is consumed, we will not be linking the accounts
+                // so no need to check for anything
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+            }
+
+            if (!shouldDoAccountLinkingResponse.shouldRequireVerification) {
+                // the checks below are related to email verification, and if the user
+                // does not care about that, then we should just continue with token generation
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+            }
+
+            // Now we start the required security checks. First we check if the primary user
+            // it has just one linked account. And if that's true, then we continue
+            // cause then there is no scope for account takeover
+            if (primaryUserAssociatedWithEmail.loginMethods.length === 1) {
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+            }
+
+            // Next we check if there is any login method in which the input email is verified.
+            // If that is the case, then it's proven that the user owns the email and we can
+            // trust linking of the email password account.
+            let emailVerified =
+                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                    return lm.email === email && lm.verified;
+                }) !== undefined;
+
+            if (emailVerified) {
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+            }
+
+            // finally, we check if the primary user has any other email / phone number
+            // associated with this account - and if it does, then it means that
+            // there is a risk of account takeover, so we do not allow the token to be generated
+            let hasOtherEmailOrPhone =
+                primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
+                    return lm.email !== email || lm.phoneNumber !== undefined;
+                }) !== undefined;
+            if (hasOtherEmailOrPhone) {
+                return {
+                    status: "PASSWORD_RESET_NOT_ALLOWED",
+                    reason: "Token generation was not done because of account take over risk. Please contact support.",
+                };
             } else {
-                return {
-                    status: "OK",
-                };
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
             }
-
-            let response = await options.recipeImplementation.createResetPasswordToken({
-                userId: userIdForPasswordReset,
-                email,
-                userContext,
-            });
-            if (response.status === "UNKNOWN_USER_ID_ERROR") {
-                logDebugMessage(`Password reset email not sent, unknown user id: ${userIdForPasswordReset}`);
-                return {
-                    status: "OK",
-                };
-            }
-
-            let passwordResetLink =
-                options.appInfo.websiteDomain.getAsStringDangerous() +
-                options.appInfo.websiteBasePath.getAsStringDangerous() +
-                "/reset-password?token=" +
-                response.token +
-                "&rid=" +
-                options.recipeId;
-
-            logDebugMessage(`Sending password reset email to ${email}`);
-            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                type: "PASSWORD_RESET",
-                user: {
-                    id: userIdForPasswordReset,
-                    recipeUserId,
-                    email,
-                },
-                passwordResetLink,
-                userContext,
-            });
-
-            return {
-                status: "OK",
-            };
         },
         passwordResetPOST: async function ({
             formFields,
