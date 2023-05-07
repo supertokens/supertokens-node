@@ -214,7 +214,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                     email: string;
-                    userId: string;
+                    user: User;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";

@@ -1,13 +1,13 @@
 import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
-import Session, { createNewSession } from "../../session";
+import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
-import { linkAccounts, storeIntoAccountToLinkTable } from "../../accountlinking";
+import { storeIntoAccountToLinkTable } from "../../accountlinking";
 import { RecipeLevelUser } from "../../accountlinking/types";
 
 export default function getAPIImplementation(): APIInterface {
@@ -320,7 +320,7 @@ export default function getAPIImplementation(): APIInterface {
 
             The problem with this situation is if the EP account is verified, it will allow further sign-ups with email B which will also be linked to this primary account (that the attacker had created with email A).
 
-            It is important to realise that the attacker had created another account with A because if they hadn't done that, then they wouldn't have access to this account after the real user resets the password which is why it is important to check there is another non-EP account linked to the primary such that the email is not the same as B.
+            It is important to realize that the attacker had created another account with A because if they hadn't done that, then they wouldn't have access to this account after the real user resets the password which is why it is important to check there is another non-EP account linked to the primary such that the email is not the same as B.
 
             Exception to the above is that, if there is a third recipe account linked to the above two accounts and has B as verified, then we should allow reset password token generation because user has already proven that the owns the email B
             */
@@ -398,109 +398,177 @@ export default function getAPIImplementation(): APIInterface {
         }): Promise<
             | {
                   status: "OK";
-                  userId: string;
+                  user: User;
                   email: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
             | GeneralErrorResponse
         > {
-            let newPassword = formFields.filter((f) => f.id === "password")[0].value;
-
-            let response = await options.recipeImplementation.resetPasswordUsingToken({
-                token,
-                newPassword,
-                userContext,
-            });
-
-            if (response.status === "OK") {
-                let userId = response.userId;
-                let email = response.email;
-                async function verifyUser(rUserId: string) {
-                    const emailVerificationInstance = EmailVerification.getInstance();
-                    if (emailVerificationInstance) {
-                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                            {
-                                userId: rUserId,
-                                email,
-                                userContext,
-                            }
-                        );
-
-                        if (tokenResponse.status === "OK") {
-                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                                token: tokenResponse.token,
-                                userContext,
-                            });
-                        }
-                    }
-                }
-                let user = await getUser(userId);
-                if (user === undefined) {
-                    throw Error("this error should never be thrown");
-                }
-                /**
-                 * check if the user is a primaryUser
-                 */
-                if (user.isPrimaryUser) {
-                    /**
-                     * check if there exists an emailpassword recipe user
-                     * associated with the primary user with the same email
-                     * which is returned by core in the response
-                     */
-                    let epUser = user.loginMethods.find((u) => u.email === email && u.recipeId === "emailpassword");
-                    if (epUser === undefined) {
-                        /**
-                         * create a new emailpassword recipe user
-                         */
-                        let response = await options.recipeImplementation.signUp({
-                            email,
-                            password: newPassword,
-                            userContext,
-                            doAccountLinking: false,
-                        });
-                        if (response.status !== "OK") {
-                            throw Error("this error should not be thrown. EP user already for email: " + email);
-                        }
-                        let recipeUser = response.user;
-                        await verifyUser(response.user.id);
-                        await linkAccounts(recipeUser.id, user.id, userContext);
-                    } else if (!epUser.verified) {
-                        await verifyUser(epUser.recipeUserId);
-                    }
-                } else {
-                    /**
-                     * it's a recipe user
-                     */
-                    if (!user.loginMethods[0].verified) {
-                        await verifyUser(user.loginMethods[0].recipeUserId);
-                    }
-                    const session = await Session.getSession(
-                        options.req,
-                        options.res,
-                        { overrideGlobalClaimValidators: () => [], sessionRequired: false },
-                        userContext
-                    );
-                    let result = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccountsAfterEmailVerification(
+            async function markEmailAsVerified(userId: string, email: string) {
+                const emailVerificationInstance = EmailVerification.getInstance();
+                if (emailVerificationInstance) {
+                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            recipeUserId: user.id,
-                            session,
+                            userId,
+                            email,
                             userContext,
                         }
                     );
-                    if (result.createNewSession) {
-                        await createNewSession(
-                            options.req,
-                            options.res,
-                            result.primaryUserId,
-                            result.recipeUserId,
-                            {},
-                            {},
-                            userContext
-                        );
+
+                    if (tokenResponse.status === "OK") {
+                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                            token: tokenResponse.token,
+                            userContext,
+                        });
                     }
                 }
             }
-            return response;
+
+            async function doUpdatePassword(): Promise<
+                | {
+                      status: "OK";
+                      user: User;
+                      email: string;
+                  }
+                | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+                | GeneralErrorResponse
+            > {
+                let updateResponse = await options.recipeImplementation.updateEmailOrPassword({
+                    userId: recipeUserIdForWhomTokenWasGenerated,
+                    password: newPassword,
+                    userContext,
+                });
+                if (
+                    updateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
+                    updateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR"
+                ) {
+                    throw new Error("This should never come here because we are not updating the email");
+                } else if (updateResponse.status === "UNKNOWN_USER_ID_ERROR") {
+                    // This should happen only cause of a race condition where the user
+                    // might be deleted before token creation and consumption.
+                    return {
+                        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                    };
+                } else {
+                    // status: "OK"
+                    return {
+                        status: "OK",
+                        user: existingUser!,
+                        email: emailForWhomTokenWasGenerated,
+                    };
+                }
+                // TODO: we need to also handle password policy error. Note that this needs
+                // to happen in the api file (before this function is called) as well
+                // cause we don't want to consume the token unnecessarily.
+            }
+
+            let newPassword = formFields.filter((f) => f.id === "password")[0].value;
+
+            let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
+                token,
+                userContext,
+            });
+
+            if (tokenConsumptionResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
+                return tokenConsumptionResponse;
+            }
+
+            let recipeUserIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
+            let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
+
+            let existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
+
+            if (existingUser === undefined) {
+                // This should happen only cause of a race condition where the user
+                // might be deleted before token creation and consumption.
+                // Also note that this being undefined doesn't mean that the email password
+                // user does not exist, but it means that there is no reicpe or primary user
+                // for whom the token was generated.
+                return {
+                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                };
+            }
+
+            // We start by checking if the existingUser is a primary user or not. If it is,
+            // then we will try and create a new email password user and link it to the primary user (if required)
+
+            if (existingUser.isPrimaryUser) {
+                // If this user contains an email password account for whom the token was generated,
+                // then we update that user's password.
+                let emailPasswordUserIsLinkedToExistingUser =
+                    existingUser.loginMethods.find((lm) => {
+                        // we check based on user ID and not email because the only time
+                        // the primary user ID is used for token generation is if the email password
+                        // user did not exist - in which case the value of emailPasswordUserExists will
+                        // resolve to false anyway, and that's what we want.
+                        return lm.recipeUserId === recipeUserIdForWhomTokenWasGenerated;
+                    }) !== undefined;
+
+                if (emailPasswordUserIsLinkedToExistingUser) {
+                    return doUpdatePassword();
+                } else {
+                    // this means that the existingUser does not have an emailpassword user associated
+                    // with it. It could now mean that no emailpassword user exists, or it could mean that
+                    // the the ep user exists, but it's not linked to the current account.
+                    // If no ep user doesn't exists, we will create one, and link it to the existing account.
+                    // If ep user exists, then it means there is some race condition cause
+                    // then the token should have been generated for that user instead of the primary user,
+                    // and it shouldn't have come into this branch. So we can simply send a password reset
+                    // invalid error and the user can try again.
+
+                    // NOTE: We do not ask the dev if we should do account linking or not here
+                    // cause we already have asked them this when generating an password reset token.
+
+                    let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
+                        email: tokenConsumptionResponse.email,
+                        password: newPassword,
+                        userContext,
+                    });
+                    if (createUserResponse.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                        // this means that the user already existed and we can just return an invalid
+                        // token (see the above comment)
+                        return {
+                            status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                        };
+                    } else {
+                        // we mark the email as verified because password reset also requires
+                        // access to the email to work.. This has a good side effect that
+                        // any other login method with the same email in existingAccount will also get marked
+                        // as verified.
+                        await markEmailAsVerified(createUserResponse.user.id, tokenConsumptionResponse.email);
+
+                        // Now we try and link the accounts. The function below will try and also
+                        // create a primary user of the new account, and if it does that, it's OK..
+                        // But in most cases, it will end up linking to existing account since the
+                        // email is shared.
+                        let linkedToUserId = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts(
+                            {
+                                recipeUserId: createUserResponse.user.id,
+                                isVerified: true,
+                                checkAccountsToLinkTableAsWell: true,
+                                userContext,
+                            }
+                        );
+                        if (linkedToUserId !== existingUser.id) {
+                            // this means that the account we just linked to
+                            // was not the one we had expected to link it to. This can happen
+                            // due to some race condition or the other.. Either way, this
+                            // is not an issue and we can just return OK
+                        }
+                        return {
+                            status: "OK",
+                            email: tokenConsumptionResponse.email,
+                            user: (await getUser(linkedToUserId, userContext))!, // we refetch cause we want to return the user object with the updated login methods.
+                        };
+                    }
+                }
+            } else {
+                // This means that the existing user is not a primary account, which implies that
+                // it must be a non linked email password account. In this case, we simply update the password.
+                // Linking to an existing account will be done after the user goes through the email
+                // verification flow once they log in (if applicable).
+                return doUpdatePassword();
+            }
         },
         signInPOST: async function ({
             formFields,
@@ -531,19 +599,21 @@ export default function getAPIImplementation(): APIInterface {
             if (response.status === "WRONG_CREDENTIALS_ERROR") {
                 return response;
             }
-            let user = response.user;
 
-            let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
+            let emailPasswordRecipeUser = response.user.loginMethods.find(
+                (u) => u.recipeId === "emailpassword" && u.email === email
+            );
 
-            if (recipeUser === undefined) {
-                throw new Error("Should never come here");
+            if (emailPasswordRecipeUser === undefined) {
+                // this can happen cause of some race condition, but it's not a big deal.
+                throw new Error("Race condition error - please call this API again");
             }
 
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                user.id,
-                recipeUser.recipeUserId,
+                response.user.id,
+                emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},
                 userContext
@@ -551,7 +621,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 session,
-                user,
+                user: response.user,
             };
         },
         signUpPOST: async function ({
@@ -570,8 +640,6 @@ export default function getAPIImplementation(): APIInterface {
                   status: "OK";
                   session: SessionContainerInterface;
                   user: User;
-                  createdNewUser: boolean;
-                  createdNewRecipeUser: boolean;
               }
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -597,30 +665,33 @@ export default function getAPIImplementation(): APIInterface {
                 return {
                     status: "SIGNUP_NOT_ALLOWED",
                     reason:
-                        "The input email is already associated with another account where it is not verified. Please disable automatic account linking, or verify the other account before trying again.",
+                        "The input email is already associated with another account where it is not verified. Please verify the other account before trying again.",
                 };
             }
+
+            // this function also does account linking
             let response = await options.recipeImplementation.signUp({
                 email,
                 password,
-                doAccountLinking: true,
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
                 return response;
             }
-            let user = response.user;
-            let recipeUser = user.loginMethods.find((u) => u.recipeId === "emailpassword" && u.email === email);
+            let emailPasswordRecipeUser = response.user.loginMethods.find(
+                (u) => u.recipeId === "emailpassword" && u.email === email
+            );
 
-            if (recipeUser === undefined) {
+            if (emailPasswordRecipeUser === undefined) {
+                // this can happen cause of some race condition, but it's not a big deal.
                 throw new Error("Race condition error - please call this API again");
             }
 
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                user.id,
-                recipeUser.recipeUserId,
+                response.user.id,
+                emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},
                 userContext
@@ -628,9 +699,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 session,
-                user,
-                createdNewUser: response.createdNewUser,
-                createdNewRecipeUser: true,
+                user: response.user,
             };
         },
     };
