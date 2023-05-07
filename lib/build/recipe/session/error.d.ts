@@ -1,3 +1,4 @@
+// @ts-nocheck
 import STError from "../../error";
 import { ClaimValidationError } from "./types";
 export default class SessionError extends STError {

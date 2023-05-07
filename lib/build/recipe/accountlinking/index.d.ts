@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Recipe from "./recipe";
 import type { RecipeInterface } from "./types";
 export default class Wrapper {

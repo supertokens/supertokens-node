@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { NormalisedAppinfo } from "../../../../../types";

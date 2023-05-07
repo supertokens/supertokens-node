@@ -44,22 +44,12 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             };
         },
 
-        getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
-            let user = await recipeInterface.getUserById(input);
-            if (user === undefined || user.thirdParty === undefined) {
-                // either user is undefined or it's an email password user.
-                return undefined;
-            }
-            return user as User;
+        getUserById: async function (_: { userId: string; userContext: any }): Promise<User | undefined> {
+            throw new Error("This will be removed..");
         },
 
-        getUsersByEmail: async function (input: { email: string; userContext: any }): Promise<User[]> {
-            let users = await recipeInterface.getUsersByEmail(input);
-
-            // we filter out all non thirdparty users.
-            return users.filter((u) => {
-                return u.thirdParty !== undefined;
-            }) as User[];
+        getUsersByEmail: async function (_: { email: string; userContext: any }): Promise<User[]> {
+            throw new Error("This will be removed..");
         },
     };
 }

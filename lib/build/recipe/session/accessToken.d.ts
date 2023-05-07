@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ParsedJWTInfo } from "./jwt";
 export declare function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RecipeInterface, TypeNormalisedInput, KeyInfo, AntiCsrfType } from "./types";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";

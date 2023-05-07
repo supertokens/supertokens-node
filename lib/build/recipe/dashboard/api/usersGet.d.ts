@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { APIInterface, APIOptions } from "../types";
 import { RecipeLevelUser } from "../../accountlinking/types";
 declare type User = {

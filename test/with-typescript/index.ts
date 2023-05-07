@@ -1064,10 +1064,14 @@ Supertokens.init({
                             // we check if the email exists in SuperTokens. If not,
                             // then the sign in should be handled by you.
                             if (
-                                (await supertokensImpl.getUserByEmail({
-                                    email: input.email,
-                                    userContext: input.userContext,
-                                })) === undefined
+                                (
+                                    await Supertokens.listUsersByAccountInfo(
+                                        {
+                                            email: input.email,
+                                        },
+                                        input.userContext
+                                    )
+                                ).length === 0
                             ) {
                                 // TODO: sign in from your db
                                 // example return value if credentials don't match
@@ -1081,24 +1085,6 @@ Supertokens.init({
                         signUp: async (input) => {
                             // all new users are created in SuperTokens;
                             return supertokensImpl.signUp(input);
-                        },
-                        getUserByEmail: async (input) => {
-                            let superTokensUser = await supertokensImpl.getUserByEmail(input);
-                            if (superTokensUser === undefined) {
-                                let email = input.email;
-                                // TODO: fetch and return user info from your database...
-                            } else {
-                                return superTokensUser;
-                            }
-                        },
-                        getUserById: async (input) => {
-                            let superTokensUser = await supertokensImpl.getUserById(input);
-                            if (superTokensUser === undefined) {
-                                let userId = input.userId;
-                                // TODO: fetch and return user info from your database...
-                            } else {
-                                return superTokensUser;
-                            }
                         },
                     };
                 },
@@ -1279,7 +1265,6 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
-        recipeUserId: "",
     },
 });
 ThirdPartyEmailPassword.sendEmail({
@@ -1288,7 +1273,6 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
-        recipeUserId: "",
     },
     userContext: {},
 });

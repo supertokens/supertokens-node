@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {

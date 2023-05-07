@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NormalisedAppinfo } from "../../types";
 import { TypeProvider } from "./types";
 import { TypeInput, TypeNormalisedInput } from "./types";

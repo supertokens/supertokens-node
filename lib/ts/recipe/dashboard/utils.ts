@@ -46,7 +46,6 @@ import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 import ThirdParty from "../thirdparty";
 import Passwordless from "../passwordless";
-import ThirdPartyEmailPassword from "../thirdpartyemailpassword";
 import ThirdPartyPasswordless from "../thirdpartypasswordless";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
@@ -211,7 +210,6 @@ async function _getUserForRecipeId(
                 if (loginMethod !== undefined) {
                     user = {
                         ...loginMethod,
-                        recipeId: "emailpassword",
                     };
                     recipe = "emailpassword";
                 }
@@ -222,22 +220,17 @@ async function _getUserForRecipeId(
 
         if (user === undefined) {
             try {
-                const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    if ("loginMethods" in userResponse) {
-                        let loginMethod = userResponse.loginMethods.find(
-                            (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
-                        );
-                        if (loginMethod !== undefined) {
-                            user = {
-                                ...loginMethod,
-                                recipeId: "emailpassword",
-                            };
-                            recipe = "thirdpartyemailpassword";
-                        }
-                    } else {
-                        throw new Error("Should never come here. TODO remove me");
+                // we detect if this recipe has been init or not..
+                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+                if (globalUser !== undefined) {
+                    let loginMethod = globalUser.loginMethods.find(
+                        (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
+                    );
+                    if (loginMethod !== undefined) {
+                        user = {
+                            ...loginMethod,
+                        };
+                        recipe = "thirdpartyemailpassword";
                     }
                 }
             } catch (e) {
@@ -261,15 +254,15 @@ async function _getUserForRecipeId(
 
         if (user === undefined) {
             try {
-                const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    if ("loginMethods" in userResponse) {
-                        throw new Error("Should never come here. TODO remove me");
-                    } else {
+                // we detect if this recipe has been init or not..
+                ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+                if (globalUser !== undefined) {
+                    let loginMethod = globalUser.loginMethods.find(
+                        (u) => u.recipeId === "thirdparty" && u.recipeUserId === userId
+                    );
+                    if (loginMethod !== undefined) {
                         user = {
-                            ...userResponse,
-                            recipeId: "thirdparty",
+                            ...loginMethod,
                         };
                         recipe = "thirdpartyemailpassword";
                     }

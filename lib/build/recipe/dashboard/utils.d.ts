@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";

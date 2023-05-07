@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,

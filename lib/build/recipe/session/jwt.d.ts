@@ -1,3 +1,4 @@
+// @ts-nocheck
 export declare type ParsedJWTInfo = {
     rawTokenString: string;
     rawPayload: string;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
 export default class SessionClassWithJWT implements SessionContainerInterface {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import {
     TypeInput,

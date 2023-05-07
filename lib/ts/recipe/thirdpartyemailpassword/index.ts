@@ -42,11 +42,10 @@ export default class Wrapper {
         });
     }
 
-    static emailPasswordSignUp(email: string, password: string, doAccountLinking = false, userContext: any = {}) {
+    static emailPasswordSignUp(email: string, password: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
             email,
             password,
-            doAccountLinking,
             userContext,
         });
     }
@@ -59,14 +58,6 @@ export default class Wrapper {
         });
     }
 
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
-
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
-
     static createResetPasswordToken(userId: string, email: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
@@ -75,10 +66,9 @@ export default class Wrapper {
         });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
+    static consumePasswordResetToken(token: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
-            newPassword,
             userContext,
         });
     }
@@ -124,15 +114,11 @@ export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
 
 export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
 
-export let getUserById = Wrapper.getUserById;
-
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
-
-export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
-export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
+export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 

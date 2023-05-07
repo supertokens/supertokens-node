@@ -1,3 +1,4 @@
+// @ts-nocheck
 export declare abstract class BaseResponse {
     wrapperUsed: boolean;
     original: any;

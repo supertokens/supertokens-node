@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 export declare function addJWTToAccessTokenPayload({
     accessTokenPayload,
