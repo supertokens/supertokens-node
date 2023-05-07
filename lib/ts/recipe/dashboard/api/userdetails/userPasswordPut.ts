@@ -71,21 +71,20 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
             };
         }
 
-        const passwordResetToken = await EmailPassword.createResetPasswordToken(userId, email);
+        const updateResponse = await EmailPassword.updateEmailOrPassword({
+            userId,
+            password: newPassword,
+        });
 
-        if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
+        if (
+            updateResponse.status === "UNKNOWN_USER_ID_ERROR" ||
+            updateResponse.status === "EMAIL_ALREADY_EXISTS_ERROR" ||
+            updateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR"
+        ) {
             // Techincally it can but its an edge case so we assume that it wont
             throw new Error("Should never come here");
         }
-
-        const passwordResetResponse = await EmailPassword.resetPasswordUsingToken(
-            passwordResetToken.token,
-            newPassword
-        );
-
-        if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
-            throw new Error("Should never come here");
-        }
+        // TODO: check for password policy error has well.
 
         return {
             status: "OK",
