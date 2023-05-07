@@ -37,7 +37,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: import("../../types").User;
+              user: import("../emailpassword").User;
               wasAlreadyAPrimaryUser: boolean;
           }
         | {
@@ -104,7 +104,7 @@ export default class Wrapper {
     static fetchFromAccountToLinkTable(
         recipeUserId: string,
         userContext?: any
-    ): Promise<import("../../types").User | undefined>;
+    ): Promise<import("../emailpassword").User | undefined>;
     static storeIntoAccountToLinkTable(
         recipeUserId: string,
         primaryUserId: string,

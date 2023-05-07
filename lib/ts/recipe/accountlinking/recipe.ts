@@ -380,23 +380,41 @@ export default class Recipe extends RecipeModule {
         return false;
     };
 
-    linkAccountsWithUserFromSession = async ({
+    linkAccountsWithUserFromSession = async <T>({
         session,
         newUser,
         createRecipeUserFunc,
+        verifyCredentialsFunc,
         userContext,
     }: {
         session: SessionContainer;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: (newUser: AccountInfoWithRecipeId) => Promise<void>;
+        createRecipeUserFunc: () => Promise<void>;
+        verifyCredentialsFunc: () => Promise<
+            | { status: "OK" }
+            | {
+                  status: "CUSTOM_RESPONSE";
+                  resp: T;
+              }
+        >;
         userContext: any;
     }): Promise<
         | {
-              status: "OK" | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              status: "OK";
+              wereAccountsAlreadyLinked: boolean;
           }
         | {
               status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
               description: string;
+          }
+        | {
+              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              primaryUserId: string;
+              recipeUserId: string;
+          }
+        | {
+              status: "CUSTOM_RESPONSE";
+              resp: T;
           }
     > => {
         // In order to link the newUser to the session user,
@@ -497,6 +515,7 @@ export default class Recipe extends RecipeModule {
                     session,
                     newUser,
                     createRecipeUserFunc,
+                    verifyCredentialsFunc,
                     userContext,
                 });
             } else if (
@@ -543,29 +562,24 @@ export default class Recipe extends RecipeModule {
             userContext,
         });
 
-        let newUserIsVerified = false;
-        const userObjThatHasSameAccountInfoAndRecipeIdAsNewUser = usersArrayThatHaveSameAccountInfoAsNewUser.find((u) =>
-            u.loginMethods.find((lU) => {
-                let found = false;
-                if (lU.recipeId !== newUser.recipeId) {
-                    return false;
-                }
-                if (newUser.recipeId === "thirdparty") {
-                    if (lU.thirdParty === undefined) {
+        const userObjThatHasSameAccountInfoAndRecipeIdAsNewUser = usersArrayThatHaveSameAccountInfoAsNewUser.find(
+            (u) =>
+                u.loginMethods.find((lU) => {
+                    if (lU.recipeId !== newUser.recipeId) {
                         return false;
                     }
-                    found =
-                        lU.thirdParty.id === newUser.thirdParty!.id &&
-                        lU.thirdParty.userId === newUser.thirdParty!.userId;
-                } else {
-                    found = lU.email === newUser.email || newUser.phoneNumber === newUser.phoneNumber;
-                }
-                if (!found) {
-                    return false;
-                }
-                newUserIsVerified = lU.verified;
-                return true;
-            })
+                    if (newUser.recipeId === "thirdparty") {
+                        if (lU.thirdParty === undefined) {
+                            return false;
+                        }
+                        return (
+                            lU.thirdParty.id === newUser.thirdParty!.id &&
+                            lU.thirdParty.userId === newUser.thirdParty!.userId
+                        );
+                    } else {
+                        return lU.email === newUser.email || newUser.phoneNumber === newUser.phoneNumber;
+                    }
+                }) !== undefined
         );
 
         if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser === undefined) {
@@ -586,15 +600,43 @@ export default class Recipe extends RecipeModule {
             }
 
             // we create the new recipe user
-            await createRecipeUserFunc(newUser);
+            await createRecipeUserFunc();
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
             return await this.linkAccountsWithUserFromSession({
                 session,
                 newUser,
                 createRecipeUserFunc,
+                verifyCredentialsFunc,
                 userContext,
             });
+        } else {
+            // since the user already exists, we should first verify the credentials
+            // before continuing to link the accounts.
+            let verifyResult = await verifyCredentialsFunc();
+            if (verifyResult.status === "CUSTOM_RESPONSE") {
+                return verifyResult;
+            }
+            // this means that the verification was fine and we can continue..
+        }
+
+        // we check if the userObjThatHasSameAccountInfoAndRecipeIdAsNewUser is
+        // a primary user or not, and if it is, then it means that our newUser
+        // is already linked so we can return early.
+
+        if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser) {
+            if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id === existingUser.id) {
+                // this means that the accounts we want to link are already linked.
+                return {
+                    status: "OK",
+                    wereAccountsAlreadyLinked: true,
+                };
+            } else {
+                return {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
+                    description: "New user is already linked to another account",
+                };
+            }
         }
 
         // now we check about the email verification of the new user. If it's verified, we proceed
@@ -604,10 +646,17 @@ export default class Recipe extends RecipeModule {
             // this means that the existing user does not share anything in common with the new user
             // in terms of account info. So we check for email verification status..
 
-            if (!newUserIsVerified && shouldDoAccountLinking.shouldRequireVerification) {
+            if (
+                !userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.loginMethods[0].verified &&
+                shouldDoAccountLinking.shouldRequireVerification
+            ) {
                 // we stop the flow and ask the user to verify this email first.
+                // the recipe ID is the userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id
+                // cause above we checked that userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser is false.
                 return {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                    primaryUserId: existingUser.id,
+                    recipeUserId: userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id,
                 };
             }
         }
@@ -621,6 +670,7 @@ export default class Recipe extends RecipeModule {
         if (linkAccountResponse.status === "OK") {
             return {
                 status: "OK",
+                wereAccountsAlreadyLinked: linkAccountResponse.accountsAlreadyLinked,
             };
         } else if (linkAccountResponse.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
             // this means that the the new user is already linked to some other primary user ID,

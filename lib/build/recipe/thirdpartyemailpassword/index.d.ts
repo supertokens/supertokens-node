@@ -29,7 +29,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -42,14 +42,12 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
     static createResetPasswordToken(
         userId: string,
         email: string,
@@ -63,9 +61,8 @@ export default class Wrapper {
               status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
-    static resetPasswordUsingToken(
+    static consumePasswordResetToken(
         token: string,
-        newPassword: string,
         userContext?: any
     ): Promise<
         | {
@@ -82,9 +79,15 @@ export default class Wrapper {
         email?: string;
         password?: string;
         userContext?: any;
-    }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;
@@ -102,11 +105,9 @@ export declare let Error: typeof SuperTokensError;
 export declare let emailPasswordSignUp: typeof Wrapper.emailPasswordSignUp;
 export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
 export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
-export declare let getUserById: typeof Wrapper.getUserById;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
-export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
-export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
+export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export declare let Google: typeof import("../thirdparty/providers/google").default;
 export declare let Github: typeof import("../thirdparty/providers/github").default;

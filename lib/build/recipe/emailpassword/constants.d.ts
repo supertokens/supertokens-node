@@ -6,3 +6,4 @@ export declare const SIGN_IN_API = "/signin";
 export declare const GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
 export declare const PASSWORD_RESET_API = "/user/password/reset";
 export declare const SIGNUP_EMAIL_EXISTS_API = "/signup/email/exists";
+export declare const LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API = "/signup/link-account";

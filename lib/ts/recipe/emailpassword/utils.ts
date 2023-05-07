@@ -53,19 +53,11 @@ export function validateAndNormaliseUserInput(
     function getEmailDeliveryConfig(recipeImpl: RecipeInterface, isInServerlessEnv: boolean) {
         let emailService = config?.emailDelivery?.service;
         /**
-         * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
+         * If the user has not passed even that config, we use the default
          * createAndSendCustomEmail implementation which calls our supertokens API
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                recipeImpl,
-                appInfo,
-                isInServerlessEnv,
-                config?.resetPasswordUsingTokenFeature
-            );
+            emailService = new BackwardCompatibilityService(recipeImpl, appInfo, isInServerlessEnv);
         }
         return {
             ...config?.emailDelivery,

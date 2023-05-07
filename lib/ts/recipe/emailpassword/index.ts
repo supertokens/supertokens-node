@@ -15,7 +15,8 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, User, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { User } from "../../types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -34,20 +35,6 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
-    static getUserById(userId: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({
-            userId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
-    static getUserByEmail(email: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({
-            email,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -71,10 +58,9 @@ export default class Wrapper {
         });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
+    static consumePasswordResetToken(token: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
-            newPassword,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -103,13 +89,9 @@ export let signUp = Wrapper.signUp;
 
 export let signIn = Wrapper.signIn;
 
-export let getUserById = Wrapper.getUserById;
-
-export let getUserByEmail = Wrapper.getUserByEmail;
-
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
-export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
+export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 

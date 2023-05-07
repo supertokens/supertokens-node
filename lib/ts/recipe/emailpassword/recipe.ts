@@ -25,6 +25,7 @@ import {
     GENERATE_PASSWORD_RESET_TOKEN_API,
     PASSWORD_RESET_API,
     SIGNUP_EMAIL_EXISTS_API,
+    LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -42,6 +43,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
+import { getUser } from "../../";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -158,6 +160,12 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
+                id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
+                disabled: this.apiImpl.linkAccountToExistingAccountPOST === undefined,
+            },
         ];
     };
 
@@ -217,12 +225,21 @@ export default class Recipe extends RecipeModule {
 
     // extra instance functions below...............
     getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            return {
-                status: "OK",
-                email: userInfo.email,
-            };
+        let user = await getUser(userId, userContext);
+        if (user !== undefined) {
+            let recipeLevelUser = user.loginMethods.find(
+                (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
+            );
+            if (recipeLevelUser !== undefined) {
+                if (recipeLevelUser.email === undefined) {
+                    // this check if only for types purposes.
+                    throw new Error("Should never come here");
+                }
+                return {
+                    status: "OK",
+                    email: recipeLevelUser.email,
+                };
+            }
         }
         return {
             status: "UNKNOWN_USER_ID_ERROR",

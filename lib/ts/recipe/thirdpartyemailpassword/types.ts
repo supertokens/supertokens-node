@@ -15,9 +15,7 @@
 import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import {
     NormalisedFormField,
-    TypeFormField,
     TypeInputFormField,
-    TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
     TypeEmailPasswordEmailDeliveryInput,
     RecipeInterface as EPRecipeInterface,
@@ -28,7 +26,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser } from "../../types";
 
 export type User = {
     id: string;
@@ -39,20 +37,6 @@ export type User = {
         id: string;
         userId: string;
     };
-};
-
-export type TypeContextEmailPasswordSignUp = {
-    loginType: "emailpassword";
-    formFields: TypeFormField[];
-};
-
-export type TypeContextEmailPasswordSignIn = {
-    loginType: "emailpassword";
-};
-
-export type TypeContextThirdParty = {
-    loginType: "thirdparty";
-    thirdPartyAuthCodeResponse: any;
 };
 
 export type TypeInputSignUp = {
@@ -67,7 +51,6 @@ export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -84,7 +67,6 @@ export type TypeNormalisedInput = {
         emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -95,10 +77,6 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
-
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
@@ -116,13 +94,25 @@ export type RecipeInterface = {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+
+    createNewEmailPasswordRecipeUser(input: {
+        email: string;
+        password: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              user: GlobalUser;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
 
     emailPasswordSignIn(input: {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     createResetPasswordToken(input: {
         userId: string;
@@ -130,9 +120,8 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
-    resetPasswordUsingToken(input: {
+    consumePasswordResetToken(input: {
         token: string;
-        newPassword: string;
         userContext: any;
     }): Promise<
         | {
@@ -148,9 +137,15 @@ export type RecipeInterface = {
         email?: string;
         password?: string;
         userContext: any;
-    }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
 };
 
 export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
@@ -261,7 +256,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                     email: string;
-                    userId: string;
+                    user: GlobalUser;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -316,29 +311,14 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
-                    createdNewRecipeUser: boolean;
-                    session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                 }
               | {
-                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
+                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                     description: string;
                 }
               | {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                    isNotVerifiedAccountFromInputSession: boolean;
-                    description: string;
+                    status: "WRONG_CREDENTIALS_ERROR";
                 }
               | GeneralErrorResponse
           >);
@@ -354,7 +334,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
                 }
               | {
@@ -375,8 +355,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
-                    createdNewUser: boolean;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
                 }
               | {

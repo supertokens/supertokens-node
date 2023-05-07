@@ -13,13 +13,18 @@
  * under the License.
  */
 
-import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import axios, { AxiosError } from "axios";
 import { logDebugMessage } from "../../logger";
 
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
-    return async (user: User, passwordResetURLWithToken: string) => {
+    return async (
+        user: {
+            id: string;
+            email: string;
+        },
+        passwordResetURLWithToken: string
+    ) => {
         // related issue: https://github.com/supertokens/supertokens-node/issues/38
         if (process.env.TEST_MODE === "testing") {
             return;
