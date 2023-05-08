@@ -8,12 +8,14 @@ import DerivedEP from "./emailPasswordRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
 import { User as GlobalUser } from "../../../types";
 import { getUser } from "../../../";
+import { TypeNormalisedInput } from "../../emailpassword/types";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
+    getEmailPasswordConfig: () => TypeNormalisedInput,
     thirdPartyQuerier?: Querier
 ): RecipeInterface {
-    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier);
+    let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier, getEmailPasswordConfig);
     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
     if (thirdPartyQuerier !== undefined) {
         originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
@@ -92,6 +94,7 @@ export default function getRecipeInterface(
                 email?: string;
                 password?: string;
                 userContext: any;
+                applyPasswordPolicy?: boolean;
             }
         ): Promise<
             | {
@@ -101,6 +104,7 @@ export default function getRecipeInterface(
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
               }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
             let user = await getUser(input.userId, input.userContext);
             if (user === undefined) {

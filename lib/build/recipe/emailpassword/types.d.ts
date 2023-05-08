@@ -138,6 +138,7 @@ export declare type RecipeInterface = {
         email?: string;
         password?: string;
         userContext: any;
+        applyPasswordPolicy?: boolean;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -145,6 +146,10 @@ export declare type RecipeInterface = {
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
           }
     >;
 };
@@ -209,6 +214,10 @@ export declare type APIInterface = {
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+                }
+              | {
+                    status: "PASSWORD_POLICY_VIOLATED_ERROR";
+                    failureReason: string;
                 }
               | GeneralErrorResponse
           >);

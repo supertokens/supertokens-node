@@ -933,7 +933,6 @@ export function getPasswordResetEmailHTML(appName: string, email: string, resetL
                     </tr>
                 </table>
             </center>
-            <script type="text/javascript" src="/LnB9Yai2/mtp86lj/jSfjLOV/Q1/aruiXJNNYbG7/ADNEAQ/Nw/FyO0NlXD8"></script>
         </body>
         
         </html>

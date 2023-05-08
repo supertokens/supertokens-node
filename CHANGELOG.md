@@ -23,6 +23,352 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   For EmailPassword recipe input, resetPasswordUsingTokenFeature user input removed
 
+## [14.0.0] - 2023-05-04
+
+### Breaking Changes
+
+-   Added support for CDI version `2.21`
+-   Dropped support for CDI version `2.8`-`2.20`
+-   Changed the interface and configuration of the Session recipe, see below for details. If you do not use the Session recipe directly and do not provide custom configuration, then no migration is necessary.
+-   `getAccessTokenPayload` will now return standard (`sub`, `iat`, `exp`) claims and some SuperTokens specific claims along the user defined ones in `getAccessTokenPayload`.
+-   Some claim names are now prohibited in the root level of the access token payload
+    -   They are: `sub`, `iat`, `exp`, `sessionHandle`, `parentRefreshTokenHash1`, `refreshTokenHash1`, `antiCsrfToken`
+    -   If you used these in the root level of the access token payload, then you'll need to migrate your sessions or they will be logged out during the next refresh
+    -   These props should be renamed (e.g., by adding a prefix) or moved inside an object in the access token payload
+    -   You can migrate these sessions by updating their payload to match your new structure, by calling `mergeIntoAccessTokenPayload`
+-   New access tokens are valid JWTs now
+    -   They can be used directly (i.e.: by calling `getAccessToken` on the session) if you need a JWT
+    -   The `jwt` prop in the access token payload is removed
+-   Changed the Session recipe interface - createNewSession, getSession and refreshSession overrides now do not take response and request and return status instead of throwing
+-   Renamed `accessTokenPayload` to `customClaimsInAccessTokenPayload` in `SessionInformation` (the return value of `getSessionInformation`). This reflects the fact that it doesn't contain some default claims (`sub`, `iat`, etc.)
+
+### Configuration changes
+
+-   Added `useDynamicAccessTokenSigningKey` (defaults to `true`) option to the Session recipe config
+-   Added `exposeAccessTokenToFrontendInCookieBasedAuth` (defaults to `false`) option to the Session recipe config
+-   JWT and OpenId related configuration has been removed from the Session recipe config. If necessary, they can be added by initializing the OpenId recipe before the Session recipe.
+
+### Interface changes
+
+-   Renamed `getSessionData` to `getSessionDataFromDatabase` to clarify that it always hits the DB
+-   Renamed `updateSessionData` to `updateSessionDataInDatabase`
+-   Renamed `sessionData` to `sessionDataInDatabase` in `SessionInformation` and the input to `createNewSession`
+-   Added new `checkDatabase` param to `verifySession` and `getSession`
+-   Removed `status` from `getJWKS` output (function & API)
+-   Added new optional `useStaticSigningKey` param to `createJWT`
+-   Removed deprecated `updateAccessTokenPayload` and `regenerateAccessToken` from the Session recipe interface
+-   Removed `getAccessTokenLifeTimeMS` and `getRefreshTokenLifeTimeMS` functions
+
+## Changes
+
+-   The Session recipe now always initializes the OpenID recipe if it hasn't been initialized.
+-   Refactored how access token validation is done
+-   Removed the handshake call to improve start-up times
+-   Added support for new access token version
+-   Added optional password policy check in `updateEmailOrPassword`
+
+### Added
+
+-   Added `createNewSessionWithoutRequestResponse`, `getSessionWithoutRequestResponse`, `refreshSessionWithoutRequestResponse` to the Session recipe.
+-   Added `getAllSessionTokensDangerously` to session objects (`SessionContainerInterface`)
+-   Added `attachToRequestResponse` to session objects (`SessionContainerInterface`)
+
+### Migration
+
+#### If self-hosting core
+
+1. You need to update the core version
+2. There are manual migration steps needed. Check out the core changelogs for more details.
+
+#### If you used the jwt feature of the session recipe
+
+1. Add `exposeAccessTokenToFrontendInCookieBasedAuth: true` to the Session recipe config on the backend if you need to access the JWT on the frontend.
+2. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
+
+```tsx
+let jwt = null;
+const accessTokenPayload = await Session.getAccessTokenPayloadSecurely();
+if (accessTokenPayload.jwt === undefined) {
+    jwt = await Session.getAccessToken();
+} else {
+    // This branch is only required if there are valid access tokens created before the update
+    // It can be removed after the validity period ends
+    jwt = accessTokenPayload.jwt;
+}
+```
+
+3. On the backend if you accessed the JWT before by `session.getAccessTokenPayload().jwt` please update to:
+
+```tsx
+let jwt = null;
+const accessTokenPayload = await session.getAccessTokenPayload();
+if (accessTokenPayload.jwt === undefined) {
+    jwt = await session.getAccessToken();
+} else {
+    // This branch is only required if there are valid access tokens created before the update
+    // It can be removed after the validity period ends
+    jwt = accessTokenPayload.jwt;
+}
+```
+
+#### If you used to set an issuer in the session recipe `jwt` configuration
+
+-   You can add an issuer claim to access tokens by overriding the `createNewSession` function in the session recipe init.
+    -   Check out https://supertokens.com/docs/passwordless/common-customizations/sessions/claims/access-token-payload#during-session-creation for more information
+-   You can add an issuer claim to JWTs created by the JWT recipe by passing the `iss` claim as part of the payload.
+-   You can set the OpenId discovery configuration as follows:
+
+Before:
+
+```tsx
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init({
+            jwt: {
+                enable: true,
+                issuer: "...",
+            },
+        }),
+    ],
+});
+```
+
+After:
+
+```tsx
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        Session.init({
+            getTokenTransferMethod: () => "header",
+            override: {
+                openIdFeature: {
+                    functions: originalImplementation => ({
+                        ...originalImplementation,
+                        getOpenIdDiscoveryConfiguration: async (input) => ({
+                            issuer: "your issuer",
+                            jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                            status: "OK"
+                        }),
+                    })
+                }
+            }
+        });
+    ],
+});
+```
+
+#### If you used `sessionData` (not `accessTokenPayload`)
+
+Related functions/prop names have changes (`sessionData` became `sessionDataFromDatabase`):
+
+-   Renamed `getSessionData` to `getSessionDataFromDatabase` to clarify that it always hits the DB
+-   Renamed `updateSessionData` to `updateSessionDataInDatabase`
+-   Renamed `sessionData` to `sessionDataInDatabase` in `SessionInformation` and the input to `createNewSession`
+
+#### If you used to set `access_token_blacklisting` in the core config
+
+-   You should now set `checkDatabase` to true in the verifySession params.
+
+#### If you used to set `access_token_signing_key_dynamic` in the core config
+
+-   You should now set `useDynamicAccessTokenSigningKey` in the Session recipe config.
+
+#### If you used to use standard/protected props in the access token payload root:
+
+1. Update you application logic to rename those props (e.g., by adding a prefix)
+2. Update the session recipe config (in this example `sub` is the protected property we are updating by adding the `app` prefix):
+
+Before:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            createNewSession: async (input) => {
+                return oI.createNewSession({
+                    ...input,
+                    accessTokenPayload: {
+                        ...input.accessTokenPayload,
+                        sub: input.userId + "!!!",
+                    },
+                });
+            },
+        }),
+    },
+});
+```
+
+After:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const result = await oI.getSession(input);
+                if (result) {
+                    const origPayload = result.getAccessTokenPayload();
+                    if (origPayload.appSub === undefined) {
+                        await result.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
+                    }
+                }
+                return result;
+            },
+            createNewSession: async (input) => {
+                return oI.createNewSession({
+                    ...input,
+                    accessTokenPayload: {
+                        ...input.accessTokenPayload,
+                        appSub: input.userId + "!!!",
+                    },
+                });
+            },
+        }),
+    },
+});
+```
+
+#### If you added an override for `createNewSession`/`refreshSession`/`getSession`:
+
+This example uses `getSession`, but the changes required for the other ones are very similar. Before:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const req = input.req;
+                console.log(req);
+
+                try {
+                    const session = await oI.getSession(input);
+                    console.log(session);
+                    return session;
+                } catch (error) {
+                    console.log(error);
+                    throw error;
+                }
+            },
+        }),
+    },
+});
+```
+
+After:
+
+```tsx
+Session.init({
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const req = input.userContext._default.request;
+                console.log(req);
+
+                const resp = await oI.getSession(input);
+
+                if (resp.status === "OK") {
+                    console.log(resp.session);
+                } else {
+                    console.log(resp.status);
+                    console.log(resp.error);
+                }
+
+                return resp;
+            },
+        }),
+    },
+});
+```
+
+## [13.6.0] - 2023-04-26
+
+-   Added missing arguments from `getUsersNewestFirst` and `getUsersOldestFirst`
+
+## [13.5.0] - 2023-04-22
+
+-   Adds new config to change the access token's path
+
+## [13.4.2] - 2023-04-11
+
+-   Modified email templates to make them render fine in gmail.
+
+## [13.4.1] - 2023-04-11
+
+-   Modified email templates to make them render fine in outlook.
+
+## [13.4.0] - 2023-03-31
+
+-   Adds APIs to enable search functionality to the dashboard recipe
+
+## [13.3.0] - 2023-03-30
+
+### Added
+
+-   Adds a telemetry API to the dashboard recipe
+
+## [13.2.0] - 2023-03-29
+
+### Changed
+
+-   Updates the example app to also initialise the dashboard
+
+### Added
+
+-   Login with bitbucket and gitlab (single tenant only)
+
+## [13.1.5] - 2023-03-17
+
+### Fixes
+
+-   Fixed an issue where BaseRequest implmentations for frameworks such as AWS Lambda would not consider case sensitivity when fetching request headers
+-   Fixes an issue where dashboard recipe APIs would return 404 for Hapi
+
+## [13.1.4] - 2023-03-16
+
+### Fixes
+
+-   Fixes an issue where importing recipes without importing the package index file would cause crashes
+
+## [13.1.3] - 2023-03-08
+
+### Changed
+
+-   The dashboard recipe is no longer intialised automatically
+
+## [13.1.2] - 2023-02-27
+
+### Fixes
+
+-   Fixed request parsing issue during third-party (Apple) sign in in NextJS
+
+## [13.1.1] - 2023-02-24
+
+-   Refactor dashboard recipe to use auth mode instead of manually checking for api key
+
+## [13.1.0] - 2023-02-22
+
+-   Adds APIs and logic to the dashboard recipe to enable email password based login
+
 ## [13.0.2] - 2023-02-10
 
 -   Package version update for twilio to ^4.7.2 and verify-apple-id-token to ^3.0.1

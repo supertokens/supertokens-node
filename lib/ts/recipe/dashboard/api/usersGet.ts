@@ -67,14 +67,17 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
     }
 
     let paginationToken = options.req.getKeyValueFromQuery("paginationToken");
+    const query = getSearchParamsFromURL(options.req.getOriginalURL());
 
     let usersResponse =
         timeJoinedOrder === "DESC"
             ? await getUsersNewestFirst({
+                  query,
                   limit: parseInt(limit),
                   paginationToken,
               })
             : await getUsersOldestFirst({
+                  query,
                   limit: parseInt(limit),
                   paginationToken,
               });
@@ -160,4 +163,16 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
         users: usersResponse.users,
         nextPaginationToken: usersResponse.nextPaginationToken,
     };
+}
+
+export function getSearchParamsFromURL(path: string): { [key: string]: string } {
+    const URLObject = new URL("https://exmaple.com" + path);
+    const params = new URLSearchParams(URLObject.search);
+    const searchQuery: { [key: string]: string } = {};
+    for (const [key, value] of params) {
+        if (!["limit", "timeJoinedOrder", "paginationToken"].includes(key)) {
+            searchQuery[key] = value;
+        }
+    }
+    return searchQuery;
 }

@@ -27,8 +27,10 @@ export default function getRecipeInterface(
         createJWT: async function ({
             payload,
             validitySeconds,
+            useStaticSigningKey,
         }: {
             payload?: any;
+            useStaticSigningKey?: boolean;
             validitySeconds?: number;
         }): Promise<
             | {
@@ -47,6 +49,7 @@ export default function getRecipeInterface(
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
                 payload: payload ?? {},
                 validity: validitySeconds,
+                useStaticSigningKey: useStaticSigningKey !== false,
                 algorithm: "RS256",
                 jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
             });
@@ -63,8 +66,8 @@ export default function getRecipeInterface(
             }
         },
 
-        getJWKS: async function (): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
-            return await querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/jwks"), {});
+        getJWKS: async function (): Promise<{ keys: JsonWebKey[] }> {
+            return await querier.sendGetRequest(new NormalisedURLPath("/.well-known/jwks.json"), {});
         },
     };
 }

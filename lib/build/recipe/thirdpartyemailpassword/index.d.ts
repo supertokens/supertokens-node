@@ -74,11 +74,13 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
+    static Google: typeof import("../thirdparty/providers/google").default;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
         password?: string;
         userContext?: any;
+        applyPasswordPolicy?: boolean;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -87,13 +89,18 @@ export default class Wrapper {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
           }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
     >;
-    static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;
     static Apple: typeof import("../thirdparty/providers/apple").default;
     static Discord: typeof import("../thirdparty/providers/discord").default;
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
+    static Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
+    static GitLab: typeof import("../thirdparty/providers/gitlab").default;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext?: any;
@@ -115,5 +122,7 @@ export declare let Facebook: typeof import("../thirdparty/providers/facebook").d
 export declare let Apple: typeof import("../thirdparty/providers/apple").default;
 export declare let Discord: typeof import("../thirdparty/providers/discord").default;
 export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
+export declare let Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
+export declare let GitLab: typeof import("../thirdparty/providers/gitlab").default;
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;

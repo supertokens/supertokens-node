@@ -31,6 +31,10 @@ type Response =
     | {
           status: "INVALID_PHONE_ERROR";
           error: string;
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
       };
 
 const updateEmailForRecipeId = async (
@@ -47,6 +51,10 @@ const updateEmailForRecipeId = async (
       }
     | {
           status: "EMAIL_ALREADY_EXISTS_ERROR";
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
       }
 > => {
     if (recipeId === "emailpassword") {
@@ -72,6 +80,13 @@ const updateEmailForRecipeId = async (
             return {
                 status: "EMAIL_ALREADY_EXISTS_ERROR",
             };
+        } else if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                reason: emailUpdateResponse.reason,
+            };
+        } else if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
+            throw new Error("Should never come here");
         }
 
         return {
@@ -102,9 +117,12 @@ const updateEmailForRecipeId = async (
             return {
                 status: "EMAIL_ALREADY_EXISTS_ERROR",
             };
-        }
-
-        if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
+        } else if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                reason: emailUpdateResponse.reason,
+            };
+        } else if (emailUpdateResponse.status === "UNKNOWN_USER_ID_ERROR") {
             throw new Error("Should never come here");
         }
 

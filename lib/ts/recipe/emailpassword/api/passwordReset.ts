@@ -59,6 +59,21 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
         userContext: makeDefaultUserContextFromAPI(options.req),
     });
 
+    if (result.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+        // this error will be caught by the recipe error handler, just
+        // like it's done in the validateFormFieldsOrThrowError function above.
+        throw new STError({
+            type: STError.FIELD_ERROR,
+            payload: [
+                {
+                    id: "password",
+                    error: result.failureReason,
+                },
+            ],
+            message: "Error in input formFields",
+        });
+    }
+
     send200Response(
         options.res,
         result.status === "OK"

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { ParsedJWTInfo } from "./jwt";
-import { CreateOrRefreshAPIResponse, SessionInformation, TokenTransferMethod } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
@@ -8,10 +8,10 @@ import { Helpers } from "./recipeImplementation";
 export declare function createNewSession(
     helpers: Helpers,
     userId: string,
+    recipeUserId: string | undefined,
     disableAntiCsrf: boolean,
-    recipeUserId?: string,
     accessTokenPayload?: any,
-    sessionData?: any
+    sessionDataInDatabase?: any
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
@@ -21,13 +21,14 @@ export declare function getSession(
     parsedAccessToken: ParsedJWTInfo,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
-    containsCustomHeader: boolean
+    alwaysCheckCore: boolean
 ): Promise<{
     session: {
         handle: string;
         userId: string;
         recipeUserId: string;
         userDataInJWT: any;
+        expiryTime: number;
     };
     accessToken?: {
         token: string;
@@ -51,8 +52,7 @@ export declare function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    containsCustomHeader: boolean,
-    transferMethod: TokenTransferMethod
+    disableAntiCsrf: boolean
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
@@ -76,7 +76,7 @@ export declare function revokeMultipleSessions(helpers: Helpers, sessionHandles:
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export declare function updateSessionData(
+export declare function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any

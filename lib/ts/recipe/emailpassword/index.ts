@@ -65,7 +65,13 @@ export default class Wrapper {
         });
     }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
+    static updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+        userContext?: any;
+        applyPasswordPolicy?: boolean;
+    }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
