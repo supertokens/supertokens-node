@@ -43,6 +43,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import { GetEmailForUserIdFunc } from "../emailverification/types";
+import { getUser } from "../../";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -71,7 +72,10 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            const getEmailPasswordConfig = () => this.config;
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), getEmailPasswordConfig)
+            );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
@@ -224,12 +228,21 @@ export default class Recipe extends RecipeModule {
 
     // extra instance functions below...............
     getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            return {
-                status: "OK",
-                email: userInfo.email,
-            };
+        let user = await getUser(userId, userContext);
+        if (user !== undefined) {
+            let recipeLevelUser = user.loginMethods.find(
+                (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
+            );
+            if (recipeLevelUser !== undefined) {
+                if (recipeLevelUser.email === undefined) {
+                    // this check if only for types purposes.
+                    throw new Error("Should never come here");
+                }
+                return {
+                    status: "OK",
+                    email: recipeLevelUser.email,
+                };
+            }
         }
         return {
             status: "UNKNOWN_USER_ID_ERROR",

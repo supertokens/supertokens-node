@@ -30,7 +30,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -43,14 +43,12 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
     static createResetPasswordToken(
         userId: string,
         email: string,
@@ -64,9 +62,8 @@ export default class Wrapper {
               status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
-    static resetPasswordUsingToken(
+    static consumePasswordResetToken(
         token: string,
-        newPassword: string,
         userContext?: any
     ): Promise<
         | {
@@ -78,20 +75,33 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
+    static Google: typeof import("../thirdparty/providers/google").default;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
         password?: string;
         userContext?: any;
-    }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "EMAIL_CHANGE_NOT_ALLOWED";
-    }>;
-    static Google: typeof import("../thirdparty/providers/google").default;
+        applyPasswordPolicy?: boolean;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;
     static Apple: typeof import("../thirdparty/providers/apple").default;
     static Discord: typeof import("../thirdparty/providers/discord").default;
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
+    static Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
+    static GitLab: typeof import("../thirdparty/providers/gitlab").default;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext?: any;
@@ -103,11 +113,9 @@ export declare let Error: typeof SuperTokensError;
 export declare let emailPasswordSignUp: typeof Wrapper.emailPasswordSignUp;
 export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
 export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
-export declare let getUserById: typeof Wrapper.getUserById;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
-export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
-export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
+export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export declare let Google: typeof import("../thirdparty/providers/google").default;
 export declare let Github: typeof import("../thirdparty/providers/github").default;
@@ -115,5 +123,7 @@ export declare let Facebook: typeof import("../thirdparty/providers/facebook").d
 export declare let Apple: typeof import("../thirdparty/providers/apple").default;
 export declare let Discord: typeof import("../thirdparty/providers/discord").default;
 export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
+export declare let Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
+export declare let GitLab: typeof import("../thirdparty/providers/gitlab").default;
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;

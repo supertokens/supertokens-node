@@ -17,7 +17,7 @@ import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { User } from "./types";
 import AccountLinking from "./recipe/accountlinking/recipe";
-import { AccountInfo, AccountInfoWithRecipeId } from "./recipe/accountlinking/types";
+import { AccountInfo } from "./recipe/accountlinking/types";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -37,6 +37,7 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: object;
     }): Promise<{
         users: User[];
         nextPaginationToken?: string;
@@ -52,6 +53,7 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: object;
     }): Promise<{
         users: User[];
         nextPaginationToken?: string;
@@ -70,10 +72,6 @@ export default class SuperTokensWrapper {
         force?: boolean;
     }) {
         return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
-    }
-
-    static getUserForRecipeId(userId: string, recipeId: string) {
-        return SuperTokens.getInstanceOrThrowError().getUserForRecipeId(userId, recipeId);
     }
 
     static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
@@ -102,15 +100,9 @@ export default class SuperTokensWrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-    static async listUsersByAccountInfo(info: AccountInfo, userContext?: any) {
+    static async listUsersByAccountInfo(accountInfo: AccountInfo, userContext?: any) {
         return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
-            info,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-    static async getUserByAccountInfo(info: AccountInfoWithRecipeId, userContext?: any) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUserByAccountInfo({
-            info,
+            accountInfo,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -146,9 +138,5 @@ export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUs
 export let getUser = SuperTokensWrapper.getUser;
 
 export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
-
-export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
-
-export let getUserForRecipeId = SuperTokensWrapper.getUserForRecipeId;
 
 export let Error = SuperTokensWrapper.Error;

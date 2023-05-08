@@ -18,7 +18,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 
 export type TypeInput = {
-    apiKey: string;
+    apiKey?: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -29,7 +29,8 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    apiKey: string;
+    apiKey?: string;
+    authMode: AuthMode;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -62,26 +63,30 @@ export type APIFunction = (apiImplementation: APIInterface, options: APIOptions)
 
 export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 
-type CommonUserInformation = {
-    id: string;
+export type AuthMode = "api-key" | "email-password";
+
+export type RecipeLevelUser = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
     timeJoined: number;
-    firstName: string;
-    lastName: string;
-};
-
-export type EmailPasswordUser = CommonUserInformation & {
-    email: string;
-};
-
-export type ThirdPartyUser = CommonUserInformation & {
-    email: string;
-    thirdParty: {
+    recipeUserId: string;
+    email?: string;
+    phoneNumber?: string;
+    thirdParty?: {
         id: string;
         userId: string;
     };
 };
 
-export type PasswordlessUser = CommonUserInformation & {
+export type RecipeLevelUserWithFirstAndLastName = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+    timeJoined: number;
+    recipeUserId: string;
     email?: string;
-    phone?: string;
+    phoneNumber?: string;
+    thirdParty?: {
+        id: string;
+        userId: string;
+    };
+    firstName: string;
+    lastName: string;
 };

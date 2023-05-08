@@ -21,9 +21,7 @@ export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (
         user: {
             id: string;
-            recipeUserId?: string;
             email: string;
-            timeJoined: number;
         },
         passwordResetURLWithToken: string
     ) => {

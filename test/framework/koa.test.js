@@ -23,6 +23,13 @@ let Koa = require("koa");
 const Router = require("@koa/router");
 let { verifySession } = require("../../recipe/session/framework/koa");
 const request = require("supertest");
+let Dashboard = require("../../recipe/dashboard");
+const { createUsers } = require("../utils.js");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
+const Passwordless = require("../../recipe/passwordless");
+const ThirdParty = require("../../recipe/thirdparty");
+const { Google, Github, Apple } = require("../../recipe/thirdparty");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1108,23 +1115,23 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         });
         router.post("/updateSessionData", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            await session.updateSessionData({ key: "value" });
+            await session.updateSessionDataInDatabase({ key: "value" });
             ctx.body = "";
         });
         router.post("/getSessionData", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            let sessionData = await session.getSessionData();
+            let sessionData = await session.getSessionDataFromDatabase();
             ctx.body = sessionData;
         });
 
         router.post("/updateSessionData2", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            await session.updateSessionData(null);
+            await session.updateSessionDataInDatabase(null);
             ctx.body = "";
         });
 
         router.post("/updateSessionDataInvalidSessionHandle", async (ctx, _) => {
-            ctx.body = { success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) };
+            ctx.body = { success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })) };
         });
 
         app.use(router.routes());
@@ -1258,7 +1265,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         router.post("/updateAccessTokenPayload", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
             let accessTokenBefore = session.accessToken;
-            await session.updateAccessTokenPayload({ key: "value" });
+            await session.mergeIntoAccessTokenPayload({ key: "value" });
             let accessTokenAfter = session.accessToken;
             let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
             ctx.status = statusCode;
@@ -1272,13 +1279,13 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         router.post("/updateAccessTokenPayload2", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            await session.updateAccessTokenPayload(null);
+            await session.mergeIntoAccessTokenPayload({ key: null });
             ctx.body = "";
         });
 
         router.post("/updateAccessTokenPayloadInvalidSessionHandle", async (ctx, _) => {
             ctx.body = {
-                success: !(await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" })),
+                success: !(await Session.mergeIntoAccessTokenPayload("InvalidHandle", { key: "value3" })),
             };
         });
 
@@ -1303,7 +1310,9 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1325,7 +1334,10 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
@@ -1365,7 +1377,10 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1387,7 +1402,9 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
@@ -1406,7 +1423,19 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         );
 
         //check the value of the retrieved
-        assert.deepStrictEqual(response2.body, {});
+        assert.deepStrictEqual(
+            new Set(Object.keys(response2.body)),
+            new Set([
+                "antiCsrfToken",
+                "exp",
+                "iat",
+                "parentRefreshTokenHash1",
+                "refreshTokenHash1",
+                "sessionHandle",
+                "sub",
+                "iss",
+            ])
+        );
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(this.server)
@@ -1475,5 +1504,621 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 })
         );
         assert(response.body.custom);
+    });
+
+    it("test that authorization header is read correctly in dashboard recipe", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    if (authHeader === "Bearer testapikey") {
+                                        return true;
+                                    }
+
+                                    return false;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users/count")
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(res.statusCode === 200);
+    });
+
+    it("test that tags request respond with correct tags", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/search/tags")
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        const tags = res.body.tags;
+        assert(tags.length !== 0);
+    });
+
+    it("test that search results correct output for 'email: t'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(EmailPassword);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    email: "t",
+                    limit: 10,
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 5);
+    });
+
+    it("test that search results correct output for multiple search items", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(EmailPassword);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    email: "iresh;john",
+                    limit: 10,
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 1);
+    });
+
+    it("test that search results correct output for 'email: iresh'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(EmailPassword);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    email: "iresh",
+                    limit: 10,
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 0);
+    });
+
+    it("test that search results correct output for 'phone: +1'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(null, Passwordless);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    phone: "+1",
+                    limit: 10,
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 3);
+    });
+
+    it("test that search results correct output for 'phone: 1('", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(null, Passwordless);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    phone: "1(",
+                    limit: 10,
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 0);
+    });
+
+    it("test that search results correct output for 'provider: google'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(null, null, ThirdParty);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    provider: "google",
+                    limit: 10,
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 3);
+    });
+
+    it("test that search results correct output for 'provider: google, phone: 1'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        await createUsers(null, Passwordless, ThirdParty);
+
+        let res = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/dashboard/api/users")
+                .query({
+                    provider: "google",
+                    phone: "1",
+                    limit: 10,
+                })
+                .set("Content-Type", "application/json")
+                .set("Authorization", "Bearer testapikey")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res.statusCode === 200);
+        assert(res.body.users.length === 0);
     });
 });

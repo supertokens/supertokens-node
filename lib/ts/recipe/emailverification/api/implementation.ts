@@ -6,8 +6,8 @@ import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
 import { getUser } from "../../..";
-import Session, { createNewSession } from "../../session";
-import AccountLinking from "../../accountlinking";
+import Session from "../../session";
+import AccountLinking from "../../accountlinking/recipe";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { SessionContainerInterface } from "../../session/types";
 
@@ -24,23 +24,24 @@ export default function getAPIInterface(): APIInterface {
             const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
             if (res.status === "OK") {
-                let result = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
-                    res.user.recipeUserId,
-                    session,
-                    userContext
-                );
+                await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts({
+                    recipeUserId: res.user.recipeUserId,
+                    isVerified: false,
+                    checkAccountsToLinkTableAsWell: true,
+                    userContext,
+                });
                 if (session !== undefined) {
-                    if (result.createNewSession) {
-                        session = await createNewSession(
-                            options.req,
-                            options.res,
-                            result.primaryUserId,
-                            result.recipeUserId,
-                            {},
-                            {},
-                            userContext
-                        );
-                    }
+                    // if (result.createNewSession) {
+                    //     session = await createNewSession(
+                    //         options.req,
+                    //         options.res,
+                    //         result.primaryUserId,
+                    //         result.recipeUserId,
+                    //         {},
+                    //         {},
+                    //         userContext
+                    //     );
+                    // }
                     try {
                         await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
                     } catch (err) {
@@ -108,7 +109,7 @@ export default function getAPIInterface(): APIInterface {
                         user.id,
                         recipeUserId,
                         session.getAccessTokenPayload(),
-                        await session.getSessionData()
+                        await session.getSessionDataFromDatabase()
                     );
                 }
             }
@@ -201,7 +202,7 @@ export default function getAPIInterface(): APIInterface {
                         user.id,
                         recipeUserId,
                         session.getAccessTokenPayload(),
-                        await session.getSessionData()
+                        await session.getSessionDataFromDatabase()
                     );
                 }
             }

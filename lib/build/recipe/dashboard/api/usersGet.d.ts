@@ -7,9 +7,9 @@ declare type User = {
     isPrimaryUser: boolean;
     emails: string[];
     phoneNumbers: string[];
-    thirdpartyInfo: {
-        thirdpartyId: string;
-        thirdpartyUserId: string;
+    thirdParty: {
+        id: string;
+        userId: string;
     }[];
     firstName?: string;
     lastName?: string;
@@ -23,4 +23,9 @@ export declare type Response = {
     users: User[];
 };
 export default function usersGet(_: APIInterface, options: APIOptions): Promise<Response>;
+export declare function getSearchParamsFromURL(
+    path: string
+): {
+    [key: string]: string;
+};
 export {};

@@ -5,9 +5,7 @@ export declare function createAndSendCustomEmail(
 ): (
     user: {
         id: string;
-        recipeUserId?: string;
         email: string;
-        timeJoined: number;
     },
     passwordResetURLWithToken: string
 ) => Promise<void>;

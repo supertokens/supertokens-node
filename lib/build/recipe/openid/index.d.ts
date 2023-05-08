@@ -12,6 +12,7 @@ export default class OpenIdRecipeWrapper {
     static createJWT(
         payload?: any,
         validitySeconds?: number,
+        useStaticSigningKey?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -25,7 +26,6 @@ export default class OpenIdRecipeWrapper {
     static getJWKS(
         userContext?: any
     ): Promise<{
-        status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;
 }

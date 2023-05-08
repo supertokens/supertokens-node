@@ -20,13 +20,13 @@ import type {
     RecipeLevelUser,
     RecipeInterface,
     TypeNormalisedInput,
-    AccountInfoAndEmailWithRecipeId,
+    AccountInfoWithRecipeId,
 } from "./types";
 
 async function defaultOnAccountLinked(_user: User, _newAccountInfo: RecipeLevelUser, _userContext: any) {}
 
 async function defaultShouldDoAutomaticAccountLinking(
-    _newAccountInfo: AccountInfoAndEmailWithRecipeId,
+    _newAccountInfo: AccountInfoWithRecipeId,
     _user: User | undefined,
     _session: SessionContainer | undefined,
     _userContext: any

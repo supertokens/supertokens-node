@@ -26,7 +26,10 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
         return false;
     }
 
-    // step 1
+    // step 1: We need to do this here even though the update emailpassword recipe function would do this cause:
+    // - we want to throw this error before consuming the token, so that the user can try again
+    // - there is a case in the api impl where we create a new user, and we want to assign
+    //      a password that meets the password policy.
     let formFields: {
         id: string;
         value: string;
@@ -55,6 +58,21 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
         options,
         userContext: makeDefaultUserContextFromAPI(options.req),
     });
+
+    if (result.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+        // this error will be caught by the recipe error handler, just
+        // like it's done in the validateFormFieldsOrThrowError function above.
+        throw new STError({
+            type: STError.FIELD_ERROR,
+            payload: [
+                {
+                    id: "password",
+                    error: result.failureReason,
+                },
+            ],
+            message: "Error in input formFields",
+        });
+    }
 
     send200Response(
         options.res,

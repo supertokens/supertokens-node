@@ -5,7 +5,7 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import { SessionContainer } from "../session";
-import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoAndEmailWithRecipeId } from "./types";
+import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -25,114 +25,82 @@ export default class Recipe extends RecipeModule {
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
-    getIdentitiesForUser: (
+    createPrimaryUserIdOrLinkAccounts: ({
+        recipeUserId,
+        isVerified,
+        checkAccountsToLinkTableAsWell,
+        userContext,
+    }: {
+        recipeUserId: string;
+        isVerified: boolean;
+        checkAccountsToLinkTableAsWell: boolean;
+        userContext: any;
+    }) => Promise<string>;
+    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
+        recipeUserId,
+        checkAccountsToLinkTableAsWell,
+        userContext,
+    }: {
+        recipeUserId: string;
+        checkAccountsToLinkTableAsWell: boolean;
+        userContext: any;
+    }) => Promise<User | undefined>;
+    transformUserInfoIntoVerifiedAndUnverifiedBucket: (
         user: User
     ) => {
         verified: {
             emails: string[];
             phoneNumbers: string[];
-            thirdpartyInfo: {
-                id: string;
-                userId: string;
-            }[];
         };
         unverified: {
             emails: string[];
             phoneNumbers: string[];
-            thirdpartyInfo: {
-                id: string;
-                userId: string;
-            }[];
         };
     };
     isSignUpAllowed: ({
-        info,
+        newUser,
         userContext,
     }: {
-        info: AccountInfoAndEmailWithRecipeId;
+        newUser: AccountInfoWithRecipeId;
         userContext: any;
     }) => Promise<boolean>;
-    markEmailAsVerified: ({
-        email,
-        recipeUserId,
-        userContext,
-    }: {
-        email: string;
-        recipeUserId: string;
-        userContext: any;
-    }) => Promise<void>;
-    doPostSignUpAccountLinkingOperations: ({
-        info,
-        infoVerified,
-        recipeUserId,
-        userContext,
-    }: {
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
-        recipeUserId: string;
-        userContext: any;
-    }) => Promise<string>;
-    accountLinkPostSignInViaSession: ({
+    linkAccountsWithUserFromSession: <T>({
         session,
-        info,
-        infoVerified,
+        newUser,
+        createRecipeUserFunc,
+        verifyCredentialsFunc,
         userContext,
     }: {
         session: SessionContainer;
-        info: AccountInfoAndEmailWithRecipeId;
-        infoVerified: boolean;
+        newUser: AccountInfoWithRecipeId;
+        createRecipeUserFunc: () => Promise<void>;
+        verifyCredentialsFunc: () => Promise<
+            | {
+                  status: "OK";
+              }
+            | {
+                  status: "CUSTOM_RESPONSE";
+                  resp: T;
+              }
+        >;
         userContext: any;
     }) => Promise<
         | {
-              createRecipeUser: true;
-              updateVerificationClaim: boolean;
-          }
-        | ({
-              createRecipeUser: false;
-          } & (
-              | {
-                    accountsLinked: true;
-                    updateVerificationClaim: boolean;
-                }
-              | {
-                    accountsLinked: false;
-                    reason:
-                        | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
-                        | "EXISTING_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR"
-                        | "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                }
-              | {
-                    accountsLinked: false;
-                    reason:
-                        | "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
-                        | "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                }
-          ))
-    >;
-    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
-        recipeUserId,
-        userContext,
-    }: {
-        recipeUserId: string;
-        userContext: any;
-    }) => Promise<User | undefined>;
-    createPrimaryUserIdOrLinkAccounts: ({
-        recipeUserId,
-        session,
-        userContext,
-    }: {
-        recipeUserId: string;
-        session: SessionContainer | undefined;
-        userContext: any;
-    }) => Promise<
-        | {
-              createNewSession: false;
+              status: "OK";
+              wereAccountsAlreadyLinked: boolean;
           }
         | {
-              createNewSession: true;
+              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+              description: string;
+          }
+        | {
+              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
               recipeUserId: string;
+          }
+        | {
+              status: "CUSTOM_RESPONSE";
+              resp: T;
           }
     >;
 }

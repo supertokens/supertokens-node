@@ -14,7 +14,6 @@
  */
 
 import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
-import axios from "axios";
 import {
     normaliseInputAppInfoOrThrowError,
     maxVersion,
@@ -33,15 +32,6 @@ import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import AccountLinking from "./recipe/accountlinking/recipe";
-import { RecipeLevelUser } from "./recipe/accountlinking/types";
-import EmailPasswordRecipe from "./recipe/emailpassword/recipe";
-import ThirdPartyRecipe from "./recipe/thirdparty/recipe";
-import PasswordlessRecipe from "./recipe/passwordless/recipe";
-import EmailPassword from "./recipe/emailpassword";
-import ThirdParty from "./recipe/thirdparty";
-import Passwordless from "./recipe/passwordless";
-import ThirdPartyEmailPassword from "./recipe/thirdpartyemailpassword";
-import ThirdPartyPasswordless from "./recipe/thirdpartypasswordless";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -55,6 +45,8 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
 
     supertokens: undefined | SuperTokensInfo;
+
+    telemetryEnabled: boolean;
 
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
@@ -93,47 +85,13 @@ export default class SuperTokens {
             return func(this.appInfo, this.isInServerlessEnv);
         });
 
-        let isAccountLinkingInitialised = this.recipeModules.find((r) => r.getRecipeId() === AccountLinking.RECIPE_ID);
-        if (!isAccountLinkingInitialised) {
+        let isAccountLinkingInitialized = this.recipeModules.find((r) => r.getRecipeId() === AccountLinking.RECIPE_ID);
+        if (!isAccountLinkingInitialized) {
             this.recipeModules.push(AccountLinking.init({})(this.appInfo, this.isInServerlessEnv));
         }
-        let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
-        if (telemetry) {
-            if (this.isInServerlessEnv) {
-                // see https://github.com/supertokens/supertokens-node/issues/127
-                let randomNum = Math.random() * 10;
-                if (randomNum > 7) {
-                    this.sendTelemetry();
-                }
-            } else {
-                this.sendTelemetry();
-            }
-        }
+        this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }
-
-    sendTelemetry = async () => {
-        try {
-            let querier = Querier.getNewInstanceOrThrowError(undefined);
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
-            let telemetryId: string | undefined;
-            if (response.exists) {
-                telemetryId = response.telemetryId;
-            }
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.com/0/st/telemetry",
-                data: {
-                    appName: this.appInfo.appName,
-                    websiteDomain: this.appInfo.websiteDomain.getAsStringDangerous(),
-                    telemetryId,
-                },
-                headers: {
-                    "api-version": 2,
-                },
-            });
-        } catch (ignored) {}
-    };
 
     static init(config: TypeInput) {
         if (SuperTokens.instance === undefined) {
@@ -404,143 +362,5 @@ export default class SuperTokens {
             }
         }
         throw err;
-    };
-
-    getUserForRecipeId = async (
-        userId: string,
-        recipeId: string
-    ): Promise<{
-        user: RecipeLevelUser | undefined;
-        recipe:
-            | "emailpassword"
-            | "thirdparty"
-            | "passwordless"
-            | "thirdpartyemailpassword"
-            | "thirdpartypasswordless"
-            | undefined;
-    }> => {
-        let user: RecipeLevelUser | undefined;
-        let recipe:
-            | "emailpassword"
-            | "thirdparty"
-            | "passwordless"
-            | "thirdpartyemailpassword"
-            | "thirdpartypasswordless"
-            | undefined;
-
-        if (recipeId === EmailPasswordRecipe.RECIPE_ID) {
-            try {
-                const userResponse = await EmailPassword.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        recipeId: "emailpassword",
-                    };
-                    recipe = "emailpassword";
-                }
-            } catch (e) {
-                // No - op
-            }
-
-            if (user === undefined) {
-                try {
-                    const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                    if (userResponse !== undefined) {
-                        user = {
-                            ...userResponse,
-                            recipeId: "emailpassword",
-                        };
-                        recipe = "thirdpartyemailpassword";
-                    }
-                } catch (e) {
-                    // No - op
-                }
-            }
-        } else if (recipeId === ThirdPartyRecipe.RECIPE_ID) {
-            try {
-                const userResponse = await ThirdParty.getUserById(userId);
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        recipeId: "thirdparty",
-                    };
-                    recipe = "thirdparty";
-                }
-            } catch (e) {
-                // No - op
-            }
-
-            if (user === undefined) {
-                try {
-                    const userResponse = await ThirdPartyEmailPassword.getUserById(userId);
-
-                    if (userResponse !== undefined) {
-                        user = {
-                            ...userResponse,
-                            recipeId: "thirdparty",
-                        };
-                        recipe = "thirdpartyemailpassword";
-                    }
-                } catch (e) {
-                    // No - op
-                }
-            }
-
-            if (user === undefined) {
-                try {
-                    const userResponse = await ThirdPartyPasswordless.getUserById(userId);
-
-                    if (userResponse !== undefined) {
-                        user = {
-                            ...userResponse,
-                            recipeId: "thirdparty",
-                        };
-                        recipe = "thirdpartypasswordless";
-                    }
-                } catch (e) {
-                    // No - op
-                }
-            }
-        } else if (recipeId === PasswordlessRecipe.RECIPE_ID) {
-            try {
-                const userResponse = await Passwordless.getUserById({
-                    userId,
-                });
-
-                if (userResponse !== undefined) {
-                    user = {
-                        ...userResponse,
-                        recipeId: "passwordless",
-                    };
-                    recipe = "passwordless";
-                }
-            } catch (e) {
-                // No - op
-            }
-
-            if (user === undefined) {
-                try {
-                    const userResponse = await ThirdPartyPasswordless.getUserById(userId);
-
-                    if (userResponse !== undefined) {
-                        user = {
-                            ...userResponse,
-                            recipeId: "passwordless",
-                        };
-                        recipe = "thirdpartypasswordless";
-                    }
-                } catch (e) {
-                    // No - op
-                }
-            }
-        }
-
-        return {
-            user,
-            recipe,
-        };
     };
 }

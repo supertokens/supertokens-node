@@ -17,6 +17,10 @@ declare type Response =
     | {
           status: "INVALID_PHONE_ERROR";
           error: string;
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
       };
 export declare const userPut: (_: APIInterface, options: APIOptions) => Promise<Response>;
 export {};

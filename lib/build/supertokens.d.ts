@@ -4,7 +4,6 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
-import { RecipeLevelUser } from "./recipe/accountlinking/types";
 export default class SuperTokens {
     private static instance;
     framework: TypeFramework;
@@ -12,8 +11,8 @@ export default class SuperTokens {
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
     supertokens: undefined | SuperTokensInfo;
+    telemetryEnabled: boolean;
     constructor(config: TypeInput);
-    sendTelemetry: () => Promise<void>;
     static init(config: TypeInput): void;
     static reset(): void;
     static getInstanceOrThrowError(): SuperTokens;
@@ -73,17 +72,4 @@ export default class SuperTokens {
     }>;
     middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
-    getUserForRecipeId: (
-        userId: string,
-        recipeId: string
-    ) => Promise<{
-        user: RecipeLevelUser | undefined;
-        recipe:
-            | "emailpassword"
-            | "thirdparty"
-            | "passwordless"
-            | "thirdpartyemailpassword"
-            | "thirdpartypasswordless"
-            | undefined;
-    }>;
 }

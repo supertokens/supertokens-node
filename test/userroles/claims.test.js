@@ -1,5 +1,14 @@
 const assert = require("assert");
-const { printPath, setupST, startST, killAllST, cleanST, mockResponse, mockRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    mockResponse,
+    mockRequest,
+    setKeyValueInConfig,
+} = require("../utils");
 const { ProcessState } = require("../../lib/build/processState");
 const STExpress = require("../..");
 const UserRoles = require("../../lib/build/recipe/userroles").default;
@@ -139,7 +148,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             try {
                 await session.assertClaims([UserRoles.UserRoleClaim.validators.includes("nope")]);
             } catch (ex) {
-                console.log(ex);
                 err = ex;
             }
             assert.ok(err);
@@ -215,7 +223,6 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             try {
                 await session.assertClaims([UserRoles.PermissionClaim.validators.includes("nope")]);
             } catch (ex) {
-                console.log(ex);
                 err = ex;
             }
             assert.ok(err);

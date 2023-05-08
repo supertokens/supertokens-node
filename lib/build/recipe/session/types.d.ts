@@ -12,21 +12,11 @@ export declare type KeyInfo = {
     createdAt: number;
 };
 export declare type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-export declare type StoredHandshakeInfo = {
-    antiCsrf: AntiCsrfType;
-    accessTokenBlacklistingEnabled: boolean;
-    accessTokenValidity: number;
-    refreshTokenValidity: number;
-} & (
-    | {
-          jwtSigningPublicKeyList: KeyInfo[];
-      }
-    | {
-          jwtSigningPublicKeyList: undefined;
-          jwtSigningPublicKey: string;
-          jwtSigningPublicKeyExpiryTime: number;
-      }
-);
+export declare type TokenInfo = {
+    token: string;
+    expiry: number;
+    createdTime: number;
+};
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
@@ -34,16 +24,8 @@ export declare type CreateOrRefreshAPIResponse = {
         recipeUserId: string;
         userDataInJWT: any;
     };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
+    accessToken: TokenInfo;
+    refreshToken: TokenInfo;
     antiCsrfToken: string | undefined;
 };
 export interface ErrorHandlers {
@@ -54,8 +36,10 @@ export interface ErrorHandlers {
 export declare type TokenType = "access" | "refresh";
 export declare type TokenTransferMethod = "header" | "cookie";
 export declare type TypeInput = {
+    useDynamicAccessTokenSigningKey?: boolean;
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
+    accessTokenPath?: string;
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
@@ -66,15 +50,7 @@ export declare type TypeInput = {
     }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    jwt?:
-        | {
-              enable: true;
-              propertyNameInAccessTokenPayload?: string;
-              issuer?: string;
-          }
-        | {
-              enable: false;
-          };
+    exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -104,7 +80,9 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    useDynamicAccessTokenSigningKey: boolean;
     refreshTokenPath: NormalisedURLPath;
+    accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
@@ -117,11 +95,7 @@ export declare type TypeNormalisedInput = {
         userContext: any;
     }) => TokenTransferMethod | "any";
     invalidClaimStatusCode: number;
-    jwt: {
-        enable: boolean;
-        propertyNameInAccessTokenPayload: string;
-        issuer?: string;
-    };
+    exposeAccessTokenToFrontendInCookieBasedAuth: boolean;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -177,6 +151,7 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+    checkDatabase?: boolean;
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
@@ -185,12 +160,11 @@ export interface VerifySessionOptions {
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
         userId: string;
-        recipeUserId?: string;
+        recipeUserId: string | undefined;
         accessTokenPayload?: any;
-        sessionData?: any;
+        sessionDataInDatabase?: any;
+        disableAntiCsrf?: boolean;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
@@ -200,19 +174,20 @@ export declare type RecipeInterface = {
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
     getSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
+        accessToken: string;
+        antiCsrfToken?: string;
         options?: VerifySessionOptions;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined>;
     refreshSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
+        refreshToken: string;
+        antiCsrfToken?: string;
+        disableAntiCsrf: boolean;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
-     * - getSessionData
+     * - getSessionDataFromDatabase
      * - getAccessTokenPayload
      *
      * Returns undefined if the sessionHandle does not exist
@@ -222,14 +197,9 @@ export declare type RecipeInterface = {
     getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
-    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>;
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
-     */
-    updateAccessTokenPayload(input: {
+    updateSessionDataInDatabase(input: {
         sessionHandle: string;
-        newAccessTokenPayload: any;
+        newSessionData: any;
         userContext: any;
     }): Promise<boolean>;
     mergeIntoAccessTokenPayload(input: {
@@ -261,8 +231,6 @@ export declare type RecipeInterface = {
           }
         | undefined
     >;
-    getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     validateClaims(input: {
         userId: string;
         recipeUserId: string;
@@ -297,17 +265,20 @@ export declare type RecipeInterface = {
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
-    getSessionData(userContext?: any): Promise<any>;
-    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
+    getSessionDataFromDatabase(userContext?: any): Promise<any>;
+    updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
     getRecipeUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
+    getAllSessionTokensDangerously(): {
+        accessToken: string;
+        refreshToken: string | undefined;
+        antiCsrfToken: string | undefined;
+        frontToken: string;
+        accessAndFrontTokenUpdated: boolean;
+    };
     getAccessToken(userContext?: any): string;
-    /**
-     * @deprecated Use mergeIntoAccessTokenPayload instead
-     */
-    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
@@ -316,6 +287,7 @@ export interface SessionContainerInterface {
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    attachToRequestResponse(reqResInfo: ReqResInfo): Promise<void> | void;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -354,9 +326,9 @@ export declare type SessionInformation = {
     sessionHandle: string;
     userId: string;
     recipeUserId: string;
-    sessionData: any;
+    sessionDataInDatabase: any;
     expiry: number;
-    accessTokenPayload: any;
+    customClaimsInAccessTokenPayload: any;
     timeCreated: number;
 };
 export declare type ClaimValidationResult =
@@ -424,3 +396,8 @@ export declare abstract class SessionClaim<T> {
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
     build(userId: string, recipeUserId?: string, userContext?: any): Promise<JSONObject>;
 }
+export declare type ReqResInfo = {
+    res: BaseResponse;
+    req: BaseRequest;
+    transferMethod: TokenTransferMethod;
+};

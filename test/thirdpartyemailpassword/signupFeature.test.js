@@ -830,6 +830,20 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             recipeList: [
                 ThirdPartyEmailPassword.init({
                     providers: [this.customProvider1],
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "email",
+                            },
+                            {
+                                id: "password",
+                                validate: async (value) => {
+                                    if (value.length < 5) return "Password should be greater than 5 characters";
+                                    return undefined;
+                                },
+                            },
+                        ],
+                    },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
@@ -929,6 +943,15 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             });
 
             assert(r2.status === "UNKNOWN_USER_ID_ERROR");
+
+            let r3 = await ThirdPartyEmailPassword.updateEmailOrPassword({
+                userId: signUpUserInfo.id,
+                email: "test2@example.com",
+                password: "test",
+            });
+
+            assert(r3.status === "PASSWORD_POLICY_VIOLATED_ERROR");
+            assert(r3.failureReason === "Password should be greater than 5 characters");
         }
     });
 });

@@ -16,28 +16,23 @@ import { TypeEmailPasswordEmailDeliveryInput, RecipeInterface } from "../../../t
 import { createAndSendCustomEmail as defaultCreateAndSendCustomEmail } from "../../../passwordResetFunctions";
 import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import { getUser } from "../../../../..";
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
-    private recipeInterfaceImpl: RecipeInterface;
     private isInServerlessEnv: boolean;
     private appInfo: NormalisedAppinfo;
     private resetPasswordUsingTokenFeature: {
         createAndSendCustomEmail: (
             user: {
                 id: string;
-                recipeUserId?: string;
                 email: string;
-                timeJoined: number;
             },
             passwordResetURLWithToken: string,
             userContext: any
         ) => Promise<void>;
     };
 
-    constructor(recipeInterfaceImpl: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
-        this.recipeInterfaceImpl = recipeInterfaceImpl;
+    constructor(_: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         this.isInServerlessEnv = isInServerlessEnv;
         this.appInfo = appInfo;
         {
@@ -48,48 +43,18 @@ export default class BackwardCompatibilityService
     }
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        let user:
-            | {
-                  id: string;
-                  recipeUserId?: string;
-                  email: string;
-                  timeJoined: number;
-              }
-            | undefined =
-            input.user.recipeUserId !== undefined
-                ? await this.recipeInterfaceImpl.getUserById({
-                      userId: input.user.recipeUserId,
-                      userContext: input.userContext,
-                  })
-                : undefined;
-        if (input.user.recipeUserId === undefined) {
-            let primaryUser = await getUser(input.user.id);
-            if (primaryUser === undefined) {
-                throw Error("this should never come here");
-            }
-            user = {
-                id: primaryUser.id,
-                recipeUserId: undefined,
-                timeJoined: primaryUser.timeJoined,
-                email: input.user.email,
-            };
-        }
-        if (user === undefined) {
-            throw Error("this should never come here");
-        }
         // we add this here cause the user may have overridden the sendEmail function
         // to change the input email and if we don't do this, the input email
         // will get reset by the getUserById call above.
-        user.email = input.user.email;
         try {
             if (!this.isInServerlessEnv) {
                 this.resetPasswordUsingTokenFeature
-                    .createAndSendCustomEmail(user, input.passwordResetLink, input.userContext)
+                    .createAndSendCustomEmail(input.user, input.passwordResetLink, input.userContext)
                     .catch((_) => {});
             } else {
                 // see https://github.com/supertokens/supertokens-node/pull/135
                 await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
-                    user,
+                    input.user,
                     input.passwordResetLink,
                     input.userContext
                 );

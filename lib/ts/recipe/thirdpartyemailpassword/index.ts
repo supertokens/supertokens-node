@@ -59,14 +59,6 @@ export default class Wrapper {
         });
     }
 
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
-
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
-
     static createResetPasswordToken(userId: string, email: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
@@ -75,22 +67,27 @@ export default class Wrapper {
         });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
+    static consumePasswordResetToken(token: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
-            newPassword,
             userContext,
         });
     }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
+    static Google = thirdPartyProviders.Google;
+
+    static updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+        userContext?: any;
+        applyPasswordPolicy?: boolean;
+    }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
         });
     }
-
-    static Google = thirdPartyProviders.Google;
 
     static Github = thirdPartyProviders.Github;
 
@@ -101,6 +98,10 @@ export default class Wrapper {
     static Discord = thirdPartyProviders.Discord;
 
     static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
+
+    static Bitbucket = thirdPartyProviders.Bitbucket;
+
+    static GitLab = thirdPartyProviders.GitLab;
 
     // static Okta = thirdPartyProviders.Okta;
 
@@ -124,15 +125,11 @@ export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
 
 export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
 
-export let getUserById = Wrapper.getUserById;
-
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
-
-export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
-export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
+export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
@@ -147,6 +144,10 @@ export let Apple = Wrapper.Apple;
 export let Discord = Wrapper.Discord;
 
 export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+
+export let Bitbucket = Wrapper.Bitbucket;
+
+export let GitLab = Wrapper.GitLab;
 
 // export let Okta = Wrapper.Okta;
 

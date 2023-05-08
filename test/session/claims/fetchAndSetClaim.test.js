@@ -83,8 +83,8 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
 
             await Session.fetchAndSetClaim(res.getHandle(), TrueClaim);
 
-            const payload = (await Session.getSessionInformation(res.getHandle())).accessTokenPayload;
-            assert.equal(Object.keys(payload).length, 1);
+            const payload = (await Session.getSessionInformation(res.getHandle())).customClaimsInAccessTokenPayload;
+            assert.equal(Object.keys(payload).length, 2);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 1000);

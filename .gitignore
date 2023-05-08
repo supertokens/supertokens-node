@@ -8,3 +8,4 @@ coverage
 apiPassword
 releasePassword
 .tmp
+.idea

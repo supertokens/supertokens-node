@@ -3,7 +3,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 export declare type TypeInput = {
-    apiKey: string;
+    apiKey?: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -13,7 +13,8 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    apiKey: string;
+    apiKey?: string;
+    authMode: AuthMode;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -40,24 +41,28 @@ export declare type APIInterface = {
 };
 export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
-declare type CommonUserInformation = {
-    id: string;
+export declare type AuthMode = "api-key" | "email-password";
+export declare type RecipeLevelUser = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
     timeJoined: number;
-    firstName: string;
-    lastName: string;
-};
-export declare type EmailPasswordUser = CommonUserInformation & {
-    email: string;
-};
-export declare type ThirdPartyUser = CommonUserInformation & {
-    email: string;
-    thirdParty: {
+    recipeUserId: string;
+    email?: string;
+    phoneNumber?: string;
+    thirdParty?: {
         id: string;
         userId: string;
     };
 };
-export declare type PasswordlessUser = CommonUserInformation & {
+export declare type RecipeLevelUserWithFirstAndLastName = {
+    recipeId: "emailpassword" | "thirdparty" | "passwordless";
+    timeJoined: number;
+    recipeUserId: string;
     email?: string;
-    phone?: string;
+    phoneNumber?: string;
+    thirdParty?: {
+        id: string;
+        userId: string;
+    };
+    firstName: string;
+    lastName: string;
 };
-export {};

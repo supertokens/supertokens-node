@@ -136,11 +136,23 @@ export function humaniseMilliseconds(ms: number): string {
 }
 
 export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
-    return {
-        _default: {
-            request,
-        },
-    };
+    return setRequestInUserContextIfNotDefined({}, request);
+}
+
+export function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest) {
+    if (userContext === undefined) {
+        userContext = {};
+    }
+
+    if (userContext._default === undefined) {
+        userContext._default = {};
+    }
+
+    if (typeof userContext._default === "object") {
+        userContext._default.request = request;
+    }
+
+    return userContext;
 }
 
 export function getTopLevelDomainForSameSiteResolution(url: string): string {
@@ -155,4 +167,14 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
         throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
     }
     return parsedURL.domain;
+}
+
+export function getFromObjectCaseInsensitive<T>(key: string, object: Record<string, T>): T | undefined {
+    const matchedKeys = Object.keys(object).filter((i) => i.toLocaleLowerCase() === key.toLocaleLowerCase());
+
+    if (matchedKeys.length === 0) {
+        return undefined;
+    }
+
+    return object[matchedKeys[0]];
 }

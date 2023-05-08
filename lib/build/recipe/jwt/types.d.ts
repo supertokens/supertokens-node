@@ -42,6 +42,7 @@ export declare type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
+        useStaticSigningKey?: boolean;
         userContext: any;
     }): Promise<
         | {
@@ -55,7 +56,6 @@ export declare type RecipeInterface = {
     getJWKS(input: {
         userContext: any;
     }): Promise<{
-        status: "OK";
         keys: JsonWebKey[];
     }>;
 };
@@ -67,7 +67,6 @@ export declare type APIInterface = {
               userContext: any;
           }) => Promise<
               | {
-                    status: "OK";
                     keys: JsonWebKey[];
                 }
               | GeneralErrorResponse
