@@ -7,7 +7,7 @@ export default class Wrapper {
     static Error: typeof SuperTokensError;
     static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
-        userId: string,
+        recipeUserId: string,
         email: string,
         userContext?: any
     ): Promise<
@@ -31,16 +31,16 @@ export default class Wrapper {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    static isEmailVerified(userId: string, email: string, userContext?: any): Promise<boolean>;
+    static isEmailVerified(recipeUserId: string, email: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
-        userId: string,
+        recipeUserId: string,
         email: string,
         userContext?: any
     ): Promise<{
-        status: string;
+        status: "OK";
     }>;
     static unverifyEmail(
-        userId: string,
+        recipeUserId: string,
         email: string,
         userContext?: any
     ): Promise<{

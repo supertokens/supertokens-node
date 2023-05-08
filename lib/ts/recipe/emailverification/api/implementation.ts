@@ -17,66 +17,126 @@ export default function getAPIInterface(): APIInterface {
             this: APIInterface,
             { token, options, session, userContext }
         ): Promise<
-            | { status: "OK"; user: User; session?: SessionContainerInterface }
+            | { status: "OK"; user: User; newSession?: SessionContainerInterface }
             | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
             | GeneralErrorResponse
         > {
-            const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
+            const verifyTokenResponse = await options.recipeImplementation.verifyEmailUsingToken({
+                token,
+                userContext,
+            });
 
-            if (res.status === "OK") {
-                await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts({
-                    recipeUserId: res.user.recipeUserId,
-                    isVerified: false,
+            if (verifyTokenResponse.status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR") {
+                return verifyTokenResponse;
+            }
+
+            let primaryUserIdThatTheAccountWasLinkedTo = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts(
+                {
+                    recipeUserId: verifyTokenResponse.user.recipeUserId,
+                    isVerified: true,
                     checkAccountsToLinkTableAsWell: true,
                     userContext,
-                });
-                if (session !== undefined) {
-                    // if (result.createNewSession) {
-                    //     session = await createNewSession(
-                    //         options.req,
-                    //         options.res,
-                    //         result.primaryUserId,
-                    //         result.recipeUserId,
-                    //         {},
-                    //         {},
-                    //         userContext
-                    //     );
-                    // }
-                    try {
-                        await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
-                    } catch (err) {
-                        // This should never happen, since we've just set the status above.
-                        if ((err as Error).message === "UNKNOWN_USER_ID") {
-                            throw new SessionError({
-                                type: SessionError.UNAUTHORISED,
-                                message: "Unknown User ID provided",
-                            });
-                        }
-                        throw err;
-                    }
                 }
-                // checking if a new primaryUserId has been associated with recipeUserId
-                // if user.id equals to user.recipeUserId, there are chances that
-                // a primaryUserId, different from user.id got associated with the
-                // recipe user. So we use getUser function
-                if (res.user.id === res.user.recipeUserId) {
-                    let user = await getUser(res.user.recipeUserId);
-                    if (user === undefined) {
-                        throw Error(
-                            `this error should never be thrown. user not found after verification: ${res.user.recipeUserId}`
+            );
+
+            // if a session exists in the API, then we can update the session
+            // claim related to email verification
+            if (session !== undefined) {
+                // Due to linking, we will have to correct the current
+                // session's user ID. There are four cases here:
+                // --> (Case 1) User signed up and did email verification and the new account
+                // became a primary user (user ID no change)
+                // --> (Case 2) User signed up and did email verification and the new account got linked
+                // to another primary user (user ID change)
+                // --> (Case 3) This is post login account linking, in which the account that got verified
+                // got linked to the session's account (user ID of account has changed to the session's user ID)
+                // -->  (Case 4) This is post login account linking, in which the account that got verified
+                // got linked to ANOTHER primary account (user ID of account has changed to a different user ID != session.getUserId, but
+                // we should ignore this since it will result in the user's session changing.)
+
+                if (session.getRecipeUserId() === verifyTokenResponse.user.recipeUserId) {
+                    // this means that the session's login method's account that it was the
+                    // one that just got verified and that we are NOT doing post login
+                    // account linking. So this is only for (Case 1) and (Case 2)
+
+                    if (session.getUserId() === primaryUserIdThatTheAccountWasLinkedTo) {
+                        // if the session's primary user ID is equal to the
+                        // primary user ID that the account was linked to, then
+                        // this means that the new account became a primary user (Case 1)
+                        // We also have the sub cases here that the account that just
+                        // got verified was already linked to the session's primary user ID,
+                        // but either way, we don't need to change any user ID.
+
+                        // In this case, all we do is to update the emailverification claim
+                        try {
+                            // TODO: fetchValue should take a recipeId as well now
+                            // and EmailVerificationClaim should use that and not the primary user id
+                            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                        } catch (err) {
+                            // This should never happen, since we've just set the status above.
+                            if ((err as Error).message === "UNKNOWN_USER_ID") {
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Unknown User ID provided",
+                                });
+                            }
+                            throw err;
+                        }
+
+                        return {
+                            status: "OK",
+                            user: verifyTokenResponse.user,
+                        };
+                    } else {
+                        // if the session's primary user ID is NOT equal to the
+                        // primary user ID that the account that it was linked to, then
+                        // this means that the new account got linked to another primary user (Case 2)
+
+                        // In this case, we need to update the session's user ID by creating
+                        // a new session
+
+                        let newSession = await Session.createNewSession(
+                            options.req,
+                            options.res,
+                            primaryUserIdThatTheAccountWasLinkedTo,
+                            session.getRecipeUserId(),
+                            {},
+                            {},
+                            userContext
                         );
+
+                        return {
+                            status: "OK",
+                            user: verifyTokenResponse.user,
+                            newSession,
+                        };
                     }
+                } else {
+                    // this means that the session's login method's account was NOT the
+                    // one that just got verified and that we ARE doing post login
+                    // account linking. So this is only for (Case 3) and (Case 4)
+
+                    // In both case 3 and case 4, we do not want to change anything in the
+                    // current session in terms of user ID or email verification claim (since
+                    // both of these refer to the current logged in user and not the newly
+                    // linked user's account). Instead, we just want to remove the
+                    // account linking claim from the session.
+
+                    // TODO: remove account linking claim
+
                     return {
                         status: "OK",
-                        user: {
-                            ...res.user,
-                            id: user.id,
-                        },
-                        session,
+                        user: verifyTokenResponse.user,
                     };
                 }
+            } else {
+                // the session is updated when the is email verification GET API is called
+                // so we don't do anything in this API.
+                return {
+                    status: "OK",
+                    user: verifyTokenResponse.user,
+                };
             }
-            return res;
         },
 
         isEmailVerifiedGET: async function (
@@ -156,7 +216,7 @@ export default function getAPIInterface(): APIInterface {
 
                 if (emailInfo.status === "OK") {
                     isVerified = await recipe.recipeInterfaceImpl.isEmailVerified({
-                        userId: recipeUserId,
+                        recipeUserId,
                         email: emailInfo.email,
                         userContext,
                     });
@@ -242,7 +302,7 @@ export default function getAPIInterface(): APIInterface {
                 };
             } else if (emailInfo.status === "OK") {
                 let response = await options.recipeImplementation.createEmailVerificationToken({
-                    userId: userIdForEmailVerification,
+                    recipeUserId: userIdForEmailVerification,
                     email: emailInfo.email,
                     userContext,
                 });
@@ -277,8 +337,7 @@ export default function getAPIInterface(): APIInterface {
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     type: "EMAIL_VERIFICATION",
                     user: {
-                        id: userId,
-                        recipeUserId: userIdForEmailVerification,
+                        recipeUserId: userId,
                         email: emailInfo.email,
                     },
                     emailVerifyLink,

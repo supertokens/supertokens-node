@@ -227,11 +227,11 @@ export default class Recipe extends RecipeModule {
     };
 
     // extra instance functions below...............
-    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let user = await getUser(userId, userContext);
+    getEmailForUserId: GetEmailForUserIdFunc = async (recipeUserId, userContext) => {
+        let user = await getUser(recipeUserId, userContext);
         if (user !== undefined) {
             let recipeLevelUser = user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
+                (u) => u.recipeId === "emailpassword" && u.recipeUserId === recipeUserId
             );
             if (recipeLevelUser !== undefined) {
                 if (recipeLevelUser.email === undefined) {

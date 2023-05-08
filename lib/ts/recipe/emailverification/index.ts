@@ -26,7 +26,7 @@ export default class Wrapper {
     static EmailVerificationClaim = EmailVerificationClaim;
 
     static async createEmailVerificationToken(
-        userId: string,
+        recipeUserId: string,
         email: string,
         userContext?: any
     ): Promise<
@@ -39,7 +39,7 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         return await recipeInstance.recipeInterfaceImpl.createEmailVerificationToken({
-            userId,
+            recipeUserId,
             email,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -52,49 +52,29 @@ export default class Wrapper {
         });
     }
 
-    static async isEmailVerified(userId: string, email: string, userContext?: any) {
+    static async isEmailVerified(recipeUserId: string, email: string, userContext?: any) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         return await recipeInstance.recipeInterfaceImpl.isEmailVerified({
-            userId,
+            recipeUserId,
             email,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async revokeEmailVerificationTokens(userId: string, email: string, userContext?: any) {
+    static async revokeEmailVerificationTokens(recipeUserId: string, email: string, userContext?: any) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
-
-        // If the dev wants to delete the tokens for an old email address of the user they can pass the address
-        // but redeeming those tokens would have no effect on isEmailVerified called without the old address
-        // so in general that is not necessary either.
-        if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
-            if (emailInfo.status === "OK") {
-                email = emailInfo.email;
-            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
-                // This only happens for phone based passwordless users (or if the user added a custom getEmailForUserId)
-                // We can return OK here, since there is no way to create an email verification token
-                // if getEmailForUserId returns EMAIL_DOES_NOT_EXIST_ERROR.
-                return {
-                    status: "OK",
-                };
-            } else {
-                throw new global.Error("Unknown User ID provided without email");
-            }
-        }
-
         return await recipeInstance.recipeInterfaceImpl.revokeEmailVerificationTokens({
-            userId,
+            recipeUserId,
             email: email!,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async unverifyEmail(userId: string, email: string, userContext?: any) {
+    static async unverifyEmail(recipeUserId: string, email: string, userContext?: any) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.recipeInterfaceImpl.unverifyEmail({
-            userId,
+            recipeUserId,
             email,
             userContext: userContext === undefined ? {} : userContext,
         });

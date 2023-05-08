@@ -405,12 +405,12 @@ export default function getAPIImplementation(): APIInterface {
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | GeneralErrorResponse
         > {
-            async function markEmailAsVerified(userId: string, email: string) {
+            async function markEmailAsVerified(recipeUserId: string, email: string) {
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            userId,
+                            recipeUserId,
                             email,
                             userContext,
                         }

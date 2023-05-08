@@ -1250,7 +1250,6 @@ EmailVerification.sendEmail({
     user: {
         email: "",
         recipeUserId: "",
-        id: "",
     },
 });
 
