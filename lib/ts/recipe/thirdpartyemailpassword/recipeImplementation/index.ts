@@ -25,7 +25,6 @@ export default function getRecipeInterface(
         emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
-            doAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);

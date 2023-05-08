@@ -25,7 +25,6 @@ export default class Wrapper {
     static emailPasswordSignUp(
         email: string,
         password: string,
-        doAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {
