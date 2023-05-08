@@ -73,14 +73,20 @@ export default class Wrapper {
         });
     }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
+    static Google = thirdPartyProviders.Google;
+
+    static updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+        userContext?: any;
+        applyPasswordPolicy?: boolean;
+    }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
         });
     }
-
-    static Google = thirdPartyProviders.Google;
 
     static Github = thirdPartyProviders.Github;
 
@@ -91,6 +97,10 @@ export default class Wrapper {
     static Discord = thirdPartyProviders.Discord;
 
     static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
+
+    static Bitbucket = thirdPartyProviders.Bitbucket;
+
+    static GitLab = thirdPartyProviders.GitLab;
 
     // static Okta = thirdPartyProviders.Okta;
 
@@ -133,6 +143,10 @@ export let Apple = Wrapper.Apple;
 export let Discord = Wrapper.Discord;
 
 export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+
+export let Bitbucket = Wrapper.Bitbucket;
+
+export let GitLab = Wrapper.GitLab;
 
 // export let Okta = Wrapper.Okta;
 

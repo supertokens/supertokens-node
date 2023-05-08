@@ -68,16 +68,12 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         ) {
             // Techincally it can but its an edge case so we assume that it wont
             throw new Error("Should never come here");
-        }
-        // TODO: check for password policy error has well.
-        /**
-         * 
-         * return {
+        } else if (updateResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+            return {
                 status: "INVALID_PASSWORD_ERROR",
-                error: passwordValidationError,
+                error: updateResponse.failureReason,
             };
-         */
-
+        }
         return {
             status: "OK",
         };
@@ -95,16 +91,12 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
     ) {
         // Techincally it can but its an edge case so we assume that it wont
         throw new Error("Should never come here");
-    }
-    // TODO: check for password policy error has well.
-    /**
-     * 
-     * return {
+    } else if (updateResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+        return {
             status: "INVALID_PASSWORD_ERROR",
-            error: passwordValidationError,
+            error: updateResponse.failureReason,
         };
-     */
-
+    }
     return {
         status: "OK",
     };

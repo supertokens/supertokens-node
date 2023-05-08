@@ -22,9 +22,10 @@ export declare class Querier {
         }[],
         apiKey?: string
     ): void;
-    sendPostRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
-    sendDeleteRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
+    sendPostRequest: <T = any>(path: NormalisedURLPath, body: any) => Promise<T>;
+    sendDeleteRequest: (path: NormalisedURLPath, body: any, params?: any) => Promise<any>;
     sendGetRequest: (path: NormalisedURLPath, params: any) => Promise<any>;
     sendPutRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
+    getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;
 }

@@ -22,6 +22,7 @@ let EmailPassword = require("../../recipe/emailpassword");
 let { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
 let { middleware, errorHandler } = require("../../framework/express");
+const express = require("express");
 
 describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.test.js]")}`, function () {
     beforeEach(async function () {
@@ -69,10 +70,166 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             userId: res.user.id,
             email: "test2@gmail.com",
             password: "testPass",
+            applyPasswordPolicy: false,
         });
 
         let res2 = await signIn("test2@gmail.com", "testPass");
 
         assert(res2.user.id === res2.user.id);
+    });
+
+    it("test updateEmailPass with failing password validation", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "email",
+                            },
+                            {
+                                id: "password",
+                                validate: async (value) => {
+                                    if (value.length < 5) return "Password should be greater than 5 characters";
+                                    return undefined;
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
+        const express = require("express");
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+
+        let res = await signIn("test@gmail.com", "testPass123");
+
+        const res2 = await updateEmailOrPassword({
+            userId: res.user.id,
+            email: "test2@gmail.com",
+            password: "test",
+        });
+
+        assert(res2.status === "PASSWORD_POLICY_VIOLATED_ERROR");
+        assert(res2.failureReason === "Password should be greater than 5 characters");
+    });
+
+    it("test updateEmailPass with passing password validation", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "email",
+                            },
+                            {
+                                id: "password",
+                                validate: async (value) => {
+                                    if (value.length < 5) return "Password should be greater than 5 characters";
+                                    return undefined;
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+        });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
+        const express = require("express");
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+
+        let res = await signIn("test@gmail.com", "testPass123");
+
+        const res2 = await updateEmailOrPassword({
+            userId: res.user.id,
+            email: "test2@gmail.com",
+            password: "testPass2",
+        });
+
+        assert(res2.status === "OK");
+    });
+
+    it("test updateEmailPass with failing default password validation", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
+        });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
+        const express = require("express");
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+
+        let res = await signIn("test@gmail.com", "testPass123");
+
+        const res2 = await updateEmailOrPassword({
+            userId: res.user.id,
+            email: "test2@gmail.com",
+            password: "1",
+        });
+
+        assert(res2.status === "PASSWORD_POLICY_VIOLATED_ERROR");
+        assert(res2.failureReason === "Password must contain at least 8 characters, including a number");
     });
 });

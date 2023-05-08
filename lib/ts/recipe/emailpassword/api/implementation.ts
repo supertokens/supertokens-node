@@ -402,6 +402,7 @@ export default function getAPIImplementation(): APIInterface {
                   email: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | GeneralErrorResponse
         > {
             async function markEmailAsVerified(userId: string, email: string) {
@@ -431,6 +432,7 @@ export default function getAPIImplementation(): APIInterface {
                       email: string;
                   }
                 | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+                | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
                 | GeneralErrorResponse
             > {
                 let updateResponse = await options.recipeImplementation.updateEmailOrPassword({
@@ -449,6 +451,11 @@ export default function getAPIImplementation(): APIInterface {
                     return {
                         status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
                     };
+                } else if (updateResponse.status === "PASSWORD_POLICY_VIOLATED_ERROR") {
+                    return {
+                        status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                        failureReason: updateResponse.failureReason,
+                    };
                 } else {
                     // status: "OK"
                     return {
@@ -457,9 +464,6 @@ export default function getAPIImplementation(): APIInterface {
                         email: emailForWhomTokenWasGenerated,
                     };
                 }
-                // TODO: we need to also handle password policy error. Note that this needs
-                // to happen in the api file (before this function is called) as well
-                // cause we don't want to consume the token unnecessarily.
             }
 
             let newPassword = formFields.filter((f) => f.id === "password")[0].value;

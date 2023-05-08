@@ -7,6 +7,7 @@ let Session = require("../../../recipe/session");
 let { verifySession } = require("../../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../../framework/express");
 let ThirdPartyEmailPassword = require("../../../recipe/thirdpartyemailpassword");
+let Dashboard = require("../../../recipe/dashboard");
 let axios = require("axios");
 
 // Change these values if you want to run the server on another adress
@@ -112,6 +113,7 @@ supertokens.init({
             ],
         }),
         Session.init(),
+        Dashboard.init(),
     ],
 });
 

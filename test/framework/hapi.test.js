@@ -21,6 +21,14 @@ const Hapi = require("@hapi/hapi");
 let Session = require("../../recipe/session");
 let ThirdpartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let { verifySession } = require("../../recipe/session/framework/hapi");
+let Dashboard = require("../../recipe/dashboard");
+let EmailPassword = require("../../recipe/emailpassword");
+const { createUsers } = require("../utils.js");
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
+const Passwordless = require("../../recipe/passwordless");
+const ThirdParty = require("../../recipe/thirdparty");
+const { Apple, Google, Github } = require("../../recipe/thirdparty");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
     beforeEach(async function () {
@@ -958,7 +966,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateSessionData",
             method: "post",
             handler: async (req, res) => {
-                await req.session.updateSessionData({ key: "value" });
+                await req.session.updateSessionDataInDatabase({ key: "value" });
                 return res.response("").code(200);
             },
             options: {
@@ -970,7 +978,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/getSessionData",
             method: "post",
             handler: async (req, res) => {
-                let sessionData = await req.session.getSessionData();
+                let sessionData = await req.session.getSessionDataFromDatabase();
                 return res.response(sessionData).code(200);
             },
             options: {
@@ -982,7 +990,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateSessionData2",
             method: "post",
             handler: async (req, res) => {
-                await req.session.updateSessionData(null);
+                await req.session.updateSessionDataInDatabase(null);
                 return res.response("").code(200);
             },
             options: {
@@ -995,7 +1003,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             handler: async (req, res) => {
                 return res
-                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .response({
+                        success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })),
+                    })
                     .code(200);
             },
         });
@@ -1099,7 +1109,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             handler: async (req, res) => {
                 let accessTokenBefore = req.session.accessToken;
-                await req.session.updateAccessTokenPayload({ key: "value" });
+                await req.session.mergeIntoAccessTokenPayload({ key: "value" });
                 let accessTokenAfter = req.session.accessToken;
                 let statusCode =
                     accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
@@ -1126,7 +1136,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateAccessTokenPayload2",
             method: "post",
             handler: async (req, res) => {
-                await req.session.updateAccessTokenPayload(null);
+                await req.session.mergeIntoAccessTokenPayload({ key: null });
                 return res.response("").code(200);
             },
             options: {
@@ -1145,7 +1155,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             handler: async (req, res) => {
                 return res
-                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .response({
+                        success: !(await Session.updateSessionDataInDatabase("InvalidHandle", { key: "value3" })),
+                    })
                     .code(200);
             },
         });
@@ -1164,7 +1176,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1180,7 +1194,10 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await this.server.inject({
@@ -1208,7 +1225,10 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.key, "value");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1224,7 +1244,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepStrictEqual(frontendInfo.up, {});
+        assert.strictEqual(frontendInfo.up.sub, "user1");
+        assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
 
         //retrieve the changed jwt payload
         let response3 = await this.server.inject({
@@ -1237,7 +1259,20 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         });
 
         //check the value of the retrieved
-        assert.deepStrictEqual(response3.result, {});
+        assert.deepStrictEqual(
+            new Set(Object.keys(response3.result)),
+            new Set([
+                "antiCsrfToken",
+                "exp",
+                "iat",
+                "parentRefreshTokenHash1",
+                "refreshTokenHash1",
+                "sessionHandle",
+                "sub",
+                "iss",
+            ])
+        );
+
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await this.server.inject({
             method: "post",
@@ -1294,5 +1329,598 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
 
         assert(response.statusCode === 203);
         assert(response.result.custom);
+    });
+
+    it("test that authorization header is read correctly in dashboard recipe", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        let res2 = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users/count",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(res2.statusCode === 200);
+    });
+
+    it("test verifySession/getSession without accessToken", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+        });
+
+        this.server.route({
+            path: "/getSessionV1",
+            method: "get",
+            handler: async (req, res) => {
+                return res.response({}).code(200);
+            },
+            options: {
+                pre: [{ method: verifySession() }],
+            },
+        });
+
+        this.server.route({
+            path: "/getSessionV2",
+            method: "get",
+            handler: async (req, res) => {
+                await Session.getSession(req, res);
+                return res.response({}).code(200);
+            },
+        });
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        let response1 = await this.server.inject({
+            method: "get",
+            url: "/getSessionV1",
+        });
+
+        assert.strictEqual(response1.statusCode, 401);
+
+        let response2 = await this.server.inject({
+            method: "get",
+            url: "/getSessionV2",
+        });
+
+        assert.strictEqual(response2.statusCode, 401);
+    });
+
+    it("test that tags request respond with correct tags", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(EmailPassword);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/search/tags",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.tags.length !== 0);
+    });
+
+    it("test that search results correct output for 'email: t'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(EmailPassword);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&email=t",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.users.length === 5);
+    });
+
+    it("test that search results correct output for 'email: iresh'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(EmailPassword);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&email=iresh",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.users.length === 0);
+    });
+    it("test that search results correct output for multiple search items", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(EmailPassword);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&email=john;iresh",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.users.length === 1);
+    });
+
+    it("test that search results correct output for 'phone: +1'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(null, Passwordless);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&phone=%2B1",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.users.length === 3);
+    });
+
+    it("test that search results correct output for 'phone: 1('", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(null, Passwordless);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&phone=1%28",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.users.length === 0);
+    });
+
+    it("test that search results correct output for 'provider: google, phone: 1'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(null, Passwordless, ThirdParty);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&provider=google&phone=1",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.users.length === 0);
+    });
+
+    it("test that search results correct output for 'provider: google'", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Dashboard.init({
+                    apiKey: "testapikey",
+                    override: {
+                        functions: (original) => {
+                            return {
+                                ...original,
+                                shouldAllowAccess: async function (input) {
+                                    let authHeader = input.req.getHeaderValue("authorization");
+                                    return authHeader === "Bearer testapikey";
+                                },
+                            };
+                        },
+                    },
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            Google({
+                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                clientSecret: "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",
+                            }),
+                            Github({
+                                clientId: "467101b197249757c71f",
+                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                            }),
+                            Apple({
+                                clientId: "4398792-io.supertokens.example.service",
+                                clientSecret: {
+                                    keyId: "7M48Y4RYDL",
+                                    privateKey:
+                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                    teamId: "YWQCXGJRJL",
+                                },
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.19") === "2.19") {
+            return this.skip();
+        }
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        await createUsers(null, null, ThirdParty);
+
+        let resp = await this.server.inject({
+            method: "get",
+            url: "/auth/dashboard/api/users?limit=10&provider=google",
+            headers: {
+                Authorization: "Bearer testapikey",
+                "Content-Type": "application/json",
+            },
+        });
+        assert(resp.statusCode === 200);
+        assert(resp.result.users.length === 3);
     });
 });

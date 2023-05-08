@@ -74,9 +74,11 @@ export default class Recipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
         {
+            const getEmailPasswordConfig = () => this.emailPasswordRecipe.config;
             let builder = new OverrideableBuilder(
                 RecipeImplementation(
                     Querier.getNewInstanceOrThrowError(EmailPasswordRecipe.RECIPE_ID),
+                    getEmailPasswordConfig,
                     Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
                 )
             );

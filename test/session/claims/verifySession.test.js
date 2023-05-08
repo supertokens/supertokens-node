@@ -269,7 +269,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .create("validateClaims")
                     .once()
                     .withArgs({
-                        accessTokenPayload: {},
+                        accessTokenPayload: sinon.match.object,
                         userId: "testing-userId",
                         claimValidators: testValidatorArr,
                         userContext: {
@@ -328,7 +328,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .create("validateClaims")
                     .once()
                     .withArgs({
-                        accessTokenPayload: {},
+                        accessTokenPayload: sinon.match.object,
                         userId: "testing-userId",
                         claimValidators: testValidatorArr,
                         userContext: {

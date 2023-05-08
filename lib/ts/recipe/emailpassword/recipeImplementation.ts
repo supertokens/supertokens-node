@@ -1,11 +1,15 @@
-import { RecipeInterface } from "./types";
+import { RecipeInterface, TypeNormalisedInput } from "./types";
 import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import { User } from "../../types";
+import { FORM_FIELD_PASSWORD_ID } from "./constants";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    getEmailPasswordConfig: () => TypeNormalisedInput
+): RecipeInterface {
     return {
         signUp: async function (
             this: RecipeInterface,
@@ -112,6 +116,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userId: string;
             email?: string;
             password?: string;
+            applyPasswordPolicy?: boolean;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -120,8 +125,21 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
               }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
-            // the input can be primary or recipe level user id.
+            if (input.applyPasswordPolicy || input.applyPasswordPolicy === undefined) {
+                let formFields = getEmailPasswordConfig().signUpFeature.formFields;
+                if (input.password !== undefined) {
+                    const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
+                    const error = await passwordField.validate(input.password);
+                    if (error !== undefined) {
+                        return {
+                            status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                            failureReason: error,
+                        };
+                    }
+                }
+            }
             return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                 userId: input.userId,
                 email: input.email,

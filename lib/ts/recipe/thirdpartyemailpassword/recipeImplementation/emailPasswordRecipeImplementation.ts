@@ -51,6 +51,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email?: string;
             password?: string;
             userContext: any;
+            applyPasswordPolicy: boolean;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -59,6 +60,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
               }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
             return recipeInterface.updateEmailOrPassword(input);
         },

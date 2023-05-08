@@ -3,7 +3,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 export declare type TypeInput = {
-    apiKey: string;
+    apiKey?: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -13,7 +13,8 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    apiKey: string;
+    apiKey?: string;
+    authMode: AuthMode;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -40,6 +41,7 @@ export declare type APIInterface = {
 };
 export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
+export declare type AuthMode = "api-key" | "email-password";
 export declare type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
     timeJoined: number;
