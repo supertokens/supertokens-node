@@ -95,6 +95,8 @@ export default function getAPIInterface(): APIInterface {
                         // In this case, we need to update the session's user ID by creating
                         // a new session
 
+                        // TODO: revoke all session belonging to session.getRecipeUserId()
+
                         let newSession = await Session.createNewSession(
                             options.req,
                             options.res,
