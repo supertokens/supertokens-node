@@ -27,6 +27,7 @@ import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
 import { EmailVerificationClaim } from "../emailverification/emailVerificationClaim";
+import { AccountLinkingClaim } from "./accountLinkingClaim";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -698,6 +699,30 @@ export default class Recipe extends RecipeModule {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 description: "Not allowed because it will lead to two primary user id having same account info",
             };
+        }
+    };
+
+    purgeSessionOfAccountLinkingClaimIfRequired = async function (
+        recipeInterface: RecipeInterface,
+        session: SessionContainerInterface,
+        userContext: any
+    ) {
+        let recipeIdToLinkTo = await session.getClaimValue(AccountLinkingClaim);
+        if (recipeIdToLinkTo !== undefined) {
+            // this means that this session was supposed to be
+            // linked with some recipeId, and we need to determine if we should
+            // remove this claim from the session based on the result
+            // of the above API call.
+
+            let primaryUserToLinkTo = await recipeInterface.fetchFromAccountToLinkTable({
+                recipeUserId: recipeIdToLinkTo,
+                userContext,
+            });
+            if (primaryUserToLinkTo === undefined || primaryUserToLinkTo !== session.getUserId()) {
+                // this means that this session has stale data about which account to
+                // link to. So we remove the claim
+                await session.removeClaim(AccountLinkingClaim);
+            }
         }
     };
 }

@@ -105,4 +105,9 @@ export default class Recipe extends RecipeModule {
               resp: T;
           }
     >;
+    purgeSessionOfAccountLinkingClaimIfRequired: (
+        recipeInterface: RecipeInterface,
+        session: SessionContainerInterface,
+        userContext: any
+    ) => Promise<void>;
 }
