@@ -125,7 +125,8 @@ export default function getAPIInterface(): APIInterface {
                     // linked user's account). Instead, we just want to remove the
                     // account linking claim from the session.
 
-                    // TODO: remove account linking claim
+                    // Removing of account linking claim is already done in the linkAccount recipe
+                    // implementation if necessary, so we don't need to do anything in here.
 
                     return {
                         status: "OK",
