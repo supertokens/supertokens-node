@@ -18,6 +18,8 @@ import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
+import { SessionContainerInterface } from "../session/types";
+import { AccountLinkingClaim } from "./accountLinkingClaim";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -113,8 +115,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             this: RecipeInterface,
             {
                 recipeUserId,
+                session,
+                userContext,
             }: {
                 recipeUserId: string;
+                session: SessionContainerInterface | undefined;
+                userContext: any;
             }
         ): Promise<
             | {
@@ -130,9 +136,31 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
                 recipeUserId,
             });
+
+            if (session !== undefined) {
+                let recipeIdToLinkTo = await session.getClaimValue(AccountLinkingClaim);
+                if (recipeIdToLinkTo !== undefined) {
+                    // this means that this session was supposed to be
+                    // linked with some recipeId, and we need to determine if we should
+                    // remove this claim from the session based on the result
+                    // of the above API call.
+
+                    let primaryUserToLinkTo = await this.fetchFromAccountToLinkTable({
+                        recipeUserId: recipeIdToLinkTo,
+                        userContext,
+                    });
+                    if (primaryUserToLinkTo === undefined || primaryUserToLinkTo !== session.getUserId()) {
+                        // this means that this session has stale data about which account to
+                        // link to. So we remove the claim
+                        await session.removeClaim(AccountLinkingClaim);
+                    }
+                }
+            }
+
+            return response;
         },
 
         canLinkAccounts: async function (
@@ -173,10 +201,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             {
                 recipeUserId,
                 primaryUserId,
+                session,
                 userContext,
             }: {
                 recipeUserId: string;
                 primaryUserId: string;
+                session: SessionContainerInterface | undefined;
                 userContext: any;
             }
         ): Promise<
@@ -202,6 +232,27 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                     primaryUserId,
                 }
             );
+
+            if (session !== undefined) {
+                let recipeIdToLinkTo = await session.getClaimValue(AccountLinkingClaim);
+                if (recipeIdToLinkTo !== undefined) {
+                    // this means that this session was supposed to be
+                    // linked with some recipeId, and we need to determine if we should
+                    // remove this claim from the session based on the result
+                    // of the above API call.
+
+                    let primaryUserToLinkTo = await this.fetchFromAccountToLinkTable({
+                        recipeUserId: recipeIdToLinkTo,
+                        userContext,
+                    });
+                    if (primaryUserToLinkTo === undefined || primaryUserToLinkTo !== session.getUserId()) {
+                        // this means that this session has stale data about which account to
+                        // link to. So we remove the claim
+                        await session.removeClaim(AccountLinkingClaim);
+                    }
+                }
+            }
+
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
                 await Session.revokeAllSessionsForUser(recipeUserId, userContext);
                 let user: User | undefined = await this.getUser({
@@ -304,7 +355,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             recipeUserId,
         }: {
             recipeUserId: string;
-        }): Promise<User | undefined> {
+        }): Promise<string | undefined> {
             let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link/table"), {
                 recipeUserId,
             });

@@ -4,7 +4,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
-import { SessionContainer } from "../session";
+import { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
@@ -29,11 +29,13 @@ export default class Recipe extends RecipeModule {
         recipeUserId,
         isVerified,
         checkAccountsToLinkTableAsWell,
+        session,
         userContext,
     }: {
         recipeUserId: string;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
+        session: SessionContainerInterface | undefined;
         userContext: any;
     }) => Promise<string>;
     getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
@@ -71,7 +73,7 @@ export default class Recipe extends RecipeModule {
         verifyCredentialsFunc,
         userContext,
     }: {
-        session: SessionContainer;
+        session: SessionContainerInterface;
         newUser: AccountInfoWithRecipeId;
         createRecipeUserFunc: () => Promise<void>;
         verifyCredentialsFunc: () => Promise<

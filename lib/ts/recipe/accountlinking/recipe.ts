@@ -18,7 +18,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
-import { SessionContainer } from "../session";
+import { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import { getUser } from "../..";
@@ -106,11 +106,13 @@ export default class Recipe extends RecipeModule {
         recipeUserId,
         isVerified,
         checkAccountsToLinkTableAsWell,
+        session,
         userContext,
     }: {
         recipeUserId: string;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
+        session: SessionContainerInterface | undefined;
         userContext: any;
     }): Promise<string> => {
         let recipeUser = await getUser(recipeUserId, userContext);
@@ -151,6 +153,7 @@ export default class Recipe extends RecipeModule {
 
             let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
                 recipeUserId: recipeUserId,
+                session,
                 userContext,
             });
 
@@ -169,6 +172,7 @@ export default class Recipe extends RecipeModule {
                 recipeUserId,
                 isVerified,
                 checkAccountsToLinkTableAsWell,
+                session,
                 userContext,
             });
         } else {
@@ -194,6 +198,7 @@ export default class Recipe extends RecipeModule {
             let linkAccountsResult = await this.recipeInterfaceImpl.linkAccounts({
                 recipeUserId: recipeUserId,
                 primaryUserId: primaryUser.id,
+                session,
                 userContext,
             });
 
@@ -227,6 +232,7 @@ export default class Recipe extends RecipeModule {
                     recipeUserId,
                     isVerified,
                     checkAccountsToLinkTableAsWell: false,
+                    session,
                     userContext,
                 });
             }
@@ -257,9 +263,12 @@ export default class Recipe extends RecipeModule {
         // to be linked to another user post sign in but required
         // email verification.
         if (checkAccountsToLinkTableAsWell) {
-            let pUser = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
-            if (pUser !== undefined && pUser.isPrimaryUser) {
-                return pUser;
+            let pUserId = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
+            if (pUserId !== undefined) {
+                let pUser = await getUser(pUserId, userContext);
+                if (pUser !== undefined && pUser.isPrimaryUser) {
+                    return pUser;
+                }
             }
         }
 
@@ -387,7 +396,7 @@ export default class Recipe extends RecipeModule {
         verifyCredentialsFunc,
         userContext,
     }: {
-        session: SessionContainer;
+        session: SessionContainerInterface;
         newUser: AccountInfoWithRecipeId;
         createRecipeUserFunc: () => Promise<void>;
         verifyCredentialsFunc: () => Promise<
@@ -504,6 +513,7 @@ export default class Recipe extends RecipeModule {
             // now we can try and create a primary user for the existing user
             let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
                 recipeUserId: existingUser.loginMethods[0].recipeUserId,
+                session,
                 userContext,
             });
 
@@ -664,6 +674,7 @@ export default class Recipe extends RecipeModule {
         const linkAccountResponse = await this.recipeInterfaceImpl.linkAccounts({
             recipeUserId: userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id,
             primaryUserId: existingUser.id,
+            session,
             userContext,
         });
 

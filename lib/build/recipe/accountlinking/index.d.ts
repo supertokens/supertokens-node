@@ -1,6 +1,7 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import type { RecipeInterface } from "./types";
+import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static getRecipeUserIdsForPrimaryUserIds(
@@ -33,6 +34,7 @@ export default class Wrapper {
     >;
     static createPrimaryUser(
         recipeUserId: string,
+        session?: SessionContainerInterface,
         userContext?: any
     ): Promise<
         | {
@@ -71,6 +73,7 @@ export default class Wrapper {
     static linkAccounts(
         recipeUserId: string,
         primaryUserId: string,
+        session?: SessionContainerInterface,
         userContext?: any
     ): Promise<
         | {
@@ -101,10 +104,7 @@ export default class Wrapper {
               description: string;
           }
     >;
-    static fetchFromAccountToLinkTable(
-        recipeUserId: string,
-        userContext?: any
-    ): Promise<import("../emailpassword").User | undefined>;
+    static fetchFromAccountToLinkTable(recipeUserId: string, userContext?: any): Promise<string | undefined>;
     static storeIntoAccountToLinkTable(
         recipeUserId: string,
         primaryUserId: string,

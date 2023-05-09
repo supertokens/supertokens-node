@@ -15,6 +15,7 @@
 
 import Recipe from "./recipe";
 import type { RecipeInterface } from "./types";
+import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init = Recipe.init;
 
@@ -39,9 +40,10 @@ export default class Wrapper {
         });
     }
 
-    static async createPrimaryUser(recipeUserId: string, userContext?: any) {
+    static async createPrimaryUser(recipeUserId: string, session?: SessionContainerInterface, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
+            session,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -54,10 +56,16 @@ export default class Wrapper {
         });
     }
 
-    static async linkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any) {
+    static async linkAccounts(
+        recipeUserId: string,
+        primaryUserId: string,
+        session?: SessionContainerInterface,
+        userContext?: any
+    ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId,
+            session,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

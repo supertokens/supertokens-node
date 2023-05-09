@@ -550,6 +550,7 @@ export default function getAPIImplementation(): APIInterface {
                                 recipeUserId: createUserResponse.user.id,
                                 isVerified: true,
                                 checkAccountsToLinkTableAsWell: true,
+                                session: undefined,
                                 userContext,
                             }
                         );

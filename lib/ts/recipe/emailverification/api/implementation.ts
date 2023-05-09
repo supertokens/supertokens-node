@@ -35,6 +35,7 @@ export default function getAPIInterface(): APIInterface {
                     recipeUserId: verifyTokenResponse.user.recipeUserId,
                     isVerified: true,
                     checkAccountsToLinkTableAsWell: true,
+                    session,
                     userContext,
                 }
             );

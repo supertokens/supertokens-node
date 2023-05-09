@@ -42,6 +42,7 @@ export default function getRecipeInterface(
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
                 isVerified: false,
+                session: undefined,
                 userContext,
             });
 

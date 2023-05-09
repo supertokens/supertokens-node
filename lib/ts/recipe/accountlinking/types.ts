@@ -15,14 +15,14 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import type { User } from "../../types";
-import { SessionContainer } from "../session";
+import { SessionContainerInterface } from "../session/types";
 
 export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
-        session: SessionContainer | undefined,
+        session: SessionContainerInterface | undefined,
         userContext: any
     ) => Promise<
         | {
@@ -46,7 +46,7 @@ export type TypeNormalisedInput = {
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
-        session: SessionContainer | undefined,
+        session: SessionContainerInterface | undefined,
         userContext: any
     ) => Promise<
         | {
@@ -106,6 +106,7 @@ export type RecipeInterface = {
     >;
     createPrimaryUser: (input: {
         recipeUserId: string;
+        session: SessionContainerInterface | undefined;
         userContext: any;
     }) => Promise<
         | {
@@ -144,6 +145,7 @@ export type RecipeInterface = {
     linkAccounts: (input: {
         recipeUserId: string;
         primaryUserId: string;
+        session: SessionContainerInterface | undefined;
         userContext: any;
     }) => Promise<
         | {
@@ -181,7 +183,7 @@ export type RecipeInterface = {
         removeAllLinkedAccounts: boolean;
         userContext: any;
     }) => Promise<{ status: "OK" }>;
-    fetchFromAccountToLinkTable: (input: { recipeUserId: string; userContext: any }) => Promise<User | undefined>;
+    fetchFromAccountToLinkTable: (input: { recipeUserId: string; userContext: any }) => Promise<string | undefined>;
     storeIntoAccountToLinkTable: (input: {
         recipeUserId: string;
         primaryUserId: string;
