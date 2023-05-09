@@ -1,6 +1,6 @@
 import { PrimitiveClaim } from "../session/claims";
 
-export class AccountLinkingClaimClass extends PrimitiveClaim<string> {
+class AccountLinkingClaimClass extends PrimitiveClaim<string> {
     constructor() {
         super({
             key: "st-linking",
