@@ -271,8 +271,8 @@ export default class Recipe extends RecipeModule {
 
                     // In this case, all we do is to update the emailverification claim
                     try {
-                        // TODO: fetchValue should take a recipeId as well now
-                        // and EmailVerificationClaim should use that and not the primary user id
+                        // EmailVerificationClaim will be based on the recipeUserId
+                        // and not the primary user ID.
                         await input.session.fetchAndSetClaim(EmailVerificationClaim, input.userContext);
                     } catch (err) {
                         // This should never happen, since we've just set the status above.
@@ -294,8 +294,11 @@ export default class Recipe extends RecipeModule {
                     // In this case, we need to update the session's user ID by creating
                     // a new session
 
-                    // TODO: revoke all session belonging to session.getRecipeUserId()
+                    // Revoke all session belonging to session.getRecipeUserId()
+                    // We do not really need to do this, but we do it anyway.. no harm.
+                    await Session.revokeAllSessionsForUser(input.recipeUserIdWhoseEmailGotVerified, input.userContext);
 
+                    // create a new session and return that..
                     return await Session.createNewSession(
                         input.req,
                         input.res,
