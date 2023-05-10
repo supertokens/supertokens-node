@@ -29,7 +29,6 @@ export default class Wrapper {
         recipeUserId: string;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell?: boolean;
-        session?: SessionContainerInterface;
         userContext?: any;
     }): Promise<string>;
     /**
@@ -64,7 +63,6 @@ export default class Wrapper {
     >;
     static createPrimaryUser(
         recipeUserId: string,
-        session?: SessionContainerInterface,
         userContext?: any
     ): Promise<
         | {
@@ -152,7 +150,6 @@ export default class Wrapper {
     static linkAccounts(
         recipeUserId: string,
         primaryUserId: string,
-        session?: SessionContainerInterface,
         userContext?: any
     ): Promise<
         | {

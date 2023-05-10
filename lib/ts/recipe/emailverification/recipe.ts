@@ -36,6 +36,7 @@ import { SessionContainerInterface } from "../session/types";
 import AccountLinking from "../accountlinking";
 import SessionError from "../session/error";
 import Session from "../session";
+import { AccountLinkingClaim } from "../accountlinking/accountLinkingClaim";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -228,7 +229,6 @@ export default class Recipe extends RecipeModule {
             recipeUserId: input.recipeUserIdWhoseEmailGotVerified,
             isVerified: true,
             checkAccountsToLinkTableAsWell: true,
-            session: input.session,
             userContext: input.userContext,
         });
 
@@ -308,8 +308,7 @@ export default class Recipe extends RecipeModule {
                 // linked user's account). Instead, we just want to remove the
                 // account linking claim from the session.
 
-                // Removing of account linking claim is already done in the linkAccount recipe
-                // implementation if necessary, so we don't need to do anything in here.
+                await input.session.removeClaim(AccountLinkingClaim, input.userContext);
 
                 return undefined;
             }

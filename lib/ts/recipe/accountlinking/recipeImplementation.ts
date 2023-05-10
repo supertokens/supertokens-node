@@ -18,8 +18,6 @@ import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
-import { SessionContainerInterface } from "../session/types";
-import AccountLinkingRecipe from "./recipe";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -115,11 +113,8 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             this: RecipeInterface,
             {
                 recipeUserId,
-                session,
-                userContext,
             }: {
                 recipeUserId: string;
-                session: SessionContainerInterface | undefined;
                 userContext: any;
             }
         ): Promise<
@@ -139,14 +134,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
                 recipeUserId,
             });
-
-            if (session !== undefined) {
-                await AccountLinkingRecipe.getInstanceOrThrowError().purgeSessionOfAccountLinkingClaimIfRequired(
-                    this,
-                    session,
-                    userContext
-                );
-            }
 
             return response;
         },
@@ -189,12 +176,10 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             {
                 recipeUserId,
                 primaryUserId,
-                session,
                 userContext,
             }: {
                 recipeUserId: string;
                 primaryUserId: string;
-                session: SessionContainerInterface | undefined;
                 userContext: any;
             }
         ): Promise<
@@ -220,14 +205,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                     primaryUserId,
                 }
             );
-
-            if (session !== undefined) {
-                await AccountLinkingRecipe.getInstanceOrThrowError().purgeSessionOfAccountLinkingClaimIfRequired(
-                    this,
-                    session,
-                    userContext
-                );
-            }
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
                 await Session.revokeAllSessionsForUser(recipeUserId, userContext);

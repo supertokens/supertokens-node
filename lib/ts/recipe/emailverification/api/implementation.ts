@@ -61,8 +61,7 @@ export default function getAPIInterface(): APIInterface {
             // are trying to link that recipe ID to the current session's primary user ID.
 
             let recipeUserIdForWhomToGenerateToken = session.getRecipeUserId();
-            // TODO: update AccountLinkingClaim value from db...
-            const fromAccountLinkingClaim = await session.getClaimValue(AccountLinkingClaim, userContext);
+            const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
             if (fromAccountLinkingClaim !== undefined) {
                 // this means that the claim exists and so we will generate the token for that user id
                 recipeUserIdForWhomToGenerateToken = fromAccountLinkingClaim;
@@ -153,8 +152,7 @@ export default function getAPIInterface(): APIInterface {
             // as what happens in the verifyEmailPOST API post email verification (cause maybe the session is outdated).
 
             let recipeUserIdForWhomToGenerateToken = session.getRecipeUserId();
-            // TODO: update AccountLinkingClaim value from db...
-            const fromAccountLinkingClaim = await session.getClaimValue(AccountLinkingClaim, userContext);
+            const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
             if (fromAccountLinkingClaim !== undefined) {
                 // this means that the claim exists and so we will generate the token for that user id
                 recipeUserIdForWhomToGenerateToken = fromAccountLinkingClaim;

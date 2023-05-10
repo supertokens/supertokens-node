@@ -106,7 +106,6 @@ export type RecipeInterface = {
     >;
     createPrimaryUser: (input: {
         recipeUserId: string;
-        session: SessionContainerInterface | undefined;
         userContext: any;
     }) => Promise<
         | {
@@ -145,7 +144,6 @@ export type RecipeInterface = {
     linkAccounts: (input: {
         recipeUserId: string;
         primaryUserId: string;
-        session: SessionContainerInterface | undefined;
         userContext: any;
     }) => Promise<
         | {

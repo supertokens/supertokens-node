@@ -29,13 +29,11 @@ export default class Recipe extends RecipeModule {
         recipeUserId,
         isVerified,
         checkAccountsToLinkTableAsWell,
-        session,
         userContext,
     }: {
         recipeUserId: string;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
-        session: SessionContainerInterface | undefined;
         userContext: any;
     }) => Promise<string>;
     getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
@@ -107,9 +105,4 @@ export default class Recipe extends RecipeModule {
               resp: T;
           }
     >;
-    purgeSessionOfAccountLinkingClaimIfRequired: (
-        recipeInterface: RecipeInterface,
-        session: SessionContainerInterface,
-        userContext: any
-    ) => Promise<void>;
 }
