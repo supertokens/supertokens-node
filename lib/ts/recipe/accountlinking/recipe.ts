@@ -122,6 +122,7 @@ export default class Recipe extends RecipeModule {
         }
 
         if (recipeUser.isPrimaryUser) {
+            // TODO: we need to remove account linking claim in this situation as well? And others like this?
             return recipeUser.id;
         }
 
