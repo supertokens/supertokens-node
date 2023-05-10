@@ -28,7 +28,10 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         });
     }
 
-    let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(recipeUserId, {});
+    let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
+        recipeUserId,
+        {}
+    );
 
     if (emailResponse.status !== "OK") {
         throw new Error("Should never come here");

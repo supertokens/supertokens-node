@@ -70,7 +70,7 @@ export default function getAPIInterface(): APIInterface {
                 // (cause of some race condition), but that shouldn't matter much anyway.
             }
 
-            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
+            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
                 recipeUserIdForWhomToGenerateToken,
                 userContext
             );
@@ -161,7 +161,7 @@ export default function getAPIInterface(): APIInterface {
                 // (cause of some race condition), but that shouldn't matter much anyway.
             }
 
-            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
+            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
                 recipeUserIdForWhomToGenerateToken,
                 userContext
             );

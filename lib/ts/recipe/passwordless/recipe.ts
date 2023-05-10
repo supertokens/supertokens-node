@@ -19,7 +19,6 @@ import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from ".
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
@@ -40,8 +39,6 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -95,13 +92,6 @@ export default class Recipe extends RecipeModule {
             ingredients.smsDelivery === undefined
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
-
-        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
-            if (emailVerificationRecipe !== undefined) {
-                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
-            }
-        });
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -307,24 +297,5 @@ export default class Recipe extends RecipeModule {
         } else {
             throw new Error("Failed to create user. Please retry");
         }
-    };
-
-    // helper functions...
-    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo !== undefined) {
-            if (userInfo.email !== undefined) {
-                return {
-                    status: "OK",
-                    email: userInfo.email,
-                };
-            }
-            return {
-                status: "EMAIL_DOES_NOT_EXIST_ERROR",
-            };
-        }
-        return {
-            status: "UNKNOWN_USER_ID_ERROR",
-        };
     };
 }

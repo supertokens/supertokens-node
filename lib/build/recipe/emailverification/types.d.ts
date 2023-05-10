@@ -11,7 +11,7 @@ import { SessionContainerInterface } from "../session/types";
 export declare type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
+    getEmailForRecipeUserId?: (
         recipeUserId: string,
         userContext: any
     ) => Promise<
@@ -40,7 +40,7 @@ export declare type TypeNormalisedInput = {
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
+    getEmailForRecipeUserId?: (
         recipeUserId: string,
         userContext: any
     ) => Promise<
@@ -174,7 +174,7 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
     };
     emailVerifyLink: string;
 };
-export declare type GetEmailForUserIdFunc = (
+export declare type GetEmailForRecipeUserIdFunc = (
     recipeUserId: string,
     userContext: any
 ) => Promise<

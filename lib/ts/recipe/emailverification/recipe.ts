@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForUserIdFunc } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForRecipeUserIdFunc } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -37,6 +37,7 @@ import AccountLinking from "../accountlinking";
 import SessionError from "../session/error";
 import Session from "../session";
 import { AccountLinkingClaim } from "../accountlinking/accountLinkingClaim";
+import { getUser } from "../..";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -51,8 +52,6 @@ export default class Recipe extends RecipeModule {
     isInServerlessEnv: boolean;
 
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
-
-    getEmailForUserIdFuncsFromOtherRecipes: GetEmailForUserIdFunc[] = [];
 
     constructor(
         recipeId: string,
@@ -191,31 +190,41 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        if (this.config.getEmailForUserId !== undefined) {
-            const userRes = await this.config.getEmailForUserId(userId, userContext);
+    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc = async (recipeUserId, userContext) => {
+        if (this.config.getEmailForRecipeUserId !== undefined) {
+            const userRes = await this.config.getEmailForRecipeUserId(recipeUserId, userContext);
             if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
                 return userRes;
             }
         }
 
-        // TODO: we should just call the getUser function here and loop through
-        // the user's login method to find the email based on the input user id
+        let user = await getUser(recipeUserId, userContext);
 
-        for (const getEmailForUserId of this.getEmailForUserIdFuncsFromOtherRecipes) {
-            const res = await getEmailForUserId(userId, userContext);
-            if (res.status !== "UNKNOWN_USER_ID_ERROR") {
-                return res;
+        if (user === undefined) {
+            return {
+                status: "UNKNOWN_USER_ID_ERROR",
+            };
+        }
+
+        for (let i = 0; i < user.loginMethods.length; i++) {
+            let currLM = user.loginMethods[i];
+            if (currLM.recipeUserId === recipeUserId) {
+                if (currLM.email !== undefined) {
+                    return {
+                        email: currLM.email,
+                        status: "OK",
+                    };
+                } else {
+                    return {
+                        status: "EMAIL_DOES_NOT_EXIST_ERROR",
+                    };
+                }
             }
         }
 
         return {
             status: "UNKNOWN_USER_ID_ERROR",
         };
-    };
-
-    addGetEmailForUserIdFunc = (func: GetEmailForUserIdFunc): void => {
-        this.getEmailForUserIdFuncsFromOtherRecipes.push(func);
     };
 
     updateSessionIfRequiredPostEmailVerification = async (input: {
