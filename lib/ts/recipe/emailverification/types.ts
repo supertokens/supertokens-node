@@ -152,7 +152,11 @@ export type APIInterface = {
               options: APIOptions;
               userContext: any;
               session: SessionContainerInterface;
-          }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | GeneralErrorResponse>);
+          }) => Promise<
+              | { status: "OK" }
+              | { status: "EMAIL_ALREADY_VERIFIED_ERROR"; newSession?: SessionContainerInterface }
+              | GeneralErrorResponse
+          >);
 };
 
 export type TypeEmailVerificationEmailDeliveryInput = {

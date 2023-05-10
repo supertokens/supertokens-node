@@ -156,7 +156,11 @@ export declare type APIInterface = {
               session: SessionContainerInterface;
           }) => Promise<
               | {
-                    status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
+                    status: "OK";
+                }
+              | {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR";
+                    newSession?: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);

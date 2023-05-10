@@ -149,7 +149,11 @@ export default function getAPIInterface(): APIInterface {
         generateEmailVerifyTokenPOST: async function (
             this: APIInterface,
             { options, userContext, session }
-        ): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
+        ): Promise<
+            | { status: "OK" }
+            | { status: "EMAIL_ALREADY_VERIFIED_ERROR"; newSession?: SessionContainerInterface }
+            | GeneralErrorResponse
+        > {
             // In this API, we generate the email verification token for session's recipe user ID.
             // The exception is that if the account linking claim exists in the session,
             // then we will generate the token for that cause that claim implies that we
@@ -180,9 +184,18 @@ export default function getAPIInterface(): APIInterface {
                 // this can happen if the user ID was found, but it has no email. In this
                 // case, we treat it as a success case.
 
-                // TODO: do the same stuff we do in email verify post API
+                let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
+                    {
+                        req: options.req,
+                        res: options.res,
+                        session,
+                        recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                        userContext,
+                    }
+                );
                 return {
                     status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                    newSession,
                 };
             } else if (emailInfo.status === "OK") {
                 let response = await options.recipeImplementation.createEmailVerificationToken({
@@ -192,8 +205,19 @@ export default function getAPIInterface(): APIInterface {
                 });
 
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-                    // TODO: do the same stuff we do in email verify POST API
-                    return response;
+                    let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
+                        {
+                            req: options.req,
+                            res: options.res,
+                            session,
+                            recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                            userContext,
+                        }
+                    );
+                    return {
+                        status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                        newSession,
+                    };
                 }
 
                 if (recipeUserIdForWhomToGenerateToken === session.getRecipeUserId()) {
