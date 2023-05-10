@@ -7,6 +7,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
+import { SessionContainerInterface } from "../session/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -42,4 +43,11 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: GetEmailForUserIdFunc;
     addGetEmailForUserIdFunc: (func: GetEmailForUserIdFunc) => void;
+    updateSessionIfRequiredPostEmailVerification: (input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        session: SessionContainerInterface | undefined;
+        recipeUserIdWhoseEmailGotVerified: string;
+        userContext: any;
+    }) => Promise<SessionContainerInterface | undefined>;
 }
