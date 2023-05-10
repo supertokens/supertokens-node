@@ -75,8 +75,10 @@ export default class Recipe extends RecipeModule {
     }: {
         session: SessionContainerInterface;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: () => Promise<void>;
-        verifyCredentialsFunc: () => Promise<
+        createRecipeUserFunc: (userContext: any) => Promise<void>;
+        verifyCredentialsFunc: (
+            userContext: any
+        ) => Promise<
             | {
                   status: "OK";
               }

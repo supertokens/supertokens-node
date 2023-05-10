@@ -399,8 +399,10 @@ export default class Recipe extends RecipeModule {
     }: {
         session: SessionContainerInterface;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: () => Promise<void>;
-        verifyCredentialsFunc: () => Promise<
+        createRecipeUserFunc: (userContext: any) => Promise<void>;
+        verifyCredentialsFunc: (
+            userContext: any
+        ) => Promise<
             | { status: "OK" }
             | {
                   status: "CUSTOM_RESPONSE";
@@ -611,7 +613,7 @@ export default class Recipe extends RecipeModule {
             }
 
             // we create the new recipe user
-            await createRecipeUserFunc();
+            await createRecipeUserFunc(userContext);
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
             return await this.linkAccountsWithUserFromSession({
@@ -624,7 +626,7 @@ export default class Recipe extends RecipeModule {
         } else {
             // since the user already exists, we should first verify the credentials
             // before continuing to link the accounts.
-            let verifyResult = await verifyCredentialsFunc();
+            let verifyResult = await verifyCredentialsFunc(userContext);
             if (verifyResult.status === "CUSTOM_RESPONSE") {
                 return verifyResult;
             }

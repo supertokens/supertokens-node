@@ -8,7 +8,14 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             password: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<
+            | { status: "OK"; user: User }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "SIGNUP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
             return await recipeInterface.emailPasswordSignUp(input);
         },
 

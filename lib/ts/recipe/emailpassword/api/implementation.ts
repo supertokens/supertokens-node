@@ -42,7 +42,7 @@ export default function getAPIImplementation(): APIInterface {
             const email = formFields.filter((f) => f.id === "email")[0].value;
             const password = formFields.filter((f) => f.id === "password")[0].value;
 
-            const createRecipeUserFunc = async (): Promise<void> => {
+            const createRecipeUserFunc = async (userContext: any): Promise<void> => {
                 await options.recipeImplementation.createNewRecipeUser({
                     email,
                     password,
@@ -52,7 +52,9 @@ export default function getAPIImplementation(): APIInterface {
                 // the linkAccountsWithUserFromSession anyway does recursion..
             };
 
-            const verifyCredentialsFunc = async (): Promise<
+            const verifyCredentialsFunc = async (
+                userContext: any
+            ): Promise<
                 | { status: "OK" }
                 | {
                       status: "CUSTOM_RESPONSE";
@@ -658,22 +660,6 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
-                newUser: {
-                    recipeId: "emailpassword",
-                    email,
-                },
-                userContext,
-            });
-
-            if (!isSignUpAllowed) {
-                return {
-                    status: "SIGNUP_NOT_ALLOWED",
-                    reason:
-                        "The input email is already associated with another account where it is not verified. Please verify the other account before trying again.",
-                };
-            }
-
             // this function also does account linking
             let response = await options.recipeImplementation.signUp({
                 email,
@@ -681,6 +667,8 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                return response;
+            } else if (response.status === "SIGNUP_NOT_ALLOWED") {
                 return response;
             }
             let emailPasswordRecipeUser = response.user.loginMethods.find(

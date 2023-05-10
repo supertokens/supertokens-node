@@ -3,6 +3,7 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { User } from "../../types";
+import { SessionContainerInterface } from "../session/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -17,6 +18,10 @@ export default class Wrapper {
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
           }
     >;
     static signIn(
@@ -93,6 +98,40 @@ export default class Wrapper {
             userContext?: any;
         }
     ): Promise<void>;
+    /**
+     * This function is similar to linkAccounts, but it specifically
+     * works for when trying to link accounts with a user that you are already logged
+     * into. This can be used to implement, for example, connecting social accounts to your *
+     * existing email password account.
+     *
+     * This function also creates a new recipe user for the newUser if required.
+     */
+    static linkEmailPasswordAccountsWithUserFromSession(input: {
+        session: SessionContainerInterface;
+        newUserEmail: string;
+        newUserPassword: string;
+        userContext?: any;
+    }): Promise<
+        | {
+              status: "OK";
+              wereAccountsAlreadyLinked: boolean;
+          }
+        | {
+              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+              description: string;
+          }
+        | {
+              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              primaryUserId: string;
+              recipeUserId: string;
+          }
+        | {
+              status: "CUSTOM_RESPONSE";
+              resp: {
+                  status: "WRONG_CREDENTIALS_ERROR";
+              };
+          }
+    >;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -101,5 +140,6 @@ export declare let signIn: typeof Wrapper.signIn;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
+export declare let linkEmailPasswordAccountsWithUserFromSession: typeof Wrapper.linkEmailPasswordAccountsWithUserFromSession;
 export type { RecipeInterface, User, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;

@@ -94,7 +94,14 @@ export type RecipeInterface = {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<
+        | { status: "OK"; user: GlobalUser }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        | {
+              status: "SIGNUP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
 
     createNewEmailPasswordRecipeUser(input: {
         email: string;
