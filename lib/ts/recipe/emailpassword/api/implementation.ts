@@ -119,7 +119,7 @@ export default function getAPIImplementation(): APIInterface {
                     }
                 }
                 // status: "OK"
-                await session.fetchAndSetClaim(AccountLinkingClaim, userContext);
+                await session.setClaimValue(AccountLinkingClaim, result.recipeUserId, userContext);
                 return {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
                     description: "Before accounts can be linked, the new account must be verified",

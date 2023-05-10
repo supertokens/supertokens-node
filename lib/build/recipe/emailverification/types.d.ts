@@ -145,6 +145,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     isVerified: boolean;
+                    newSession?: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);
