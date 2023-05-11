@@ -22,12 +22,30 @@ export default function getRecipeInterface(
                 password: string;
                 userContext: any;
             }
-        ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            // this function does not check if there is some primary user where the email
-            // of that primary user is unverified (isSignUpAllowed function logic) cause
-            // that is checked in the API layer before calling this function.
-            // This is the recipe function layer which can be
-            // called by the user manually as well if they want to. So we allow them to do that.
+        ): Promise<
+            | { status: "OK"; user: User }
+            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+            | {
+                  status: "SIGNUP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
+            let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                newUser: {
+                    recipeId: "emailpassword",
+                    email,
+                },
+                userContext,
+            });
+
+            if (!isSignUpAllowed) {
+                return {
+                    status: "SIGNUP_NOT_ALLOWED",
+                    reason:
+                        "The input email is already associated with a primary account where it is not verified. Please verify the other account before trying again.",
+                };
+            }
+
             let response = await this.createNewRecipeUser({
                 email,
                 password,

@@ -52,7 +52,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             });
             return result.userIdMapping;
         },
-
         getUsers: async function (
             this: RecipeInterface,
             {
@@ -85,7 +84,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 nextPaginationToken: response.nextPaginationToken,
             };
         },
-
         canCreatePrimaryUserId: async function (
             this: RecipeInterface,
             {
@@ -117,6 +115,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId,
             }: {
                 recipeUserId: string;
+                userContext: any;
             }
         ): Promise<
             | {
@@ -132,9 +131,11 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
                 recipeUserId,
             });
+
+            return response;
         },
 
         canLinkAccounts: async function (
@@ -204,6 +205,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                     primaryUserId,
                 }
             );
+
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
                 await Session.revokeAllSessionsForUser(recipeUserId, userContext);
                 let user: User | undefined = await this.getUser({
@@ -306,13 +308,12 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             recipeUserId,
         }: {
             recipeUserId: string;
-        }): Promise<User | undefined> {
+        }): Promise<string | undefined> {
             let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link/table"), {
                 recipeUserId,
             });
             return result.user;
         },
-
         storeIntoAccountToLinkTable: async function ({
             recipeUserId,
             primaryUserId,

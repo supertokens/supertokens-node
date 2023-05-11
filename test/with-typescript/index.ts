@@ -1249,7 +1249,7 @@ EmailVerification.sendEmail({
     type: "EMAIL_VERIFICATION",
     user: {
         email: "",
-        id: "",
+        recipeUserId: "",
     },
 });
 

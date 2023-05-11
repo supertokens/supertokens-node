@@ -4,7 +4,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
-import { SessionContainer } from "../session";
+import { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
@@ -71,10 +71,12 @@ export default class Recipe extends RecipeModule {
         verifyCredentialsFunc,
         userContext,
     }: {
-        session: SessionContainer;
+        session: SessionContainerInterface;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: () => Promise<void>;
-        verifyCredentialsFunc: () => Promise<
+        createRecipeUserFunc: (userContext: any) => Promise<void>;
+        verifyCredentialsFunc: (
+            userContext: any
+        ) => Promise<
             | {
                   status: "OK";
               }

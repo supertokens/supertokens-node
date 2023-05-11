@@ -11,8 +11,8 @@ import { SessionContainerInterface } from "../session/types";
 export declare type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
-        userId: string,
+    getEmailForRecipeUserId?: (
+        recipeUserId: string,
         userContext: any
     ) => Promise<
         | {
@@ -40,8 +40,8 @@ export declare type TypeNormalisedInput = {
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (
-        userId: string,
+    getEmailForRecipeUserId?: (
+        recipeUserId: string,
         userContext: any
     ) => Promise<
         | {
@@ -61,12 +61,12 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type User = {
-    id: string;
+    recipeUserId: string;
     email: string;
 };
 export declare type RecipeInterface = {
     createEmailVerificationToken(input: {
-        userId: string;
+        recipeUserId: string;
         email: string;
         userContext: any;
     }): Promise<
@@ -90,16 +90,16 @@ export declare type RecipeInterface = {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    isEmailVerified(input: { userId: string; email: string; userContext: any }): Promise<boolean>;
+    isEmailVerified(input: { recipeUserId: string; email: string; userContext: any }): Promise<boolean>;
     revokeEmailVerificationTokens(input: {
-        userId: string;
+        recipeUserId: string;
         email: string;
         userContext: any;
     }): Promise<{
         status: "OK";
     }>;
     unverifyEmail(input: {
-        userId: string;
+        recipeUserId: string;
         email: string;
         userContext: any;
     }): Promise<{
@@ -128,6 +128,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     user: User;
+                    newSession?: SessionContainerInterface;
                 }
               | {
                     status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
@@ -144,6 +145,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     isVerified: boolean;
+                    newSession?: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);
@@ -155,7 +157,11 @@ export declare type APIInterface = {
               session: SessionContainerInterface;
           }) => Promise<
               | {
-                    status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
+                    status: "OK";
+                }
+              | {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR";
+                    newSession?: SessionContainerInterface;
                 }
               | GeneralErrorResponse
           >);
@@ -163,13 +169,13 @@ export declare type APIInterface = {
 export declare type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: {
-        id: string;
+        recipeUserId: string;
         email: string;
     };
     emailVerifyLink: string;
 };
-export declare type GetEmailForUserIdFunc = (
-    userId: string,
+export declare type GetEmailForRecipeUserIdFunc = (
+    recipeUserId: string,
     userContext: any
 ) => Promise<
     | {

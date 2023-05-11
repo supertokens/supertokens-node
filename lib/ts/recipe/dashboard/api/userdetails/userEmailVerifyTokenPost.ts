@@ -10,22 +10,33 @@ type Response = {
 
 export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
-    const userId = requestBody.userId;
+    const recipeUserId = requestBody.recipeUserId;
+    const email = requestBody.email;
 
-    if (userId === undefined || typeof userId !== "string") {
+    if (recipeUserId === undefined || typeof recipeUserId !== "string") {
+        throw new STError({
+            message: "Required parameter 'recipeUserId' is missing or has an invalid type",
+            type: STError.BAD_INPUT_ERROR,
+        });
+    }
+
+    if (email === undefined || typeof email !== "string") {
         throw new STError({
             message: "Required parameter 'userId' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
         });
     }
 
-    let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(userId, {});
+    let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
+        recipeUserId,
+        {}
+    );
 
     if (emailResponse.status !== "OK") {
         throw new Error("Should never come here");
     }
 
-    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(userId);
+    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(recipeUserId, email);
 
     if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
         return {
@@ -42,7 +53,7 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
     await EmailVerification.sendEmail({
         type: "EMAIL_VERIFICATION",
         user: {
-            id: userId,
+            recipeUserId,
             email: emailResponse.email,
         },
         emailVerifyLink,

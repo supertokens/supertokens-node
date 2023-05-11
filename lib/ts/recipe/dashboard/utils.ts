@@ -335,7 +335,6 @@ async function _getUserForRecipeId(
             }
         }
     }
-
     return {
         user,
         recipe,

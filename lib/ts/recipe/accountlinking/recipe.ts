@@ -18,7 +18,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
-import { SessionContainer } from "../session";
+import { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import { getUser } from "../..";
@@ -257,9 +257,12 @@ export default class Recipe extends RecipeModule {
         // to be linked to another user post sign in but required
         // email verification.
         if (checkAccountsToLinkTableAsWell) {
-            let pUser = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
-            if (pUser !== undefined && pUser.isPrimaryUser) {
-                return pUser;
+            let pUserId = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
+            if (pUserId !== undefined) {
+                let pUser = await getUser(pUserId, userContext);
+                if (pUser !== undefined && pUser.isPrimaryUser) {
+                    return pUser;
+                }
             }
         }
 
@@ -387,10 +390,12 @@ export default class Recipe extends RecipeModule {
         verifyCredentialsFunc,
         userContext,
     }: {
-        session: SessionContainer;
+        session: SessionContainerInterface;
         newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: () => Promise<void>;
-        verifyCredentialsFunc: () => Promise<
+        createRecipeUserFunc: (userContext: any) => Promise<void>;
+        verifyCredentialsFunc: (
+            userContext: any
+        ) => Promise<
             | { status: "OK" }
             | {
                   status: "CUSTOM_RESPONSE";
@@ -600,7 +605,7 @@ export default class Recipe extends RecipeModule {
             }
 
             // we create the new recipe user
-            await createRecipeUserFunc();
+            await createRecipeUserFunc(userContext);
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
             return await this.linkAccountsWithUserFromSession({
@@ -613,7 +618,7 @@ export default class Recipe extends RecipeModule {
         } else {
             // since the user already exists, we should first verify the credentials
             // before continuing to link the accounts.
-            let verifyResult = await verifyCredentialsFunc();
+            let verifyResult = await verifyCredentialsFunc(userContext);
             if (verifyResult.status === "CUSTOM_RESPONSE") {
                 return verifyResult;
             }

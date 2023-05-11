@@ -33,7 +33,6 @@ import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
@@ -41,9 +40,6 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
-import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
-import { GetEmailForUserIdFunc } from "../emailverification/types";
-import { getUser } from "../../";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -93,13 +89,6 @@ export default class Recipe extends RecipeModule {
                       this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
                   )
                 : ingredients.emailDelivery;
-
-        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
-            if (emailVerificationRecipe !== undefined) {
-                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
-            }
-        });
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -224,28 +213,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    // extra instance functions below...............
-    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
-        let user = await getUser(userId, userContext);
-        if (user !== undefined) {
-            let recipeLevelUser = user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.recipeUserId === userId
-            );
-            if (recipeLevelUser !== undefined) {
-                if (recipeLevelUser.email === undefined) {
-                    // this check if only for types purposes.
-                    throw new Error("Should never come here");
-                }
-                return {
-                    status: "OK",
-                    email: recipeLevelUser.email,
-                };
-            }
-        }
-        return {
-            status: "UNKNOWN_USER_ID_ERROR",
-        };
     };
 }

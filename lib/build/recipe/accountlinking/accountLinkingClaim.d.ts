@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { PrimitiveClaim } from "../session/claims";
-/**
- * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
- * */
-export declare class AccountLinkingClaimClass extends PrimitiveClaim<string> {
+import { SessionContainerInterface } from "../session/types";
+declare class AccountLinkingClaimClass extends PrimitiveClaim<string> {
     constructor();
+    resyncAndGetValue: (session: SessionContainerInterface, userContext: any) => Promise<string | undefined>;
 }
 export declare const AccountLinkingClaim: AccountLinkingClaimClass;
+export {};

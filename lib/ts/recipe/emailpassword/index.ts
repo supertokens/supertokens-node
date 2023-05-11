@@ -17,6 +17,8 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { User } from "../../types";
+import { SessionContainerInterface } from "../session/types";
+import { linkAccountsWithUserFromSession } from "../accountlinking";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -85,6 +87,70 @@ export default class Wrapper {
             ...input,
         });
     }
+
+    /**
+     * This function is similar to linkAccounts, but it specifically
+     * works for when trying to link accounts with a user that you are already logged
+     * into. This can be used to implement, for example, connecting social accounts to your *
+     * existing email password account.
+     *
+     * This function also creates a new recipe user for the newUser if required.
+     */
+    static async linkEmailPasswordAccountsWithUserFromSession(input: {
+        session: SessionContainerInterface;
+        newUserEmail: string;
+        newUserPassword: string;
+        userContext?: any;
+    }) {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const createRecipeUserFunc = async (userContext: any): Promise<void> => {
+            await recipeInstance.recipeInterfaceImpl.createNewRecipeUser({
+                email: input.newUserEmail,
+                password: input.newUserPassword,
+                userContext,
+            });
+            // we ignore the result from the above cause after this, function returns,
+            // the linkAccountsWithUserFromSession anyway does recursion..
+        };
+
+        const verifyCredentialsFunc = async (
+            userContext: any
+        ): Promise<
+            | { status: "OK" }
+            | {
+                  status: "CUSTOM_RESPONSE";
+                  resp: {
+                      status: "WRONG_CREDENTIALS_ERROR";
+                  };
+              }
+        > => {
+            const signInResult = await recipeInstance.recipeInterfaceImpl.signIn({
+                email: input.newUserEmail,
+                password: input.newUserPassword,
+                userContext,
+            });
+
+            if (signInResult.status === "OK") {
+                return { status: "OK" };
+            } else {
+                return {
+                    status: "CUSTOM_RESPONSE",
+                    resp: signInResult,
+                };
+            }
+        };
+
+        return await linkAccountsWithUserFromSession({
+            session: input.session,
+            newUser: {
+                recipeId: "emailpassword",
+                email: input.newUserEmail,
+            },
+            createRecipeUserFunc,
+            verifyCredentialsFunc,
+            userContext: input.userContext === undefined ? {} : input.userContext,
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -100,6 +166,8 @@ export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
+
+export let linkEmailPasswordAccountsWithUserFromSession = Wrapper.linkEmailPasswordAccountsWithUserFromSession;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
 

@@ -5,121 +5,244 @@ import { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
+import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
+import { SessionContainerInterface } from "../../session/types";
+import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        verifyEmailPOST: async function ({
-            token,
-            options,
-            session,
-            userContext,
-        }): Promise<
-            { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
+        verifyEmailPOST: async function (
+            this: APIInterface,
+            { token, options, session, userContext }
+        ): Promise<
+            | { status: "OK"; user: User; newSession?: SessionContainerInterface }
+            | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
+            | GeneralErrorResponse
         > {
-            const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
+            const verifyTokenResponse = await options.recipeImplementation.verifyEmailUsingToken({
+                token,
+                userContext,
+            });
 
-            if (res.status === "OK" && session !== undefined) {
-                try {
-                    await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
-                } catch (err) {
-                    // This should never happen, since we've just set the status above.
-                    if ((err as Error).message === "UNKNOWN_USER_ID") {
+            if (verifyTokenResponse.status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR") {
+                return verifyTokenResponse;
+            }
+
+            // status: "OK"
+            let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
+                {
+                    req: options.req,
+                    res: options.res,
+                    session,
+                    recipeUserIdWhoseEmailGotVerified: verifyTokenResponse.user.recipeUserId,
+                    userContext,
+                }
+            );
+
+            return {
+                status: "OK",
+                user: verifyTokenResponse.user,
+                newSession,
+            };
+        },
+
+        isEmailVerifiedGET: async function (
+            this: APIInterface,
+            { userContext, session, options }
+        ): Promise<
+            | {
+                  status: "OK";
+                  isVerified: boolean;
+                  newSession?: SessionContainerInterface;
+              }
+            | GeneralErrorResponse
+        > {
+            // In this API, we will check if the session's recipe user id's email is verified or not.
+            // The exception is that if the account linking claim exists in the session,
+            // then we will check the status for that cause that claim implies that we
+            // are trying to link that recipe ID to the current session's primary user ID.
+
+            let recipeUserIdForWhomToGenerateToken = session.getRecipeUserId();
+            const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
+            if (fromAccountLinkingClaim !== undefined) {
+                // this means that the claim exists and so we will generate the token for that user id
+                recipeUserIdForWhomToGenerateToken = fromAccountLinkingClaim;
+
+                // there is a possibility that this user ID is not a recipe user ID anymore
+                // (cause of some race condition), but that shouldn't matter much anyway.
+            }
+
+            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
+                recipeUserIdForWhomToGenerateToken,
+                userContext
+            );
+
+            if (emailInfo.status === "OK") {
+                const isVerified = await options.recipeImplementation.isEmailVerified({
+                    recipeUserId: recipeUserIdForWhomToGenerateToken,
+                    email: emailInfo.email,
+                    userContext,
+                });
+
+                if (isVerified) {
+                    // here we do the same things we do for post email verification
+                    // cause email verification could happen in a different browser
+                    // whilst the first browser is polling this API - in this case,
+                    // we want to have the same effect to the session as if the
+                    // email was opened on the original browser itself.
+                    let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                    if (user === undefined) {
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
                             message: "Unknown User ID provided",
                         });
                     }
-                    throw err;
+                    let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
+                        {
+                            req: options.req,
+                            res: options.res,
+                            session,
+                            recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                            userContext,
+                        }
+                    );
+                    return {
+                        status: "OK",
+                        isVerified: true,
+                        newSession,
+                    };
+                } else {
+                    // we want to update the email verification claim to false
+                    // if recipeUserIdForWhomToGenerateToken == session.getRecipeUserId()
+                    // cause in this case we are checking for the session's user and not
+                    // account to link user (which has nothing to do with the email verification claim)
+
+                    if (recipeUserIdForWhomToGenerateToken === session.getRecipeUserId()) {
+                        await session.setClaimValue(EmailVerificationClaim, false, userContext);
+                    }
+
+                    return {
+                        status: "OK",
+                        isVerified: false,
+                    };
                 }
+            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
+                // We consider people without email addresses as validated
+                return {
+                    status: "OK",
+                    isVerified: true,
+                };
+            } else {
+                // this means that the user ID is not known to supertokens. This could
+                // happen if the current session's user ID is not an auth user,
+                // or if it belong to a recipe user ID that got deleted. Either way,
+                // we logout the user.
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Unknown User ID provided",
+                });
             }
-            return res;
         },
 
-        isEmailVerifiedGET: async function ({
-            userContext,
-            session,
-        }): Promise<
-            | {
-                  status: "OK";
-                  isVerified: boolean;
-              }
+        generateEmailVerifyTokenPOST: async function (
+            this: APIInterface,
+            { options, userContext, session }
+        ): Promise<
+            | { status: "OK" }
+            | { status: "EMAIL_ALREADY_VERIFIED_ERROR"; newSession?: SessionContainerInterface }
             | GeneralErrorResponse
         > {
-            if (session === undefined) {
-                throw new Error("Session is undefined. Should not come here.");
+            // In this API, we generate the email verification token for session's recipe user ID.
+            // The exception is that if the account linking claim exists in the session,
+            // then we will generate the token for that cause that claim implies that we
+            // are trying to link that recipe ID to the current session's primary user ID.
+
+            // Either way, in case the email is already verified, we do the same thing
+            // as what happens in the verifyEmailPOST API post email verification (cause maybe the session is outdated).
+
+            let recipeUserIdForWhomToGenerateToken = session.getRecipeUserId();
+            const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
+            if (fromAccountLinkingClaim !== undefined) {
+                // this means that the claim exists and so we will generate the token for that user id
+                recipeUserIdForWhomToGenerateToken = fromAccountLinkingClaim;
+
+                // there is a possibility that this user ID is not a recipe user ID anymore
+                // (cause of some race condition), but that shouldn't matter much anyway.
             }
 
-            try {
-                await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
-            } catch (err) {
-                if ((err as Error).message === "UNKNOWN_USER_ID") {
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "Unknown User ID provided",
-                    });
-                }
-                throw err;
-            }
-            const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
-
-            if (isVerified === undefined) {
-                throw new Error("Should never come here: EmailVerificationClaim failed to set value");
-            }
-
-            return {
-                status: "OK",
-                isVerified,
-            };
-        },
-
-        generateEmailVerifyTokenPOST: async function ({
-            options,
-            userContext,
-            session,
-        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
-            if (session === undefined) {
-                throw new Error("Session is undefined. Should not come here.");
-            }
-
-            const userId = session.getUserId();
-
-            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
-                userId,
+            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
+                recipeUserIdForWhomToGenerateToken,
                 userContext
             );
 
             if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
                 logDebugMessage(
-                    `Email verification email not sent to user ${userId} because it doesn't have an email address.`
+                    `Email verification email not sent to user ${recipeUserIdForWhomToGenerateToken} because it doesn't have an email address.`
+                );
+                // this can happen if the user ID was found, but it has no email. In this
+                // case, we treat it as a success case.
+
+                let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                if (user === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Unknown User ID provided",
+                    });
+                }
+
+                let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
+                    {
+                        req: options.req,
+                        res: options.res,
+                        session,
+                        recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                        userContext,
+                    }
                 );
                 return {
                     status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                    newSession,
                 };
             } else if (emailInfo.status === "OK") {
                 let response = await options.recipeImplementation.createEmailVerificationToken({
-                    userId,
+                    recipeUserId: recipeUserIdForWhomToGenerateToken,
                     email: emailInfo.email,
                     userContext,
                 });
 
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-                    if ((await session.getClaimValue(EmailVerificationClaim)) !== true) {
-                        // this can happen if the email was verified in another browser
+                    let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                    if (user === undefined) {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Unknown User ID provided",
+                        });
+                    }
+                    let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
+                        {
+                            req: options.req,
+                            res: options.res,
+                            session,
+                            recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                            userContext,
+                        }
+                    );
+                    return {
+                        status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                        newSession,
+                    };
+                }
+
+                if (recipeUserIdForWhomToGenerateToken === session.getRecipeUserId()) {
+                    // we have the above ID cause we only want to do the below if the
+                    // account linking claim is not present. This is cause the email
+                    // verification claim is only specific to the current session's user ID.
+                    if ((await session.getClaimValue(EmailVerificationClaim)) !== false) {
+                        // this can happen if the email was unverified in another browser
                         // and this session is still outdated - and the user has not
                         // called the get email verification API yet.
                         await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
                     }
-                    logDebugMessage(
-                        `Email verification email not sent to ${emailInfo.email} because it is already verified.`
-                    );
-                    return response;
-                }
-
-                if ((await session.getClaimValue(EmailVerificationClaim)) !== false) {
-                    // this can happen if the email was unverified in another browser
-                    // and this session is still outdated - and the user has not
-                    // called the get email verification API yet.
-                    await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
                 }
 
                 let emailVerifyLink = getEmailVerifyLink({
@@ -132,7 +255,7 @@ export default function getAPIInterface(): APIInterface {
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     type: "EMAIL_VERIFICATION",
                     user: {
-                        id: userId,
+                        recipeUserId: recipeUserIdForWhomToGenerateToken,
                         email: emailInfo.email,
                     },
                     emailVerifyLink,
@@ -143,6 +266,10 @@ export default function getAPIInterface(): APIInterface {
                     status: "OK",
                 };
             } else {
+                // this means that the user ID is not known to supertokens. This could
+                // happen if the current session's user ID is not an auth user,
+                // or if it belong to a recipe user ID that got deleted. Either way,
+                // we logout the user.
                 throw new SessionError({ type: SessionError.UNAUTHORISED, message: "Unknown User ID provided" });
             }
         },
