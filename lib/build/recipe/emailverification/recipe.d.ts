@@ -46,7 +46,6 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
         recipeUserIdWhoseEmailGotVerified: string;
-        primaryUserIdThatTheAccountWasLinkedTo: string;
         userContext: any;
     }) => Promise<SessionContainerInterface | undefined>;
 }

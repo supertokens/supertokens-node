@@ -7,7 +7,6 @@ import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { SessionContainerInterface } from "../../session/types";
-import AccountLinking from "../../accountlinking";
 import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
@@ -29,21 +28,13 @@ export default function getAPIInterface(): APIInterface {
                 return verifyTokenResponse;
             }
 
-            // status: "OK" - so we try and link accounts if required.
-            let primaryUserIdThatTheAccountWasLinkedTo = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: verifyTokenResponse.user.recipeUserId,
-                isVerified: true,
-                checkAccountsToLinkTableAsWell: true,
-                userContext,
-            });
-
+            // status: "OK"
             let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                 {
                     req: options.req,
                     res: options.res,
                     session,
                     recipeUserIdWhoseEmailGotVerified: verifyTokenResponse.user.recipeUserId,
-                    primaryUserIdThatTheAccountWasLinkedTo,
                     userContext,
                 }
             );
@@ -112,7 +103,6 @@ export default function getAPIInterface(): APIInterface {
                             res: options.res,
                             session,
                             recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
-                            primaryUserIdThatTheAccountWasLinkedTo: user.id,
                             userContext,
                         }
                     );
@@ -206,7 +196,6 @@ export default function getAPIInterface(): APIInterface {
                         res: options.res,
                         session,
                         recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
-                        primaryUserIdThatTheAccountWasLinkedTo: user.id,
                         userContext,
                     }
                 );
@@ -235,7 +224,6 @@ export default function getAPIInterface(): APIInterface {
                             res: options.res,
                             session,
                             recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
-                            primaryUserIdThatTheAccountWasLinkedTo: user.id,
                             userContext,
                         }
                     );

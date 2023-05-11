@@ -231,9 +231,22 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
         recipeUserIdWhoseEmailGotVerified: string;
-        primaryUserIdThatTheAccountWasLinkedTo: string;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined> => {
+        let primaryUser = await getUser(input.recipeUserIdWhoseEmailGotVerified, input.userContext);
+        if (primaryUser === undefined) {
+            if (input.session === undefined) {
+                return undefined;
+            }
+            // we can do this because the current user doesn't exist anymore, so we log them out.
+            // Also this function is only called in the api interface of this recipe, so it's
+            // fine to throw this.
+            throw new SessionError({
+                type: SessionError.UNAUTHORISED,
+                message: "Unknown User ID provided",
+            });
+        }
+
         // if a session exists in the API, then we can update the session
         // claim related to email verification
         if (input.session !== undefined) {
@@ -254,7 +267,7 @@ export default class Recipe extends RecipeModule {
                 // one that just got verified and that we are NOT doing post login
                 // account linking. So this is only for (Case 1) and (Case 2)
 
-                if (input.session.getUserId() === input.primaryUserIdThatTheAccountWasLinkedTo) {
+                if (input.session.getUserId() === primaryUser.id) {
                     // if the session's primary user ID is equal to the
                     // primary user ID that the account was linked to, then
                     // this means that the new account became a primary user (Case 1)
@@ -295,7 +308,7 @@ export default class Recipe extends RecipeModule {
                     return await Session.createNewSession(
                         input.req,
                         input.res,
-                        input.primaryUserIdThatTheAccountWasLinkedTo,
+                        primaryUser.id,
                         input.session.getRecipeUserId(),
                         {},
                         {},

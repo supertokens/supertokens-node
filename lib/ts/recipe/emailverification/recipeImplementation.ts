@@ -1,6 +1,7 @@
 import { RecipeInterface, User } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import AccountLinking from "../accountlinking";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
@@ -36,14 +37,23 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         verifyEmailUsingToken: async function ({
             token,
+            userContext,
         }: {
             token: string;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
                 method: "token",
                 token,
             });
             if (response.status === "OK") {
+                await AccountLinking.createPrimaryUserIdOrLinkAccounts({
+                    recipeUserId: response.userId,
+                    isVerified: true,
+                    checkAccountsToLinkTableAsWell: true,
+                    userContext,
+                });
+
                 return {
                     status: "OK",
                     user: {
