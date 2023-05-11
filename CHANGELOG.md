@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   For EmailPassword recipe input, resetPasswordUsingTokenFeature user input removed
 
+## [14.0.1] - 2023-05-11
+
+-   Fixes an issue where API key based login with dashboard would return invalid API key even if the entered API key was valid
+
 ## [14.0.0] - 2023-05-04
 
 ### Breaking Changes

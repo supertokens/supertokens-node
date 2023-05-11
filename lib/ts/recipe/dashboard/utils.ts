@@ -60,6 +60,7 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 
     return {
+        ...config,
         override,
         authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
     };
