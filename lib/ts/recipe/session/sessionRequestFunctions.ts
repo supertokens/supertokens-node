@@ -84,7 +84,7 @@ export async function getSessionFromRequest({
         forCreateNewSession: false,
         userContext,
     });
-    let requestTransferMethod: TokenTransferMethod;
+    let requestTransferMethod: TokenTransferMethod | undefined;
     let accessToken: ParsedJWTInfo | undefined;
 
     if (
@@ -101,27 +101,6 @@ export async function getSessionFromRequest({
         logDebugMessage("getSession: using cookie transfer method");
         requestTransferMethod = "cookie";
         accessToken = accessTokens["cookie"];
-    } else {
-        if (sessionOptional) {
-            logDebugMessage(
-                "getSession: returning undefined because accessToken is undefined and sessionRequired is false"
-            );
-            // there is no session that exists here, and the user wants session verification
-            // to be optional. So we return undefined.
-            return undefined;
-        }
-
-        logDebugMessage("getSession: UNAUTHORISED because accessToken in request is undefined");
-        throw new SessionError({
-            message:
-                "Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?",
-            type: SessionError.UNAUTHORISED,
-            payload: {
-                // we do not clear the session here because of a
-                // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
-                clearTokens: false,
-            },
-        });
     }
 
     let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
@@ -152,7 +131,7 @@ export async function getSessionFromRequest({
 
     logDebugMessage("getSession: Value of doAntiCsrfCheck is: " + doAntiCsrfCheck);
     const session = await recipeInterfaceImpl.getSession({
-        accessToken: accessToken.rawTokenString,
+        accessToken: accessToken?.rawTokenString,
         antiCsrfToken,
         options: { ...options, antiCsrfCheck: doAntiCsrfCheck },
         userContext,
@@ -166,10 +145,20 @@ export async function getSessionFromRequest({
         );
         await session.assertClaims(claimValidators, userContext);
 
+        // requestTransferMethod can only be undefined here if the user overridden getSession
+        // to load the session by a custom method in that (very niche) case they also need to
+        // override how the session is attached to the response.
+        // In that scenario the transferMethod passed to attachToRequestResponse likely doesn't
+        // matter, still, we follow the general fallback logic
         await session.attachToRequestResponse({
             req,
             res,
-            transferMethod: requestTransferMethod,
+            transferMethod:
+                requestTransferMethod !== undefined
+                    ? requestTransferMethod
+                    : allowedTransferMethod !== "any"
+                    ? allowedTransferMethod
+                    : "header",
         });
     }
     return session;

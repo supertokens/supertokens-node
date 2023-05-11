@@ -165,7 +165,7 @@ export declare type RecipeInterface = {
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
     getSession(input: {
-        accessToken: string;
+        accessToken: string | undefined;
         antiCsrfToken?: string;
         options?: VerifySessionOptions;
         userContext: any;
