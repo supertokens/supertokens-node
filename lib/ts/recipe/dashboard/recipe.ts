@@ -45,7 +45,7 @@ import apiKeyProtector from "./api/apiKeyProtector";
 import usersGet from "./api/usersGet";
 import usersCountGet from "./api/usersCountGet";
 import { userGet } from "./api/userdetails/userGet";
-import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
+import { userEmailVerifyGet } from "./api/userdetails/userEmailVerifyGet";
 import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
 import { userSessionsGet } from "./api/userdetails/userSessionsGet";
 import { userDelete } from "./api/userdetails/userDelete";
@@ -296,7 +296,7 @@ export default class Recipe extends RecipeModule {
             }
         } else if (id === USER_EMAIL_VERIFY_API) {
             if (req.getMethod() === "get") {
-                apiFunction = userEmailverifyGet;
+                apiFunction = userEmailVerifyGet;
             }
 
             if (req.getMethod() === "put") {
