@@ -28,6 +28,7 @@ let cors = require("cors");
 let EmailVerificationRaw = require("../../lib/build/recipe/emailverification/recipe").default;
 let EmailVerification = require("../../recipe/emailverification");
 let UserRolesRaw = require("../../lib/build/recipe/userroles/recipe").default;
+let AccountLinkingRaw = require("../../lib/build/recipe/accountlinking/recipe").default;
 let UserRoles = require("../../recipe/userroles");
 let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").default;
 let Passwordless = require("../../recipe/passwordless");
@@ -278,6 +279,7 @@ server.listen(process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT
 })(process.env.START === "true");
 
 function initST({ passwordlessConfig } = {}) {
+    AccountLinkingRaw.reset();
     UserRolesRaw.reset();
     ThirdPartyPasswordlessRaw.reset();
     PasswordlessRaw.reset();

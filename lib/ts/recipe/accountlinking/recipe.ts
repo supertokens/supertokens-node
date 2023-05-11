@@ -100,6 +100,13 @@ export default class Recipe extends RecipeModule {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     }
 
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw new Error("calling testing function in non testing env");
+        }
+        Recipe.instance = undefined;
+    }
+
     // this function returns the user ID for which the session will be created.
     createPrimaryUserIdOrLinkAccounts = async ({
         recipeUserId,

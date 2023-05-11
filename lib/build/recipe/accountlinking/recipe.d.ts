@@ -25,6 +25,7 @@ export default class Recipe extends RecipeModule {
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
+    static reset(): void;
     createPrimaryUserIdOrLinkAccounts: ({
         recipeUserId,
         isVerified,
