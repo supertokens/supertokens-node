@@ -142,6 +142,28 @@ export default function getRecipeInterface(
                 );
             }
             logDebugMessage("getSession: Started");
+            if (accessTokenString === undefined) {
+                if (options?.sessionRequired === false) {
+                    logDebugMessage(
+                        "getSession: returning undefined because accessToken is undefined and sessionRequired is false"
+                    );
+                    // there is no session that exists here, and the user wants session verification
+                    // to be optional. So we return undefined.
+                    return undefined;
+                }
+
+                logDebugMessage("getSession: UNAUTHORISED because accessToken in request is undefined");
+                throw new SessionError({
+                    message:
+                        "Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?",
+                    type: SessionError.UNAUTHORISED,
+                    payload: {
+                        // we do not clear the session here because of a
+                        // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+                        clearTokens: false,
+                    },
+                });
+            }
 
             let accessToken: ParsedJWTInfo | undefined;
             try {
