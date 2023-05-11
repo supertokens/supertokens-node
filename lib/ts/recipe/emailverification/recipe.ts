@@ -33,7 +33,6 @@ import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks
 import SessionRecipe from "../session/recipe";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
 import { SessionContainerInterface } from "../session/types";
-import AccountLinking from "../accountlinking";
 import SessionError from "../session/error";
 import Session from "../session";
 import { AccountLinkingClaim } from "../accountlinking/accountLinkingClaim";
@@ -232,15 +231,9 @@ export default class Recipe extends RecipeModule {
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
         recipeUserIdWhoseEmailGotVerified: string;
+        primaryUserIdThatTheAccountWasLinkedTo: string;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined> => {
-        let primaryUserIdThatTheAccountWasLinkedTo = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-            recipeUserId: input.recipeUserIdWhoseEmailGotVerified,
-            isVerified: true,
-            checkAccountsToLinkTableAsWell: true,
-            userContext: input.userContext,
-        });
-
         // if a session exists in the API, then we can update the session
         // claim related to email verification
         if (input.session !== undefined) {
@@ -261,7 +254,7 @@ export default class Recipe extends RecipeModule {
                 // one that just got verified and that we are NOT doing post login
                 // account linking. So this is only for (Case 1) and (Case 2)
 
-                if (input.session.getUserId() === primaryUserIdThatTheAccountWasLinkedTo) {
+                if (input.session.getUserId() === input.primaryUserIdThatTheAccountWasLinkedTo) {
                     // if the session's primary user ID is equal to the
                     // primary user ID that the account was linked to, then
                     // this means that the new account became a primary user (Case 1)
@@ -302,7 +295,7 @@ export default class Recipe extends RecipeModule {
                     return await Session.createNewSession(
                         input.req,
                         input.res,
-                        primaryUserIdThatTheAccountWasLinkedTo,
+                        input.primaryUserIdThatTheAccountWasLinkedTo,
                         input.session.getRecipeUserId(),
                         {},
                         {},

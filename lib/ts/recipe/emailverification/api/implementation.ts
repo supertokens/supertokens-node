@@ -7,6 +7,8 @@ import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { SessionContainerInterface } from "../../session/types";
+import AccountLinking from "../../accountlinking";
+import { getUser } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -27,12 +29,21 @@ export default function getAPIInterface(): APIInterface {
                 return verifyTokenResponse;
             }
 
+            // status: "OK" - so we try and link accounts if required.
+            let primaryUserIdThatTheAccountWasLinkedTo = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
+                recipeUserId: verifyTokenResponse.user.recipeUserId,
+                isVerified: true,
+                checkAccountsToLinkTableAsWell: true,
+                userContext,
+            });
+
             let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                 {
                     req: options.req,
                     res: options.res,
                     session,
                     recipeUserIdWhoseEmailGotVerified: verifyTokenResponse.user.recipeUserId,
+                    primaryUserIdThatTheAccountWasLinkedTo,
                     userContext,
                 }
             );
@@ -88,12 +99,20 @@ export default function getAPIInterface(): APIInterface {
                     // whilst the first browser is polling this API - in this case,
                     // we want to have the same effect to the session as if the
                     // email was opened on the original browser itself.
+                    let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                    if (user === undefined) {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Unknown User ID provided",
+                        });
+                    }
                     let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                         {
                             req: options.req,
                             res: options.res,
                             session,
                             recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                            primaryUserIdThatTheAccountWasLinkedTo: user.id,
                             userContext,
                         }
                     );
@@ -173,12 +192,21 @@ export default function getAPIInterface(): APIInterface {
                 // this can happen if the user ID was found, but it has no email. In this
                 // case, we treat it as a success case.
 
+                let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                if (user === undefined) {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Unknown User ID provided",
+                    });
+                }
+
                 let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                     {
                         req: options.req,
                         res: options.res,
                         session,
                         recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                        primaryUserIdThatTheAccountWasLinkedTo: user.id,
                         userContext,
                     }
                 );
@@ -194,12 +222,20 @@ export default function getAPIInterface(): APIInterface {
                 });
 
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                    let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                    if (user === undefined) {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Unknown User ID provided",
+                        });
+                    }
                     let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                         {
                             req: options.req,
                             res: options.res,
                             session,
                             recipeUserIdWhoseEmailGotVerified: recipeUserIdForWhomToGenerateToken,
+                            primaryUserIdThatTheAccountWasLinkedTo: user.id,
                             userContext,
                         }
                     );
