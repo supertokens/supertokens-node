@@ -21,12 +21,11 @@ import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, Use
 import { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import { getUser } from "../..";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
-import { EmailVerificationClaim } from "../emailverification/emailVerificationClaim";
+import SessionError from "../session/error";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -113,7 +112,7 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }): Promise<string> => {
-        let recipeUser = await getUser(recipeUserId, userContext);
+        let recipeUser = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId, userContext });
         if (recipeUser === undefined) {
             throw Error("Race condition error. It means that the input recipeUserId was deleted");
         }
@@ -244,7 +243,7 @@ export default class Recipe extends RecipeModule {
     }): Promise<User | undefined> => {
         // first we check if this user itself is a
         // primary user or not. If it is, we return that.
-        let user = await getUser(recipeUserId, userContext);
+        let user = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId, userContext });
         if (user === undefined) {
             return undefined;
         }
@@ -259,7 +258,7 @@ export default class Recipe extends RecipeModule {
         if (checkAccountsToLinkTableAsWell) {
             let pUserId = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
             if (pUserId !== undefined) {
-                let pUser = await getUser(pUserId, userContext);
+                let pUser = await this.recipeInterfaceImpl.getUser({ userId: pUserId, userContext });
                 if (pUser !== undefined && pUser.isPrimaryUser) {
                     return pUser;
                 }
@@ -502,8 +501,17 @@ export default class Recipe extends RecipeModule {
                 // wants. But they can always switch this off
                 // by providing the right impl for shouldDoAutomaticAccountLinking
 
-                // this function will throw an email verification validation error.
-                await session.assertClaims([EmailVerificationClaim.validators.isVerified(undefined, 0)]);
+                // this is equivalent to throwing the email verification claim error
+                throw new SessionError({
+                    type: SessionError.INVALID_CLAIMS,
+                    payload: [
+                        {
+                            id: "st-ev",
+                            reason: { message: "wrong value", expectedValue: true, actualValue: false },
+                        },
+                    ],
+                    message: "invalid claim",
+                });
             }
 
             // now we can try and create a primary user for the existing user
