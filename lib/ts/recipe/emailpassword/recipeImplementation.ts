@@ -5,6 +5,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import { User } from "../../types";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
+import { mockCreateRecipeUser } from "./mockCore";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -80,10 +81,14 @@ export default function getRecipeInterface(
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
-                email: input.email,
-                password: input.password,
-            });
+            if (process.env.MOCK !== "true") {
+                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
+                    email: input.email,
+                    password: input.password,
+                });
+            } else {
+                return mockCreateRecipeUser(input);
+            }
         },
 
         signIn: async function ({

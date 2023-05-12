@@ -244,7 +244,7 @@ export default function getAPIImplementation(): APIInterface {
                 let emailPasswordAccountTmp = users[i].loginMethods.find(
                     (l) => l.recipeId === "emailpassword" && l.email === email
                 );
-                if (emailPasswordAccount !== undefined) {
+                if (emailPasswordAccountTmp !== undefined) {
                     emailPasswordAccount = emailPasswordAccountTmp;
                     break;
                 }
