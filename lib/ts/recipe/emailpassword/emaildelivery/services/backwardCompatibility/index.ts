@@ -21,25 +21,19 @@ export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
     private isInServerlessEnv: boolean;
     private appInfo: NormalisedAppinfo;
-    private resetPasswordUsingTokenFeature: {
-        createAndSendCustomEmail: (
-            user: {
-                id: string;
-                email: string;
-            },
-            passwordResetURLWithToken: string,
-            userContext: any
-        ) => Promise<void>;
-    };
+    private createAndSendCustomEmail: (
+        user: {
+            id: string;
+            email: string;
+        },
+        passwordResetURLWithToken: string,
+        userContext: any
+    ) => Promise<void>;
 
     constructor(_: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         this.isInServerlessEnv = isInServerlessEnv;
         this.appInfo = appInfo;
-        {
-            this.resetPasswordUsingTokenFeature = {
-                createAndSendCustomEmail: defaultCreateAndSendCustomEmail(this.appInfo),
-            };
-        }
+        this.createAndSendCustomEmail = defaultCreateAndSendCustomEmail(this.appInfo);
     }
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
@@ -48,16 +42,10 @@ export default class BackwardCompatibilityService
         // will get reset by the getUserById call above.
         try {
             if (!this.isInServerlessEnv) {
-                this.resetPasswordUsingTokenFeature
-                    .createAndSendCustomEmail(input.user, input.passwordResetLink, input.userContext)
-                    .catch((_) => {});
+                this.createAndSendCustomEmail(input.user, input.passwordResetLink, input.userContext).catch((_) => {});
             } else {
                 // see https://github.com/supertokens/supertokens-node/pull/135
-                await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
-                    input.user,
-                    input.passwordResetLink,
-                    input.userContext
-                );
+                await this.createAndSendCustomEmail(input.user, input.passwordResetLink, input.userContext);
             }
         } catch (_) {}
     };

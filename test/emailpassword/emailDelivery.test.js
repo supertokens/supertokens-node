@@ -155,7 +155,6 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await startST();
         let email = undefined;
         let passwordResetURL = undefined;
-        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -167,11 +166,15 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            email = input.email;
-                            passwordResetURL = passwordResetLink;
-                            timeJoined = input.timeJoined;
+                    emailDelivery: {
+                        override: (originalImplementation) => {
+                            return {
+                                ...originalImplementation,
+                                sendEmail: async function (input) {
+                                    email = input.user.email;
+                                    passwordResetURL = input.passwordResetLink;
+                                },
+                            };
                         },
                     },
                 }),
@@ -202,7 +205,6 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(passwordResetURL, undefined);
-        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test backward compatibility: reset password (non existent user)", async function () {
