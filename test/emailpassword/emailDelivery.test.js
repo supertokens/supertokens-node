@@ -221,9 +221,14 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            functionCalled = true;
+                    emailDelivery: {
+                        override: (originalImplementation) => {
+                            return {
+                                ...originalImplementation,
+                                sendEmail: async function (input) {
+                                    functionCalled = true;
+                                },
+                            };
                         },
                     },
                 }),
@@ -460,7 +465,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, undefined, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -519,7 +524,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, undefined, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -588,7 +593,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, undefined, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
@@ -648,7 +653,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, req.body.id, undefined, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());

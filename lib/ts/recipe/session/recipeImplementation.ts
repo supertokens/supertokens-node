@@ -244,7 +244,11 @@ export default function getRecipeInterface(
                 logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(input.userId, input.recipeUserId, input.userContext);
+                    const value = await validator.claim.fetchValue(
+                        input.userId,
+                        input.recipeUserId ?? input.userId,
+                        input.userContext
+                    );
                     logDebugMessage(
                         "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
                     );
