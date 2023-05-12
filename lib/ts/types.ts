@@ -17,10 +17,11 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
+import { BaseRequest } from "./framework";
 
 export type AppInfo = {
     appName: string;
-    websiteDomain: string;
+    websiteDomain: string | ((req: BaseRequest) => string);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;

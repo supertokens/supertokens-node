@@ -15,16 +15,27 @@
 
 import { URL } from "url";
 import { isAnIpAddress } from "./utils";
+import { BaseRequest } from "./framework";
 
 export default class NormalisedURLDomain {
-    private value: string;
+    private value: string | ((req: BaseRequest) => string);
 
-    constructor(url: string) {
-        this.value = normaliseURLDomainOrThrowError(url);
+    constructor(url: string | ((req: BaseRequest) => string)) {
+        if (typeof url === "string") this.value = normaliseURLDomainOrThrowError(url);
+        else this.value = url;
     }
 
-    getAsStringDangerous = () => {
-        return this.value;
+    getAsStringDangerous = (req?: BaseRequest) => {
+        if (typeof this.value === "string") {
+            return this.value;
+        } else {
+            let url = this.value(req!);
+            if (url === undefined) {
+                throw new Error("temp error"); // TODO: throw appropriate error
+            } else {
+                return url;
+            }
+        }
     };
 }
 
