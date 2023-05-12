@@ -15,21 +15,20 @@
 
 import { URL } from "url";
 import { isAnIpAddress } from "./utils";
-import { BaseRequest } from "./framework";
 
 export default class NormalisedURLDomain {
-    private value: string | ((req: BaseRequest) => string);
+    private value: string | ((user_context: any) => string | undefined);
 
-    constructor(url: string | ((req: BaseRequest) => string)) {
+    constructor(url: string | ((user_context: any) => string | undefined)) {
         if (typeof url === "string") this.value = normaliseURLDomainOrThrowError(url);
         else this.value = url;
     }
 
-    getAsStringDangerous = (req?: BaseRequest) => {
+    getAsStringDangerous = (user_context?: any) => {
         if (typeof this.value === "string") {
             return this.value;
         } else {
-            let url = this.value(req!);
+            let url = this.value(user_context!);
             if (url === undefined) {
                 throw new Error("temp error"); // TODO: throw appropriate error
             } else {

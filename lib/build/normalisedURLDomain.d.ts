@@ -1,7 +1,6 @@
 // @ts-nocheck
-import { BaseRequest } from "./framework";
 export default class NormalisedURLDomain {
     private value;
-    constructor(url: string | ((req: BaseRequest) => string));
-    getAsStringDangerous: (req?: BaseRequest | undefined) => string;
+    constructor(url: string | ((user_context: any) => string | undefined));
+    getAsStringDangerous: (user_context?: any) => string;
 }
