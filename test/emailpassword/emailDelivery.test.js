@@ -579,7 +579,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 EmailVerification.init({
                     createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
                         email = input.email;
-                        userIdInCb = input.id;
+                        userIdInCb = input.recipeUserId;
                         emailVerifyURL = emailVerificationURLWithToken;
                     },
                 }),
