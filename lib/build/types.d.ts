@@ -5,7 +5,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
 export declare type AppInfo = {
     appName: string;
-    websiteDomain: string | ((user_context: any) => string | undefined);
+    websiteDomain: string | ((userContext: any) => string | undefined);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;

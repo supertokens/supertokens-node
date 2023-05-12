@@ -20,7 +20,7 @@ import { TypeFramework } from "./framework/types";
 
 export type AppInfo = {
     appName: string;
-    websiteDomain: string | ((user_context: any) => string | undefined);
+    websiteDomain: string | ((userContext: any) => string | undefined);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;

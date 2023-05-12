@@ -17,18 +17,18 @@ import { URL } from "url";
 import { isAnIpAddress } from "./utils";
 
 export default class NormalisedURLDomain {
-    private value: string | ((user_context: any) => string | undefined);
+    private value: string | ((userContext: any) => string | undefined);
 
-    constructor(url: string | ((user_context: any) => string | undefined)) {
+    constructor(url: string | ((userContext: any) => string | undefined)) {
         if (typeof url === "string") this.value = normaliseURLDomainOrThrowError(url);
         else this.value = url;
     }
 
-    getAsStringDangerous = (user_context?: any) => {
+    getAsStringDangerous = (userContext?: any) => {
         if (typeof this.value === "string") {
             return this.value;
         } else {
-            let url = this.value(user_context!);
+            let url = this.value(userContext!);
             if (url === undefined) {
                 throw new Error("temp error"); // TODO: throw appropriate error
             } else {

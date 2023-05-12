@@ -1,6 +1,6 @@
 // @ts-nocheck
 export default class NormalisedURLDomain {
     private value;
-    constructor(url: string | ((user_context: any) => string | undefined));
-    getAsStringDangerous: (user_context?: any) => string;
+    constructor(url: string | ((userContext: any) => string | undefined));
+    getAsStringDangerous: (userContext?: any) => string;
 }
