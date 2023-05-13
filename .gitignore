@@ -12,3 +12,4 @@ releasePassword
 build
 dist
 .env
+package-lock.json
