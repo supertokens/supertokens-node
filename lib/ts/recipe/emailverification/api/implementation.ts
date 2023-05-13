@@ -218,6 +218,9 @@ export default function getAPIInterface(): APIInterface {
                             message: "Unknown User ID provided",
                         });
                     }
+                    logDebugMessage(
+                        `Email verification email not sent to user ${recipeUserIdForWhomToGenerateToken} because it is already verified.`
+                    );
                     let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                         {
                             req: options.req,

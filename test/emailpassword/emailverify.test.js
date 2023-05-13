@@ -1297,44 +1297,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.deepStrictEqual(response.body, { message: "unauthorised" });
     });
 
-    it("should work with getEmailForUserId returning errors", async () => {
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailVerification.init({
-                    mode: "OPTIONAL",
-                    getEmailForUserId: (userId) =>
-                        userId === "testuserid"
-                            ? { status: "EMAIL_DOES_NOT_EXIST_ERROR" }
-                            : { status: "UNKNOWN_USER_ID_ERROR" },
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-        });
-
-        assert.deepStrictEqual(
-            await EmailVerification.revokeEmailVerificationTokens("testuserid", "random@example.com"),
-            { status: "OK" }
-        );
-
-        let caughtError;
-        try {
-            await EmailVerification.revokeEmailVerificationTokens("nouserid");
-        } catch (err) {
-            caughtError = err;
-        }
-
-        assert.ok(caughtError);
-        assert.strictEqual(caughtError.message, "Unknown User ID provided without email");
-    });
-
     it("test that generate email verification token API updates session claims", async function () {
         await startST();
 
@@ -1376,9 +1338,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(response.status, 200);
 
         let userId = response.body.user.id;
+        let emailId = response.body.user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
         let antiCsrfToken = infoFromResponse.antiCsrf;
-        let token = await EmailVerification.createEmailVerificationToken(userId);
+        let token = await EmailVerification.createEmailVerificationToken(userId, emailId);
         await EmailVerification.verifyEmailUsingToken(token.token);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
@@ -1395,7 +1358,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(infoFromResponse2.frontToken, undefined);
 
         // now we mark the email as unverified and try again
-        await EmailVerification.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId, emailId);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);

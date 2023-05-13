@@ -275,20 +275,24 @@ export default class Recipe extends RecipeModule {
                     // got verified was already linked to the session's primary user ID,
                     // but either way, we don't need to change any user ID.
 
-                    // In this case, all we do is to update the emailverification claim
-                    try {
-                        // EmailVerificationClaim will be based on the recipeUserId
-                        // and not the primary user ID.
-                        await input.session.fetchAndSetClaim(EmailVerificationClaim, input.userContext);
-                    } catch (err) {
-                        // This should never happen, since we've just set the status above.
-                        if ((err as Error).message === "UNKNOWN_USER_ID") {
-                            throw new SessionError({
-                                type: SessionError.UNAUTHORISED,
-                                message: "Unknown User ID provided",
-                            });
+                    // In this case, all we do is to update the emailverification claim if it's
+                    // not already set to true (it is ok to assume true cause this function
+                    // is only called when the email is verified).
+                    if ((await input.session.getClaimValue(EmailVerificationClaim)) !== true) {
+                        try {
+                            // EmailVerificationClaim will be based on the recipeUserId
+                            // and not the primary user ID.
+                            await input.session.fetchAndSetClaim(EmailVerificationClaim, input.userContext);
+                        } catch (err) {
+                            // This should never happen, since we've just set the status above.
+                            if ((err as Error).message === "UNKNOWN_USER_ID") {
+                                throw new SessionError({
+                                    type: SessionError.UNAUTHORISED,
+                                    message: "Unknown User ID provided",
+                                });
+                            }
+                            throw err;
                         }
-                        throw err;
                     }
 
                     return;
