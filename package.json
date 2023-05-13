@@ -175,13 +175,20 @@
         },
         "./*": "./*"
     },
+    "sideEffects": [
+        "./dist/**"
+    ],
     "module": "./dist/index.js",
     "main": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "typesVersions": {
         "*": {
             "*": [
-                "./dist/*"
+                "*",
+                "dist/*",
+                "dist/*",
+                "dist/*.d.ts",
+                "dist/*/index.d.ts"
             ]
         }
     },
