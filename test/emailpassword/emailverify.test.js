@@ -976,7 +976,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === "OK");
         assert(Object.keys(response2).length === 1);
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1062,7 +1062,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1148,7 +1148,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1190,7 +1190,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         let verifyToken = await EmailVerification.createEmailVerificationToken(userId, "test@gmail.com");
 
-        await EmailVerification.revokeEmailVerificationTokens(userId);
+        await EmailVerification.revokeEmailVerificationTokens(userId, "test@gmail.com");
 
         {
             let response = await EmailVerification.verifyEmailUsingToken(verifyToken.token);
@@ -1232,17 +1232,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(response.status === 200);
 
         let userId = JSON.parse(response.text).user.id;
+        let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        const verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        const verifyToken = await EmailVerification.createEmailVerificationToken(userId, emailId);
 
         await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
-        assert(await EmailVerification.isEmailVerified(userId));
+        assert(await EmailVerification.isEmailVerified(userId, emailId));
 
-        await EmailVerification.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId, emailId);
 
-        assert(!(await EmailVerification.isEmailVerified(userId)));
+        assert(!(await EmailVerification.isEmailVerified(userId, emailId)));
     });
 
     it("test the email verify API with deleted user", async function () {
@@ -1318,7 +1319,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("testuserid"), { status: "OK" });
+        assert.deepStrictEqual(
+            await EmailVerification.revokeEmailVerificationTokens("testuserid", "random@example.com"),
+            { status: "OK" }
+        );
 
         let caughtError;
         try {
