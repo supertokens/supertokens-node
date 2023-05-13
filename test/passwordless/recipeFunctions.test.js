@@ -14,11 +14,11 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let Passwordless = require("../../recipe/passwordless");
+let Session = require("../../dist/recipe/session");
+let Passwordless = require("../../dist/recipe/passwordless");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let SuperTokens = require("../../lib/build/supertokens").default;
+let { ProcessState } = require("../../dist/processState");
+let SuperTokens = require("../../dist/supertokens").default;
 let { isCDIVersionCompatible } = require("../utils");
 
 describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.js]")}`, function () {

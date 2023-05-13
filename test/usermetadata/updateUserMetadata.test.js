@@ -2,10 +2,10 @@ const assert = require("assert");
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 const STExpress = require("../..");
-const { ProcessState } = require("../../lib/build/processState");
-const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata").default;
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+const { ProcessState } = require("../../dist/processState");
+const UserMetadataRecipe = require("../../dist/recipe/usermetadata").default;
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMetadata.test.js]")}`, function () {
     beforeEach(async function () {

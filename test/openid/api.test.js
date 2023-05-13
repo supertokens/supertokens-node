@@ -3,13 +3,13 @@ const express = require("express");
 const request = require("supertest");
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
-let { ProcessState } = require("../../lib/build/processState");
+let { ProcessState } = require("../../dist/processState");
 let STExpress = require("../../");
-const OpenIdRecipe = require("../../lib/build/recipe/openid/recipe").default;
-const OpenId = require("../../lib/build/recipe/openid");
-let { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-let { middleware, errorHandler } = require("../../framework/express");
+const OpenIdRecipe = require("../../dist/recipe/openid/recipe").default;
+const OpenId = require("../../dist/recipe/openid");
+let { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`apiTest: ${printPath("[test/openid/api.test.js]")}`, function () {
     beforeEach(async function () {

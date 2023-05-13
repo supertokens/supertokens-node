@@ -14,18 +14,18 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, delay } = require("../utils");
 let STExpress = require("../..");
-let Session = require("../../recipe/session");
+let Session = require("../../dist/recipe/session");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-const EmailVerification = require("../../recipe/emailverification");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-let { SMTPService } = require("../../recipe/thirdpartyemailpassword/emaildelivery");
+let { ProcessState } = require("../../dist/processState");
+const EmailVerification = require("../../dist/recipe/emailverification");
+let ThirdPartyEmailPassword = require("../../dist/recipe/thirdpartyemailpassword");
+let { SMTPService } = require("../../dist/recipe/thirdpartyemailpassword/emaildelivery/services");
 let nock = require("nock");
 let supertest = require("supertest");
-const { middleware, errorHandler } = require("../../framework/express");
+const { middleware, errorHandler } = require("../../dist/framework/express");
 let express = require("express");
 
-describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDelivery.test.js]")}`, function () {
+describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emaildelivery/services.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

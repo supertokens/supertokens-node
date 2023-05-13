@@ -14,6 +14,7 @@
  */
 
 import type { Request, ResponseToolkit, Plugin, ResponseObject, ServerRoute } from "@hapi/hapi";
+// @ts-ignore
 import type { Boom } from "@hapi/boom";
 import type { HTTPMethod } from "../../types";
 import { normaliseHttpMethod } from "../../utils";

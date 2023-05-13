@@ -27,16 +27,16 @@ const {
     emailVerifyTokenRequest,
 } = require("../utils");
 let STExpress = require("../..");
-let Session = require("../../recipe/session");
-const EmailVerification = require("../../recipe/emailverification");
+let Session = require("../../dist/recipe/session");
+const EmailVerification = require("../../dist/recipe/emailverification");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let { maxVersion } = require("../../lib/build/utils");
-let { Querier } = require("../../lib/build/querier");
-let EmailPassword = require("../../recipe/emailpassword");
+let { ProcessState } = require("../../dist/processState");
+let { maxVersion } = require("../../dist/utils");
+let { Querier } = require("../../dist/querier");
+let EmailPassword = require("../../dist/recipe/emailpassword");
 const express = require("express");
 const request = require("supertest");
-let { middleware, errorHandler } = require("../../framework/express");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 /**
  * TODO: (later) in emailVerificationFunctions.ts:

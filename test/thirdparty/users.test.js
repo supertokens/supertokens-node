@@ -13,13 +13,13 @@
  * under the License.
  */
 const { printPath, setupST, startST, killAllST, cleanST, signInUPCustomRequest } = require("../utils");
-const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/");
+const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../dist/");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
+let { ProcessState } = require("../../dist/processState");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-let { middleware, errorHandler } = require("../../framework/express");
+let Session = require("../../dist/recipe/session");
+let ThirPartyRecipe = require("../../dist/recipe/thirdparty/recipe").default;
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function () {
     before(function () {

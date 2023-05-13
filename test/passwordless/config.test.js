@@ -14,16 +14,16 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let Passwordless = require("../../recipe/passwordless");
+let Session = require("../../dist/recipe/session");
+let Passwordless = require("../../dist/recipe/passwordless");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let SuperTokens = require("../../lib/build/supertokens").default;
+let { ProcessState } = require("../../dist/processState");
+let SuperTokens = require("../../dist/supertokens").default;
 const request = require("supertest");
 const express = require("express");
-let { middleware, errorHandler } = require("../../framework/express");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 let { isCDIVersionCompatible, generateRandomCode } = require("../utils");
-let PasswordlessRecipe = require("../../lib/build/recipe/passwordless/recipe").default;
+let PasswordlessRecipe = require("../../dist/recipe/passwordless/recipe").default;
 
 describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, function () {
     beforeEach(async function () {

@@ -14,15 +14,15 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("./utils");
 let ST = require("../");
-let { Querier } = require("../lib/build/querier");
+let { Querier } = require("../dist/querier");
 let assert = require("assert");
-let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
-let Session = require("../recipe/session");
-let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
+let { ProcessState, PROCESS_STATE } = require("../dist/processState");
+let Session = require("../dist/recipe/session");
+let SessionRecipe = require("../dist/recipe/session/recipe").default;
 let nock = require("nock");
-const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
-let EmailPassword = require("../recipe/emailpassword");
-let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+const { default: NormalisedURLPath } = require("../dist/normalisedURLPath");
+let EmailPassword = require("../dist/recipe/emailpassword");
+let EmailPasswordRecipe = require("../dist/recipe/emailpassword/recipe").default;
 const { default: axios } = require("axios");
 const { fail } = require("assert");
 

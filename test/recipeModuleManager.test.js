@@ -13,20 +13,20 @@
  * under the License.
  */
 const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("./utils");
-let { ProcessState } = require("../lib/build/processState");
+let { ProcessState } = require("../dist/processState");
 let ST = require("../");
-let Session = require("../recipe/session");
-let { Querier } = require("../lib/build/querier");
-let RecipeModule = require("../lib/build/recipeModule").default;
-let NormalisedURLPath = require("../lib/build/normalisedURLPath").default;
-let STError = require("../lib/build/error").default;
-let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-let EmailPassword = require("../recipe/emailpassword");
-let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+let Session = require("../dist/recipe/session");
+let { Querier } = require("../dist/querier");
+let RecipeModule = require("../dist/recipeModule").default;
+let NormalisedURLPath = require("../dist/normalisedURLPath").default;
+let STError = require("../dist/error").default;
+let SessionRecipe = require("../dist/recipe/session/recipe").default;
+let EmailPassword = require("../dist/recipe/emailpassword");
+let EmailPasswordRecipe = require("../dist/recipe/emailpassword/recipe").default;
 const express = require("express");
 const assert = require("assert");
 const request = require("supertest");
-let { middleware, errorHandler } = require("../framework/express");
+let { middleware, errorHandler } = require("../dist/framework/express");
 
 /**
  *

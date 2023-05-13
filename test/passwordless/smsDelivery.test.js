@@ -14,18 +14,18 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, delay } = require("../utils");
 let STExpress = require("../..");
-let Session = require("../../recipe/session");
+let Session = require("../../dist/recipe/session");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let Passwordless = require("../../recipe/passwordless");
-let { TwilioService, SupertokensService } = require("../../recipe/passwordless/smsdelivery");
+let { ProcessState } = require("../../dist/processState");
+let Passwordless = require("../../dist/recipe/passwordless");
+let { TwilioService, SupertokensService } = require("../../dist/recipe/passwordless/smsdelivery/services");
 let nock = require("nock");
 let supertest = require("supertest");
-const { middleware, errorHandler } = require("../../framework/express");
+const { middleware, errorHandler } = require("../../dist/framework/express");
 let express = require("express");
 let { isCDIVersionCompatible } = require("../utils");
 
-describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`, function () {
+describe(`smsDelivery: ${printPath("[test/passwordless/smsdelivery/services.test.js]")}`, function () {
     beforeEach(async function () {
         process.env.TEST_MODE = "testing";
         await killAllST();

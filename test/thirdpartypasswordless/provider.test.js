@@ -15,10 +15,10 @@
 const { printPath, setupST, startST, killAllST, cleanST, isCDIVersionCompatible } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyPasswordlessRecipe = require("../../lib/build/recipe/thirdpartypasswordless/recipe").default;
-let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
-let { middleware, errorHandler } = require("../../framework/express");
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyPasswordlessRecipe = require("../../dist/recipe/thirdpartypasswordless/recipe").default;
+let ThirdPartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 const privateKey = `-----BEGIN EC PRIVATE KEY-----\nMHQCAQEEIP92u8DjfW31UDDudzWtcsiH/gJ5RpdgL6EV4FTuADZWoAcGBSuBBAAK\noUQDQgAEBorYK2YgYN1BDxVNtBgq8ZdoIR5m02kfJKFI/Vq1+uagvjjZVLpeUEgQ\n79ENddF5P8V8gRri+XzD2zNYpYXGNQ==\n-----END EC PRIVATE KEY-----`;
 

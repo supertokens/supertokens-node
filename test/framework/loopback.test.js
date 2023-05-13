@@ -14,21 +14,21 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
-let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../../dist/processState");
 let SuperTokens = require("../..");
-let { middleware } = require("../../framework/awsLambda");
-let Session = require("../../recipe/session");
-let EmailPassword = require("../../recipe/emailpassword");
-let { verifySession } = require("../../recipe/session/framework/awsLambda");
+let { middleware } = require("../../dist/framework/awsLambda");
+let Session = require("../../dist/recipe/session");
+let EmailPassword = require("../../dist/recipe/emailpassword");
+let { verifySession } = require("../../dist/recipe/session/framework/awsLambda");
 const request = require("supertest");
 const axios = require("axios").default;
-let Dashboard = require("../../recipe/dashboard");
+let Dashboard = require("../../dist/recipe/dashboard");
 const { createUsers } = require("../utils.js");
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-const Passwordless = require("../../recipe/passwordless");
-const ThirdParty = require("../../recipe/thirdparty");
-const { Apple, Google, Github } = require("../../recipe/thirdparty");
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+const Passwordless = require("../../dist/recipe/passwordless");
+const ThirdParty = require("../../dist/recipe/thirdparty");
+const { Apple, Google, Github } = require("../../dist/recipe/thirdparty");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {

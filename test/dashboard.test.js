@@ -1,9 +1,9 @@
 const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("./utils");
 let STExpress = require("../");
-let Dashboard = require("../recipe/dashboard");
-let DashboardRecipe = require("../lib/build/recipe/dashboard/recipe").default;
+let Dashboard = require("../dist/recipe/dashboard");
+let DashboardRecipe = require("../dist/recipe/dashboard/recipe").default;
 let assert = require("assert");
-let { ProcessState } = require("../lib/build/processState");
+let { ProcessState } = require("../dist/processState");
 
 describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
     beforeEach(async function () {

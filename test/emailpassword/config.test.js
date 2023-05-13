@@ -14,18 +14,18 @@
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
+let Session = require("../../dist/recipe/session");
+let SessionRecipe = require("../../dist/recipe/session/recipe").default;
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
-let EmailPassword = require("../../recipe/emailpassword");
-let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
-let utils = require("../../lib/build/recipe/emailpassword/utils");
-let { middleware, errorHandler } = require("../../framework/express");
+let { ProcessState } = require("../../dist/processState");
+let { normaliseURLPathOrThrowError } = require("../../dist/normalisedURLPath");
+let { normaliseURLDomainOrThrowError } = require("../../dist/normalisedURLDomain");
+let { normaliseSessionScopeOrThrowError } = require("../../dist/recipe/session/utils");
+const { Querier } = require("../../dist/querier");
+let EmailPassword = require("../../dist/recipe/emailpassword");
+let EmailPasswordRecipe = require("../../dist/recipe/emailpassword/recipe").default;
+let utils = require("../../dist/recipe/emailpassword/utils");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, function () {
     beforeEach(async function () {

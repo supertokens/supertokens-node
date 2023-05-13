@@ -24,13 +24,13 @@ const {
 } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyEmailPasswordRecipe = require("../../lib/build/recipe/thirdpartyemailpassword/recipe").default;
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyEmailPasswordRecipe = require("../../dist/recipe/thirdpartyemailpassword/recipe").default;
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
-let Session = require("../../recipe/session");
-let { middleware, errorHandler } = require("../../framework/express");
+let Session = require("../../dist/recipe/session");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature.test.js]")}`, function () {
     before(function () {

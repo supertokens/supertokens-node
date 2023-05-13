@@ -9,3 +9,7 @@ apiPassword
 releasePassword
 .tmp
 .idea
+build
+dist
+.env
+package-lock.json

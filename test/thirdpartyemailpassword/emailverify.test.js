@@ -25,14 +25,14 @@ const {
     emailVerifyTokenRequest,
 } = require("../utils");
 let STExpress = require("../..");
-let Session = require("../../recipe/session");
+let Session = require("../../dist/recipe/session");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-const EmailVerification = require("../../recipe/emailverification");
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyEmailPassword = require("../../dist/recipe/thirdpartyemailpassword");
+const EmailVerification = require("../../dist/recipe/emailverification");
 const express = require("express");
 const request = require("supertest");
-let { middleware, errorHandler } = require("../../framework/express");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.test.js]")}`, function () {
     before(function () {

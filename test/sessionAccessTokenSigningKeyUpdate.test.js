@@ -14,14 +14,14 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, killAllSTCoresOnly } = require("./utils");
 let assert = require("assert");
-let { Querier } = require("../lib/build/querier");
-let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
+let { Querier } = require("../dist/querier");
+let { ProcessState, PROCESS_STATE } = require("../dist/processState");
 let SuperTokens = require("../");
-let Session = require("../recipe/session");
-let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
-let { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
-let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-const { maxVersion } = require("../lib/build/utils");
+let Session = require("../dist/recipe/session");
+let SessionFunctions = require("../dist/recipe/session/sessionFunctions");
+let { parseJWTWithoutSignatureVerification } = require("../dist/recipe/session/jwt");
+let SessionRecipe = require("../dist/recipe/session/recipe").default;
+const { maxVersion } = require("../dist/utils");
 const { fail } = require("assert");
 const sinon = require("sinon");
 const request = require("http");

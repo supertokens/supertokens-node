@@ -1,8 +1,8 @@
 import { intercept, inject } from "@loopback/core";
 import { post, response, RestApplication, RestBindings, MiddlewareContext } from "@loopback/rest";
-import { middleware } from "../../../framework/loopback";
-import { verifySession } from "../../../recipe/session/framework/loopback";
-import Session from "../../../recipe/session";
+import { middleware } from "../../../dist/framework/loopback";
+import { verifySession } from "../../../dist/recipe/session/framework/loopback";
+import Session from "../../../dist/recipe/session";
 
 class Create {
     constructor(@inject(RestBindings.Http.CONTEXT) private ctx: MiddlewareContext) {}

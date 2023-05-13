@@ -9,12 +9,12 @@ const {
     mockRequest,
     setKeyValueInConfig,
 } = require("../utils");
-const { ProcessState } = require("../../lib/build/processState");
+const { ProcessState } = require("../../dist/processState");
 const STExpress = require("../..");
-const UserRoles = require("../../lib/build/recipe/userroles").default;
-const Session = require("../../lib/build/recipe/session").default;
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+const UserRoles = require("../../dist/recipe/userroles").default;
+const Session = require("../../dist/recipe/session").default;
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function () {
     beforeEach(async function () {

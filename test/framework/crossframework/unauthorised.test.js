@@ -1,5 +1,5 @@
 const { addCrossFrameworkTests } = require("../crossFramework.testgen");
-let Session = require("../../../recipe/session");
+let Session = require("../../../dist/recipe/session");
 const { extractInfoFromResponse } = require("../../utils");
 let assert = require("assert");
 

@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { default: SuperTokensError } = require("../lib/build/error");
+const { default: SuperTokensError } = require("../dist/error");
 
 describe("SuperTokensError", () => {
     it("should serialize with the proper message", () => {

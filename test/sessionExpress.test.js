@@ -25,14 +25,14 @@ const {
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
-let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../dist/processState");
 let SuperTokens = require("../");
-let Session = require("../recipe/session");
-let { Querier } = require("../lib/build/querier");
-const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
-const { verifySession } = require("../recipe/session/framework/express");
+let Session = require("../dist/recipe/session");
+let { Querier } = require("../dist/querier");
+const { default: NormalisedURLPath } = require("../dist/normalisedURLPath");
+const { verifySession } = require("../dist/recipe/session/framework/express");
 const { default: next } = require("next");
-let { middleware, errorHandler } = require("../framework/express");
+let { middleware, errorHandler } = require("../dist/framework/express");
 
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {

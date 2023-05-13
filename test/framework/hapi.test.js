@@ -14,21 +14,21 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
-let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../../dist/processState");
 let SuperTokens = require("../../");
-let HapiFramework = require("../../framework/hapi");
+let HapiFramework = require("../../dist/framework/hapi");
 const Hapi = require("@hapi/hapi");
-let Session = require("../../recipe/session");
-let ThirdpartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-let { verifySession } = require("../../recipe/session/framework/hapi");
-let Dashboard = require("../../recipe/dashboard");
-let EmailPassword = require("../../recipe/emailpassword");
+let Session = require("../../dist/recipe/session");
+let ThirdpartyEmailPassword = require("../../dist/recipe/thirdpartyemailpassword");
+let { verifySession } = require("../../dist/recipe/session/framework/hapi");
+let Dashboard = require("../../dist/recipe/dashboard");
+let EmailPassword = require("../../dist/recipe/emailpassword");
 const { createUsers } = require("../utils.js");
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-const Passwordless = require("../../recipe/passwordless");
-const ThirdParty = require("../../recipe/thirdparty");
-const { Apple, Google, Github } = require("../../recipe/thirdparty");
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+const Passwordless = require("../../dist/recipe/passwordless");
+const ThirdParty = require("../../dist/recipe/thirdparty");
+const { Apple, Google, Github } = require("../../dist/recipe/thirdparty");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
     beforeEach(async function () {

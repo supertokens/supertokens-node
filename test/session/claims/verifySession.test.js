@@ -14,18 +14,18 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../../utils");
 const assert = require("assert");
-const { ProcessState } = require("../../../lib/build/processState");
+const { ProcessState } = require("../../../dist/processState");
 const SuperTokens = require("../../../");
-const Session = require("../../../recipe/session");
-const { default: SessionClass } = require("../../../lib/build/recipe/session/sessionClass");
-const { verifySession } = require("../../../recipe/session/framework/express");
-const { middleware, errorHandler } = require("../../../framework/express");
-const { PrimitiveClaim } = require("../../../lib/build/recipe/session/claimBaseClasses/primitiveClaim");
+const Session = require("../../../dist/recipe/session");
+const { default: SessionClass } = require("../../../dist/recipe/session/sessionClass");
+const { verifySession } = require("../../../dist/recipe/session/framework/express");
+const { middleware, errorHandler } = require("../../../dist/framework/express");
+const { PrimitiveClaim } = require("../../../dist/recipe/session/claimBaseClasses/primitiveClaim");
 const express = require("express");
 const request = require("supertest");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
 const sinon = require("sinon");
-const { default: SessionError } = require("../../../lib/build/recipe/session/error");
+const { default: SessionError } = require("../../../dist/recipe/session/error");
 
 describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifySession.test.js]")}`, function () {
     beforeEach(async function () {

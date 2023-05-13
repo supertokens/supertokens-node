@@ -138,7 +138,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             let err = await new Promise((resolve) => {
                 let resolvedCalled = false;
                 if (request.readable) {
-                    jsonParser(request, new ServerResponse(request), (e) => {
+                    jsonParser(request, new ServerResponse(request), (e: any) => {
                         if (!resolvedCalled) {
                             resolvedCalled = true;
                             resolve(e);
@@ -175,7 +175,7 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
     let parser = urlencoded({ extended: true });
     let err = await new Promise((resolve) => {
         if (request.readable) {
-            parser(request, new ServerResponse(request), (e) => {
+            parser(request, new ServerResponse(request), (e:any) => {
                 resolve(e);
             });
         } else {

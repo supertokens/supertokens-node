@@ -1,12 +1,12 @@
 const assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
-const { ProcessState } = require("../../../lib/build/processState");
+const { ProcessState } = require("../../../dist/processState");
 const STExpress = require("../../..");
-const EmailPasswordRecipe = require("../../../lib/build/recipe/emailpassword").default;
-const UserMetadataRecipe = require("../../../lib/build/recipe/usermetadata").default;
-const SessionRecipe = require("../../../lib/build/recipe/session").default;
-const { Querier } = require("../../../lib/build/querier");
-const { maxVersion } = require("../../../lib/build/utils");
+const EmailPasswordRecipe = require("../../../dist/recipe/emailpassword").default;
+const UserMetadataRecipe = require("../../../dist/recipe/usermetadata").default;
+const SessionRecipe = require("../../../dist/recipe/session").default;
+const { Querier } = require("../../../dist/querier");
+const { maxVersion } = require("../../../dist/utils");
 
 describe(`userIdMapping with supertokens recipe: ${printPath(
     "[test/useridmapping/recipeTests/supertokens.test.js]"

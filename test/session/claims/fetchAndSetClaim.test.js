@@ -14,12 +14,12 @@
  */
 const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
-const { default: SessionClass } = require("../../../lib/build/recipe/session/sessionClass");
+const { default: SessionClass } = require("../../../dist/recipe/session/sessionClass");
 const sinon = require("sinon");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
 const SuperTokens = require("../../..");
-const Session = require("../../../recipe/session");
-const { ProcessState } = require("../../../lib/build/processState");
+const Session = require("../../../dist/recipe/session");
+const { ProcessState } = require("../../../dist/processState");
 
 describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetchAndSetClaim.test.js]")}`, function () {
     beforeEach(async function () {

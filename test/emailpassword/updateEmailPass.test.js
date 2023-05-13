@@ -13,15 +13,15 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, signUPRequest } = require("../utils");
-const { updateEmailOrPassword, signIn } = require("../../lib/build/recipe/emailpassword");
+const { updateEmailOrPassword, signIn } = require("../../dist/recipe/emailpassword");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
+let { ProcessState } = require("../../dist/processState");
 let STExpress = require("../..");
-let Session = require("../../recipe/session");
-let EmailPassword = require("../../recipe/emailpassword");
-let { maxVersion } = require("../../lib/build/utils");
-let { Querier } = require("../../lib/build/querier");
-let { middleware, errorHandler } = require("../../framework/express");
+let Session = require("../../dist/recipe/session");
+let EmailPassword = require("../../dist/recipe/emailpassword");
+let { maxVersion } = require("../../dist/utils");
+let { Querier } = require("../../dist/querier");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 const express = require("express");
 
 describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.test.js]")}`, function () {

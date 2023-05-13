@@ -2,12 +2,12 @@ const assert = require("assert");
 
 const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
-const { ProcessState } = require("../../lib/build/processState");
-const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
-const SessionRecipe = require("../../lib/build/recipe/session").default;
-const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata").default;
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+const { ProcessState } = require("../../dist/processState");
+const EmailPasswordRecipe = require("../../dist/recipe/emailpassword").default;
+const SessionRecipe = require("../../dist/recipe/session").default;
+const UserMetadataRecipe = require("../../dist/recipe/usermetadata").default;
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserIdMapping.test.js]")}`, function () {
     beforeEach(async function () {

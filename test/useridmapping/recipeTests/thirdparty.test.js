@@ -1,11 +1,11 @@
 const assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
-const { ProcessState } = require("../../../lib/build/processState");
+const { ProcessState } = require("../../../dist/processState");
 const STExpress = require("../../..");
-const ThirdPartyRecipe = require("../../../lib/build/recipe/thirdparty").default;
-const SessionRecipe = require("../../../lib/build/recipe/session").default;
-const { Querier } = require("../../../lib/build/querier");
-const { maxVersion } = require("../../../lib/build/utils");
+const ThirdPartyRecipe = require("../../../dist/recipe/thirdparty").default;
+const SessionRecipe = require("../../../dist/recipe/session").default;
+const { Querier } = require("../../../dist/querier");
+const { maxVersion } = require("../../../dist/utils");
 
 describe(`userIdMapping with thirdparty: ${printPath(
     "[test/useridmapping/recipeTests/thirdparty.test.js]"

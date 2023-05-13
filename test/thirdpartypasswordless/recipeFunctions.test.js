@@ -14,11 +14,11 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
+let Session = require("../../dist/recipe/session");
+let ThirdPartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-const EmailVerification = require("../../recipe/emailverification");
+let { ProcessState } = require("../../dist/processState");
+const EmailVerification = require("../../dist/recipe/emailverification");
 let { isCDIVersionCompatible } = require("../utils");
 
 describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {

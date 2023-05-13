@@ -15,7 +15,7 @@
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 const assert = require("assert");
 const SuperTokens = require("../..");
-const Session = require("../../recipe/session");
+const Session = require("../../dist/recipe/session");
 
 describe(`Session handling functions without modifying response: ${printPath(
     "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
@@ -118,7 +118,7 @@ describe(`Session handling functions without modifying response: ${printPath(
             const tokens = createRes.getAllSessionTokensDangerously();
             const session = await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken);
             assert.ok(session);
-            /** @type {import("../../recipe/session").SessionContainer} */
+            /** @type {import("../../dist/recipe/session").SessionContainer} */
             const getSessionTokenInfo = session.getAllSessionTokensDangerously();
             assert.deepStrictEqual(getSessionTokenInfo, {
                 accessToken: tokens.accessToken,

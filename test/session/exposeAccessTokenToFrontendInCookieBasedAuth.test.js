@@ -16,13 +16,13 @@ const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse
 const assert = require("assert");
 const express = require("express");
 const request = require("supertest");
-const { ProcessState } = require("../../lib/build/processState");
+const { ProcessState } = require("../../dist/processState");
 const SuperTokens = require("../..");
-const Session = require("../../recipe/session");
-const { middleware, errorHandler } = require("../../framework/express");
-const { verifySession } = require("../../recipe/session/framework/express");
+const Session = require("../../dist/recipe/session");
+const { middleware, errorHandler } = require("../../dist/framework/express");
+const { verifySession } = require("../../dist/recipe/session/framework/express");
 const { json } = require("body-parser");
-const { default: SessionRecipe } = require("../../lib/build/recipe/session/recipe");
+const { default: SessionRecipe } = require("../../dist/recipe/session/recipe");
 
 describe(`exposeAccessTokenToFrontendInCookieBasedAuth: ${printPath(
     "[test/session/exposeAccessTokenToFrontendInCookieBasedAuth.test.js]"

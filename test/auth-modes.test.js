@@ -23,11 +23,11 @@ const {
     delay,
 } = require("./utils");
 const assert = require("assert");
-const { ProcessState } = require("../lib/build/processState");
+const { ProcessState } = require("../dist/processState");
 const SuperTokens = require("../");
-const Session = require("../recipe/session");
-const { verifySession } = require("../recipe/session/framework/express");
-const { middleware, errorHandler } = require("../framework/express");
+const Session = require("../dist/recipe/session");
+const { verifySession } = require("../dist/recipe/session/framework/express");
+const { middleware, errorHandler } = require("../dist/framework/express");
 const express = require("express");
 const request = require("supertest");
 const sinon = require("sinon");

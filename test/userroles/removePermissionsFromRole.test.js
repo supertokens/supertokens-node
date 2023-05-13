@@ -2,11 +2,11 @@ const assert = require("assert");
 
 const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
-const { ProcessState } = require("../../lib/build/processState");
-const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-const { default: SessionRecipe } = require("../../lib/build/recipe/session/recipe");
+const { ProcessState } = require("../../dist/processState");
+const UserRolesRecipe = require("../../dist/recipe/userroles").default;
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+const { default: SessionRecipe } = require("../../dist/recipe/session/recipe");
 
 describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForRole.test.js]")}`, function () {
     beforeEach(async function () {
