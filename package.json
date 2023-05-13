@@ -13,6 +13,36 @@
             "types": "./dist/nextjs.d.ts",
             "require": "./dist/nextjs.js"
         },
+        "./framework/awsLambda": {
+            "import": "./dist/framework/awsLambda/index.mjs",
+            "types": "./dist/framework/awsLambda/index.d.ts",
+            "require": "./dist/framework/awsLambda/index.js"
+        },
+        "./framework/express": {
+            "import": "./dist/framework/express/index.mjs",
+            "types": "./dist/framework/express/index.d.ts",
+            "require": "./dist/framework/express/index.js"
+        },
+        "./framework/fastify": {
+            "import": "./dist/framework/fastify/index.mjs",
+            "types": "./dist/framework/fastify/index.d.ts",
+            "require": "./dist/framework/fastify/index.js"
+        },
+        "./framework/hapi": {
+            "import": "./dist/framework/hapi/index.mjs",
+            "types": "./dist/framework/hapi/index.d.ts",
+            "require": "./dist/framework/hapi/index.js"
+        },
+        "./framework/koa": {
+            "import": "./dist/framework/koa/index.mjs",
+            "types": "./dist/framework/koa/index.d.ts",
+            "require": "./dist/framework/koa/index.js"
+        },
+        "./framework/loopback": {
+            "import": "./dist/framework/loopback/index.mjs",
+            "types": "./dist/framework/loopback/index.d.ts",
+            "require": "./dist/framework/loopback/index.js"
+        },
         "./recipe/dashboard": {
             "import": "./dist/recipe/dashboard/index.mjs",
             "types": "./dist/recipe/dashboard/index.d.ts",
