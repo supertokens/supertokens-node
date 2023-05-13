@@ -20,7 +20,7 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 ### Prerequisites
 
 -   OS: Linux or macOS
--   Nodejs & npm
+-   Nodejs & pnpm
 -   IDE: [VSCode](https://code.visualstudio.com/download)(recommended) or equivalent IDE
 
 ### Project Setup
@@ -30,15 +30,15 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
    `supertokens-node` and `supertokens-root` should exist side by side within the same parent directory
 3. `cd supertokens-node`
 4. Install the project dependencies  
-   `npm i -d`
+   `pnpm i -d`
 5. Add git pre-commit hooks  
-   `npm run set-up-hooks`
+   `pnpm run set-up-hooks`
 
 ## Modifying Code
 
 1. Open the `supertokens-node` project in your IDE and you can start modifying the code
 2. After modifying the code, build your project to implement your changes  
-   `npm run build-pretty`
+   `pnpm run build-pretty`
 
 ## Testing
 
@@ -48,7 +48,7 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 3. Navigate to the `supertokens-node` repository  
    `cd ../supertokens-node/`
 4. Run all tests  
-   `INSTALL_PATH=../supertokens-root npm test`
+   `INSTALL_PATH=../supertokens-root pnpm test`
 5. If all tests pass the output should be:  
    ![node tests passing](https://github.com/supertokens/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png)
 
@@ -86,5 +86,5 @@ Additional resources you might find useful:
 This will generate the API docs in a folder called `docs`
 
 ```
-npm run build-docs
+pnpm run build-docs
 ```
