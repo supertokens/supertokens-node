@@ -20,7 +20,7 @@ import { TypeFramework } from "./framework/types";
 
 export type AppInfo = {
     appName: string;
-    websiteDomain: string | ((userContext: any) => string | undefined);
+    origin: string | ((userContext: any) => Promise<string | undefined> | string | undefined);
     websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
@@ -29,7 +29,7 @@ export type AppInfo = {
 
 export type NormalisedAppinfo = {
     appName: string;
-    websiteDomain: NormalisedURLDomain;
+    origin: (userContext: any) => Promise<NormalisedURLDomain | undefined> | NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
     topLevelWebsiteDomain: string;

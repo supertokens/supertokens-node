@@ -122,10 +122,11 @@ export default function getAPIInterface(): APIInterface {
                     await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
                 }
 
-                let emailVerifyLink = getEmailVerifyLink({
+                let emailVerifyLink = await getEmailVerifyLink({
                     appInfo: options.appInfo,
                     token: response.token,
                     recipeId: options.recipeId,
+                    userContext: userContext,
                 });
 
                 logDebugMessage(`Sending email verification email to ${emailInfo}`);

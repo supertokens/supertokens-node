@@ -245,9 +245,12 @@ export default class Recipe extends RecipeModule {
         );
 
         const appInfo = this.getAppInfo();
-
+        const origin = await appInfo.origin(input.userContext);
+        if (origin === undefined) {
+            throw new Error(""); //     need help here
+        }
         let magicLink =
-            appInfo.websiteDomain.getAsStringDangerous() +
+            origin.getAsStringDangerous() +
             appInfo.websiteBasePath.getAsStringDangerous() +
             "/verify" +
             "?rid=" +

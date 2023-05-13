@@ -19,7 +19,7 @@ import Supertokens from "../../../../../supertokens";
 
 export default function getPasswordlessLoginSmsContent(input: TypePasswordlessSmsDeliveryInput): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo.appName;
+    let appName = supertokens.appInfo!.appName;
     let body = getPasswordlessLoginSmsBody(appName, input.codeLifetime, input.urlWithLinkCode, input.userInputCode);
     return {
         body,

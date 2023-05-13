@@ -6,6 +6,7 @@ import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import EmailVerification from "../../emailverification/recipe";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -194,8 +195,17 @@ export default function getAPIInterface(): APIInterface {
         },
 
         appleRedirectHandlerPOST: async function ({ code, state, options }): Promise<void> {
+            const userContext = makeDefaultUserContextFromAPI(options.req);
+            const origin = await options.appInfo.origin(userContext);
+            if (origin === undefined) {
+                options.res.setStatusCode(400);
+                return options.res.sendJSONResponse({
+                    status: 400,
+                    error: "Request origin rejected",
+                });
+            }
             const redirectURL =
-                options.appInfo.websiteDomain.getAsStringDangerous() +
+                origin.getAsStringDangerous() +
                 options.appInfo.websiteBasePath.getAsStringDangerous() +
                 "/callback/apple?state=" +
                 state +

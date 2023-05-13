@@ -69,9 +69,18 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: string; recipeId: string }): string {
+export async function getEmailVerifyLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    userContext: any;
+}): Promise<string> {
+    const origin = await input.appInfo.origin(input.userContext);
+    if (origin === undefined) {
+        throw new Error(""); //     need help here
+    }
     return (
-        input.appInfo.websiteDomain.getAsStringDangerous() +
+        origin.getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
         "/verify-email" +
         "?token=" +

@@ -20,6 +20,7 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
 import axios from "axios";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export type Response = {
     status: "OK";
@@ -66,9 +67,14 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
         };
     }
 
-    const { apiDomain, websiteDomain, appName } = options.appInfo;
+    const { apiDomain, origin: originFunction, appName } = options.appInfo;
+    const userContext = makeDefaultUserContextFromAPI(options.req);
+    const origin = await originFunction(userContext);
+    if (origin === undefined) {
+        throw new Error(""); //     need help
+    }
     const data = {
-        websiteDomain: websiteDomain.getAsStringDangerous(),
+        websiteDomain: origin!.getAsStringDangerous(),
         apiDomain: apiDomain.getAsStringDangerous(),
         appName,
         sdk: "node",

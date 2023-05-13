@@ -38,7 +38,7 @@ export function maxVersion(version1: string, version2: string): string {
     return version2;
 }
 
-export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo {
+export async function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): Promise<NormalisedAppinfo> {
     if (appInfo === undefined) {
         throw new Error("Please provide the appInfo object when calling supertokens.init");
     }
@@ -48,22 +48,35 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     if (appInfo.appName === undefined) {
         throw new Error("Please provide your appName inside the appInfo object when calling supertokens.init");
     }
-    if (appInfo.websiteDomain === undefined) {
+    if (appInfo.origin === undefined) {
         throw new Error("Please provide your websiteDomain inside the appInfo object when calling supertokens.init");
     }
     let apiGatewayPath =
         appInfo.apiGatewayPath !== undefined
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
-
-    const websiteDomain = new NormalisedURLDomain(appInfo.websiteDomain);
+    const origin = async (userContext: any) => {
+        let url;
+        if (typeof appInfo.origin === "string") {
+            return new NormalisedURLDomain(appInfo.origin);
+        }
+        if (typeof appInfo.origin === "function") {
+            url = await appInfo.origin(userContext);
+        }
+        if (url === undefined) {
+            throw new Error(
+                "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
+            );
+        }
+        return new NormalisedURLDomain(url);
+    };
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(websiteDomain.getAsStringDangerous());
-
+    const originString = await origin({});
+    const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString.getAsStringDangerous());
     return {
         appName: appInfo.appName,
-        websiteDomain,
+        origin,
         apiDomain,
         apiBasePath: apiGatewayPath.appendPath(
             appInfo.apiBasePath === undefined

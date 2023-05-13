@@ -28,7 +28,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypePass
 
     sendSms = async (input: TypePasswordlessSmsDeliveryInput) => {
         let supertokens = Supertokens.getInstanceOrThrowError();
-        let appName = supertokens.appInfo.appName;
+        let appName = supertokens.appInfo!.appName;
         try {
             await axios({
                 method: "post",

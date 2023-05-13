@@ -3,6 +3,7 @@ import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
 import EmailVerificationRecipe from "../../../emailverification/recipe";
 import { getEmailVerifyLink } from "../../../emailverification/utils";
+import { makeDefaultUserContextFromAPI } from "../../../../utils";
 
 type Response = {
     status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
@@ -33,10 +34,13 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         };
     }
 
-    let emailVerifyLink = getEmailVerifyLink({
+    const userContext = makeDefaultUserContextFromAPI(options.req);
+
+    let emailVerifyLink = await getEmailVerifyLink({
         appInfo: options.appInfo,
         token: emailVerificationToken.token,
         recipeId: EmailVerificationRecipe.RECIPE_ID,
+        userContext: userContext,
     });
 
     await EmailVerification.sendEmail({

@@ -243,7 +243,7 @@ const plugin: Plugin<{}> = {
             for (let j = 0; j < apisHandled.length; j++) {
                 let api = apisHandled[j];
                 if (!api.disabled) {
-                    let path = `${supertokens.appInfo.apiBasePath.getAsStringDangerous()}${api.pathWithoutApiBasePath.getAsStringDangerous()}`;
+                    let path = `${supertokens.appInfo!.apiBasePath.getAsStringDangerous()}${api.pathWithoutApiBasePath.getAsStringDangerous()}`;
                     let methodAndPath = `${api.method}-${path}`;
                     if (!routeMethodSet.has(methodAndPath)) {
                         supportedRoutes.push({

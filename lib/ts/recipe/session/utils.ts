@@ -135,13 +135,16 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.accessTokenPath === undefined
             ? new NormalisedURLPath("/")
             : new NormalisedURLPath(config.accessTokenPath);
-    let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
-    let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
+    // TODO: recommend solution
+    // let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
+    // let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
 
+    // let cookieSameSite: "strict" | "lax" | "none" =
+    //     appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
+    //         ? "none"
+    //         : "lax";
     let cookieSameSite: "strict" | "lax" | "none" =
-        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
-            ? "none"
-            : "lax";
+        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain ? "none" : "lax";
     cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
             ? cookieSameSite
