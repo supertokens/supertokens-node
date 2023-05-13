@@ -179,7 +179,7 @@
     ],
     "scripts": {
         "test": "TEST_MODE=testing npx mocha --timeout 500000",
-        "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
+        "build-check": "npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
         "build": "tsup",
         "pretty": "npx pretty-quick .",
         "post-build": "node add-ts-no-check.js",
