@@ -9,3 +9,6 @@ apiPassword
 releasePassword
 .tmp
 .idea
+build
+dist
+.env

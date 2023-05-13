@@ -2,14 +2,158 @@
     "name": "supertokens-node",
     "version": "14.0.2",
     "description": "NodeJS driver for SuperTokens core",
-    "main": "index.js",
+    "exports": {
+        ".": {
+            "import": "./dist/index.mjs",
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js"
+        },
+        "./nextjs": {
+            "import": "./dist/nextjs.mjs",
+            "types": "./dist/nextjs.d.ts",
+            "require": "./dist/nextjs.js"
+        },
+        "./recipe/dashboard": {
+            "import": "./dist/recipe/dashboard/index.mjs",
+            "types": "./dist/recipe/dashboard/index.d.ts",
+            "require": "./dist/recipe/dashboard/index.js"
+        },
+        "./recipe/emailpassword": {
+            "import": "./dist/recipe/emailpassword/index.mjs",
+            "types": "./dist/recipe/emailpassword/index.d.ts",
+            "require": "./dist/recipe/emailpassword/index.js"
+        },
+        "./recipe/emailpassword/emaildelivery": {
+            "import": "./dist/recipe/emailpassword/emaildelivery/services/index.mjs",
+            "types": "./dist/recipe/emailpassword/emaildelivery/services/index.d.ts",
+            "require": "./dist/recipe/emailpassword/emaildelivery/services/index.js"
+        },
+        "./recipe/emailverification": {
+            "import": "./dist/recipe/emailverification/index.mjs",
+            "types": "./dist/recipe/emailverification/index.d.ts",
+            "require": "./dist/recipe/emailverification/index.js"
+        },
+        "./recipe/emailverification/emaildelivery": {
+            "import": "./dist/recipe/emailverification/emaildelivery/services/index.mjs",
+            "types": "./dist/recipe/emailverification/emaildelivery/services/index.d.ts",
+            "require": "./dist/recipe/emailverification/emaildelivery/services/index.js"
+        },
+        "./recipe/jwt": {
+            "import": "./dist/recipe/jwt/index.mjs",
+            "types": "./dist/recipe/jwt/index.d.ts",
+            "require": "./dist/recipe/jwt/index.js"
+        },
+        "./recipe/passwordless": {
+            "import": "./dist/recipe/passwordless/index.mjs",
+            "types": "./dist/recipe/passwordless/index.d.ts",
+            "require": "./dist/recipe/passwordless/index.js"
+        },
+        "./recipe/passwordless/emaildelivery": {
+            "import": "./dist/recipe/passwordless/emaildelivery/services/index.mjs",
+            "types": "./dist/recipe/passwordless/emaildelivery/services/index.d.ts",
+            "require": "./dist/recipe/passwordless/emaildelivery/services/index.js"
+        },
+        "./recipe/passwordless/smsdelivery": {
+            "import": "./dist/recipe/passwordless/smsdelivery/services/index.mjs",
+            "types": "./dist/recipe/passwordless/smsdelivery/services/index.d.ts",
+            "require": "./dist/recipe/passwordless/smsdelivery/services/index.js"
+        },
+        "./recipe/session": {
+            "import": "./dist/recipe/session/index.mjs",
+            "types": "./dist/recipe/session/index.d.ts",
+            "require": "./dist/recipe/session/index.js"
+        },
+        "./recipe/session/framework/awsLambda": {
+            "import": "./dist/recipe/session/framework/awsLambda.mjs",
+            "types": "./dist/recipe/session/framework/awsLambda.d.ts",
+            "require": "./dist/recipe/session/framework/awsLambda.js"
+        },
+        "./recipe/session/framework/express": {
+            "import": "./dist/recipe/session/framework/express.mjs",
+            "types": "./dist/recipe/session/framework/express.d.ts",
+            "require": "./dist/recipe/session/framework/express.js"
+        },
+        "./recipe/session/framework/fastify": {
+            "import": "./dist/recipe/session/framework/fastify.mjs",
+            "types": "./dist/recipe/session/framework/fastify.d.ts",
+            "require": "./dist/recipe/session/framework/fastify.js"
+        },
+        "./recipe/session/framework/hapi": {
+            "import": "./dist/recipe/session/framework/hapi.mjs",
+            "types": "./dist/recipe/session/framework/hapi.d.ts",
+            "require": "./dist/recipe/session/framework/hapi.js"
+        },
+        "./recipe/session/framework/koa": {
+            "import": "./dist/recipe/session/framework/koa.mjs",
+            "types": "./dist/recipe/session/framework/koa.d.ts",
+            "require": "./dist/recipe/session/framework/koa.js"
+        },
+        "./recipe/session/framework/loopback": {
+            "import": "./dist/recipe/session/framework/loopback.mjs",
+            "types": "./dist/recipe/session/framework/loopback.d.ts",
+            "require": "./dist/recipe/session/framework/loopback.js"
+        },
+        "./recipe/thirdparty": {
+            "import": "./dist/recipe/thirdparty/index.mjs",
+            "types": "./dist/recipe/thirdparty/index.d.ts",
+            "require": "./dist/recipe/thirdparty/index.js"
+        },
+        "./recipe/thirdparty/emaildelivery": {
+            "import": "./dist/recipe/thirdparty/emaildelivery/services/index.mjs",
+            "types": "./dist/recipe/thirdparty/emaildelivery/services/index.d.ts",
+            "require": "./dist/recipe/thirdparty/emaildelivery/services/index.js"
+        },
+        "./recipe/thirdpartyemailpassword": {
+            "import": "./dist/recipe/thirdpartyemailpassword/index.mjs",
+            "types": "./dist/recipe/thirdpartyemailpassword/index.d.ts",
+            "require": "./dist/recipe/thirdpartyemailpassword/index.js"
+        },
+        "./recipe/thirdpartyemailpassword/emaildelivery": {
+            "import": "./dist/recipe/thirdpartyemailpassword/emaildelivery/services/index.mjs",
+            "types": "./dist/recipe/thirdpartyemailpassword/emaildelivery/services/index.d.ts",
+            "require": "./dist/recipe/thirdpartyemailpassword/emaildelivery/services/index.js"
+        },
+        "./recipe/thirdpartypasswordless": {
+            "import": "./dist/recipe/thirdpartypasswordless/index.mjs",
+            "types": "./dist/recipe/thirdpartypasswordless/index.d.ts",
+            "require": "./dist/recipe/thirdpartypasswordless/index.js"
+        },
+        "./recipe/thirdpartypasswordless/emaildelivery": {
+            "import": "./dist/recipe/thirdpartypasswordless/emaildelivery/services/index.mjs",
+            "types": "./dist/recipe/thirdpartypasswordless/emaildelivery/services/index.d.ts",
+            "require": "./dist/recipe/thirdpartypasswordless/emaildelivery/services/index.js"
+        },
+        "./recipe/thirdpartysmspasswordless/smsdelivery": {
+            "import": "./dist/recipe/thirdpartysmspasswordless/smsdelivery/services/index.mjs",
+            "types": "./dist/recipe/thirdpartysmspasswordless/smsdelivery/services/index.d.ts",
+            "require": "./dist/recipe/thirdpartysmspasswordless/smsdelivery/services/index.js"
+        },
+        "./recipe/usermetadata": {
+            "import": "./dist/recipe/usermetadata/index.mjs",
+            "types": "./dist/recipe/usermetadata/index.d.ts",
+            "require": "./dist/recipe/usermetadata/index.js"
+        },
+        "./recipe/userroles": {
+            "import": "./dist/recipe/userroles/index.mjs",
+            "types": "./dist/recipe/userroles/index.d.ts",
+            "require": "./dist/recipe/userroles/index.js"
+        }
+    },
+    "module": "./dist/index.js",
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
     "scripts": {
         "test": "TEST_MODE=testing npx mocha --timeout 500000",
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
-        "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit && cd ../.. && npm run post-build",
+        "build": "tsup",
         "pretty": "npx pretty-quick .",
         "post-build": "node add-ts-no-check.js",
-        "build-pretty": "npm run build && npm run pretty && npm run pretty",
+        "build-pretty": "pnpm run build && pnpm run pretty && pnpm run pretty",
         "pretty-check": "npx pretty-quick --check .",
         "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
         "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./lib/tsconfig.json ./lib/ts/index.ts ./lib/ts/**/index.ts ./lib/ts/**/*/index.ts"
@@ -56,9 +200,12 @@
         "@loopback/repository": "3.7.1",
         "@loopback/rest": "9.3.0",
         "@types/aws-lambda": "8.10.77",
+        "@types/body-parser": "^1.19.2",
         "@types/co-body": "^5.1.1",
         "@types/cookie": "0.3.3",
+        "@types/debug": "^4.1.7",
         "@types/express": "4.16.1",
+        "@types/hapi__boom": "^9.0.1",
         "@types/hapi__hapi": "20.0.8",
         "@types/jsonwebtoken": "9.0.0",
         "@types/koa": "^2.13.4",
@@ -83,6 +230,7 @@
         "react": "^17.0.2",
         "sinon": "^14.0.0",
         "supertest": "4.0.2",
+        "tsup": "6.6.0",
         "typedoc": "^0.22.5",
         "typescript": "4.2"
     },
