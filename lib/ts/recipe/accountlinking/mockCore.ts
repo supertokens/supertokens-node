@@ -1,6 +1,76 @@
-import { AccountInfo } from "./types";
+import { AccountInfo, RecipeLevelUser } from "./types";
 import type { User } from "../../types";
 import axios from "axios";
+
+type UserWithoutHelperFunctions = {
+    id: string; // primaryUserId or recipeUserId
+    timeJoined: number; // minimum timeJoined value from linkedRecipes
+    isPrimaryUser: boolean;
+    emails: string[];
+    phoneNumbers: string[];
+    thirdParty: {
+        id: string;
+        userId: string;
+    }[];
+    loginMethods: (RecipeLevelUser & {
+        verified: boolean;
+    })[];
+
+    // this is there so that when we fetch users based on certain identifiers
+    // like email or phone number, we add the normalized version of these to the map
+    // so that further filtering is not buggy.
+    normalizedInputMap: { [key: string]: string | undefined };
+};
+
+export function createUserObject(input: UserWithoutHelperFunctions): User {
+    function getHasSameEmailAs(lM: RecipeLevelUser) {
+        function hasSameEmailAs(email: string | undefined): boolean {
+            if (email === undefined) {
+                return false;
+            }
+            let normalisedEmail = input.normalizedInputMap[email] ?? email;
+            return lM.email !== undefined && lM.email === normalisedEmail;
+        }
+        return hasSameEmailAs;
+    }
+
+    function getHasSamePhoneNumberAs(lM: RecipeLevelUser) {
+        function hasSamePhoneNumberAs(phoneNumber: string | undefined): boolean {
+            if (phoneNumber === undefined) {
+                return false;
+            }
+            let normalisedPhoneNumber = input.normalizedInputMap[phoneNumber] ?? phoneNumber;
+            return lM.phoneNumber !== undefined && lM.phoneNumber === normalisedPhoneNumber;
+        }
+        return hasSamePhoneNumberAs;
+    }
+
+    function getHasSameThirdPartyInfoAs(lM: RecipeLevelUser) {
+        function hasSameThirdPartyInfoAs(thirdParty?: { id: string; userId: string }): boolean {
+            if (thirdParty === undefined) {
+                return false;
+            }
+            return (
+                lM.thirdParty !== undefined &&
+                lM.thirdParty.id === thirdParty.id &&
+                lM.thirdParty.userId === thirdParty.userId
+            );
+        }
+        return hasSameThirdPartyInfoAs;
+    }
+
+    return {
+        ...input,
+        loginMethods: input.loginMethods.map((lM) => {
+            return {
+                ...lM,
+                hasSameEmailAs: getHasSameEmailAs(lM),
+                hasSamePhoneNumberAs: getHasSamePhoneNumberAs(lM),
+                hasSameThirdPartyInfoAs: getHasSameThirdPartyInfoAs(lM),
+            };
+        }),
+    };
+}
 
 async function isEmailVerified(userId: string, email: string): Promise<boolean> {
     let response = await axios.get(`http://localhost:8080/recipe/user/email/verify?userId=${userId}&email=${email}`, {
@@ -14,6 +84,16 @@ async function isEmailVerified(userId: string, email: string): Promise<boolean> 
 export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]> {
     let users: User[] = [];
 
+    // we want to provide all the normalized inputs to the user
+    const normalizedInputMap: { [key: string]: string } = {};
+    if (accountInfo.email !== undefined) {
+        normalizedInputMap[accountInfo.email] = accountInfo.email.toLowerCase().trim();
+    }
+    if (accountInfo.phoneNumber !== undefined) {
+        // TODO: need to normalize phone number
+        normalizedInputMap[accountInfo.phoneNumber] = accountInfo.phoneNumber.toLowerCase().trim();
+    }
+
     if (accountInfo.email !== undefined) {
         // email password
         {
@@ -25,23 +105,26 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             if (response.data.status === "OK") {
                 let user = response.data.user;
                 let verified = await isEmailVerified(user.id, user.email);
-                users.push({
-                    id: user.id,
-                    emails: [user.email],
-                    timeJoined: user.timeJoined,
-                    isPrimaryUser: false,
-                    phoneNumbers: [],
-                    thirdParty: [],
-                    loginMethods: [
-                        {
-                            recipeId: "emailpassword",
-                            recipeUserId: user.id,
-                            timeJoined: user.timeJoined,
-                            verified,
-                            email: user.email,
-                        },
-                    ],
-                });
+                users.push(
+                    createUserObject({
+                        id: user.id,
+                        emails: [user.email],
+                        timeJoined: user.timeJoined,
+                        isPrimaryUser: false,
+                        phoneNumbers: [],
+                        thirdParty: [],
+                        loginMethods: [
+                            {
+                                recipeId: "emailpassword",
+                                recipeUserId: user.id,
+                                timeJoined: user.timeJoined,
+                                verified,
+                                email: user.email,
+                            },
+                        ],
+                        normalizedInputMap,
+                    })
+                );
             }
         }
 
@@ -56,24 +139,27 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 for (let i = 0; i < response.data.users.length; i++) {
                     let user = response.data.users[i];
                     let verified = await isEmailVerified(user.id, user.email);
-                    users.push({
-                        id: user.id,
-                        emails: [user.email],
-                        timeJoined: user.timeJoined,
-                        isPrimaryUser: false,
-                        phoneNumbers: [],
-                        thirdParty: [user.thirdParty],
-                        loginMethods: [
-                            {
-                                recipeId: "thirdparty",
-                                recipeUserId: user.id,
-                                timeJoined: user.timeJoined,
-                                verified,
-                                email: user.email,
-                                thirdParty: user.thirdParty,
-                            },
-                        ],
-                    });
+                    users.push(
+                        createUserObject({
+                            id: user.id,
+                            emails: [user.email],
+                            timeJoined: user.timeJoined,
+                            isPrimaryUser: false,
+                            phoneNumbers: [],
+                            thirdParty: [user.thirdParty],
+                            loginMethods: [
+                                {
+                                    recipeId: "thirdparty",
+                                    recipeUserId: user.id,
+                                    timeJoined: user.timeJoined,
+                                    verified,
+                                    email: user.email,
+                                    thirdParty: user.thirdParty,
+                                },
+                            ],
+                            normalizedInputMap,
+                        })
+                    );
                 }
             }
         }
@@ -89,23 +175,26 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 for (let i = 0; i < response.data.users.length; i++) {
                     let user = response.data.users[i];
                     let verified = await isEmailVerified(user.id, user.email);
-                    users.push({
-                        id: user.id,
-                        emails: [user.email],
-                        timeJoined: user.timeJoined,
-                        isPrimaryUser: false,
-                        phoneNumbers: [],
-                        thirdParty: [],
-                        loginMethods: [
-                            {
-                                recipeId: "passwordless",
-                                recipeUserId: user.id,
-                                timeJoined: user.timeJoined,
-                                verified,
-                                email: user.email,
-                            },
-                        ],
-                    });
+                    users.push(
+                        createUserObject({
+                            id: user.id,
+                            emails: [user.email],
+                            timeJoined: user.timeJoined,
+                            isPrimaryUser: false,
+                            phoneNumbers: [],
+                            thirdParty: [],
+                            loginMethods: [
+                                {
+                                    recipeId: "passwordless",
+                                    recipeUserId: user.id,
+                                    timeJoined: user.timeJoined,
+                                    verified,
+                                    email: user.email,
+                                },
+                            ],
+                            normalizedInputMap,
+                        })
+                    );
                 }
             }
         }
@@ -122,23 +211,26 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             if (response.data.status === "OK") {
                 for (let i = 0; i < response.data.users.length; i++) {
                     let user = response.data.users[i];
-                    users.push({
-                        id: user.id,
-                        emails: [],
-                        timeJoined: user.timeJoined,
-                        isPrimaryUser: false,
-                        phoneNumbers: [user.phoneNumber],
-                        thirdParty: [],
-                        loginMethods: [
-                            {
-                                recipeId: "passwordless",
-                                recipeUserId: user.id,
-                                timeJoined: user.timeJoined,
-                                verified: true,
-                                phoneNumber: user.phoneNumber,
-                            },
-                        ],
-                    });
+                    users.push(
+                        createUserObject({
+                            id: user.id,
+                            emails: [],
+                            timeJoined: user.timeJoined,
+                            isPrimaryUser: false,
+                            phoneNumbers: [user.phoneNumber],
+                            thirdParty: [],
+                            loginMethods: [
+                                {
+                                    recipeId: "passwordless",
+                                    recipeUserId: user.id,
+                                    timeJoined: user.timeJoined,
+                                    verified: true,
+                                    phoneNumber: user.phoneNumber,
+                                },
+                            ],
+                            normalizedInputMap,
+                        })
+                    );
                 }
             }
         }
@@ -158,24 +250,27 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             if (response.data.status === "OK") {
                 let user = response.data.user;
                 let verified = await isEmailVerified(user.id, user.email);
-                users.push({
-                    id: user.id,
-                    emails: [user.email],
-                    timeJoined: user.timeJoined,
-                    isPrimaryUser: false,
-                    phoneNumbers: [],
-                    thirdParty: [user.thirdParty],
-                    loginMethods: [
-                        {
-                            recipeId: "thirdparty",
-                            recipeUserId: user.id,
-                            timeJoined: user.timeJoined,
-                            verified,
-                            email: user.email,
-                            thirdParty: user.thirdParty,
-                        },
-                    ],
-                });
+                users.push(
+                    createUserObject({
+                        id: user.id,
+                        emails: [user.email],
+                        timeJoined: user.timeJoined,
+                        isPrimaryUser: false,
+                        phoneNumbers: [],
+                        thirdParty: [user.thirdParty],
+                        loginMethods: [
+                            {
+                                recipeId: "thirdparty",
+                                recipeUserId: user.id,
+                                timeJoined: user.timeJoined,
+                                verified,
+                                email: user.email,
+                                thirdParty: user.thirdParty,
+                            },
+                        ],
+                        normalizedInputMap,
+                    })
+                );
             }
         }
     }
@@ -184,6 +279,8 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
 }
 
 export async function mockGetUser({ userId }: { userId: string }): Promise<User | undefined> {
+    const normalizedInputMap: { [key: string]: string } = {};
+
     // email password
     {
         let response = await axios.get(`http://localhost:8080/recipe/user?userId=${userId}`, {
@@ -194,7 +291,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
         if (response.data.status === "OK") {
             let user = response.data.user;
             let verified = await isEmailVerified(user.id, user.email);
-            return {
+            return createUserObject({
                 id: user.id,
                 emails: [user.email],
                 timeJoined: user.timeJoined,
@@ -210,7 +307,8 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                         email: user.email,
                     },
                 ],
-            };
+                normalizedInputMap,
+            });
         }
     }
 
@@ -224,7 +322,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
         if (response.data.status === "OK") {
             let user = response.data.user;
             let verified = await isEmailVerified(user.id, user.email);
-            return {
+            return createUserObject({
                 id: user.id,
                 emails: [user.email],
                 timeJoined: user.timeJoined,
@@ -241,7 +339,8 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                         thirdParty: user.thirdParty,
                     },
                 ],
-            };
+                normalizedInputMap,
+            });
         }
     }
 
@@ -256,7 +355,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
             for (let i = 0; i < response.data.users.length; i++) {
                 let user = response.data.users[i];
                 let verified = await isEmailVerified(user.id, user.email);
-                return {
+                return createUserObject({
                     id: user.id,
                     emails: [user.email],
                     timeJoined: user.timeJoined,
@@ -272,7 +371,8 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                             email: user.email,
                         },
                     ],
-                };
+                    normalizedInputMap,
+                });
             }
         }
     }

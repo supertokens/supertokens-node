@@ -153,7 +153,7 @@ export default function getAPIImplementation(): APIInterface {
                 usersWithSameEmail.find((user) => {
                     return (
                         user.loginMethods.find((lM) => {
-                            return lM.recipeId === "emailpassword" && lM.email === email;
+                            return lM.recipeId === "emailpassword" && lM.hasSameEmailAs(email);
                         }) !== undefined
                     );
                 }) !== undefined;
@@ -242,7 +242,7 @@ export default function getAPIImplementation(): APIInterface {
             let emailPasswordAccount: RecipeLevelUser | undefined = undefined;
             for (let i = 0; i < users.length; i++) {
                 let emailPasswordAccountTmp = users[i].loginMethods.find(
-                    (l) => l.recipeId === "emailpassword" && l.email === email
+                    (l) => l.recipeId === "emailpassword" && l.hasSameEmailAs(email)
                 );
                 if (emailPasswordAccountTmp !== undefined) {
                     emailPasswordAccount = emailPasswordAccountTmp;
@@ -361,7 +361,7 @@ export default function getAPIImplementation(): APIInterface {
             // trust linking of the email password account.
             let emailVerified =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-                    return lm.email === email && lm.verified;
+                    return lm.hasSameEmailAs(email) && lm.verified;
                 }) !== undefined;
 
             if (emailVerified) {
@@ -373,7 +373,11 @@ export default function getAPIImplementation(): APIInterface {
             // there is a risk of account takeover, so we do not allow the token to be generated
             let hasOtherEmailOrPhone =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-                    return lm.email !== email || lm.phoneNumber !== undefined;
+                    // we do the extra undefined check below cause
+                    // hasSameEmailAs returns false if the lm.email is undefined, and
+                    // we want to check that the email is different as opposed to email
+                    // not existing in lm.
+                    return (lm.email !== undefined && !lm.hasSameEmailAs(email)) || lm.phoneNumber !== undefined;
                 }) !== undefined;
             if (hasOtherEmailOrPhone) {
                 return {
@@ -607,7 +611,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let emailPasswordRecipeUser = response.user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.email === email
+                (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
             );
 
             if (emailPasswordRecipeUser === undefined) {
@@ -671,7 +675,7 @@ export default function getAPIImplementation(): APIInterface {
                 return response;
             }
             let emailPasswordRecipeUser = response.user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.email === email
+                (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
             );
 
             if (emailPasswordRecipeUser === undefined) {

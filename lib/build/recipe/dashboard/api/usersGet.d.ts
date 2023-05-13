@@ -15,7 +15,13 @@ declare type User = {
     lastName?: string;
     loginMethods: (RecipeLevelUser & {
         verified: boolean;
+        hasSameEmailAs: (email: string | undefined) => boolean;
+        hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
+        hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
     })[];
+    normalizedInputMap: {
+        [key: string]: string | undefined;
+    };
 };
 export declare type Response = {
     status: "OK";

@@ -589,15 +589,9 @@ export default class Recipe extends RecipeModule {
                         return false;
                     }
                     if (newUser.recipeId === "thirdparty") {
-                        if (lU.thirdParty === undefined) {
-                            return false;
-                        }
-                        return (
-                            lU.thirdParty.id === newUser.thirdParty!.id &&
-                            lU.thirdParty.userId === newUser.thirdParty!.userId
-                        );
+                        return lU.hasSameThirdPartyInfoAs(newUser.thirdParty!);
                     } else {
-                        return lU.email === newUser.email || lU.phoneNumber === newUser.phoneNumber;
+                        return lU.hasSameEmailAs(newUser.email) || lU.hasSamePhoneNumberAs(newUser.phoneNumber);
                     }
                 }) !== undefined
         );
