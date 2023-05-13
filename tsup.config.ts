@@ -12,7 +12,7 @@ export default <Options>{
     ],
     outDir: 'dist',
     format: ['esm', 'cjs'],
-    target: 'node14',
+    target: 'node16',
     dts: true,
     external,
     clean: true,
