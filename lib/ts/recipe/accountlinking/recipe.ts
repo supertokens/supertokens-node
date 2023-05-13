@@ -597,7 +597,7 @@ export default class Recipe extends RecipeModule {
                             lU.thirdParty.userId === newUser.thirdParty!.userId
                         );
                     } else {
-                        return lU.email === newUser.email || newUser.phoneNumber === newUser.phoneNumber;
+                        return lU.email === newUser.email || lU.phoneNumber === newUser.phoneNumber;
                     }
                 }) !== undefined
         );
