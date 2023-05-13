@@ -14,17 +14,17 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, resetAll } = require("../utils");
 const assert = require("assert");
-const { Querier } = require("../../lib/build/querier");
+const { Querier } = require("../../dist/querier");
 const express = require("express");
 const request = require("supertest");
-const { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+const { ProcessState, PROCESS_STATE } = require("../../dist/processState");
 const SuperTokens = require("../../");
-const Session = require("../../recipe/session");
-const EmailPassword = require("../../recipe/emailpassword");
-const { parseJWTWithoutSignatureVerification } = require("../../lib/build/recipe/session/jwt");
-const { middleware, errorHandler } = require("../../framework/express");
-const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
-const { verifySession } = require("../../recipe/session/framework/express");
+const Session = require("../../dist/recipe/session");
+const EmailPassword = require("../../dist/recipe/emailpassword");
+const { parseJWTWithoutSignatureVerification } = require("../../dist/recipe/session/jwt");
+const { middleware, errorHandler } = require("../../dist/framework/express");
+const { default: NormalisedURLPath } = require("../../dist/normalisedURLPath");
+const { verifySession } = require("../../dist/recipe/session/framework/express");
 const { json } = require("body-parser");
 
 describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.test.js]")}`, function () {

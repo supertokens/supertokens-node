@@ -1,32 +1,32 @@
 import * as express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
-import EmailVerification from "../../recipe/emailverification";
-import EmailPassword from "../../recipe/emailpassword";
-import { verifySession } from "../../recipe/session/framework/express";
-import { middleware, errorHandler, SessionRequest } from "../../framework/express";
-import NextJS from "../../nextjs";
-import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
-import ThirdParty from "../../recipe/thirdparty";
-import Passwordless from "../../recipe/passwordless";
-import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
-import { SMTPService as SMTPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
-import { SMTPService as SMTPServiceP } from "../../recipe/passwordless/emaildelivery";
-import { SMTPService as SMTPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
-import { SMTPService as SMTPServiceEP } from "../../recipe/emailpassword/emaildelivery";
+import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../dist/recipe/session";
+import EmailVerification from "../../dist/recipe/emailverification";
+import EmailPassword from "../../dist/recipe/emailpassword";
+import { verifySession } from "../../dist/recipe/session/framework/express";
+import { middleware, errorHandler, SessionRequest } from "../../dist/framework/express";
+import NextJS from "../../dist/nextjs";
+import ThirdPartyEmailPassword from "../../dist/recipe/thirdpartyemailpassword";
+import ThirdParty from "../../dist/recipe/thirdparty";
+import Passwordless from "../../dist/recipe/passwordless";
+import ThirdPartyPasswordless from "../../dist/recipe/thirdpartypasswordless";
+import { SMTPService as SMTPServiceTPP } from "../../dist/recipe/thirdpartypasswordless/emaildelivery/services";
+import { SMTPService as SMTPServiceP } from "../../dist/recipe/passwordless/emaildelivery/services";
+import { SMTPService as SMTPServiceTPEP } from "../../dist/recipe/thirdpartyemailpassword/emaildelivery/services";
+import { SMTPService as SMTPServiceEP } from "../../dist/recipe/emailpassword/emaildelivery/services";
 import {
     TwilioService as TwilioServiceTPP,
     SupertokensService as SupertokensServiceTPP,
-} from "../../recipe/thirdpartypasswordless/smsdelivery";
+} from "../../dist/recipe/thirdpartypasswordless/smsdelivery/services";
 import {
     TwilioService as TwilioServiceP,
     SupertokensService as SupertokensServiceP,
-} from "../../recipe/thirdpartypasswordless/smsdelivery";
-import UserMetadata from "../../recipe/usermetadata";
-import { BooleanClaim, PrimitiveClaim } from "../../recipe/session/claims";
-import UserRoles from "../../recipe/userroles";
-import Dashboard from "../../recipe/dashboard";
-import JWT from "../../recipe/jwt";
+} from "../../dist/recipe/thirdpartypasswordless/smsdelivery/services";
+import UserMetadata from "../../dist/recipe/usermetadata";
+import { BooleanClaim, PrimitiveClaim } from "../../dist/recipe/session/claims";
+import UserRoles from "../../dist/recipe/userroles";
+import Dashboard from "../../dist/recipe/dashboard";
+import JWT from "../../dist/recipe/jwt";
 
 UserRoles.init({
     override: {
@@ -819,9 +819,9 @@ ThirdParty.init({
 });
 
 import { TypeInput } from "../../types";
-import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
-import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
-import SuperTokensError from "../../lib/build/error";
+import { TypeInput as SessionTypeInput } from "../../dist/recipe/session/types";
+import { TypeInput as EPTypeInput } from "../../dist/recipe/emailpassword/types";
+import SuperTokensError from "../../dist/error";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {

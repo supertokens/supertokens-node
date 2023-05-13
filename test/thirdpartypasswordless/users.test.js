@@ -21,13 +21,13 @@ const {
     signInUPCustomRequest,
     isCDIVersionCompatible,
 } = require("../utils");
-const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/");
+const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../dist/");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
+let { ProcessState } = require("../../dist/processState");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
-let { middleware, errorHandler } = require("../../framework/express");
+let Session = require("../../dist/recipe/session");
+let ThirdPartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}`, function () {
     before(function () {

@@ -3,10 +3,10 @@ const e = require("cors");
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
-let JWTRecipe = require("../../lib/build/recipe/jwt");
-let { ProcessState } = require("../../lib/build/processState");
-let { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+let JWTRecipe = require("../../dist/recipe/jwt");
+let { ProcessState } = require("../../dist/processState");
+let { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`, function () {
     beforeEach(async function () {

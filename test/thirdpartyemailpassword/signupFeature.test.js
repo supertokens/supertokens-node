@@ -15,17 +15,17 @@
 const { printPath, setupST, startST, killAllST, cleanST, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyEmailPasswordRecipe = require("../../lib/build/recipe/thirdpartyemailpassword/recipe").default;
-let ThirdPartyEmailPassword = require("../../lib/build/recipe/thirdpartyemailpassword");
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyEmailPasswordRecipe = require("../../dist/recipe/thirdpartyemailpassword/recipe").default;
+let ThirdPartyEmailPassword = require("../../dist/recipe/thirdpartyemailpassword");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
-let Session = require("../../recipe/session");
-const EmailVerification = require("../../recipe/emailverification");
-let { Querier } = require("../../lib/build/querier");
-let { maxVersion } = require("../../lib/build/utils");
-let { middleware, errorHandler } = require("../../framework/express");
+let Session = require("../../dist/recipe/session");
+const EmailVerification = require("../../dist/recipe/emailverification");
+let { Querier } = require("../../dist/querier");
+let { maxVersion } = require("../../dist/utils");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.test.js]")}`, function () {
     before(function () {

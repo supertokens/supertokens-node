@@ -15,15 +15,15 @@
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-let ThirdParty = require("../../lib/build/recipe/thirdparty");
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyRecipe = require("../../dist/recipe/thirdparty/recipe").default;
+let ThirdParty = require("../../dist/recipe/thirdparty");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
-let Session = require("../../recipe/session");
-const EmailVerification = require("../../recipe/emailverification");
-let { middleware, errorHandler } = require("../../framework/express");
+let Session = require("../../dist/recipe/session");
+const EmailVerification = require("../../dist/recipe/emailverification");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")}`, function () {
     before(function () {

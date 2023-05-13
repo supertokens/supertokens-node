@@ -15,14 +15,14 @@
 const { printPath, setupST, startST, killAllST, cleanST, isCDIVersionCompatible } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyPasswordlessRecipe = require("../../lib/build/recipe/thirdpartypasswordless/recipe").default;
-let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
-const { thirdPartySignInUp } = require("../../lib/build/recipe/thirdpartypasswordless");
-const { getUsersByEmail } = require("../../lib/build/recipe/thirdpartypasswordless");
-const { maxVersion } = require("../../lib/build/utils");
-let { Querier } = require("../../lib/build/querier");
-let { middleware, errorHandler } = require("../../framework/express");
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyPasswordlessRecipe = require("../../dist/recipe/thirdpartypasswordless/recipe").default;
+let ThirdPartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
+const { thirdPartySignInUp } = require("../../dist/recipe/thirdpartypasswordless");
+const { getUsersByEmail } = require("../../dist/recipe/thirdpartypasswordless");
+const { maxVersion } = require("../../dist/utils");
+let { Querier } = require("../../dist/querier");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByEmailFeature.test.js]")}`, function () {
     const MockThirdPartyProvider = {

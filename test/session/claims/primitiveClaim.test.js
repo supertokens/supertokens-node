@@ -15,7 +15,7 @@
 const { printPath } = require("../../utils");
 const assert = require("assert");
 const sinon = require("sinon");
-const { PrimitiveClaim } = require("../../../recipe/session/claims");
+const { PrimitiveClaim } = require("../../../dist/recipe/session/claims");
 
 describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.test.js]")}`, function () {
     describe("PrimitiveClaim", () => {

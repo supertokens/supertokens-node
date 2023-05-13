@@ -14,10 +14,10 @@
  */
 const { printPath } = require("../../utils");
 const assert = require("assert");
-const { default: SessionClass } = require("../../../lib/build/recipe/session/sessionClass");
+const { default: SessionClass } = require("../../../dist/recipe/session/sessionClass");
 const sinon = require("sinon");
 const { StubClaim } = require("./testClaims");
-const { default: getRecipeInterface } = require("../../../lib/build/recipe/session/recipeImplementation");
+const { default: getRecipeInterface } = require("../../../dist/recipe/session/recipeImplementation");
 
 const helpers = { getRecipeImpl: () => getRecipeInterface({ getAllCoreUrlsForPath: () => [] }, {}) };
 

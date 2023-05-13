@@ -24,16 +24,16 @@ const {
     isCDIVersionCompatible,
 } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
+let Session = require("../../dist/recipe/session");
+let SessionRecipe = require("../../dist/recipe/session/recipe").default;
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-const { Querier } = require("../../lib/build/querier");
-let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
+let { ProcessState } = require("../../dist/processState");
+const { Querier } = require("../../dist/querier");
+let ThirdPartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
 const express = require("express");
 const request = require("supertest");
 let nock = require("nock");
-let { middleware, errorHandler } = require("../../framework/express");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.js]")}`, function () {
     before(function () {

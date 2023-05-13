@@ -1,16 +1,16 @@
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyEmailPassword = require("../../dist/recipe/thirdpartyemailpassword");
 const {
     thirdPartySignInUp,
     getUsersByEmail,
     emailPasswordSignUp,
-} = require("../../lib/build/recipe/thirdpartyemailpassword");
-const { maxVersion } = require("../../lib/build/utils");
-let { Querier } = require("../../lib/build/querier");
-let { middleware, errorHandler } = require("../../framework/express");
+} = require("../../dist/recipe/thirdpartyemailpassword");
+const { maxVersion } = require("../../dist/utils");
+let { Querier } = require("../../dist/querier");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersByEmailFeature.test.js]")}`, function () {
     const MockThirdPartyProvider = {

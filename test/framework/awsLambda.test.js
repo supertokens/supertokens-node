@@ -23,19 +23,19 @@ const {
     mockLambdaProxyEventV2,
 } = require("../utils");
 let assert = require("assert");
-let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../../dist/processState");
 let SuperTokens = require("../../");
-let { middleware } = require("../../framework/awsLambda");
-let Session = require("../../recipe/session");
-let EmailPassword = require("../../recipe/emailpassword");
-let Passwordless = require("../../recipe/passwordless");
-let ThirdParty = require("../../recipe/thirdparty");
-let { Apple, Google, Github } = require("../../recipe/thirdparty");
-let { verifySession } = require("../../recipe/session/framework/awsLambda");
-let Dashboard = require("../../recipe/dashboard");
+let { middleware } = require("../../dist/framework/awsLambda");
+let Session = require("../../dist/recipe/session");
+let EmailPassword = require("../../dist/recipe/emailpassword");
+let Passwordless = require("../../dist/recipe/passwordless");
+let ThirdParty = require("../../dist/recipe/thirdparty");
+let { Apple, Google, Github } = require("../../dist/recipe/thirdparty");
+let { verifySession } = require("../../dist/recipe/session/framework/awsLambda");
+let Dashboard = require("../../dist/recipe/dashboard");
 let { createUsers } = require("../utils");
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, function () {
     beforeEach(async function () {

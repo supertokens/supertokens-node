@@ -15,14 +15,14 @@
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("./utils");
 let assert = require("assert");
-let { ProcessState } = require("../lib/build/processState");
-let SuperTokens = require("../lib/build/").default;
-let { middleware } = require("../framework/express");
-const Session = require("../lib/build/recipe/session");
-const EmailPassword = require("../lib/build/recipe/emailpassword");
-const ThirdPartyEmailPassword = require("../lib/build/recipe/thirdpartyemailpassword");
-const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
-const { verifySession } = require("../recipe/session/framework/express");
+let { ProcessState } = require("../dist/processState");
+let SuperTokens = require("../dist/").default;
+let { middleware } = require("../dist/framework/express");
+const Session = require("../dist/recipe/session");
+const EmailPassword = require("../dist/recipe/emailpassword");
+const ThirdPartyEmailPassword = require("../dist/recipe/thirdpartyemailpassword");
+const superTokensNextWrapper = require("../dist/nextjs").superTokensNextWrapper;
+const { verifySession } = require("../dist/recipe/session/framework/express");
 const { testApiHandler } = require("next-test-api-route-handler");
 
 let wrapperErr;

@@ -1,9 +1,9 @@
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
-const { ProcessState } = require("../../lib/build/processState");
+const { ProcessState } = require("../../dist/processState");
 const STExpress = require("../..");
-const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata/recipe").default;
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+const UserMetadataRecipe = require("../../dist/recipe/usermetadata/recipe").default;
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`configTest: ${printPath("[test/usermetadata/config.test.js]")}`, function () {
     beforeEach(async function () {

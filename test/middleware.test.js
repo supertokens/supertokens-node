@@ -25,13 +25,13 @@ const {
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
-let { Querier } = require("../lib/build/querier");
-let { ProcessState } = require("../lib/build/processState");
+let { Querier } = require("../dist/querier");
+let { ProcessState } = require("../dist/processState");
 let SuperTokens = require("../");
-let Session = require("../recipe/session");
-let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-let { middleware, errorHandler } = require("../framework/express");
-let { verifySession } = require("../recipe/session/framework/express");
+let Session = require("../dist/recipe/session");
+let SessionRecipe = require("../dist/recipe/session/recipe").default;
+let { middleware, errorHandler } = require("../dist/framework/express");
+let { verifySession } = require("../dist/recipe/session/framework/express");
 
 /**
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)

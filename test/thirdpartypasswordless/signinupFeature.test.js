@@ -23,14 +23,14 @@ const {
 } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
-const EmailVerification = require("../../lib/build/recipe/emailverification");
+let { ProcessState } = require("../../dist/processState");
+let ThirdPartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
+const EmailVerification = require("../../dist/recipe/emailverification");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
-let Session = require("../../recipe/session");
-let { middleware, errorHandler } = require("../../framework/express");
+let Session = require("../../dist/recipe/session");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeature.test.js]")}`, function () {
     before(function () {

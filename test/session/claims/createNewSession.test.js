@@ -14,9 +14,9 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
-const { ProcessState } = require("../../../lib/build/processState");
+const { ProcessState } = require("../../../dist/processState");
 const SuperTokens = require("../../..");
-const Session = require("../../../recipe/session");
+const Session = require("../../../dist/recipe/session");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
 
 describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/createNewSession.test.js]")}`, function () {

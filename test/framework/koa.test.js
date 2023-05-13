@@ -14,22 +14,22 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
-let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../../dist/processState");
 let SuperTokens = require("../../");
-let KoaFramework = require("../../framework/koa");
-let Session = require("../../recipe/session");
-let EmailPassword = require("../../recipe/emailpassword");
+let KoaFramework = require("../../dist/framework/koa");
+let Session = require("../../dist/recipe/session");
+let EmailPassword = require("../../dist/recipe/emailpassword");
 let Koa = require("koa");
 const Router = require("@koa/router");
-let { verifySession } = require("../../recipe/session/framework/koa");
+let { verifySession } = require("../../dist/recipe/session/framework/koa");
 const request = require("supertest");
-let Dashboard = require("../../recipe/dashboard");
+let Dashboard = require("../../dist/recipe/dashboard");
 const { createUsers } = require("../utils.js");
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-const Passwordless = require("../../recipe/passwordless");
-const ThirdParty = require("../../recipe/thirdparty");
-const { Google, Github, Apple } = require("../../recipe/thirdparty");
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+const Passwordless = require("../../dist/recipe/passwordless");
+const ThirdParty = require("../../dist/recipe/thirdparty");
+const { Google, Github, Apple } = require("../../dist/recipe/thirdparty");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {

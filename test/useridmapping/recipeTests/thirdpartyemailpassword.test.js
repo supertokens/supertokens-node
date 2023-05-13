@@ -1,11 +1,11 @@
 const assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
-const { ProcessState } = require("../../../lib/build/processState");
+const { ProcessState } = require("../../../dist/processState");
 const STExpress = require("../../..");
-const ThirdPartyEmailPasswordRecipe = require("../../../lib/build/recipe/thirdpartyemailpassword").default;
-const SessionRecipe = require("../../../lib/build/recipe/session").default;
-const { Querier } = require("../../../lib/build/querier");
-const { maxVersion } = require("../../../lib/build/utils");
+const ThirdPartyEmailPasswordRecipe = require("../../../dist/recipe/thirdpartyemailpassword").default;
+const SessionRecipe = require("../../../dist/recipe/session").default;
+const { Querier } = require("../../../dist/querier");
+const { maxVersion } = require("../../../dist/utils");
 
 describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
     "[test/useridmapping/recipeTests/thirdpartyemailpassword.test.js]"

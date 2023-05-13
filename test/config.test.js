@@ -27,20 +27,20 @@ const {
 const request = require("supertest");
 const express = require("express");
 let STExpress = require("../");
-let Session = require("../recipe/session");
-let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
+let Session = require("../dist/recipe/session");
+let SessionRecipe = require("../dist/recipe/session/recipe").default;
 let assert = require("assert");
-let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
-let NormalisedURLPath = require("../lib/build/normalisedURLPath").default;
-let NormalisedURLDomain = require("../lib/build/normalisedURLDomain").default;
-let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
-const { Querier } = require("../lib/build/querier");
-let SuperTokens = require("../lib/build/supertokens").default;
+let { ProcessState, PROCESS_STATE } = require("../dist/processState");
+let NormalisedURLPath = require("../dist/normalisedURLPath").default;
+let NormalisedURLDomain = require("../dist/normalisedURLDomain").default;
+let { normaliseSessionScopeOrThrowError } = require("../dist/recipe/session/utils");
+const { Querier } = require("../dist/querier");
+let SuperTokens = require("../dist/supertokens").default;
 let ST = require("../");
-let EmailPassword = require("../lib/build/recipe/emailpassword");
-let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
-const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/utils");
-const { middleware } = require("../framework/express");
+let EmailPassword = require("../dist/recipe/emailpassword");
+let EmailPasswordRecipe = require("../dist/recipe/emailpassword/recipe").default;
+const { getTopLevelDomainForSameSiteResolution } = require("../dist/utils");
+const { middleware } = require("../dist/framework/express");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {

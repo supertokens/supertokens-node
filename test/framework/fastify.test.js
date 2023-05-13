@@ -22,21 +22,21 @@ const {
     extractCookieCountInfo,
 } = require("../utils");
 let assert = require("assert");
-let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../../dist/processState");
 let SuperTokens = require("../../");
-let FastifyFramework = require("../../framework/fastify");
+let FastifyFramework = require("../../dist/framework/fastify");
 const Fastify = require("fastify");
-let EmailPassword = require("../../recipe/emailpassword");
-const EmailVerification = require("../../recipe/emailverification");
-let Session = require("../../recipe/session");
-let { verifySession } = require("../../recipe/session/framework/fastify");
-let Dashboard = require("../../recipe/dashboard");
+let EmailPassword = require("../../dist/recipe/emailpassword");
+const EmailVerification = require("../../dist/recipe/emailverification");
+let Session = require("../../dist/recipe/session");
+let { verifySession } = require("../../dist/recipe/session/framework/fastify");
+let Dashboard = require("../../dist/recipe/dashboard");
 let { createUsers } = require("../utils");
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-const Passwordless = require("../../recipe/passwordless");
-const ThirdParty = require("../../recipe/thirdparty");
-const { Apple, Google, Github } = require("../../recipe/thirdparty");
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+const Passwordless = require("../../dist/recipe/passwordless");
+const ThirdParty = require("../../dist/recipe/thirdparty");
+const { Apple, Google, Github } = require("../../dist/recipe/thirdparty");
 
 describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function () {
     beforeEach(async function () {

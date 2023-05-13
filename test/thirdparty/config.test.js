@@ -15,10 +15,10 @@
 const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-let ThirParty = require("../../lib/build/recipe/thirdparty");
-let { middleware, errorHandler } = require("../../framework/express");
+let { ProcessState } = require("../../dist/processState");
+let ThirPartyRecipe = require("../../dist/recipe/thirdparty/recipe").default;
+let ThirParty = require("../../dist/recipe/thirdparty");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 /**
  * TODO

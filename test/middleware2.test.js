@@ -24,14 +24,14 @@ const {
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
-let { Querier } = require("../lib/build/querier");
-let { ProcessState } = require("../lib/build/processState");
+let { Querier } = require("../dist/querier");
+let { ProcessState } = require("../dist/processState");
 let SuperTokens = require("../");
-let Session = require("../recipe/session");
-let EmailPassword = require("../recipe/emailpassword");
-let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-let { middleware, errorHandler } = require("../framework/express");
-let { verifySession } = require("../recipe/session/framework/express");
+let Session = require("../dist/recipe/session");
+let EmailPassword = require("../dist/recipe/emailpassword");
+let SessionRecipe = require("../dist/recipe/session/recipe").default;
+let { middleware, errorHandler } = require("../dist/framework/express");
+let { verifySession } = require("../dist/recipe/session/framework/express");
 
 describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () {
     beforeEach(async function () {

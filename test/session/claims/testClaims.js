@@ -1,6 +1,6 @@
 const Sinon = require("sinon");
-const { BooleanClaim } = require("../../../lib/build/recipe/session/claimBaseClasses/booleanClaim");
-const { PrimitiveClaim } = require("../../../lib/build/recipe/session/claimBaseClasses/primitiveClaim");
+const { BooleanClaim } = require("../../../dist/recipe/session/claimBaseClasses/booleanClaim");
+const { PrimitiveClaim } = require("../../../dist/recipe/session/claimBaseClasses/primitiveClaim");
 
 module.exports.TrueClaim = new BooleanClaim({
     key: "st-true",

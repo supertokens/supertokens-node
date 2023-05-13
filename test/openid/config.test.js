@@ -1,11 +1,11 @@
 let assert = require("assert");
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
-let { ProcessState } = require("../../lib/build/processState");
+let { ProcessState } = require("../../dist/processState");
 let STExpress = require("../../");
-const OpenIdRecipe = require("../../lib/build/recipe/openid/recipe").default;
-let { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+const OpenIdRecipe = require("../../dist/recipe/openid/recipe").default;
+let { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function () {
     beforeEach(async function () {

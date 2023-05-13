@@ -4,11 +4,11 @@ const request = require("supertest");
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
-let { ProcessState } = require("../../lib/build/processState");
-let JWTRecipe = require("../../lib/build/recipe/jwt");
-let { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-let { middleware, errorHandler } = require("../../framework/express");
+let { ProcessState } = require("../../dist/processState");
+let JWTRecipe = require("../../dist/recipe/jwt");
+let { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     beforeEach(async function () {

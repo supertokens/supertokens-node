@@ -14,18 +14,18 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, delay } = require("../utils");
 let STExpress = require("../..");
-let Session = require("../../recipe/session");
+let Session = require("../../dist/recipe/session");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdpartyPasswordless = require("../../recipe/thirdpartypasswordless");
-let { TwilioService, SupertokensService } = require("../../recipe/thirdpartypasswordless/smsdelivery");
+let { ProcessState } = require("../../dist/processState");
+let ThirdpartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
+let { TwilioService, SupertokensService } = require("../../dist/recipe/thirdpartypasswordless/smsdelivery/services");
 let nock = require("nock");
 let supertest = require("supertest");
-const { middleware, errorHandler } = require("../../framework/express");
+const { middleware, errorHandler } = require("../../dist/framework/express");
 let express = require("express");
 let { isCDIVersionCompatible } = require("../utils");
 
-describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.test.js]")}`, function () {
+describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsdelivery/services.test.js]")}`, function () {
     beforeEach(async function () {
         process.env.TEST_MODE = "testing";
         await killAllST();

@@ -1,10 +1,10 @@
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
-const { ProcessState } = require("../../lib/build/processState");
+const { ProcessState } = require("../../dist/processState");
 const STExpress = require("../..");
-const UserRolesRecipe = require("../../lib/build/recipe/userroles/recipe").default;
-const { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
-const { default: SessionRecipe } = require("../../lib/build/recipe/session/recipe");
+const UserRolesRecipe = require("../../dist/recipe/userroles/recipe").default;
+const { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
+const { default: SessionRecipe } = require("../../dist/recipe/session/recipe");
 
 describe(`configTest: ${printPath("[test/userroles/config.test.js]")}`, function () {
     beforeEach(async function () {

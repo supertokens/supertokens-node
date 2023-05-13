@@ -15,10 +15,10 @@
 const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const SuperTokens = require("../../..");
-const Session = require("../../../recipe/session");
+const Session = require("../../../dist/recipe/session");
 const sinon = require("sinon");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
-const { ProcessState } = require("../../../lib/build/processState");
+const { ProcessState } = require("../../../dist/processState");
 
 describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
     "[test/session/claims/validateClaimsForSessionHandle.test.js]"

@@ -14,16 +14,16 @@
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
+let Session = require("../../dist/recipe/session");
+let SessionRecipe = require("../../dist/recipe/session/recipe").default;
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-const { Querier } = require("../../lib/build/querier");
-let ThirdParty = require("../../recipe/thirdparty");
+let { ProcessState } = require("../../dist/processState");
+const { Querier } = require("../../dist/querier");
+let ThirdParty = require("../../dist/recipe/thirdparty");
 const express = require("express");
 const request = require("supertest");
 let nock = require("nock");
-let { middleware, errorHandler } = require("../../framework/express");
+let { middleware, errorHandler } = require("../../dist/framework/express");
 
 describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, function () {
     before(function () {

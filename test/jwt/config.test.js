@@ -1,11 +1,11 @@
 let assert = require("assert");
 
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
-let { ProcessState } = require("../../lib/build/processState");
+let { ProcessState } = require("../../dist/processState");
 let STExpress = require("../../");
-const JWTRecipe = require("../../lib/build/recipe/jwt/recipe").default;
-let { Querier } = require("../../lib/build/querier");
-const { maxVersion } = require("../../lib/build/utils");
+const JWTRecipe = require("../../dist/recipe/jwt/recipe").default;
+let { Querier } = require("../../dist/querier");
+const { maxVersion } = require("../../dist/utils");
 
 describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
     beforeEach(async function () {

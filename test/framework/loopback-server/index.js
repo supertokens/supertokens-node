@@ -27,9 +27,9 @@ var __importDefault =
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@loopback/core");
 const rest_1 = require("@loopback/rest");
-const loopback_1 = require("../../../framework/loopback");
-const loopback_2 = require("../../../recipe/session/framework/loopback");
-const session_1 = __importDefault(require("../../../recipe/session"));
+const loopback_1 = require("../../../dist/framework/loopback");
+const loopback_2 = require("../../../dist/recipe/session/framework/loopback");
+const session_1 = __importDefault(require("../../../dist/recipe/session"));
 let Create = class Create {
     constructor(ctx) {
         this.ctx = ctx;

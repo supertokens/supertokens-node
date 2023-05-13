@@ -13,10 +13,10 @@
  * under the License.
  */
 let SuperTokens = require("../../");
-let Session = require("../../recipe/session");
-let SuperTokensRaw = require("../../lib/build/supertokens").default;
-let SessionRecipeRaw = require("../../lib/build/recipe/session/recipe").default;
-let DashboardRecipeRaw = require("../../lib/build/recipe/dashboard/recipe").default;
+let Session = require("../../dist/recipe/session");
+let SuperTokensRaw = require("../../dist/supertokens").default;
+let SessionRecipeRaw = require("../../dist/recipe/session/recipe").default;
+let DashboardRecipeRaw = require("../../dist/recipe/dashboard/recipe").default;
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -24,11 +24,11 @@ let cors = require("cors");
 let noOfTimesRefreshCalledDuringTest = 0;
 let noOfTimesGetSessionCalledDuringTest = 0;
 let noOfTimesRefreshAttemptedDuringTest = 0;
-let { verifySession } = require("../../recipe/session/framework/express");
-let { middleware, errorHandler } = require("../../framework/express");
-const { Querier } = require("../../lib/build/querier");
-const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
-let supertokens_node_version = require("../../lib/build/version").version;
+let { verifySession } = require("../../dist/recipe/session/framework/express");
+let { middleware, errorHandler } = require("../../dist/framework/express");
+const { Querier } = require("../../dist/querier");
+const { default: NormalisedURLPath } = require("../../dist/normalisedURLPath");
+let supertokens_node_version = require("../../dist/version").version;
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });

@@ -25,19 +25,19 @@ const {
     mockRequest,
 } = require("./utils");
 let assert = require("assert");
-let { Querier } = require("../lib/build/querier");
+let { Querier } = require("../dist/querier");
 const nock = require("nock");
 const express = require("express");
 const request = require("supertest");
-let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../dist/processState");
 let SuperTokens = require("../");
-let Session = require("../recipe/session");
-let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
-let { parseJWTWithoutSignatureVerification } = require("../lib/build/recipe/session/jwt");
-let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-const { maxVersion } = require("../lib/build/utils");
+let Session = require("../dist/recipe/session");
+let SessionFunctions = require("../dist/recipe/session/sessionFunctions");
+let { parseJWTWithoutSignatureVerification } = require("../dist/recipe/session/jwt");
+let SessionRecipe = require("../dist/recipe/session/recipe").default;
+const { maxVersion } = require("../dist/utils");
 const { fail } = require("assert");
-let { middleware, errorHandler } = require("../framework/express");
+let { middleware, errorHandler } = require("../dist/framework/express");
 
 /* TODO:
 - the opposite of the above (check that if signing key changes, things are still fine) condition

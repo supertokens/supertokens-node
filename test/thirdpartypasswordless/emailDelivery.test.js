@@ -14,19 +14,19 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, delay } = require("../utils");
 let STExpress = require("../..");
-const EmailVerification = require("../../recipe/emailverification");
-let Session = require("../../recipe/session");
+const EmailVerification = require("../../dist/recipe/emailverification");
+let Session = require("../../dist/recipe/session");
 let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let ThirdpartyPasswordless = require("../../recipe/thirdpartypasswordless");
-let { SMTPService } = require("../../recipe/thirdpartypasswordless/emaildelivery");
+let { ProcessState } = require("../../dist/processState");
+let ThirdpartyPasswordless = require("../../dist/recipe/thirdpartypasswordless");
+let { SMTPService } = require("../../dist/recipe/thirdpartypasswordless/emaildelivery/services");
 let nock = require("nock");
 let supertest = require("supertest");
-const { middleware, errorHandler } = require("../../framework/express");
+const { middleware, errorHandler } = require("../../dist/framework/express");
 let express = require("express");
 let { isCDIVersionCompatible } = require("../utils");
 
-describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery.test.js]")}`, function () {
+describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emaildelivery/services.test.js]")}`, function () {
     before(function () {
         this.customProvider = {
             id: "supertokens",
