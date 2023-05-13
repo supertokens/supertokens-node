@@ -71,7 +71,10 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                          * if the error is thrown from API, the response object
                          * will be of type `{err: string}`
                          */
+                        // TODO: check if this is the correct way to check for error
+                        // @ts-ignore
                         if (err.response.data.err !== undefined) {
+                            // @ts-ignore
                             throw Error(err.response.data.err);
                         } else {
                             throw err;

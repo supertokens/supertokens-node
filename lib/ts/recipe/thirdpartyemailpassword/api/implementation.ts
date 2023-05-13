@@ -1,3 +1,5 @@
+// TODO: error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+// @ts-nocheck
 import { APIInterface } from "../";
 import EmailPasswordAPIImplementation from "../../emailpassword/api/implementation";
 import ThirdPartyAPIImplementation from "../../thirdparty/api/implementation";
