@@ -132,9 +132,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(response.status === 200);
 
         let userId = JSON.parse(response.text).user.id;
+        let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(userId, emailId);
         await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
