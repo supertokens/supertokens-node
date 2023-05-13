@@ -16,6 +16,7 @@ export default <Options>{
     dts: true,
     external,
     clean: true,
+    minify: true,
     esbuildOptions: (options) => {
         options.chunkNames = `__chunk/[name]-[hash]`;
     }
