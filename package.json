@@ -167,11 +167,24 @@
             "import": "./dist/recipe/userroles/index.mjs",
             "types": "./dist/recipe/userroles/index.d.ts",
             "require": "./dist/recipe/userroles/index.js"
-        }
+        },
+        "./types": {
+            "import": "./dist/types.mjs",
+            "types": "./dist/types.d.ts",
+            "require": "./dist/types.js"
+        },
+        "./*": "./*"
     },
     "module": "./dist/index.js",
     "main": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./dist/*"
+            ]
+        }
+    },
     "files": [
         "dist",
         "LICENSE",
