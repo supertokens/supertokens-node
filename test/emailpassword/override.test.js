@@ -23,6 +23,7 @@ let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLD
 let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
 const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
+let AccountLinking = require("../../recipe/accountlinking");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
@@ -54,6 +55,32 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (response !== undefined) {
+                                        user = {
+                                            ...response,
+                                            loginMethods: [
+                                                {
+                                                    ...response.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                    }
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
                 EmailPassword.init({
                     override: {
                         functions: (oI) => {
@@ -62,20 +89,35 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                 signUp: async (input) => {
                                     let response = await oI.signUp(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     }
                                     return response;
                                 },
                                 signIn: async (input) => {
                                     let response = await oI.signIn(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     }
-                                    return response;
-                                },
-                                getUserById: async (input) => {
-                                    let response = await oI.getUserById(input);
-                                    user = response;
                                     return response;
                                 },
                             };
@@ -94,7 +136,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await EmailPassword.getUserById(userId));
+            res.json(await STExpress.getUser(userId));
         });
 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");

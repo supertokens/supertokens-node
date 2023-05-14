@@ -2,6 +2,53 @@ import type { User } from "../../types";
 import axios from "axios";
 import { createUserObject } from "../accountlinking/mockCore";
 
+export async function mockSignIn(input: {
+    email: string;
+    password: string;
+}): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+    const normalizedInputMap: { [key: string]: string } = {};
+    normalizedInputMap[input.email] = input.email.toLowerCase().trim();
+
+    let response = await axios(`http://localhost:8080/recipe/signin`, {
+        method: "post",
+        headers: {
+            rid: "emailpassword",
+            "content-type": "application/json",
+        },
+        data: {
+            email: input.email,
+            password: input.password,
+        },
+    });
+
+    if (response.data.status === "WRONG_CREDENTIALS_ERROR") {
+        return response.data;
+    }
+
+    let user = response.data.user;
+    return {
+        status: "OK",
+        user: createUserObject({
+            id: user.id,
+            emails: [user.email],
+            timeJoined: user.timeJoined,
+            isPrimaryUser: false,
+            phoneNumbers: [],
+            thirdParty: [],
+            loginMethods: [
+                {
+                    recipeId: "emailpassword",
+                    recipeUserId: user.id,
+                    timeJoined: user.timeJoined,
+                    verified: false,
+                    email: user.email,
+                },
+            ],
+            normalizedInputMap,
+        }),
+    };
+}
+
 export async function mockCreateRecipeUser(input: {
     email: string;
     password: string;

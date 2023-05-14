@@ -5,7 +5,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import { User } from "../../types";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
-import { mockCreateRecipeUser } from "./mockCore";
+import { mockCreateRecipeUser, mockSignIn } from "./mockCore";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -98,10 +98,14 @@ export default function getRecipeInterface(
             email: string;
             password: string;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
-                email,
-                password,
-            });
+            if (process.env.MOCK !== "true") {
+                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
+                    email,
+                    password,
+                });
+            } else {
+                return mockSignIn({ email, password });
+            }
         },
 
         createResetPasswordToken: async function ({
