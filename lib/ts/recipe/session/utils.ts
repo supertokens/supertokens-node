@@ -29,7 +29,7 @@ import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
-import {getTopLevelDomainForSameSiteResolution, isAnIpAddress} from "../../utils";
+import { getTopLevelDomainForSameSiteResolution, isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -135,13 +135,12 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.accessTokenPath === undefined
             ? new NormalisedURLPath("/")
             : new NormalisedURLPath(config.accessTokenPath);
-    const cookieSameSite = async (userContext: any) => {
-        const origin = await appInfo.origin(userContext);
-        if(origin === undefined) throw new Error("") // will decide error message
+    const cookieSameSite = async (req: BaseRequest, userContext: any) => {
+        const origin = await appInfo.origin(req, userContext);
         const originString = origin.getAsStringDangerous();
         let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
         let protocolOfWebsiteDomain = getURLProtocol(originString);
-        let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString)
+        let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString);
         let cookieSameSite: "strict" | "lax" | "none" =
             appInfo.topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
                 ? "none"
@@ -151,7 +150,7 @@ export function validateAndNormaliseUserInput(
                 ? cookieSameSite
                 : normaliseSameSiteOrThrowError(config.cookieSameSite);
         return cookieSameSite;
-    }
+    };
 
     let cookieSecure =
         config === undefined || config.cookieSecure === undefined
@@ -172,15 +171,14 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    let antiCsrf = async (userContext: any) => {
-        const cookieSameSiteRes = await cookieSameSite(userContext);
+    let antiCsrf = async (req: BaseRequest, userContext: any) => {
+        const cookieSameSiteRes = await cookieSameSite(req, userContext);
         return config === undefined || config.antiCsrf === undefined
             ? cookieSameSiteRes === "none"
                 ? "VIA_CUSTOM_HEADER"
                 : "NONE"
             : config.antiCsrf;
-    }
-
+    };
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: async (

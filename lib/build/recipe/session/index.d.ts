@@ -29,8 +29,9 @@ export default class SessionWrapper {
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
+        antiCSRF?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined,
         userContext?: any
-    ): Promise<SessionContainer>;
+    ): Promise<SessionContainer | undefined>;
     static validateClaimsForSessionHandle(
         sessionHandle: string,
         overrideGlobalClaimValidators?: (
@@ -133,8 +134,9 @@ export default class SessionWrapper {
         refreshToken: string,
         disableAntiCsrf?: boolean,
         antiCsrfToken?: string,
+        antiCSRF?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined,
         userContext?: any
-    ): Promise<SessionContainer>;
+    ): Promise<SessionContainer | undefined>;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;

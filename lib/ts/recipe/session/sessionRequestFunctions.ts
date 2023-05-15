@@ -10,10 +10,11 @@ import frameworks from "../../framework";
 import SuperTokens from "../../supertokens";
 import { getRequiredClaimValidators } from "./utils";
 import {
-    getRidFromHeader, getTopLevelDomainForSameSiteResolution,
+    getRidFromHeader,
+    getTopLevelDomainForSameSiteResolution,
     isAnIpAddress,
     normaliseHttpMethod,
-    setRequestInUserContextIfNotDefined
+    setRequestInUserContextIfNotDefined,
 } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods } from "./constants";
@@ -140,7 +141,7 @@ export async function getSessionFromRequest({
         doAntiCsrfCheck = false;
     }
 
-    const antiCSRF = await config.antiCsrf(userContext);
+    const antiCSRF = await config.antiCsrf(req, userContext);
 
     if (doAntiCsrfCheck && antiCSRF === "VIA_CUSTOM_HEADER") {
         if (antiCSRF === "VIA_CUSTOM_HEADER") {
@@ -261,7 +262,7 @@ export async function refreshSessionInRequest({
     }
     let disableAntiCsrf = requestTransferMethod === "header";
     const antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
-    const antiCSRF = await config.antiCsrf(userContext);
+    const antiCSRF = await config.antiCsrf(req, userContext);
 
     if (antiCSRF === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
         if (getRidFromHeader(req) === undefined) {
@@ -279,10 +280,12 @@ export async function refreshSessionInRequest({
 
     let session;
     try {
+        const antiCSRF = await config.antiCsrf(req, userContext);
         session = await recipeInterfaceImpl.refreshSession({
             refreshToken: refreshToken,
             antiCsrfToken,
             disableAntiCsrf,
+            antiCSRF,
             userContext,
         });
     } catch (ex) {
@@ -380,11 +383,8 @@ export async function createNewSessionInRequest({
         outputTransferMethod = "header";
     }
     logDebugMessage("createNewSession: using transfer method " + outputTransferMethod);
-    const cookieSameSite = await config.cookieSameSite(userContext);
-    const origin = await appInfo.origin(userContext)
-    if(origin === undefined) {
-        throw new Error('') // need help
-    }
+    const cookieSameSite = await config.cookieSameSite(req, userContext);
+    const origin = await appInfo.origin(req, userContext);
     const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(origin.getAsStringDangerous());
 
     if (
@@ -403,11 +403,13 @@ export async function createNewSessionInRequest({
         );
     }
     const disableAntiCsrf = outputTransferMethod === "header";
+    const antiCSRF = await config.antiCsrf(req, userContext);
     const session = await recipeInstance.recipeInterfaceImpl.createNewSession({
         userId,
         accessTokenPayload: finalAccessTokenPayload,
         sessionDataInDatabase,
         disableAntiCsrf,
+        antiCSRF,
         userContext,
     });
 

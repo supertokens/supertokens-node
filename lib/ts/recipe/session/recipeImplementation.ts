@@ -8,6 +8,7 @@ import {
     SessionClaim,
     ClaimValidationError,
     SessionContainerInterface,
+    AntiCsrfType,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import { buildFrontToken } from "./cookieAndHeaders";
@@ -128,16 +129,16 @@ export default function getRecipeInterface(
 
         getSession: async function ({
             accessToken: accessTokenString,
+            antiCSRF = "NONE",
             antiCsrfToken,
             options,
-            userContext
         }: {
             accessToken: string;
+            antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
             antiCsrfToken?: string;
             options?: VerifySessionOptions;
             userContext: any;
         }): Promise<SessionContainerInterface | undefined> {
-            const antiCSRF = await config.antiCsrf(userContext);
             if (options?.antiCsrfCheck !== false && antiCSRF === "VIA_CUSTOM_HEADER") {
                 throw new Error(
                     "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
@@ -168,7 +169,8 @@ export default function getRecipeInterface(
                 accessToken,
                 antiCsrfToken,
                 options?.antiCsrfCheck !== false,
-                options?.checkDatabase === true
+                options?.checkDatabase === true,
+                antiCSRF
             );
 
             logDebugMessage("getSession: Success!");
@@ -288,10 +290,9 @@ export default function getRecipeInterface(
                 refreshToken,
                 antiCsrfToken,
                 disableAntiCsrf,
-                userContext
-            }: { refreshToken: string; antiCsrfToken?: string; disableAntiCsrf: boolean; userContext: any }
+                antiCSRF,
+            }: { refreshToken: string; antiCsrfToken?: string; disableAntiCsrf: boolean; antiCSRF: AntiCsrfType }
         ): Promise<SessionContainerInterface> {
-            const antiCSRF = await config.antiCsrf(userContext);
             if (disableAntiCsrf !== true && antiCSRF === "VIA_CUSTOM_HEADER") {
                 throw new Error(
                     "Since the anti-csrf mode is VIA_CUSTOM_HEADER getSession can't check the CSRF token. Please either use VIA_TOKEN or set antiCsrfCheck to false"
@@ -303,7 +304,8 @@ export default function getRecipeInterface(
                 helpers,
                 refreshToken,
                 antiCsrfToken,
-                disableAntiCsrf
+                disableAntiCsrf,
+                antiCSRF
             );
 
             logDebugMessage("refreshSession: Success!");

@@ -1580,7 +1580,7 @@ async function createNewSessionWithoutRequestResponse(req: express.Request, resp
 
     const session = await Session.createNewSessionWithoutRequestResponse(userId);
 
-    const tokens = session.getAllSessionTokensDangerously();
+    const tokens = session!.getAllSessionTokensDangerously();
     if (tokens.accessAndFrontTokenUpdated) {
         resp.set("st-access-token", tokens.accessToken);
         resp.set("front-token", tokens.frontToken);

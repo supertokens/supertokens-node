@@ -3,23 +3,24 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
+import { BaseRequest } from "./framework";
 export declare type AppInfo = {
     appName: string;
-    origin: string | ((userContext: any) => Promise<string | undefined> | string | undefined);
-    websiteBasePath?: string;
+    origin: string | ((req: BaseRequest, userContext: any) => Promise<string | undefined>);
+    originBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
     apiGatewayPath?: string;
 };
 export declare type NormalisedAppinfo = {
     appName: string;
-    origin: (userContext: any) => Promise<NormalisedURLDomain | undefined> | NormalisedURLDomain;
+    origin: (req: BaseRequest, userContext: any) => Promise<NormalisedURLDomain>;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    topLevelWebsiteDomain: string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
-    websiteBasePath: NormalisedURLPath;
+    originBasePath: NormalisedURLPath;
+    initialOriginType: string;
 };
 export declare type SuperTokensInfo = {
     connectionURI: string;

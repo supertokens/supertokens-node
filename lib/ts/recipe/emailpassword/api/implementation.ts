@@ -65,14 +65,10 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
             const appInfo = options.appInfo;
-            const origin = await appInfo.origin(userContext);
-
-            if (origin === undefined) {
-                throw new Error(""); //     need help
-            }
+            const origin = await appInfo.origin(options.req, userContext);
             let passwordResetLink =
                 origin.getAsStringDangerous() +
-                appInfo.websiteBasePath.getAsStringDangerous() +
+                appInfo.originBasePath.getAsStringDangerous() +
                 "/reset-password?token=" +
                 response.token +
                 "&rid=" +

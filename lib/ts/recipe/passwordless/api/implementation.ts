@@ -2,7 +2,6 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -89,15 +88,11 @@ export default function getAPIImplementation(): APIInterface {
             let magicLink: string | undefined = undefined;
             let userInputCode: string | undefined = undefined;
             const flowType = input.options.config.flowType;
-            const userContext = makeDefaultUserContextFromAPI(input.options.req);
-            const origin = await input.options.appInfo.origin(userContext);
-            if (origin === undefined) {
-                throw new Error(""); //     need help
-            }
+            const origin = await input.options.appInfo.origin(input.options.req, input.userContext);
             if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                 magicLink =
                     origin.getAsStringDangerous() +
-                    input.options.appInfo.websiteBasePath.getAsStringDangerous() +
+                    input.options.appInfo.originBasePath.getAsStringDangerous() +
                     "/verify" +
                     "?rid=" +
                     input.options.recipeId +
@@ -217,15 +212,11 @@ export default function getAPIImplementation(): APIInterface {
                     let magicLink: string | undefined = undefined;
                     let userInputCode: string | undefined = undefined;
                     const flowType = input.options.config.flowType;
-                    const userContext = makeDefaultUserContextFromAPI(input.options.req);
-                    const origin = await input.options.appInfo.origin(userContext);
-                    if (origin === undefined) {
-                        throw new Error(""); //     need help
-                    }
+                    const origin = await input.options.appInfo.origin(input.options.req, input.userContext);
                     if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                         magicLink =
                             origin.getAsStringDangerous() +
-                            input.options.appInfo.websiteBasePath.getAsStringDangerous() +
+                            input.options.appInfo.originBasePath.getAsStringDangerous() +
                             "/verify" +
                             "?rid=" +
                             input.options.recipeId +

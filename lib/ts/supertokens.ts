@@ -397,6 +397,10 @@ export default class SuperTokens {
                 logDebugMessage("errorHandler: Sending 400 status code response");
                 return sendNon200ResponseWithMessage(response, err.message, 400);
             }
+            if (err.type === STError.FORBIDDEN) {
+                logDebugMessage("errorHandler: Sending 403 status code response");
+                return sendNon200ResponseWithMessage(response, err.message, 403);
+            }
 
             for (let i = 0; i < this.recipeModules.length; i++) {
                 logDebugMessage("errorHandler: Checking recipe for match: " + this.recipeModules[i].getRecipeId());

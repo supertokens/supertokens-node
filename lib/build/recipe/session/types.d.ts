@@ -83,11 +83,11 @@ export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
-    cookieSameSite: "strict" | "lax" | "none";
+    cookieSameSite: (req: BaseRequest, userContext: any) => Promise<"strict" | "lax" | "none">;
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    antiCsrf: (req: BaseRequest, userContext: any) => Promise<"VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE">;
     getTokenTransferMethod: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
@@ -157,6 +157,7 @@ export declare type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
+        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
@@ -174,6 +175,7 @@ export declare type RecipeInterface = {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
+        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
         userContext: any;
     }): Promise<SessionContainerInterface>;
     /**

@@ -196,7 +196,7 @@ export default function getAPIInterface(): APIInterface {
 
         appleRedirectHandlerPOST: async function ({ code, state, options }): Promise<void> {
             const userContext = makeDefaultUserContextFromAPI(options.req);
-            const origin = await options.appInfo.origin(userContext);
+            const origin = await options.appInfo.origin(options.req, userContext);
             if (origin === undefined) {
                 options.res.setStatusCode(400);
                 return options.res.sendJSONResponse({
@@ -206,7 +206,7 @@ export default function getAPIInterface(): APIInterface {
             }
             const redirectURL =
                 origin.getAsStringDangerous() +
-                options.appInfo.websiteBasePath.getAsStringDangerous() +
+                options.appInfo.originBasePath.getAsStringDangerous() +
                 "/callback/apple?state=" +
                 state +
                 "&code=" +

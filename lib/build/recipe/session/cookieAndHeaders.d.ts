@@ -1,9 +1,14 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
-export declare function clearSessionFromAllTokenTransferMethods(config: TypeNormalisedInput, res: BaseResponse): void;
+export declare function clearSessionFromAllTokenTransferMethods(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    res: BaseResponse
+): void;
 export declare function clearSession(
     config: TypeNormalisedInput,
+    req: BaseRequest,
     res: BaseResponse,
     transferMethod: TokenTransferMethod
 ): void;
@@ -19,6 +24,7 @@ export declare function getToken(
 ): string | undefined;
 export declare function setToken(
     config: TypeNormalisedInput,
+    req: BaseRequest,
     res: BaseResponse,
     tokenType: TokenType,
     value: string,
@@ -39,10 +45,11 @@ export declare function setHeader(res: BaseResponse, name: string, value: string
  */
 export declare function setCookie(
     config: TypeNormalisedInput,
+    req: BaseRequest,
     res: BaseResponse,
     name: string,
     value: string,
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
-): void;
+): Promise<void>;
 export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;

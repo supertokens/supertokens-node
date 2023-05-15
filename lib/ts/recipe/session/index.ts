@@ -29,6 +29,7 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
+import { BaseRequest } from "../../framework";
 // For Express
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -65,6 +66,7 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
+        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined = undefined,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -85,11 +87,21 @@ export default class SessionWrapper {
             };
         }
 
+        if (antiCSRF === undefined) {
+            if (appInfo.initialOriginType === "string") {
+                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
+            } else {
+                // throw error
+                return; // temp will remove after proper error
+            }
+        }
+
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             userId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             disableAntiCsrf,
+            antiCSRF,
             userContext,
         });
     }
@@ -312,16 +324,29 @@ export default class SessionWrapper {
         return refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
     }
 
-    static refreshSessionWithoutRequestResponse(
+    static async refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf: boolean = false,
         antiCsrfToken?: string,
+        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined = undefined,
         userContext: any = {}
     ) {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const appInfo = recipeInstance.getAppInfo();
+
+        if (antiCSRF === undefined) {
+            if (appInfo.initialOriginType === "string") {
+                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
+            } else {
+                // throw error
+                return; // temp will remove after proper error
+            }
+        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
             refreshToken,
             disableAntiCsrf,
             antiCsrfToken,
+            antiCSRF,
             userContext,
         });
     }

@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import { BaseRequest } from "../../framework";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -71,17 +72,18 @@ export function validateAndNormaliseUserInput(
 
 export async function getEmailVerifyLink(input: {
     appInfo: NormalisedAppinfo;
+    req: BaseRequest;
     token: string;
     recipeId: string;
     userContext: any;
 }): Promise<string> {
-    const origin = await input.appInfo.origin(input.userContext);
+    const origin = await input.appInfo.origin(input.req, input.userContext);
     if (origin === undefined) {
         throw new Error(""); //     need help here
     }
     return (
         origin.getAsStringDangerous() +
-        input.appInfo.websiteBasePath.getAsStringDangerous() +
+        input.appInfo.originBasePath.getAsStringDangerous() +
         "/verify-email" +
         "?token=" +
         input.token +

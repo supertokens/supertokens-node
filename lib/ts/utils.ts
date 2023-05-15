@@ -6,6 +6,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_RID } from "./constants";
+import SuperTokensError from "./error";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -55,16 +56,19 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         appInfo.apiGatewayPath !== undefined
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
-    const origin = async (userContext: any) => {
+    const initialOriginType = typeof appInfo.origin;
+    const origin = async (req: BaseRequest, userContext: any) => {
         let url;
         if (typeof appInfo.origin === "string") {
             return new NormalisedURLDomain(appInfo.origin);
-        }
-        if (typeof appInfo.origin === "function") {
-            url = await appInfo.origin(userContext);
+        } else {
+            url = await appInfo.origin(req, userContext);
         }
         if (url === undefined) {
-            throw new Error("Origin function fails");
+            throw new SuperTokensError({
+                type: "FORBIDDEN",
+                message: "Request origin is not allowed",
+            });
         }
         return new NormalisedURLDomain(url);
     };
@@ -79,12 +83,13 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
                 ? new NormalisedURLPath("/auth")
                 : new NormalisedURLPath(appInfo.apiBasePath)
         ),
-        websiteBasePath:
-            appInfo.websiteBasePath === undefined
+        originBasePath:
+            appInfo.originBasePath === undefined
                 ? new NormalisedURLPath("/auth")
-                : new NormalisedURLPath(appInfo.websiteBasePath),
+                : new NormalisedURLPath(appInfo.originBasePath),
         apiGatewayPath,
         topLevelAPIDomain,
+        initialOriginType,
     };
 }
 

@@ -17,11 +17,12 @@ import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { TypeFramework } from "./framework/types";
+import { BaseRequest } from "./framework";
 
 export type AppInfo = {
     appName: string;
-    origin: string | ((userContext: any) => Promise<string | undefined> | string | undefined);
-    websiteBasePath?: string;
+    origin: string | ((req: BaseRequest, userContext: any) => Promise<string | undefined>);
+    originBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
     apiGatewayPath?: string;
@@ -29,12 +30,13 @@ export type AppInfo = {
 
 export type NormalisedAppinfo = {
     appName: string;
-    origin: (userContext: any) => Promise<NormalisedURLDomain | undefined> | NormalisedURLDomain;
+    origin: (req: BaseRequest, userContext: any) => Promise<NormalisedURLDomain>;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
-    websiteBasePath: NormalisedURLPath;
+    originBasePath: NormalisedURLPath;
+    initialOriginType: string;
 };
 
 export type SuperTokensInfo = {
