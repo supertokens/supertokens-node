@@ -37,7 +37,7 @@ export default class SuperTokens {
 
     framework: TypeFramework;
 
-    appInfo: NormalisedAppinfo | undefined;
+    appInfo: NormalisedAppinfo;
 
     isInServerlessEnv: boolean;
 
@@ -53,9 +53,7 @@ export default class SuperTokens {
 
         this.framework = config.framework !== undefined ? config.framework : "express";
         logDebugMessage("framework: " + this.framework);
-        (async () => {
-            this.appInfo = await normaliseInputAppInfoOrThrowError(config.appInfo);
-        })();
+        this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
         this.supertokens = config.supertokens;
 
         Querier.init(
@@ -83,7 +81,7 @@ export default class SuperTokens {
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
         this.recipeModules = config.recipeList.map((func) => {
-            return func(this.appInfo!, this.isInServerlessEnv);
+            return func(this.appInfo, this.isInServerlessEnv);
         });
 
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
@@ -305,11 +303,11 @@ export default class SuperTokens {
 
     middleware = async (request: BaseRequest, response: BaseResponse): Promise<boolean> => {
         logDebugMessage("middleware: Started");
-        let path = this.appInfo!.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
+        let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
 
         // if the prefix of the URL doesn't match the base path, we skip
-        if (!path.startsWith(this.appInfo!.apiBasePath)) {
+        if (!path.startsWith(this.appInfo.apiBasePath)) {
             logDebugMessage(
                 "middleware: Not handling because request path did not start with config path. Request path: " +
                     path.getAsStringDangerous()

@@ -7,11 +7,12 @@ import { TypeFramework } from "./framework/types";
 export default class SuperTokens {
     private static instance;
     framework: TypeFramework;
-    appInfo: NormalisedAppinfo;
+    appInfo: NormalisedAppinfo | undefined;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
     supertokens: undefined | SuperTokensInfo;
     telemetryEnabled: boolean;
+    private setAppInfo;
     constructor(config: TypeInput);
     static init(config: TypeInput): void;
     static reset(): void;

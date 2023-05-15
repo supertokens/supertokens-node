@@ -34,7 +34,7 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
         _: any
     ): Promise<void> => {
         let supertokens = Supertokens.getInstanceOrThrowError();
-        let appName = supertokens.appInfo!.appName;
+        let appName = supertokens.appInfo.appName;
         try {
             await axios({
                 method: "post",

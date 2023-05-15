@@ -29,7 +29,7 @@ import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
-import { isAnIpAddress } from "../../utils";
+import {getTopLevelDomainForSameSiteResolution, isAnIpAddress} from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -135,20 +135,23 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.accessTokenPath === undefined
             ? new NormalisedURLPath("/")
             : new NormalisedURLPath(config.accessTokenPath);
-    // TODO: recommend solution
-    // let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
-    // let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
-
-    // let cookieSameSite: "strict" | "lax" | "none" =
-    //     appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
-    //         ? "none"
-    //         : "lax";
-    let cookieSameSite: "strict" | "lax" | "none" =
-        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain ? "none" : "lax";
-    cookieSameSite =
-        config === undefined || config.cookieSameSite === undefined
-            ? cookieSameSite
-            : normaliseSameSiteOrThrowError(config.cookieSameSite);
+    const cookieSameSite = async (userContext: any) => {
+        const origin = await appInfo.origin(userContext);
+        if(origin === undefined) throw new Error("") // will decide error message
+        const originString = origin.getAsStringDangerous();
+        let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
+        let protocolOfWebsiteDomain = getURLProtocol(originString);
+        let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString)
+        let cookieSameSite: "strict" | "lax" | "none" =
+            appInfo.topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
+                ? "none"
+                : "lax";
+        cookieSameSite =
+            config === undefined || config.cookieSameSite === undefined
+                ? cookieSameSite
+                : normaliseSameSiteOrThrowError(config.cookieSameSite);
+        return cookieSameSite;
+    }
 
     let cookieSecure =
         config === undefined || config.cookieSecure === undefined
@@ -169,12 +172,15 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
-        config === undefined || config.antiCsrf === undefined
-            ? cookieSameSite === "none"
+    let antiCsrf = async (userContext: any) => {
+        const cookieSameSiteRes = await cookieSameSite(userContext);
+        return config === undefined || config.antiCsrf === undefined
+            ? cookieSameSiteRes === "none"
                 ? "VIA_CUSTOM_HEADER"
                 : "NONE"
             : config.antiCsrf;
+    }
+
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: async (
@@ -243,6 +249,7 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
 }
 
 export function setAccessTokenInResponse(
+    req: BaseRequest,
     res: BaseResponse,
     accessToken: string,
     frontToken: string,
@@ -252,6 +259,7 @@ export function setAccessTokenInResponse(
     setFrontTokenInHeaders(res, frontToken);
     setToken(
         config,
+        req,
         res,
         "access",
         accessToken,
@@ -266,6 +274,7 @@ export function setAccessTokenInResponse(
     if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
         setToken(
             config,
+            req,
             res,
             "access",
             accessToken,

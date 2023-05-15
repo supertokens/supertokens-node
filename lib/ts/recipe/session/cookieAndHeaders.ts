@@ -17,6 +17,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { logDebugMessage } from "../../logger";
 import { availableTokenTransferMethods } from "./constants";
 import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
+import {makeDefaultUserContextFromAPI} from "../../utils";
 
 const authorizationHeaderKey = "authorization";
 const accessTokenCookieKey = "sAccessToken";
@@ -30,7 +31,7 @@ const frontTokenHeaderKey = "front-token";
 
 const authModeHeaderKey = "st-auth-mode";
 
-export function clearSessionFromAllTokenTransferMethods(config: TypeNormalisedInput, res: BaseResponse) {
+export function clearSessionFromAllTokenTransferMethods(config: TypeNormalisedInput, req: BaseRequest, res: BaseResponse) {
     // We are clearing the session in all transfermethods to be sure to override cookies in case they have been already added to the response.
     // This is done to handle the following use-case:
     // If the app overrides signInPOST to check the ban status of the user after the original implementation and throwing an UNAUTHORISED error
@@ -38,15 +39,15 @@ export function clearSessionFromAllTokenTransferMethods(config: TypeNormalisedIn
     // We can't know which to clear since we can't reliably query or remove the set-cookie header added to the response (causes issues in some frameworks, i.e.: hapi)
     // The safe solution in this case is to overwrite all the response cookies/headers with an empty value, which is what we are doing here
     for (const transferMethod of availableTokenTransferMethods) {
-        clearSession(config, res, transferMethod);
+        clearSession(config, req, res, transferMethod);
     }
 }
 
-export function clearSession(config: TypeNormalisedInput, res: BaseResponse, transferMethod: TokenTransferMethod) {
+export function clearSession(config: TypeNormalisedInput, req: BaseRequest, res: BaseResponse, transferMethod: TokenTransferMethod) {
     // If we can be specific about which transferMethod we want to clear, there is no reason to clear the other ones
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        setToken(config, res, token, "", 0, transferMethod);
+        setToken(config,req, res, token, "", 0, transferMethod);
     }
 
     res.removeHeader(antiCsrfHeaderKey);
@@ -121,6 +122,7 @@ export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod:
 
 export function setToken(
     config: TypeNormalisedInput,
+    req: BaseRequest,
     res: BaseResponse,
     tokenType: TokenType,
     value: string,
@@ -131,6 +133,7 @@ export function setToken(
     if (transferMethod === "cookie") {
         setCookie(
             config,
+            req,
             res,
             getCookieNameFromTokenType(tokenType),
             value,
@@ -158,8 +161,9 @@ export function setHeader(res: BaseResponse, name: string, value: string) {
  * @param expires
  * @param path
  */
-export function setCookie(
+export async function setCookie(
     config: TypeNormalisedInput,
+    req: BaseRequest,
     res: BaseResponse,
     name: string,
     value: string,
@@ -168,7 +172,8 @@ export function setCookie(
 ) {
     let domain = config.cookieDomain;
     let secure = config.cookieSecure;
-    let sameSite = config.cookieSameSite;
+    const userContext = makeDefaultUserContextFromAPI(req)
+    let sameSite = await config.cookieSameSite(userContext);
     let path = "";
     if (pathType === "refreshTokenPath") {
         path = config.refreshTokenPath.getAsStringDangerous();

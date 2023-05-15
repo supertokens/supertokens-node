@@ -22,6 +22,9 @@ import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 
+
+// TODO: fix type error `TS2367: This condition will always return 'false' since the types '(userContext: any) => Promise<"VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE">' and 'string' have no overlap.`
+
 /**
  * @description call this to "login" a user.
  */

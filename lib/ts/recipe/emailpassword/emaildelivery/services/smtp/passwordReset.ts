@@ -19,7 +19,7 @@ export default function getPasswordResetEmailContent(
     input: TypeEmailPasswordPasswordResetEmailDeliveryInput
 ): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo!.appName;
+    let appName = supertokens.appInfo.appName;
     let body = getPasswordResetEmailHTML(appName, input.user.email, input.passwordResetLink);
     return {
         body,

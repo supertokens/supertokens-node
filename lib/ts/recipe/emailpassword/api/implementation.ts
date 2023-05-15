@@ -64,7 +64,7 @@ export default function getAPIImplementation(): APIInterface {
                     status: "OK",
                 };
             }
-            const appInfo = options.appInfo!;
+            const appInfo = options.appInfo;
             const origin = await appInfo.origin(userContext);
 
             if (origin === undefined) {

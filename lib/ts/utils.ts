@@ -38,7 +38,7 @@ export function maxVersion(version1: string, version2: string): string {
     return version2;
 }
 
-export async function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): Promise<NormalisedAppinfo> {
+export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo {
     if (appInfo === undefined) {
         throw new Error("Please provide the appInfo object when calling supertokens.init");
     }
@@ -49,7 +49,7 @@ export async function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): Promi
         throw new Error("Please provide your appName inside the appInfo object when calling supertokens.init");
     }
     if (appInfo.origin === undefined) {
-        throw new Error("Please provide your websiteDomain inside the appInfo object when calling supertokens.init");
+        throw new Error("Please provide your origin inside the appInfo object when calling supertokens.init");
     }
     let apiGatewayPath =
         appInfo.apiGatewayPath !== undefined
@@ -64,16 +64,12 @@ export async function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): Promi
             url = await appInfo.origin(userContext);
         }
         if (url === undefined) {
-            throw new Error(
-                "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
-            );
+            throw new Error("Origin function fails");
         }
         return new NormalisedURLDomain(url);
     };
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
     const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
-    const originString = await origin({});
-    const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString.getAsStringDangerous());
     return {
         appName: appInfo.appName,
         origin,
@@ -89,7 +85,6 @@ export async function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): Promi
                 : new NormalisedURLPath(appInfo.websiteBasePath),
         apiGatewayPath,
         topLevelAPIDomain,
-        topLevelWebsiteDomain,
     };
 }
 

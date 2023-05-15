@@ -18,7 +18,7 @@ import Supertokens from "../../../../../supertokens";
 import { humaniseMilliseconds } from "../../../../../utils";
 export default function getPasswordlessLoginEmailContent(input: TypePasswordlessEmailDeliveryInput): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo!.appName;
+    let appName = supertokens.appInfo.appName;
     let body = getPasswordlessLoginEmailHTML(
         appName,
         input.email,

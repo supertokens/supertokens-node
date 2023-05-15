@@ -11,4 +11,5 @@ export declare function getEmailVerifyLink(input: {
     appInfo: NormalisedAppinfo;
     token: string;
     recipeId: string;
-}): string;
+    userContext: any;
+}): Promise<string>;

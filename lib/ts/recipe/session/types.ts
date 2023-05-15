@@ -108,11 +108,11 @@ export type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
-    cookieSameSite: "strict" | "lax" | "none";
+    cookieSameSite: ((userContext: any) => Promise<"strict" | "lax" | "none">);
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    antiCsrf: ((userContext: any) => Promise<"VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE">);
 
     getTokenTransferMethod: (input: {
         req: BaseRequest;

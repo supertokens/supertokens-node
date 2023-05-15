@@ -18,7 +18,7 @@ import Supertokens from "../../../../../supertokens";
 
 export default function getEmailVerifyEmailContent(input: TypeEmailVerificationEmailDeliveryInput): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
-    let appName = supertokens.appInfo!.appName;
+    let appName = supertokens.appInfo.appName;
     let body = getEmailVerifyEmailHTML(appName, input.user.email, input.emailVerifyLink);
     return {
         body,

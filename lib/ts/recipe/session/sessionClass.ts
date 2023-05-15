@@ -46,7 +46,7 @@ export default class Session implements SessionContainerInterface {
             // If we instead clear the cookies only when revokeSession
             // returns true, it can cause this kind of a bug:
             // https://github.com/supertokens/supertokens-node/issues/343
-            clearSession(this.helpers.config, this.reqResInfo.res, this.reqResInfo.transferMethod);
+            clearSession(this.helpers.config, this.reqResInfo.req, this.reqResInfo.res, this.reqResInfo.transferMethod);
         }
     }
 
@@ -143,6 +143,7 @@ export default class Session implements SessionContainerInterface {
             if (this.reqResInfo !== undefined) {
                 // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
                 setAccessTokenInResponse(
+                    this.reqResInfo.req,
                     this.reqResInfo.res,
                     this.accessToken,
                     this.frontToken,
@@ -242,12 +243,13 @@ export default class Session implements SessionContainerInterface {
         this.reqResInfo = info;
 
         if (this.accessTokenUpdated) {
-            const { res, transferMethod } = info;
+            const { req, res, transferMethod } = info;
 
-            setAccessTokenInResponse(res, this.accessToken, this.frontToken, this.helpers.config, transferMethod);
+            setAccessTokenInResponse(req, res, this.accessToken, this.frontToken, this.helpers.config, transferMethod);
             if (this.refreshToken !== undefined) {
                 setToken(
                     this.helpers.config,
+                    req,
                     res,
                     "refresh",
                     this.refreshToken.token,

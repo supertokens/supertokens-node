@@ -32,7 +32,6 @@ export type NormalisedAppinfo = {
     origin: (userContext: any) => Promise<NormalisedURLDomain | undefined> | NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     topLevelAPIDomain: string;
-    topLevelWebsiteDomain: string;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;
