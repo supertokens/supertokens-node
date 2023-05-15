@@ -220,14 +220,34 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                 signUpPOST: async (input) => {
                                     let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     }
                                     return response;
                                 },
                                 signInPOST: async (input) => {
                                     let response = await oI.signInPOST(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     }
                                     return response;
                                 },
@@ -340,6 +360,24 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (input.userContext.shouldError === undefined) {
+                                        return response;
+                                    }
+                                    throw {
+                                        error: "get user error",
+                                    };
+                                },
+                            };
+                        },
+                    },
+                }),
                 EmailPassword.init({
                     override: {
                         functions: (oI) => {
@@ -356,12 +394,6 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                     await oI.signIn(input);
                                     throw {
                                         error: "signin error",
-                                    };
-                                },
-                                getUserById: async (input) => {
-                                    await oI.getUserById(input);
-                                    throw {
-                                        error: "get user error",
                                     };
                                 },
                             };
@@ -381,7 +413,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         app.get("/user", async (req, res, next) => {
             try {
                 let userId = req.query.userId;
-                res.json(await EmailPassword.getUserById(userId));
+                res.json(await STExpress.getUser(userId, { shouldError: true }));
             } catch (err) {
                 next(err);
             }
