@@ -123,7 +123,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
     });
 
     it("test signUpAPI throws an error in case of a duplicate email", async function () {
@@ -153,7 +153,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
 
         response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(response.status === 200);
