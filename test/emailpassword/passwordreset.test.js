@@ -124,11 +124,16 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
-                            resetURL = passwordResetURLWithToken.split("?")[0];
-                            tokenInfo = passwordResetURLWithToken.split("?")[1].split("&")[0];
-                            ridInfo = passwordResetURLWithToken.split("?")[1].split("&")[1];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async (input) => {
+                                    resetURL = input.passwordResetLink.split("?")[0];
+                                    tokenInfo = input.passwordResetLink.split("?")[1].split("&")[0];
+                                    ridInfo = input.passwordResetLink.split("?")[1].split("&")[1];
+                                },
+                            };
                         },
                     },
                 }),
@@ -346,23 +351,26 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             },
             recipeList: [
                 EmailPassword.init({
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async (input) => {
+                                    token = input.passwordResetLink.split("?")[1].split("&")[0].split("=")[1];
+                                },
+                            };
+                        },
+                    },
                     override: {
                         apis: (oI) => {
                             return {
                                 ...oI,
                                 passwordResetPOST: async function (input) {
                                     let resp = await oI.passwordResetPOST(input);
-                                    if (resp.userId !== undefined) {
-                                        passwordResetUserId = resp.userId;
-                                    }
+                                    passwordResetUserId = resp.user.id;
                                     return resp;
                                 },
                             };
-                        },
-                    },
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
-                            token = passwordResetURLWithToken.split("?")[1].split("&")[0].split("=")[1];
                         },
                     },
                 }),
@@ -425,12 +433,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 })
         );
 
-        let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.12") === currCDIVersion) {
-            assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
-        } else {
-            assert(passwordResetUserId === undefined);
-        }
+        assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
 
         let failureResponse = await new Promise((resolve) =>
             request(app)

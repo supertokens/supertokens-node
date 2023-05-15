@@ -2,6 +2,63 @@ import type { User } from "../../types";
 import axios from "axios";
 import { createUserObject } from "../accountlinking/mockCore";
 
+let passwordResetTokens: { [key: string]: { userId: string; email: string } } = {};
+
+export async function mockCreatePasswordResetToken(
+    email: string,
+    userId: string
+): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+    let response = await axios(`http://localhost:8080/recipe/user/password/reset/token`, {
+        method: "post",
+        headers: {
+            rid: "emailpassword",
+            "content-type": "application/json",
+        },
+        data: {
+            email,
+            userId,
+        },
+    });
+
+    if (response.data.status === "UNKNOWN_USER_ID_ERROR") {
+        return response.data;
+    }
+
+    passwordResetTokens[response.data.token] = {
+        userId,
+        email,
+    };
+    return {
+        status: "OK",
+        token: response.data.token,
+    };
+}
+
+export async function mockConsumePasswordResetToken(
+    token: string
+): Promise<
+    | {
+          status: "OK";
+          userId: string;
+          email: string;
+      }
+    | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+> {
+    if (passwordResetTokens[token] === undefined) {
+        return {
+            status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+        };
+    }
+    let userId = passwordResetTokens[token].userId;
+    let email = passwordResetTokens[token].email;
+    delete passwordResetTokens[token];
+    return {
+        status: "OK",
+        userId,
+        email,
+    };
+}
+
 export async function mockSignIn(input: {
     email: string;
     password: string;

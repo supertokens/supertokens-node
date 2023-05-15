@@ -5,7 +5,12 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import { User } from "../../types";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
-import { mockCreateRecipeUser, mockSignIn } from "./mockCore";
+import {
+    mockCreateRecipeUser,
+    mockSignIn,
+    mockConsumePasswordResetToken,
+    mockCreatePasswordResetToken,
+} from "./mockCore";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -115,11 +120,15 @@ export default function getRecipeInterface(
             userId: string;
             email: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-            // the input user ID can be a recipe or a primary user ID.
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
-                userId,
-                email,
-            });
+            if (process.env.MOCK !== "true") {
+                // the input user ID can be a recipe or a primary user ID.
+                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
+                    userId,
+                    email,
+                });
+            } else {
+                return mockCreatePasswordResetToken(email, userId);
+            }
         },
 
         consumePasswordResetToken: async function ({
@@ -134,9 +143,16 @@ export default function getRecipeInterface(
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
-            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token/consume"), {
-                token,
-            });
+            if (process.env.MOCK !== "true") {
+                return await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/user/password/reset/token/consume"),
+                    {
+                        token,
+                    }
+                );
+            } else {
+                return mockConsumePasswordResetToken(token);
+            }
         },
 
         updateEmailOrPassword: async function (input: {
