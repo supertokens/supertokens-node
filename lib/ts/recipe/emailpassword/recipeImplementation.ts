@@ -69,9 +69,17 @@ export default function getRecipeInterface(
                 userContext,
             });
 
+            let updatedUser = await getUser(userId, userContext);
+
+            if (updatedUser === undefined) {
+                throw new Error("Should never come here.");
+            }
+
+            updatedUser.normalizedInputMap = response.user.normalizedInputMap;
+
             return {
                 status: "OK",
-                user: (await getUser(userId, userContext))!,
+                user: updatedUser,
             };
         },
 
