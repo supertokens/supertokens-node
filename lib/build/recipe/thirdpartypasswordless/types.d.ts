@@ -304,7 +304,6 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     user: User;
-                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                     authCodeResponse: any;
@@ -344,7 +343,6 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     createdNewUser: boolean;
-                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                     authCodeResponse: any;
@@ -426,7 +424,6 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     createdNewUser: boolean;
-                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                 }
@@ -492,7 +489,6 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     user: User;
-                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                 }

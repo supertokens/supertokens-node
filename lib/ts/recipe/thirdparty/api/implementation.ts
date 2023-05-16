@@ -22,7 +22,6 @@ export default function getAPIInterface(): APIInterface {
             | {
                   status: "OK";
                   user: User;
-                  createdNewRecipeUser: boolean;
                   session: SessionContainerInterface;
                   wereAccountsAlreadyLinked: boolean;
                   authCodeResponse: any;
@@ -134,7 +133,6 @@ export default function getAPIInterface(): APIInterface {
             | {
                   status: "OK";
                   createdNewUser: boolean;
-                  createdNewRecipeUser: boolean;
                   user: User;
                   session: SessionContainerInterface;
                   authCodeResponse: any;
@@ -243,7 +241,6 @@ export default function getAPIInterface(): APIInterface {
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
-                createdNewRecipeUser: true, // TODO
                 user: response.user,
                 session,
                 authCodeResponse: accessTokenAPIResponse.data,

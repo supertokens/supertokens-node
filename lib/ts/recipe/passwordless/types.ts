@@ -359,7 +359,6 @@ export type APIInterface = {
         | {
               status: "OK";
               createdNewUser: boolean;
-              createdNewRecipeUser: boolean;
               user: User;
               session: SessionContainerInterface;
           }
@@ -398,7 +397,6 @@ export type APIInterface = {
               | {
                     status: "OK";
                     user: User;
-                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                 }

@@ -60,7 +60,6 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
-                createdNewRecipeUser: false, // TODO
                 user: response.user,
                 session,
             };
