@@ -21,7 +21,7 @@ import { BaseRequest } from "./framework";
 
 export type AppInfo = {
     appName: string;
-    origin: string | ((req: BaseRequest, userContext: any) => Promise<string | undefined>);
+    origin: string | ((req: BaseRequest, userContext: any) => Promise<string>);
     originBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;

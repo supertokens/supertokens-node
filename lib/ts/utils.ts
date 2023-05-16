@@ -6,7 +6,6 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_RID } from "./constants";
-import SuperTokensError from "./error";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -63,12 +62,6 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
             return new NormalisedURLDomain(appInfo.origin);
         } else {
             url = await appInfo.origin(req, userContext);
-        }
-        if (url === undefined) {
-            throw new SuperTokensError({
-                type: "FORBIDDEN",
-                message: "Request origin is not allowed",
-            });
         }
         return new NormalisedURLDomain(url);
     };

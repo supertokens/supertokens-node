@@ -248,7 +248,7 @@ export async function refreshSessionInRequest({
         // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
         if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
             logDebugMessage("refreshSession: cleared legacy id refresh token because refresh token was not found");
-            setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+            await setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
         }
 
         logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
@@ -299,7 +299,7 @@ export async function refreshSessionInRequest({
                 logDebugMessage(
                     "refreshSession: cleared legacy id refresh token because refresh is clearing other tokens"
                 );
-                setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+                await setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
             }
         }
         throw ex;
@@ -323,7 +323,7 @@ export async function refreshSessionInRequest({
     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
         logDebugMessage("refreshSession: cleared legacy id refresh token after successful refresh");
-        setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+        await setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
     }
 
     return session;

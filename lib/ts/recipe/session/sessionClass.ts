@@ -142,7 +142,7 @@ export default class Session implements SessionContainerInterface {
             this.accessTokenUpdated = true;
             if (this.reqResInfo !== undefined) {
                 // We need to cast to let TS know that the accessToken in the response is defined (and we don't overwrite it with undefined)
-                setAccessTokenInResponse(
+                await setAccessTokenInResponse(
                     this.reqResInfo.req,
                     this.reqResInfo.res,
                     this.accessToken,

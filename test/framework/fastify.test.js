@@ -67,7 +67,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -121,7 +121,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -170,7 +170,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -272,7 +272,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -348,7 +348,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -422,7 +422,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -459,7 +459,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -572,7 +572,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -618,7 +618,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiBasePath: "/",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
@@ -733,7 +733,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -794,7 +794,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -860,7 +860,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -949,7 +949,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -1076,7 +1076,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -1259,7 +1259,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -1305,7 +1305,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
@@ -1360,7 +1360,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -1392,7 +1392,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1439,7 +1439,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1490,7 +1490,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1543,7 +1543,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1596,7 +1596,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1649,7 +1649,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1705,7 +1705,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1761,7 +1761,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1836,7 +1836,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({

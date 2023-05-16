@@ -60,7 +60,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiGatewayPath: "/dev",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
@@ -228,7 +228,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiGatewayPath: "/dev",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
@@ -383,7 +383,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiGatewayPath: "/dev",
             },
             recipeList: [
@@ -428,7 +428,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                     appInfo: {
                         apiDomain: "http://api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "http://supertokens.io",
+                        origin: "http://supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -533,7 +533,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                     appInfo: {
                         apiDomain: "http://api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "http://supertokens.io",
+                        origin: "http://supertokens.io",
                         apiBasePath: "/",
                     },
                     recipeList: [
@@ -596,7 +596,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -649,7 +649,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -707,7 +707,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -770,7 +770,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -833,7 +833,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -895,7 +895,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -960,7 +960,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1025,7 +1025,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1109,7 +1109,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Dashboard.init({

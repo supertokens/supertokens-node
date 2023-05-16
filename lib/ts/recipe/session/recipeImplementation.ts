@@ -88,12 +88,14 @@ export default function getRecipeInterface(
             accessTokenPayload = {},
             sessionDataInDatabase = {},
             disableAntiCsrf,
+            antiCSRF,
         }: {
             userId: string;
             disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
             userContext: any;
+            antiCSRF: AntiCsrfType;
         }): Promise<SessionContainerInterface> {
             logDebugMessage("createNewSession: Started");
 
@@ -102,6 +104,7 @@ export default function getRecipeInterface(
                 userId,
                 disableAntiCsrf === true,
                 accessTokenPayload,
+                antiCSRF,
                 sessionDataInDatabase
             );
             logDebugMessage("createNewSession: Finished");

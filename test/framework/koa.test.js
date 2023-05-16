@@ -61,7 +61,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -134,7 +134,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -203,7 +203,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -326,7 +326,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -423,7 +423,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -578,7 +578,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -642,7 +642,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
                 apiBasePath: "/",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
@@ -795,7 +795,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -878,7 +878,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -965,7 +965,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -1101,7 +1101,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -1251,7 +1251,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "http://supertokens.io",
+                origin: "http://supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -1464,7 +1464,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -1516,7 +1516,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1571,7 +1571,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1629,7 +1629,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1693,7 +1693,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1757,7 +1757,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1821,7 +1821,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1888,7 +1888,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -1955,7 +1955,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -2041,7 +2041,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({

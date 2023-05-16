@@ -85,7 +85,7 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
             sessionScope = sessionScope.substr(1);
         }
 
-        if (!sessionScope.startsWith("http://") && !sessionScope.startsWith("https://")) {
+        if (!sessionScope.includes("://")) {
             sessionScope = "http://" + sessionScope;
         }
 
@@ -135,6 +135,10 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.accessTokenPath === undefined
             ? new NormalisedURLPath("/")
             : new NormalisedURLPath(config.accessTokenPath);
+    let cookieSameSiteNormalise: "strict" | "lax" | "none";
+    if (config !== undefined && config!.cookieSameSite !== undefined) {
+        cookieSameSiteNormalise = normaliseSameSiteOrThrowError(config!.cookieSameSite!);
+    }
     const cookieSameSite = async (req: BaseRequest, userContext: any) => {
         const origin = await appInfo.origin(req, userContext);
         const originString = origin.getAsStringDangerous();
@@ -146,9 +150,7 @@ export function validateAndNormaliseUserInput(
                 ? "none"
                 : "lax";
         cookieSameSite =
-            config === undefined || config.cookieSameSite === undefined
-                ? cookieSameSite
-                : normaliseSameSiteOrThrowError(config.cookieSameSite);
+            config === undefined || config.cookieSameSite === undefined ? cookieSameSite : cookieSameSiteNormalise;
         return cookieSameSite;
     };
 
@@ -246,7 +248,7 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
     return sameSite;
 }
 
-export function setAccessTokenInResponse(
+export async function setAccessTokenInResponse(
     req: BaseRequest,
     res: BaseResponse,
     accessToken: string,
@@ -255,7 +257,7 @@ export function setAccessTokenInResponse(
     transferMethod: TokenTransferMethod
 ) {
     setFrontTokenInHeaders(res, frontToken);
-    setToken(
+    await setToken(
         config,
         req,
         res,
@@ -270,7 +272,7 @@ export function setAccessTokenInResponse(
     );
 
     if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
-        setToken(
+        await setToken(
             config,
             req,
             res,

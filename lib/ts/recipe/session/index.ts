@@ -34,7 +34,7 @@ import { BaseRequest } from "../../framework";
 export default class SessionWrapper {
     static init = Recipe.init;
 
-    static Error = SuperTokensError;
+    static STError = SuperTokensError;
 
     static async createNewSession(
         req: any,
@@ -91,8 +91,7 @@ export default class SessionWrapper {
             if (appInfo.initialOriginType === "string") {
                 antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
             } else {
-                // throw error
-                return; // temp will remove after proper error
+                throw new Error(""); // better
             }
         }
 
@@ -316,12 +315,12 @@ export default class SessionWrapper {
         });
     }
 
-    static refreshSession(req: any, res: any, userContext: any = {}) {
+    static async refreshSession(req: any, res: any, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
 
-        return refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
+        return await refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
     }
 
     static async refreshSessionWithoutRequestResponse(
@@ -338,8 +337,7 @@ export default class SessionWrapper {
             if (appInfo.initialOriginType === "string") {
                 antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
             } else {
-                // throw error
-                return; // temp will remove after proper error
+                throw new Error(""); // better
             }
         }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
@@ -494,7 +492,7 @@ export let removeClaim = SessionWrapper.removeClaim;
 export let validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload;
 export let validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle;
 
-export let Error = SessionWrapper.Error;
+export let STError = SessionWrapper.STError;
 
 // JWT Functions
 export let createJWT = SessionWrapper.createJWT;

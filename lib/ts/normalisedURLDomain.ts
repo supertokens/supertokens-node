@@ -32,7 +32,7 @@ function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): 
     input = input.trim().toLowerCase();
 
     try {
-        if (!input.startsWith("http://") && !input.startsWith("https://") && !input.startsWith("supertokens://")) {
+        if (!input.includes("://")) {
             throw new Error("converting to proper URL");
         }
         let urlObj = new URL(input);

@@ -245,7 +245,6 @@ export default class Recipe extends RecipeModule {
         );
 
         const appInfo = this.getAppInfo();
-        // Ask rishabh
         const origin = await appInfo.origin({} as BaseRequest, input.userContext);
         let magicLink =
             origin.getAsStringDangerous() +

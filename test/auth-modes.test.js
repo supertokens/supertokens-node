@@ -63,7 +63,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN" })],
                     });
@@ -87,7 +87,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN" })],
                     });
@@ -111,7 +111,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN" })],
                     });
@@ -135,7 +135,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN" })],
                     });
@@ -165,7 +165,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "any" })],
                     });
@@ -189,7 +189,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "header" })],
                     });
@@ -213,7 +213,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "header" })],
                     });
@@ -253,7 +253,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "cookie" })],
                     });
@@ -281,7 +281,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [Session.init({ antiCsrf: "VIA_TOKEN", getTokenTransferMethod: () => "cookie" })],
                     });
@@ -353,7 +353,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                             appInfo: {
                                 apiDomain: "api.supertokens.io",
                                 appName: "SuperTokens",
-                                websiteDomain: "supertokens.io",
+                                origin: "supertokens.io",
                             },
                             recipeList: [
                                 Session.init({
@@ -406,7 +406,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                             appInfo: {
                                 apiDomain: "api.supertokens.io",
                                 appName: "SuperTokens",
-                                websiteDomain: "supertokens.io",
+                                origin: "supertokens.io",
                             },
                             recipeList: [
                                 Session.init({
@@ -461,7 +461,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [
                             Session.init({
@@ -508,7 +508,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [
                             Session.init({
@@ -556,7 +556,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [
                             Session.init({
@@ -605,7 +605,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -648,7 +648,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [
                             Session.init({
@@ -691,7 +691,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [
                             Session.init({
@@ -735,7 +735,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                         appInfo: {
                             apiDomain: "api.supertokens.io",
                             appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
+                            origin: "supertokens.io",
                         },
                         recipeList: [
                             Session.init({
@@ -776,7 +776,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [Session.init({ antiCsrf: "VIA_TOKEN" })],
                 });
@@ -813,7 +813,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [Session.init({ antiCsrf: "VIA_TOKEN" })],
                 });
@@ -871,7 +871,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                             appInfo: {
                                 apiDomain: "api.supertokens.io",
                                 appName: "SuperTokens",
-                                websiteDomain: "supertokens.io",
+                                origin: "supertokens.io",
                             },
                             recipeList: [
                                 Session.init({
@@ -963,7 +963,7 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                             appInfo: {
                                 apiDomain: "api.supertokens.io",
                                 appName: "SuperTokens",
-                                websiteDomain: "supertokens.io",
+                                origin: "supertokens.io",
                             },
                             recipeList: [
                                 Session.init({

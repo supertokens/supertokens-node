@@ -60,7 +60,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
@@ -204,7 +204,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -249,7 +249,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -298,7 +298,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -350,7 +350,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -408,7 +408,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -467,7 +467,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -526,7 +526,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -588,7 +588,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -650,7 +650,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({
@@ -736,7 +736,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Dashboard.init({

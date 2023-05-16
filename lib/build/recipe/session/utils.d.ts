@@ -51,7 +51,7 @@ export declare function setAccessTokenInResponse(
     frontToken: string,
     config: TypeNormalisedInput,
     transferMethod: TokenTransferMethod
-): void;
+): Promise<void>;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],

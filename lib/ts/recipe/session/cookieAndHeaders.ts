@@ -129,7 +129,7 @@ export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod:
     }
 }
 
-export function setToken(
+export async function setToken(
     config: TypeNormalisedInput,
     req: BaseRequest,
     res: BaseResponse,
@@ -140,7 +140,7 @@ export function setToken(
 ) {
     logDebugMessage(`setToken: Setting ${tokenType} token as ${transferMethod}`);
     if (transferMethod === "cookie") {
-        setCookie(
+        await setCookie(
             config,
             req,
             res,
@@ -191,7 +191,6 @@ export async function setCookie(
             config.accessTokenPath.getAsStringDangerous() === "" ? "/" : config.accessTokenPath.getAsStringDangerous();
     }
     let httpOnly = true;
-
     return res.setCookie(name, value, domain, secure, httpOnly, expires, path, sameSite);
 }
 

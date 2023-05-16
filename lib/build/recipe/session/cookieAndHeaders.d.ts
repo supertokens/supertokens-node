@@ -30,7 +30,7 @@ export declare function setToken(
     value: string,
     expires: number,
     transferMethod: TokenTransferMethod
-): void;
+): Promise<void>;
 export declare function setHeader(res: BaseResponse, name: string, value: string): void;
 /**
  *

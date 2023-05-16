@@ -15,7 +15,7 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
-    static Error: typeof SuperTokensError;
+    static STError: typeof SuperTokensError;
     static createNewSession(
         req: any,
         res: any,
@@ -31,7 +31,7 @@ export default class SessionWrapper {
         disableAntiCsrf?: boolean,
         antiCSRF?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined,
         userContext?: any
-    ): Promise<SessionContainer | undefined>;
+    ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(
         sessionHandle: string,
         overrideGlobalClaimValidators?: (
@@ -136,7 +136,7 @@ export default class SessionWrapper {
         antiCsrfToken?: string,
         antiCSRF?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined,
         userContext?: any
-    ): Promise<SessionContainer | undefined>;
+    ): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
@@ -215,7 +215,7 @@ export declare let getClaimValue: typeof SessionWrapper.getClaimValue;
 export declare let removeClaim: typeof SessionWrapper.removeClaim;
 export declare let validateClaimsInJWTPayload: typeof SessionWrapper.validateClaimsInJWTPayload;
 export declare let validateClaimsForSessionHandle: typeof SessionWrapper.validateClaimsForSessionHandle;
-export declare let Error: typeof SuperTokensError;
+export declare let STError: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
 export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;
