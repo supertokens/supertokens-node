@@ -182,7 +182,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                        onTokenTheftDetected: async (sessionHandle, userId, recipeUserId, request, response) => {
                             response.sendJSONResponse({
                                 success: true,
                             });
