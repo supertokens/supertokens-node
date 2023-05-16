@@ -577,10 +577,17 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             },
             recipeList: [
                 EmailVerification.init({
-                    createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
-                        email = input.email;
-                        userIdInCb = input.recipeUserId;
-                        emailVerifyURL = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async (input) => {
+                                    email = input.user.email;
+                                    userIdInCb = input.user.recipeUserId;
+                                    emailVerifyURL = input.emailVerifyLink;
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init(),
