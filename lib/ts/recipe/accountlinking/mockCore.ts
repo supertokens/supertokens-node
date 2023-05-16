@@ -1,6 +1,8 @@
 import { AccountInfo, RecipeLevelUser } from "./types";
 import type { User } from "../../types";
 import axios from "axios";
+import { Querier } from "../../querier";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 type UserWithoutHelperFunctions = {
     id: string; // primaryUserId or recipeUserId
@@ -21,6 +23,79 @@ type UserWithoutHelperFunctions = {
     // so that further filtering is not buggy.
     normalizedInputMap: { [key: string]: string | undefined };
 };
+
+export async function mockGetUsers(
+    querier: Querier,
+    input: {
+        timeJoinedOrder: "ASC" | "DESC";
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+        query?: { [key: string]: string };
+    }
+): Promise<{
+    users: User[];
+    nextPaginationToken?: string;
+}> {
+    const normalizedInputMap: { [key: string]: string } = {};
+    if (input.query?.email !== undefined) {
+        let splitted = input.query.email.split(";");
+        for (let s of splitted) {
+            normalizedInputMap[s] = s.toLowerCase().trim();
+        }
+    }
+    if (input.query?.phone !== undefined) {
+        let splitted = input.query.phone.split(";");
+        for (let s of splitted) {
+            normalizedInputMap[s] = s.toLowerCase().trim();
+        }
+    }
+    let includeRecipeIdsStr = undefined;
+    if (input.includeRecipeIds !== undefined) {
+        includeRecipeIdsStr = input.includeRecipeIds.join(",");
+    }
+    let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+        includeRecipeIds: includeRecipeIdsStr,
+        timeJoinedOrder: input.timeJoinedOrder,
+        limit: input.limit,
+        paginationToken: input.paginationToken,
+        ...input.query,
+    });
+    let users: User[] = [];
+    for (let userObj of response.users) {
+        let user = userObj.user;
+        let verified = true;
+        if (user.email !== undefined) {
+            verified = await isEmailVerified(user.id, user.email);
+        }
+        let userWithoutHelperFunctions: UserWithoutHelperFunctions = {
+            id: user.id,
+            timeJoined: user.timeJoined,
+            isPrimaryUser: false,
+            emails: user.email === undefined ? [] : [user.email],
+            phoneNumbers: user.phoneNumber === undefined ? [] : [user.phoneNumber],
+            thirdParty: user.thirdParty === undefined ? [] : [user.thirdParty],
+            loginMethods: [
+                {
+                    recipeId: userObj.recipeId,
+                    recipeUserId: user.id,
+                    timeJoined: user.timeJoined,
+                    verified,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                    thirdParty: user.thirdParty,
+                },
+            ],
+            normalizedInputMap,
+        };
+        users.push(createUserObject(userWithoutHelperFunctions));
+    }
+
+    return {
+        users: users,
+        nextPaginationToken: response.nextPaginationToken,
+    };
+}
 
 export function createUserObject(input: UserWithoutHelperFunctions): User {
     function getHasSameEmailAs(lM: RecipeLevelUser) {
