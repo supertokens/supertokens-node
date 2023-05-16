@@ -195,7 +195,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 Session.init({
                     getTokenTransferMethod: () => "cookie",
                     errorHandlers: {
-                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                        onTokenTheftDetected: async (sessionHandle, userId, recipeUserId, request, response) => {
                             response.sendJSONResponse({
                                 success: true,
                             });
