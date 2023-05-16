@@ -439,7 +439,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
+        let response = await SessionFunctions.createNewSession(
+            s.recipeInterfaceImpl.helpers,
+            "",
+            undefined,
+            false,
+            {},
+            {}
+        );
         assert.notEqual(response.session, undefined);
         assert.notEqual(response.accessToken, undefined);
         assert.notEqual(response.refreshToken, undefined);
@@ -517,7 +524,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
+        let response = await SessionFunctions.createNewSession(
+            s.recipeInterfaceImpl.helpers,
+            "",
+            undefined,
+            false,
+            {},
+            {}
+        );
 
         let response2 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
@@ -557,7 +571,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl.helpers, "", false, {}, {});
+        let response = await SessionFunctions.createNewSession(
+            s.recipeInterfaceImpl.helpers,
+            "",
+            undefined,
+            false,
+            {},
+            {}
+        );
 
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
@@ -569,7 +590,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         );
 
         assert.notStrictEqual(response2.session, undefined);
-        assert.strictEqual(Object.keys(response2.session).length, 4); // TODO check why this changed
+        assert.strictEqual(Object.keys(response2.session).length, 5);
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         try {
