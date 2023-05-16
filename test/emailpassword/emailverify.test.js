@@ -283,9 +283,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user;
-                        emailToken = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    userInfo = input.user;
+                                    emailToken = input.emailVerifyLink;
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -351,8 +358,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init({}),
@@ -513,8 +527,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -597,8 +618,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -724,8 +752,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -841,8 +876,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -919,8 +961,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         functions: (oI) => {
@@ -997,8 +1046,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -1084,8 +1140,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 EmailPassword.init(),
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         functions: (oI) => {
