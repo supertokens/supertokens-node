@@ -271,6 +271,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .withArgs({
                         accessTokenPayload: sinon.match.object,
                         userId: "testing-userId",
+                        recipeUserId: "testing-userId",
                         claimValidators: testValidatorArr,
                         userContext: {
                             _default: {
@@ -330,6 +331,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .withArgs({
                         accessTokenPayload: sinon.match.object,
                         userId: "testing-userId",
+                        recipeUserId: "testing-userId",
                         claimValidators: testValidatorArr,
                         userContext: {
                             _default: {
@@ -693,7 +695,7 @@ function getTestApp(endpoints) {
     app.use(express.json());
 
     app.post("/create", async (req, res) => {
-        await Session.createNewSession(req, res, "testing-userId", req.body, {});
+        await Session.createNewSession(req, res, "testing-userId", undefined, req.body, {});
         res.status(200).json({ message: true });
     });
 
