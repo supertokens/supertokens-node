@@ -20,6 +20,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 const { Querier } = require("../../lib/build/querier");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+let AccountLinking = require("../../recipe/accountlinking");
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -49,6 +50,32 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (response !== undefined) {
+                                        user = {
+                                            ...response,
+                                            loginMethods: [
+                                                {
+                                                    ...response.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                    }
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
                 ThirdPartyEmailPassword.init({
                     override: {
                         functions: (oI) => {
@@ -57,20 +84,35 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                                 emailPasswordSignUp: async (input) => {
                                     let response = await oI.emailPasswordSignUp(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     }
                                     return response;
                                 },
                                 emailPasswordSignIn: async (input) => {
                                     let response = await oI.emailPasswordSignIn(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     }
-                                    return response;
-                                },
-                                getUserById: async (input) => {
-                                    let response = await oI.getUserById(input);
-                                    user = response;
                                     return response;
                                 },
                             };
@@ -89,7 +131,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await ThirdPartyEmailPassword.getUserById(userId));
+            res.json(await STExpress.getUser(userId));
         });
 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
@@ -175,7 +217,17 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                                 emailPasswordSignInPOST: async (input) => {
                                     let response = await oI.emailPasswordSignInPOST(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                         newUser = false;
                                         type = "emailpassword";
                                     }
@@ -184,7 +236,17 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                                 emailPasswordSignUpPOST: async (input) => {
                                     let response = await oI.emailPasswordSignUpPOST(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                         newUser = true;
                                         type = "emailpassword";
                                     }
@@ -211,7 +273,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await ThirdPartyEmailPassword.getUserById(userId));
+            res.json(await STExpress.getUser(userId));
         });
 
         let emailExistsResponse = await new Promise((resolve) =>
@@ -303,6 +365,24 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (input.userContext.shouldError === undefined) {
+                                        return response;
+                                    }
+                                    throw {
+                                        error: "get user error",
+                                    };
+                                },
+                            };
+                        },
+                    },
+                }),
                 ThirdPartyEmailPassword.init({
                     override: {
                         functions: (oI) => {
@@ -319,12 +399,6 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                                     await oI.emailPasswordSignIn(input);
                                     throw {
                                         error: "signin error",
-                                    };
-                                },
-                                getUserById: async (input) => {
-                                    await oI.getUserById(input);
-                                    throw {
-                                        error: "get user error",
                                     };
                                 },
                             };
@@ -344,7 +418,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         app.get("/user", async (req, res, next) => {
             try {
                 let userId = req.query.userId;
-                res.json(await ThirdPartyEmailPassword.getUserById(userId));
+                res.json(await STExpress.getUser(userId, { shouldError: true }));
             } catch (err) {
                 next(err);
             }

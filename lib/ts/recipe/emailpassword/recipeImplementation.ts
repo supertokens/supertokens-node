@@ -191,6 +191,7 @@ export default function getRecipeInterface(
                     }
                 }
             }
+            // the input userId must be a recipe user ID.
             return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                 userId: input.userId,
                 email: input.email,
