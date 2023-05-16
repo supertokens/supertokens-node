@@ -47,6 +47,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
             const res = await Session.createNewSessionWithoutRequestResponse(
                 "test-user-id",
+                undefined,
                 { tokenProp: true },
                 { dbProp: true }
             );
@@ -83,6 +84,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
             const session = await Session.createNewSessionWithoutRequestResponse(
                 "test-user-id",
+                undefined,
                 { tokenProp: true },
                 { dbProp: true }
             );
@@ -278,6 +280,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
             const createRes = await Session.createNewSessionWithoutRequestResponse(
                 "test-user-id",
+                undefined,
                 { tokenProp: true },
                 { dbProp: true }
             );
