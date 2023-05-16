@@ -27,21 +27,10 @@ export default class BackwardCompatibilityService
         userContext: any
     ) => Promise<void>;
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        createAndSendCustomEmail?: (
-            user: User,
-            emailVerificationURLWithToken: string,
-            userContext: any
-        ) => Promise<void>
-    ) {
+    constructor(appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         this.appInfo = appInfo;
         this.isInServerlessEnv = isInServerlessEnv;
-        this.createAndSendCustomEmail =
-            createAndSendCustomEmail === undefined
-                ? defaultCreateAndSendCustomEmail(this.appInfo)
-                : createAndSendCustomEmail;
+        this.createAndSendCustomEmail = defaultCreateAndSendCustomEmail(this.appInfo);
     }
 
     sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }) => {

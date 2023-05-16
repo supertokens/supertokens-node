@@ -258,6 +258,7 @@ export default function getAPIInterface(): APIInterface {
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     type: "EMAIL_VERIFICATION",
                     user: {
+                        id: session.getUserId(),
                         recipeUserId: recipeUserIdForWhomToGenerateToken,
                         email: emailInfo.email,
                     },

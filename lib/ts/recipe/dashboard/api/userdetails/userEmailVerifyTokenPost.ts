@@ -3,6 +3,7 @@ import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
 import EmailVerificationRecipe from "../../../emailverification/recipe";
 import { getEmailVerifyLink } from "../../../emailverification/utils";
+import { getUser } from "../../../..";
 
 type Response = {
     status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
@@ -50,9 +51,16 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         recipeId: EmailVerificationRecipe.RECIPE_ID,
     });
 
+    let primaryUser = await getUser(recipeUserId);
+
+    if (primaryUser === undefined) {
+        throw new Error("Should never come here");
+    }
+
     await EmailVerification.sendEmail({
         type: "EMAIL_VERIFICATION",
         user: {
+            id: primaryUser.id,
             recipeUserId,
             email: emailResponse.email,
         },

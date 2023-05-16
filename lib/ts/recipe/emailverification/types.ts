@@ -36,10 +36,6 @@ export type TypeInput = {
           }
         | { status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
     >;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -163,6 +159,10 @@ export type APIInterface = {
 export type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: {
+        // we have the id here cause when sending the email, we have
+        // the user's session. Therefore, it makes sense to also primary the
+        // primary user's ID.
+        id: string;
         recipeUserId: string;
         email: string;
     };
