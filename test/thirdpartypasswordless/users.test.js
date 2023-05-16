@@ -78,7 +78,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -157,7 +157,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -236,7 +236,7 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({

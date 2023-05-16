@@ -65,7 +65,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -122,7 +122,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -171,7 +171,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -212,7 +212,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),

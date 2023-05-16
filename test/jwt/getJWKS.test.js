@@ -31,7 +31,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 JWTRecipe.init({
@@ -84,7 +84,7 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [JWTRecipe.init({})],
         });

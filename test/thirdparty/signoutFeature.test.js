@@ -80,7 +80,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -157,7 +157,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -208,7 +208,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -255,7 +255,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({

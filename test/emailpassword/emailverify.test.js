@@ -74,7 +74,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -112,7 +112,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -154,7 +154,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -198,7 +198,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -277,7 +277,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -345,7 +345,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -408,7 +408,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -456,7 +456,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -507,7 +507,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -591,7 +591,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -670,7 +670,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -718,7 +718,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -835,7 +835,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -913,7 +913,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -991,7 +991,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -1077,7 +1077,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -1160,7 +1160,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -1206,7 +1206,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -1255,7 +1255,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),
@@ -1303,7 +1303,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -1340,7 +1340,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init(),

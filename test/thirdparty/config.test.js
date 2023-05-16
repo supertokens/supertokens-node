@@ -46,7 +46,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     ThirPartyRecipe.init({
@@ -74,7 +74,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({

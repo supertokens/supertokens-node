@@ -71,7 +71,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init()],
         });
@@ -120,7 +120,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -186,7 +186,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init()],
         });
@@ -254,7 +254,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init()],
         });
@@ -296,7 +296,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init()],
         });
@@ -342,7 +342,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({

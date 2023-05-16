@@ -62,7 +62,7 @@ describe(`deleteUser: ${printPath("[test/emailpassword/deleteUser.test.js]")}`, 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });

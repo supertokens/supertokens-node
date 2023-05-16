@@ -32,7 +32,7 @@ describe(`clearUserMetadataTest: ${printPath("[test/usermetadata/clearUserMetada
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });
@@ -64,7 +64,7 @@ describe(`clearUserMetadataTest: ${printPath("[test/usermetadata/clearUserMetada
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });

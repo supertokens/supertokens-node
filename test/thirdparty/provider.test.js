@@ -64,7 +64,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -111,7 +111,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -157,7 +157,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -200,7 +200,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -251,7 +251,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -291,7 +291,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -335,7 +335,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -381,7 +381,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -424,7 +424,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -477,7 +477,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -529,7 +529,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -574,7 +574,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     ThirPartyRecipe.init({
@@ -607,7 +607,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     ThirPartyRecipe.init({
@@ -647,7 +647,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     ThirPartyRecipe.init({
@@ -687,7 +687,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({

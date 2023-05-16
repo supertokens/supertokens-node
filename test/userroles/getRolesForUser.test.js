@@ -31,7 +31,7 @@ describe(`getRolesForUser: ${printPath("[test/userroles/getRolesForUser.test.js]
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });

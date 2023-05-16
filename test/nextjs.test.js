@@ -81,7 +81,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
                     apiBasePath: "/api/auth",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     EmailPassword.init(),
@@ -415,7 +415,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
                     apiBasePath: "/api/auth",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     EmailPassword.init({
@@ -523,7 +523,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
                     apiBasePath: "/api/auth",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     EmailPassword.init(),

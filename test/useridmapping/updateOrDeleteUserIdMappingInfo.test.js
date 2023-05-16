@@ -33,7 +33,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -88,7 +88,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -191,7 +191,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });

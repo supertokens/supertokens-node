@@ -50,7 +50,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init()],
         });
@@ -91,7 +91,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -136,7 +136,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -168,7 +168,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -203,7 +203,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init()],
         });

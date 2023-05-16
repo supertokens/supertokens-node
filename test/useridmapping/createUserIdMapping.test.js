@@ -32,7 +32,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -83,7 +83,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -115,7 +115,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -193,7 +193,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });

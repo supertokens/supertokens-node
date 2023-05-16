@@ -47,7 +47,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             telemetry: false,
@@ -103,7 +103,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             telemetry: false,
@@ -163,7 +163,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -215,7 +215,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -282,7 +282,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -355,7 +355,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -444,7 +444,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
@@ -503,7 +503,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({ mode: "OPTIONAL" }),
@@ -566,7 +566,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -618,7 +618,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -692,7 +692,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailVerification.init({
@@ -785,7 +785,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({

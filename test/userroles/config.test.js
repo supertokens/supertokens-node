@@ -28,7 +28,7 @@ describe(`configTest: ${printPath("[test/userroles/config.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserRolesRecipe.init(), SessionRecipe.init()],
             });

@@ -59,7 +59,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -105,7 +105,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -383,7 +383,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({
@@ -666,7 +666,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiBasePath: "/custom",
             },
             recipeList: [
@@ -954,7 +954,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiBasePath: "/custom",
             },
             recipeList: [
@@ -1248,7 +1248,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiBasePath: "/custom",
             },
             recipeList: [
@@ -1381,7 +1381,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiBasePath: "/custom",
             },
             recipeList: [
@@ -1595,7 +1595,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
                 apiBasePath: "/custom",
             },
             recipeList: [
@@ -1658,7 +1658,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({

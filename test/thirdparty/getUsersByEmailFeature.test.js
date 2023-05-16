@@ -25,7 +25,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
         appInfo: {
             apiDomain: "api.supertokens.io",
             appName: "SuperTokens",
-            websiteDomain: "supertokens.io",
+            origin: "supertokens.io",
         },
         recipeList: [
             ThirdPartyRecipe.init({

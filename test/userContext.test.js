@@ -58,7 +58,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -197,7 +197,7 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({

@@ -81,7 +81,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPasswordRecipe.init({
@@ -187,7 +187,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPasswordRecipe.init({
@@ -236,7 +236,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPasswordRecipe.init({
@@ -281,7 +281,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPasswordRecipe.init({

@@ -75,7 +75,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdParty.init({
@@ -197,7 +197,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdParty.init({
@@ -293,7 +293,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdParty.init({
@@ -425,7 +425,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdParty.init({

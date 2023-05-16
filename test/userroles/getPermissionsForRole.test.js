@@ -31,7 +31,7 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
@@ -70,7 +70,7 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });

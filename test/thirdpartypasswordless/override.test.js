@@ -85,7 +85,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -215,7 +215,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -319,7 +319,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -459,7 +459,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({

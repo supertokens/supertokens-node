@@ -29,7 +29,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [OpenIdRecipe.init()],
         });
@@ -57,7 +57,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
                 apiDomain: "api.supertokens.io",
                 apiBasePath: "/",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [OpenIdRecipe.init()],
         });
@@ -84,7 +84,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 OpenIdRecipe.init({

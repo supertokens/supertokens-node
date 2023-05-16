@@ -31,7 +31,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
@@ -79,7 +79,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
@@ -134,7 +134,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });

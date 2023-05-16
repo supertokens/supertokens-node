@@ -27,7 +27,7 @@ describe(`configTest: ${printPath("[test/usermetadata/config.test.js]")}`, funct
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });

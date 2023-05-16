@@ -46,7 +46,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
@@ -164,7 +164,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
@@ -300,7 +300,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
@@ -421,7 +421,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({

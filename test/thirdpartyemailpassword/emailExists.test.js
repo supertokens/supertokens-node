@@ -46,7 +46,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
@@ -97,7 +97,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -143,7 +143,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -185,7 +185,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [ThirdPartyEmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });

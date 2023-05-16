@@ -68,7 +68,7 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [ThirdPartyEmailPassword.init()],
         });
@@ -110,7 +110,7 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({

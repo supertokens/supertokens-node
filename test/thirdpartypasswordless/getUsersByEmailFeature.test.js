@@ -40,7 +40,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByE
         appInfo: {
             apiDomain: "api.supertokens.io",
             appName: "SuperTokens",
-            websiteDomain: "supertokens.io",
+            origin: "supertokens.io",
         },
         recipeList: [
             ThirdPartyPasswordless.init({

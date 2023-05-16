@@ -48,7 +48,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -123,7 +123,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -181,7 +181,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -262,7 +262,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -356,7 +356,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -438,7 +438,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -511,7 +511,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -580,7 +580,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -674,7 +674,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -756,7 +756,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -864,7 +864,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -996,7 +996,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -1103,7 +1103,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({
@@ -1196,7 +1196,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Passwordless.init({

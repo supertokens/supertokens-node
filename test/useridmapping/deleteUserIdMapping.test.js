@@ -32,7 +32,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -76,7 +76,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -130,7 +130,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -184,7 +184,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
@@ -265,7 +265,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });

@@ -70,7 +70,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -141,7 +141,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({
@@ -212,7 +212,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirPartyRecipe.init({

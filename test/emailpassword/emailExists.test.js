@@ -33,7 +33,7 @@ let { middleware, errorHandler } = require("../../framework/express");
 /*
 TODO:
 
-- Check good input, 
+- Check good input,
    - email exists
    - email does not exist
    - pass an invalid (syntactically) email and check that you get exists: false
@@ -65,7 +65,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -116,7 +116,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -162,7 +162,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -204,7 +204,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -250,7 +250,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -296,7 +296,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -333,7 +333,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -376,7 +376,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });
@@ -425,7 +425,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
         });

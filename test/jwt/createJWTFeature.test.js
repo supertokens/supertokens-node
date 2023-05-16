@@ -29,7 +29,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [JWTRecipe.init()],
         });
@@ -58,7 +58,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [JWTRecipe.init()],
         });
@@ -90,7 +90,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [JWTRecipe.init()],
         });
@@ -125,7 +125,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 JWTRecipe.init({
@@ -164,7 +164,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 JWTRecipe.init({

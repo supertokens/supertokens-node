@@ -28,7 +28,7 @@ describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [JWTRecipe.init()],
         });
@@ -53,7 +53,7 @@ describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 JWTRecipe.init({

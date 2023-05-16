@@ -35,7 +35,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });
@@ -72,7 +72,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });
@@ -109,7 +109,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });
@@ -171,7 +171,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserMetadataRecipe.init()],
             });

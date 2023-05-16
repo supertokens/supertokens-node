@@ -54,7 +54,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
@@ -88,7 +88,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
@@ -121,7 +121,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
@@ -155,7 +155,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" }), EmailPassword.init()],
         });
@@ -189,7 +189,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 Session.init({ getTokenTransferMethod: () => "cookie" }),

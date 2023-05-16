@@ -51,7 +51,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -167,7 +167,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -295,7 +295,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({
@@ -414,7 +414,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 EmailPassword.init({

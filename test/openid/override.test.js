@@ -32,7 +32,7 @@ describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, functio
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 OpenIdRecipe.init({
@@ -93,7 +93,7 @@ describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, functio
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 OpenIdRecipe.init({

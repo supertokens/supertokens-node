@@ -31,7 +31,7 @@ describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRol
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
@@ -76,7 +76,7 @@ describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRol
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });

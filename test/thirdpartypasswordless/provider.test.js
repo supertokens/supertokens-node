@@ -64,7 +64,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -119,7 +119,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -173,7 +173,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -224,7 +224,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -283,7 +283,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -331,7 +331,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordlessRecipe.init({
@@ -383,7 +383,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -437,7 +437,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -488,7 +488,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -549,7 +549,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordlessRecipe.init({
@@ -609,7 +609,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({
@@ -662,7 +662,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     ThirdPartyPasswordless.init({
@@ -699,7 +699,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     ThirdPartyPasswordless.init({
@@ -742,7 +742,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     ThirdPartyPasswordless.init({
@@ -785,7 +785,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [
                 ThirdPartyPasswordless.init({

@@ -38,7 +38,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
@@ -64,7 +64,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     UserRoles.init({
@@ -96,7 +96,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
@@ -126,7 +126,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
@@ -169,7 +169,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     UserRoles.init({
@@ -201,7 +201,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [UserRoles.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
@@ -244,7 +244,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     UserRoles.init({
