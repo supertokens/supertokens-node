@@ -19,6 +19,7 @@ import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDelive
 import { User } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 import { linkAccountsWithUserFromSession } from "../accountlinking";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -68,7 +69,7 @@ export default class Wrapper {
     }
 
     static updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext?: any;

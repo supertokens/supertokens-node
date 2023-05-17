@@ -18,6 +18,7 @@ import SuperTokensError from "./error";
 import { User } from "./types";
 import AccountLinking from "./recipe/accountlinking/recipe";
 import { AccountInfo } from "./recipe/accountlinking/types";
+import RecipeUserId from "./recipeUserId";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -113,6 +114,9 @@ export default class SuperTokensWrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+    static convertToRecipeUserId(recipeUserId: string): RecipeUserId {
+        return new RecipeUserId(recipeUserId);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -138,5 +142,7 @@ export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUs
 export let getUser = SuperTokensWrapper.getUser;
 
 export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
+
+export let convertToRecipeUserId = SuperTokensWrapper.convertToRecipeUserId;
 
 export let Error = SuperTokensWrapper.Error;

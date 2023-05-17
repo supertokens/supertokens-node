@@ -3,6 +3,7 @@ import type { User } from "../../types";
 import axios from "axios";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import RecipeUserId from "../../recipeUserId";
 
 type UserWithoutHelperFunctions = {
     id: string; // primaryUserId or recipeUserId
@@ -78,7 +79,7 @@ export async function mockGetUsers(
             loginMethods: [
                 {
                     recipeId: userObj.recipeId,
-                    recipeUserId: user.id,
+                    recipeUserId: new RecipeUserId(user.id),
                     timeJoined: user.timeJoined,
                     verified,
                     email: user.email,
@@ -191,7 +192,7 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                         loginMethods: [
                             {
                                 recipeId: "emailpassword",
-                                recipeUserId: user.id,
+                                recipeUserId: new RecipeUserId(user.id),
                                 timeJoined: user.timeJoined,
                                 verified,
                                 email: user.email,
@@ -225,7 +226,7 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                             loginMethods: [
                                 {
                                     recipeId: "thirdparty",
-                                    recipeUserId: user.id,
+                                    recipeUserId: new RecipeUserId(user.id),
                                     timeJoined: user.timeJoined,
                                     verified,
                                     email: user.email,
@@ -260,7 +261,7 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                         loginMethods: [
                             {
                                 recipeId: "passwordless",
-                                recipeUserId: user.id,
+                                recipeUserId: new RecipeUserId(user.id),
                                 timeJoined: user.timeJoined,
                                 verified,
                                 email: user.email,
@@ -294,7 +295,7 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                         loginMethods: [
                             {
                                 recipeId: "passwordless",
-                                recipeUserId: user.id,
+                                recipeUserId: new RecipeUserId(user.id),
                                 timeJoined: user.timeJoined,
                                 verified: true,
                                 phoneNumber: user.phoneNumber,
@@ -332,7 +333,7 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                         loginMethods: [
                             {
                                 recipeId: "thirdparty",
-                                recipeUserId: user.id,
+                                recipeUserId: new RecipeUserId(user.id),
                                 timeJoined: user.timeJoined,
                                 verified,
                                 email: user.email,
@@ -372,7 +373,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                 loginMethods: [
                     {
                         recipeId: "emailpassword",
-                        recipeUserId: user.id,
+                        recipeUserId: new RecipeUserId(user.id),
                         timeJoined: user.timeJoined,
                         verified,
                         email: user.email,
@@ -403,7 +404,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                 loginMethods: [
                     {
                         recipeId: "thirdparty",
-                        recipeUserId: user.id,
+                        recipeUserId: new RecipeUserId(user.id),
                         timeJoined: user.timeJoined,
                         verified,
                         email: user.email,
@@ -435,7 +436,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                 loginMethods: [
                     {
                         recipeId: "passwordless",
-                        recipeUserId: user.id,
+                        recipeUserId: new RecipeUserId(user.id),
                         timeJoined: user.timeJoined,
                         verified,
                         email: user.email,
@@ -449,6 +450,6 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
     return undefined;
 }
 
-export async function mockFetchFromAccountToLinkTable(_: { recipeUserId: string }): Promise<string | undefined> {
+export async function mockFetchFromAccountToLinkTable(_: { recipeUserId: RecipeUserId }): Promise<string | undefined> {
     return undefined;
 }

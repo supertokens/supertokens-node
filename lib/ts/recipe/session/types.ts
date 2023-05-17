@@ -19,6 +19,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
 import { JSONObject, JSONValue } from "../../types";
 import { GeneralErrorResponse } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type KeyInfo = {
     publicKey: string;
@@ -232,7 +233,7 @@ export type RecipeInterface = {
      */
     getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
 
-    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    revokeAllSessionsForUser(input: { userId: RecipeUserId; userContext: any }): Promise<string[]>;
 
     getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
 

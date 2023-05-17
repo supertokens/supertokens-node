@@ -22,6 +22,7 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
@@ -143,7 +144,7 @@ export type RecipeInterface = {
     >;
 
     updateEmailOrPassword(input: {
-        userId: string; // the id should only be a recipeUserId cause if we give just an id
+        recipeUserId: RecipeUserId; // the id should only be a recipeUserId cause if we give just an id
         // and a password, and if there are multiple emailpassword accounts, we do not know
         // for which one to update the password for.
         email?: string;

@@ -11,6 +11,7 @@ import {
     mockConsumePasswordResetToken,
     mockCreatePasswordResetToken,
 } from "./mockCore";
+import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -164,7 +165,7 @@ export default function getRecipeInterface(
         },
 
         updateEmailOrPassword: async function (input: {
-            userId: string;
+            recipeUserId: RecipeUserId;
             email?: string;
             password?: string;
             applyPasswordPolicy?: boolean;
@@ -193,7 +194,7 @@ export default function getRecipeInterface(
             }
             // the input userId must be a recipe user ID.
             return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
-                userId: input.userId,
+                userId: input.recipeUserId.getAsString(),
                 email: input.email,
                 password: input.password,
             });

@@ -29,7 +29,8 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
-// For Express
+import RecipeUserId from "../../recipeUserId";
+
 export default class SessionWrapper {
     static init = Recipe.init;
 
@@ -39,7 +40,7 @@ export default class SessionWrapper {
         req: any,
         res: any,
         userId: string,
-        recipeUserId?: string,
+        recipeUserId?: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         userContext: any = {}
@@ -297,7 +298,7 @@ export default class SessionWrapper {
             userContext,
         });
     }
-    static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
+    static revokeAllSessionsForUser(userId: RecipeUserId, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
     }
 

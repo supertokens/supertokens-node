@@ -22,12 +22,13 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForRecipeUserId?: (
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         userContext: any
     ) => Promise<
         | {
@@ -51,7 +52,7 @@ export type TypeNormalisedInput = {
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForRecipeUserId?: (
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         userContext: any
     ) => Promise<
         | {
@@ -70,13 +71,13 @@ export type TypeNormalisedInput = {
 };
 
 export type User = {
-    recipeUserId: string;
+    recipeUserId: RecipeUserId;
     email: string;
 };
 
 export type RecipeInterface = {
     createEmailVerificationToken(input: {
-        recipeUserId: string; // must be a recipeUserId
+        recipeUserId: RecipeUserId; // must be a recipeUserId
         email: string;
         userContext: any;
     }): Promise<
@@ -92,15 +93,15 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
 
-    isEmailVerified(input: { recipeUserId: string; email: string; userContext: any }): Promise<boolean>;
+    isEmailVerified(input: { recipeUserId: RecipeUserId; email: string; userContext: any }): Promise<boolean>;
 
     revokeEmailVerificationTokens(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         email: string;
         userContext: any;
     }): Promise<{ status: "OK" }>;
 
-    unverifyEmail(input: { recipeUserId: string; email: string; userContext: any }): Promise<{ status: "OK" }>;
+    unverifyEmail(input: { recipeUserId: RecipeUserId; email: string; userContext: any }): Promise<{ status: "OK" }>;
 };
 
 export type APIOptions = {
@@ -163,14 +164,14 @@ export type TypeEmailVerificationEmailDeliveryInput = {
         // the user's session. Therefore, it makes sense to also primary the
         // primary user's ID.
         id: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         email: string;
     };
     emailVerifyLink: string;
 };
 
 export type GetEmailForRecipeUserIdFunc = (
-    recipeUserId: string,
+    recipeUserId: RecipeUserId,
     userContext: any
 ) => Promise<
     | {
