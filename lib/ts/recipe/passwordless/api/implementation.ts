@@ -32,7 +32,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            recipeUserId: user.recipeUserId,
+                            recipeUserId: user.id, // TODO: change to recipeUserId
                             email: user.email,
                             userContext: input.userContext,
                         }

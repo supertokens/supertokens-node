@@ -159,7 +159,6 @@ export default function getAPIInterface(): APIInterface {
 
             // Either way, in case the email is already verified, we do the same thing
             // as what happens in the verifyEmailPOST API post email verification (cause maybe the session is outdated).
-
             let recipeUserIdForWhomToGenerateToken = session.getRecipeUserId();
             const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
             if (fromAccountLinkingClaim !== undefined) {
