@@ -83,7 +83,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         await EmailVerification.verifyEmailUsingToken(emailVerificationToken.token);
 
         // check that the ThirdParty user's email is verified
-        assert(await EmailVerification.isEmailVerified(response.user.id, response.user.email));
+        assert(await EmailVerification.isEmailVerified(response.user.id));
 
         // create a ThirdParty user with an unverfied email and check that it is not verified
         let response2 = await ThirdPartyPasswordless.thirdPartySignInUp(
