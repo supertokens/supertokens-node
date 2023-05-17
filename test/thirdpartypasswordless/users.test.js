@@ -117,12 +117,12 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
 
         users = await getUsersOldestFirst({ limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test1@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test1@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersOldestFirst({ limit: 5, paginationToken: users.nextPaginationToken });
@@ -196,12 +196,12 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
 
         users = await getUsersNewestFirst({ limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test4@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test4@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].user.email, "test3@gmail.com");
+        assert.strictEqual(users.users[0].emails[0], "test3@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
         users = await getUsersNewestFirst({ limit: 5, paginationToken: users.nextPaginationToken });
