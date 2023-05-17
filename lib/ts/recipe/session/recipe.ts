@@ -37,7 +37,7 @@ import {
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";

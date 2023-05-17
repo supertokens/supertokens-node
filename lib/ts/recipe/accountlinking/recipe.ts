@@ -14,11 +14,11 @@
  */
 
 import error from "../../error";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+import type { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
@@ -36,7 +36,13 @@ export default class Recipe extends RecipeModule {
 
     recipeInterfaceImpl: RecipeInterface;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput, _recipes: {}, _ingredients: {}) {
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        config: TypeInput | undefined,
+        _recipes: {},
+        _ingredients: {}
+    ) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(appInfo, config);
 
@@ -48,7 +54,7 @@ export default class Recipe extends RecipeModule {
         }
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(

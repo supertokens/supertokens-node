@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import {
     TypeInput as EmailDeliveryTypeInput,

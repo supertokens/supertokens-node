@@ -15,7 +15,7 @@
 
 import SuperTokensError from "../../error";
 import error from "../../error";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import normalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
