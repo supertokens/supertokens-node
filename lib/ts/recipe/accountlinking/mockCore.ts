@@ -247,30 +247,28 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 },
             });
             if (response.data.status === "OK") {
-                for (let i = 0; i < response.data.users.length; i++) {
-                    let user = response.data.users[i];
-                    let verified = await isEmailVerified(user.id, user.email);
-                    users.push(
-                        createUserObject({
-                            id: user.id,
-                            emails: [user.email],
-                            timeJoined: user.timeJoined,
-                            isPrimaryUser: false,
-                            phoneNumbers: [],
-                            thirdParty: [],
-                            loginMethods: [
-                                {
-                                    recipeId: "passwordless",
-                                    recipeUserId: user.id,
-                                    timeJoined: user.timeJoined,
-                                    verified,
-                                    email: user.email,
-                                },
-                            ],
-                            normalizedInputMap,
-                        })
-                    );
-                }
+                let user = response.data.user;
+                let verified = await isEmailVerified(user.id, user.email);
+                users.push(
+                    createUserObject({
+                        id: user.id,
+                        emails: [user.email],
+                        timeJoined: user.timeJoined,
+                        isPrimaryUser: false,
+                        phoneNumbers: [],
+                        thirdParty: [],
+                        loginMethods: [
+                            {
+                                recipeId: "passwordless",
+                                recipeUserId: user.id,
+                                timeJoined: user.timeJoined,
+                                verified,
+                                email: user.email,
+                            },
+                        ],
+                        normalizedInputMap,
+                    })
+                );
             }
         }
     }
@@ -284,29 +282,27 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 },
             });
             if (response.data.status === "OK") {
-                for (let i = 0; i < response.data.users.length; i++) {
-                    let user = response.data.users[i];
-                    users.push(
-                        createUserObject({
-                            id: user.id,
-                            emails: [],
-                            timeJoined: user.timeJoined,
-                            isPrimaryUser: false,
-                            phoneNumbers: [user.phoneNumber],
-                            thirdParty: [],
-                            loginMethods: [
-                                {
-                                    recipeId: "passwordless",
-                                    recipeUserId: user.id,
-                                    timeJoined: user.timeJoined,
-                                    verified: true,
-                                    phoneNumber: user.phoneNumber,
-                                },
-                            ],
-                            normalizedInputMap,
-                        })
-                    );
-                }
+                let user = response.data.user;
+                users.push(
+                    createUserObject({
+                        id: user.id,
+                        emails: [],
+                        timeJoined: user.timeJoined,
+                        isPrimaryUser: false,
+                        phoneNumbers: [user.phoneNumber],
+                        thirdParty: [],
+                        loginMethods: [
+                            {
+                                recipeId: "passwordless",
+                                recipeUserId: user.id,
+                                timeJoined: user.timeJoined,
+                                verified: true,
+                                phoneNumber: user.phoneNumber,
+                            },
+                        ],
+                        normalizedInputMap,
+                    })
+                );
             }
         }
     }

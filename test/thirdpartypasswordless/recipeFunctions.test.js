@@ -76,11 +76,14 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         );
 
         // verify the user's email
-        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(response.user.id);
+        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(
+            response.user.id,
+            response.user.email
+        );
         await EmailVerification.verifyEmailUsingToken(emailVerificationToken.token);
 
         // check that the ThirdParty user's email is verified
-        assert(await EmailVerification.isEmailVerified(response.user.id));
+        assert(await EmailVerification.isEmailVerified(response.user.id, response.user.email));
 
         // create a ThirdParty user with an unverfied email and check that it is not verified
         let response2 = await ThirdPartyPasswordless.thirdPartySignInUp(
@@ -89,7 +92,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             "test@example.com"
         );
 
-        assert(!(await EmailVerification.isEmailVerified(response2.user.id)));
+        assert(!(await EmailVerification.isEmailVerified(response2.user.id, response2.user.email)));
     });
 
     it("test with thirdPartyPasswordless, for Passwordless user that isEmailVerified returns true for both email and phone", async function () {
@@ -131,15 +134,18 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         });
 
         // verify the user's email
-        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(response.user.id);
+        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(
+            response.user.id,
+            response.user.email
+        );
         await EmailVerification.verifyEmailUsingToken(emailVerificationToken.token);
 
         // check that the Passwordless user's email is verified
-        assert(await EmailVerification.isEmailVerified(response.user.id));
+        assert(await EmailVerification.isEmailVerified(response.user.id, response.user.email));
 
         // check that creating an email verification with a verified passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert(
-            (await EmailVerification.createEmailVerificationToken(response.user.id)).status ===
+            (await EmailVerification.createEmailVerificationToken(response.user.id, response.user.email)).status ===
                 "EMAIL_ALREADY_VERIFIED_ERROR"
         );
 
@@ -150,7 +156,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // check that the Passwordless phone number user's is automatically verified
         assert(await EmailVerification.isEmailVerified(response2.user.id));
-
         // check that creating an email verification with a phone-based passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert.equal(
             (await EmailVerification.createEmailVerificationToken(response2.user.id)).status,

@@ -8,7 +8,7 @@ export default class Wrapper {
     static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
         recipeUserId: string,
-        email: string,
+        email?: string,
         userContext?: any
     ): Promise<
         | {
@@ -31,20 +31,20 @@ export default class Wrapper {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    static isEmailVerified(recipeUserId: string, email: string, userContext?: any): Promise<boolean>;
+    static isEmailVerified(recipeUserId: string, email?: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
         recipeUserId: string,
-        email: string,
+        email?: string,
         userContext?: any
     ): Promise<{
-        status: "OK";
+        status: string;
     }>;
     static unverifyEmail(
         recipeUserId: string,
-        email: string,
+        email?: string,
         userContext?: any
     ): Promise<{
-        status: "OK";
+        status: string;
     }>;
     static sendEmail(
         input: TypeEmailVerificationEmailDeliveryInput & {
