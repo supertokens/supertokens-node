@@ -140,9 +140,10 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         assert(response.status === 200);
 
         let userId = JSON.parse(response.text).user.id;
+        let email = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(userId, email);
         await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
@@ -211,9 +212,16 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user;
-                        emailToken = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async function (input) {
+                                    userInfo = input.user;
+                                    emailToken = input.emailVerifyLink;
+                                },
+                            };
+                        },
                     },
                 }),
                 ThirdPartyEmailPassword.init(),
@@ -269,9 +277,16 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user;
-                        emailToken = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async function (input) {
+                                    userInfo = input.user;
+                                    emailToken = input.emailVerifyLink;
+                                },
+                            };
+                        },
                     },
                 }),
                 ThirdPartyEmailPassword.init({

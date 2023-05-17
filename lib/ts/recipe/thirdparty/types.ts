@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
@@ -146,7 +146,6 @@ export type APIInterface = {
               | {
                     status: "OK";
                     createdNewUser: boolean;
-                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                     authCodeResponse: any;
@@ -179,7 +178,6 @@ export type APIInterface = {
               | {
                     status: "OK";
                     user: User;
-                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                     authCodeResponse: any;

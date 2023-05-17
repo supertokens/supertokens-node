@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import {
@@ -311,7 +311,6 @@ export declare type APIInterface = {
         | {
               status: "OK";
               createdNewUser: boolean;
-              createdNewRecipeUser: boolean;
               user: User;
               session: SessionContainerInterface;
           }
@@ -351,7 +350,6 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     user: User;
-                    createdNewRecipeUser: boolean;
                     session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                 }

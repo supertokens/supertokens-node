@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import {
@@ -143,7 +143,9 @@ export type RecipeInterface = {
     >;
 
     updateEmailOrPassword(input: {
-        userId: string; // the id can be either recipeUserId or primaryUserId
+        userId: string; // the id should only be a recipeUserId cause if we give just an id
+        // and a password, and if there are multiple emailpassword accounts, we do not know
+        // for which one to update the password for.
         email?: string;
         password?: string;
         userContext: any;

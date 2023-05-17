@@ -175,7 +175,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                        onTokenTheftDetected: async (sessionHandle, userId, recipeUserId, request, response) => {
                             response.sendJSONResponse({
                                 success: true,
                             });
@@ -198,7 +198,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "", undefined, {}, {});
             return res.send("").code(200);
         });
 

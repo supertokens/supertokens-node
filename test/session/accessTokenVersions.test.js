@@ -269,7 +269,6 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             const legacyRefreshToken = legacySessionResp.refreshToken.token;
 
             const app = getTestExpressApp();
-
             let mergeRes = await new Promise((res, rej) =>
                 request(app)
                     .post("/merge-into-payload")
@@ -824,7 +823,7 @@ function getTestExpressApp() {
 
     app.post("/create", async (req, res) => {
         try {
-            await Session.createNewSession(req, res, "", req.body.payload, {});
+            await Session.createNewSession(req, res, "", undefined, req.body.payload, {});
             res.status(200).send("");
         } catch (ex) {
             res.status(400).json({ message: ex.message });

@@ -26,12 +26,11 @@ import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./framework";
-import { TypeFramework } from "./framework/types";
+import type { BaseRequest, BaseResponse } from "./framework";
+import type { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
-import AccountLinking from "./recipe/accountlinking/recipe";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -84,11 +83,6 @@ export default class SuperTokens {
         this.recipeModules = config.recipeList.map((func) => {
             return func(this.appInfo, this.isInServerlessEnv);
         });
-
-        let isAccountLinkingInitialized = this.recipeModules.find((r) => r.getRecipeId() === AccountLinking.RECIPE_ID);
-        if (!isAccountLinkingInitialized) {
-            this.recipeModules.push(AccountLinking.init({})(this.appInfo, this.isInServerlessEnv));
-        }
 
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }

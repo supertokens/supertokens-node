@@ -14,19 +14,19 @@
  */
 
 import error from "../../error";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
-import { SessionContainerInterface } from "../session/types";
+import type { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import { getUser } from "../..";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
-import { EmailVerificationClaim } from "../emailverification/emailVerificationClaim";
+import SessionError from "../session/error";
+import supertokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -37,7 +37,13 @@ export default class Recipe extends RecipeModule {
 
     recipeInterfaceImpl: RecipeInterface;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput, _recipes: {}, _ingredients: {}) {
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        config: TypeInput | undefined,
+        _recipes: {},
+        _ingredients: {}
+    ) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(appInfo, config);
 
@@ -49,7 +55,7 @@ export default class Recipe extends RecipeModule {
         }
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
@@ -68,14 +74,24 @@ export default class Recipe extends RecipeModule {
         };
     }
 
-    static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance !== undefined) {
-            return Recipe.instance;
+    // we auto init the account linking recipe here cause we always require this
+    // to be initialized even if the user has not initialized it.
+    // The side effect of this is that if there are any APIs or errors specific to this recipe,
+    // those won't be handled by the supertokens middleware and error handler (cause this recipe
+    // is not in the recipeList).
+    static getInstance(): Recipe {
+        if (Recipe.instance === undefined) {
+            Recipe.init()(
+                supertokens.getInstanceOrThrowError().appInfo,
+                supertokens.getInstanceOrThrowError().isInServerlessEnv
+            );
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        return Recipe.instance!;
     }
 
     getAPIsHandled(): APIHandled[] {
+        // APIs won't be added to the supertokens middleware cause we are auto initializing
+        // it in getInstance function
         return [];
     }
 
@@ -90,6 +106,8 @@ export default class Recipe extends RecipeModule {
     }
 
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void> {
+        // Errors won't come here cause we are auto initializing
+        // it in getInstance function
         throw error;
     }
 
@@ -99,6 +117,13 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe(err: any): err is error {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
+    }
+
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw new Error("calling testing function in non testing env");
+        }
+        Recipe.instance = undefined;
     }
 
     // this function returns the user ID for which the session will be created.
@@ -113,7 +138,7 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }): Promise<string> => {
-        let recipeUser = await getUser(recipeUserId, userContext);
+        let recipeUser = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId, userContext });
         if (recipeUser === undefined) {
             throw Error("Race condition error. It means that the input recipeUserId was deleted");
         }
@@ -244,7 +269,7 @@ export default class Recipe extends RecipeModule {
     }): Promise<User | undefined> => {
         // first we check if this user itself is a
         // primary user or not. If it is, we return that.
-        let user = await getUser(recipeUserId, userContext);
+        let user = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId, userContext });
         if (user === undefined) {
             return undefined;
         }
@@ -259,7 +284,7 @@ export default class Recipe extends RecipeModule {
         if (checkAccountsToLinkTableAsWell) {
             let pUserId = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
             if (pUserId !== undefined) {
-                let pUser = await getUser(pUserId, userContext);
+                let pUser = await this.recipeInterfaceImpl.getUser({ userId: pUserId, userContext });
                 if (pUser !== undefined && pUser.isPrimaryUser) {
                     return pUser;
                 }
@@ -502,8 +527,17 @@ export default class Recipe extends RecipeModule {
                 // wants. But they can always switch this off
                 // by providing the right impl for shouldDoAutomaticAccountLinking
 
-                // this function will throw an email verification validation error.
-                await session.assertClaims([EmailVerificationClaim.validators.isVerified(undefined, 0)]);
+                // this is equivalent to throwing the email verification claim error
+                throw new SessionError({
+                    type: SessionError.INVALID_CLAIMS,
+                    payload: [
+                        {
+                            id: "st-ev",
+                            reason: { message: "wrong value", expectedValue: true, actualValue: false },
+                        },
+                    ],
+                    message: "invalid claim",
+                });
             }
 
             // now we can try and create a primary user for the existing user
@@ -574,15 +608,9 @@ export default class Recipe extends RecipeModule {
                         return false;
                     }
                     if (newUser.recipeId === "thirdparty") {
-                        if (lU.thirdParty === undefined) {
-                            return false;
-                        }
-                        return (
-                            lU.thirdParty.id === newUser.thirdParty!.id &&
-                            lU.thirdParty.userId === newUser.thirdParty!.userId
-                        );
+                        return lU.hasSameThirdPartyInfoAs(newUser.thirdParty!);
                     } else {
-                        return lU.email === newUser.email || newUser.phoneNumber === newUser.phoneNumber;
+                        return lU.hasSameEmailAs(newUser.email) || lU.hasSamePhoneNumberAs(newUser.phoneNumber);
                     }
                 }) !== undefined
         );

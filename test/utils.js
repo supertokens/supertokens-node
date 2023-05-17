@@ -18,6 +18,7 @@ const request = require("supertest");
 let fs = require("fs");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
+let AccountLinkingRecipe = require("../lib/build/recipe/accountlinking/recipe").default;
 let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
 let ThirPartyPasswordless = require("../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
@@ -224,6 +225,7 @@ module.exports.stopST = async function (pid) {
 
 module.exports.resetAll = function () {
     SuperTokens.reset();
+    AccountLinkingRecipe.reset();
     SessionRecipe.reset();
     ThirdPartyPasswordlessRecipe.reset();
     ThirdPartyEmailPasswordRecipe.reset();

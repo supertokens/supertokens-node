@@ -79,7 +79,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             };
 
-            let accountLinkingInstance = await AccountLinking.getInstanceOrThrowError();
+            let accountLinkingInstance = await AccountLinking.getInstance();
             let result = await accountLinkingInstance.linkAccountsWithUserFromSession<{
                 status: "WRONG_CREDENTIALS_ERROR";
             }>({
@@ -153,7 +153,7 @@ export default function getAPIImplementation(): APIInterface {
                 usersWithSameEmail.find((user) => {
                     return (
                         user.loginMethods.find((lM) => {
-                            return lM.recipeId === "emailpassword" && lM.email === email;
+                            return lM.recipeId === "emailpassword" && lM.hasSameEmailAs(email);
                         }) !== undefined
                     );
                 }) !== undefined;
@@ -242,9 +242,9 @@ export default function getAPIImplementation(): APIInterface {
             let emailPasswordAccount: RecipeLevelUser | undefined = undefined;
             for (let i = 0; i < users.length; i++) {
                 let emailPasswordAccountTmp = users[i].loginMethods.find(
-                    (l) => l.recipeId === "emailpassword" && l.email === email
+                    (l) => l.recipeId === "emailpassword" && l.hasSameEmailAs(email)
                 );
-                if (emailPasswordAccount !== undefined) {
+                if (emailPasswordAccountTmp !== undefined) {
                     emailPasswordAccount = emailPasswordAccountTmp;
                     break;
                 }
@@ -273,7 +273,7 @@ export default function getAPIImplementation(): APIInterface {
                 // this means that there is no email password user that exists for the input email.
                 // So we check for the sign up condition and only go ahead if that condition is
                 // met.
-                let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "emailpassword",
                         email,
@@ -329,7 +329,7 @@ export default function getAPIImplementation(): APIInterface {
 
             // But first, this only matters it the user cares about checking for email verification status..
 
-            let shouldDoAccountLinkingResponse = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+            let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
                 emailPasswordAccount,
                 primaryUserAssociatedWithEmail,
                 undefined,
@@ -361,7 +361,7 @@ export default function getAPIImplementation(): APIInterface {
             // trust linking of the email password account.
             let emailVerified =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-                    return lm.email === email && lm.verified;
+                    return lm.hasSameEmailAs(email) && lm.verified;
                 }) !== undefined;
 
             if (emailVerified) {
@@ -373,7 +373,11 @@ export default function getAPIImplementation(): APIInterface {
             // there is a risk of account takeover, so we do not allow the token to be generated
             let hasOtherEmailOrPhone =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-                    return lm.email !== email || lm.phoneNumber !== undefined;
+                    // we do the extra undefined check below cause
+                    // hasSameEmailAs returns false if the lm.email is undefined, and
+                    // we want to check that the email is different as opposed to email
+                    // not existing in lm.
+                    return (lm.email !== undefined && !lm.hasSameEmailAs(email)) || lm.phoneNumber !== undefined;
                 }) !== undefined;
             if (hasOtherEmailOrPhone) {
                 return {
@@ -547,14 +551,12 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        let linkedToUserId = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts(
-                            {
-                                recipeUserId: createUserResponse.user.id,
-                                isVerified: true,
-                                checkAccountsToLinkTableAsWell: true,
-                                userContext,
-                            }
-                        );
+                        let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                            recipeUserId: createUserResponse.user.id,
+                            isVerified: true,
+                            checkAccountsToLinkTableAsWell: true,
+                            userContext,
+                        });
                         if (linkedToUserId !== existingUser.id) {
                             // this means that the account we just linked to
                             // was not the one we had expected to link it to. This can happen
@@ -607,7 +609,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let emailPasswordRecipeUser = response.user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.email === email
+                (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
             );
 
             if (emailPasswordRecipeUser === undefined) {
@@ -671,7 +673,7 @@ export default function getAPIImplementation(): APIInterface {
                 return response;
             }
             let emailPasswordRecipeUser = response.user.loginMethods.find(
-                (u) => u.recipeId === "emailpassword" && u.email === email
+                (u) => u.recipeId === "emailpassword" && u.hasSameEmailAs(email)
             );
 
             if (emailPasswordRecipeUser === undefined) {

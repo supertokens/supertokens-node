@@ -87,5 +87,13 @@ export type User = {
     }[];
     loginMethods: (RecipeLevelUser & {
         verified: boolean;
+        hasSameEmailAs: (email: string | undefined) => boolean;
+        hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
+        hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
     })[];
+
+    // this is there so that when we fetch users based on certain identifiers
+    // like email or phone number, we add the normalized version of these to the map
+    // so that further filtering is not buggy.
+    normalizedInputMap: { [key: string]: string | undefined };
 };

@@ -3,11 +3,7 @@ let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-const {
-    thirdPartySignInUp,
-    getUsersByEmail,
-    emailPasswordSignUp,
-} = require("../../lib/build/recipe/thirdpartyemailpassword");
+const { thirdPartySignInUp, emailPasswordSignUp } = require("../../lib/build/recipe/thirdpartyemailpassword");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -62,7 +58,9 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         // given there are no users
 
         // when
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await STExpress.listUsersByAccountInfo({
+            email: "john.doe@example.com",
+        });
 
         // then
         assert.strictEqual(thirdPartyUsers.length, 0);
@@ -90,12 +88,14 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         await thirdPartySignInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
         await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await STExpress.listUsersByAccountInfo({
+            email: "john.doe@example.com",
+        });
 
         assert.strictEqual(thirdPartyUsers.length, 3);
 
         thirdPartyUsers.forEach((user) => {
-            assert.strictEqual(user.email, "john.doe@example.com");
+            assert.strictEqual(user.emails[0], "john.doe@example.com");
         });
     });
 });

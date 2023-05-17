@@ -153,7 +153,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId", payloadParam);
+            const res = await Session.createNewSession(mockRequest(), response, "someId", undefined, payloadParam);
 
             // The passed object should be unchanged
             assert.strictEqual(Object.keys(payloadParam).length, 1);

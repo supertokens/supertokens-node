@@ -947,7 +947,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert((await EmailPassword.getUserByEmail("random@gmail.com")) === undefined);
+        assert(
+            (
+                await STExpress.listUsersByAccountInfo({
+                    email: "random@gmail.com",
+                })
+            ).length === 0
+        );
 
         const app = express();
 
@@ -960,9 +966,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(signUpResponse.status === 200);
 
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await EmailPassword.getUserByEmail("random@gmail.com");
+        let userInfo = (
+            await STExpress.listUsersByAccountInfo({
+                email: "random@gmail.com",
+            })
+        )[0];
 
-        assert(userInfo.email === signUpUserInfo.email);
+        assert(userInfo.emails[0] === signUpUserInfo.emails[0]);
         assert(userInfo.id === signUpUserInfo.id);
     });
 
@@ -988,7 +998,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert((await EmailPassword.getUserById("randomID")) === undefined);
+        assert((await STExpress.getUser("randomID")) === undefined);
 
         const app = express();
 
@@ -1001,9 +1011,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(signUpResponse.status === 200);
 
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await EmailPassword.getUserById(signUpUserInfo.id);
+        let userInfo = await STExpress.getUser(signUpUserInfo.id);
 
-        assert(userInfo.email === signUpUserInfo.email);
+        assert(userInfo.emails[0] === signUpUserInfo.emails[0]);
         assert(userInfo.id === signUpUserInfo.id);
     });
 
@@ -1029,7 +1039,17 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                                 signInPOST: async (formFields, options) => {
                                     let response = await oI.signInPOST(formFields, options);
                                     if (response.status === "OK") {
-                                        customUser = response.user;
+                                        customUser = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                },
+                                            ],
+                                        };
+                                        delete customUser.loginMethods[0].hasSameEmailAs;
+                                        delete customUser.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete customUser.loginMethods[0].hasSameThirdPartyInfoAs;
                                     }
                                     return response;
                                 },

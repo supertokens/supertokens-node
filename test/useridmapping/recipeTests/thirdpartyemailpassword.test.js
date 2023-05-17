@@ -72,10 +72,10 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
 
                 // retrieve the users info using the externalId, the id in the response should be the externalId
                 {
-                    let response = await ThirdPartyEmailPasswordRecipe.getUserById(superTokensUserId);
+                    let response = await STExpress.getUser(superTokensUserId);
                     assert.ok(response !== undefined);
                     assert.strictEqual(response.id, externalId);
-                    assert.strictEqual(response.email, email);
+                    assert.strictEqual(response.emails[0], email);
                 }
             }
 
@@ -96,10 +96,10 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
 
                 // retrieve the users info using the externalId, the id in the response should be the externalId
                 {
-                    let response = await ThirdPartyEmailPasswordRecipe.getUserById(superTokensUserId);
+                    let response = await STExpress.getUser(superTokensUserId);
                     assert.ok(response !== undefined);
                     assert.strictEqual(response.id, externalId);
-                    assert.strictEqual(response.email, email);
+                    assert.strictEqual(response.emails[0], email);
                 }
             }
         });

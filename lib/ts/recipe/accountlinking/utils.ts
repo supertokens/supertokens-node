@@ -38,14 +38,14 @@ async function defaultShouldDoAutomaticAccountLinking(
     };
 }
 
-export function validateAndNormaliseUserInput(_: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
-    let onAccountLinked = config.onAccountLinked || defaultOnAccountLinked;
+export function validateAndNormaliseUserInput(_: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
+    let onAccountLinked = config?.onAccountLinked || defaultOnAccountLinked;
     let shouldDoAutomaticAccountLinking =
-        config.shouldDoAutomaticAccountLinking || defaultShouldDoAutomaticAccountLinking;
+        config?.shouldDoAutomaticAccountLinking || defaultShouldDoAutomaticAccountLinking;
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        ...config.override,
+        ...config?.override,
     };
 
     return {

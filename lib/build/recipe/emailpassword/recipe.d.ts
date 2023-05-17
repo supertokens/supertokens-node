@@ -4,7 +4,7 @@ import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from ".
 import { NormalisedAppinfo, APIHandled, HTTPMethod, RecipeListFunction } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 export default class Recipe extends RecipeModule {

@@ -122,7 +122,6 @@ export function validateAccessTokenStructure(payload: any, version: number) {
     } else if (
         typeof payload.sessionHandle !== "string" ||
         typeof payload.userId !== "string" ||
-        typeof payload.recipeUserId !== "string" ||
         typeof payload.refreshTokenHash1 !== "string" ||
         payload.userData === undefined ||
         typeof payload.expiryTime !== "number" ||

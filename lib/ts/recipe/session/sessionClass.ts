@@ -35,7 +35,7 @@ export default class Session implements SessionContainerInterface {
     ) {}
 
     getRecipeUserId(_userContext?: any): string {
-        return this.recipeUserId;
+        return this.recipeUserId ?? this.userId;
     }
 
     async revokeSession(userContext?: any) {

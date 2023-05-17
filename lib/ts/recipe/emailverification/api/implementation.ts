@@ -159,7 +159,6 @@ export default function getAPIInterface(): APIInterface {
 
             // Either way, in case the email is already verified, we do the same thing
             // as what happens in the verifyEmailPOST API post email verification (cause maybe the session is outdated).
-
             let recipeUserIdForWhomToGenerateToken = session.getRecipeUserId();
             const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
             if (fromAccountLinkingClaim !== undefined) {
@@ -218,6 +217,9 @@ export default function getAPIInterface(): APIInterface {
                             message: "Unknown User ID provided",
                         });
                     }
+                    logDebugMessage(
+                        `Email verification email not sent to user ${recipeUserIdForWhomToGenerateToken} because it is already verified.`
+                    );
                     let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                         {
                             req: options.req,
@@ -255,6 +257,7 @@ export default function getAPIInterface(): APIInterface {
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     type: "EMAIL_VERIFICATION",
                     user: {
+                        id: session.getUserId(),
                         recipeUserId: recipeUserIdForWhomToGenerateToken,
                         email: emailInfo.email,
                     },

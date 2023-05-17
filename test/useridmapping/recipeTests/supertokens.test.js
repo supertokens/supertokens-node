@@ -55,7 +55,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserById(superTokensUserId);
+                let response = await STExpress.getUser(superTokensUserId);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -69,10 +69,10 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
             // retrieve the users info using the superTokensUserId, the id in the response should be the externalId
             {
-                let response = await EmailPasswordRecipe.getUserById(superTokensUserId);
+                let response = await STExpress.getUser(superTokensUserId);
                 assert.ok(response !== undefined);
                 assert.strictEqual(response.id, externalId);
-                assert.strictEqual(response.email, email);
+                assert.strictEqual(response.emails[0], email);
             }
 
             // add userMetadata to the user mapped with the externalId
@@ -95,7 +95,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
             // check that user does not exist
             {
-                let response = await EmailPasswordRecipe.getUserById(superTokensUserId);
+                let response = await STExpress.getUser(superTokensUserId);
                 assert.ok(response === undefined);
             }
             // check that no metadata exists for the id
@@ -155,7 +155,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                 let response = await STExpress.getUsersNewestFirst();
                 assert.strictEqual(response.users.length, 4);
                 // since the first user we created has their userId mapped we access the last element from the users array in the response
-                const oldestUsersId = response.users[response.users.length - 1].user.id;
+                const oldestUsersId = response.users[response.users.length - 1].id;
                 assert.strictEqual(oldestUsersId, externalId);
             }
 
@@ -164,7 +164,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                 let response = await STExpress.getUsersOldestFirst();
                 assert.strictEqual(response.users.length, 4);
 
-                const oldestUsersId = response.users[0].user.id;
+                const oldestUsersId = response.users[0].id;
                 assert.strictEqual(oldestUsersId, externalId);
             }
         });

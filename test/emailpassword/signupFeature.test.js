@@ -123,7 +123,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
     });
 
     it("test signUpAPI throws an error in case of a duplicate email", async function () {
@@ -153,7 +153,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
 
         response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(response.status === 200);
@@ -516,7 +516,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     //- If provided by the user, and custom fields are there, only those should be sent
@@ -787,7 +787,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     //- Bad test case without optional (something is missing, and it's not optional)
@@ -918,7 +918,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
 
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     //- Input formFields has no email field (and not in config)
@@ -1375,7 +1375,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         );
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+        assert(response.user.emails[0] === "random@gmail.com");
     });
 
     // Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handlePostSignUp as that type

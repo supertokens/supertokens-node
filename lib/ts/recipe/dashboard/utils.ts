@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
@@ -210,7 +210,7 @@ async function _getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 
-    const globalUser = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+    const globalUser = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
         userId,
         userContext: {},
     });

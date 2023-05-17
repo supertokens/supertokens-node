@@ -316,30 +316,30 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
             describe("from behaviour table", () => {
                 // prettier-ignore
                 const behaviourTable = [
-                    { getTokenTransferMethodRes: "any",    sessionRequired: false, authHeader: false,   authCookie: false,   output: "undefined" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: false,   authCookie: false,   output: "undefined" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: false,   authCookie: false,   output: "undefined" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: true,    authCookie: false,   output: "undefined" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: false,   authCookie: true,    output: "undefined" },
-                    { getTokenTransferMethodRes: "any",    sessionRequired: true,  authHeader: false,   authCookie: false,   output: "UNAUTHORISED" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: true,  authHeader: false,   authCookie: false,   output: "UNAUTHORISED" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: true,  authHeader: false,   authCookie: false,   output: "UNAUTHORISED" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: true,  authHeader: true,    authCookie: false,   output: "UNAUTHORISED" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: true,  authHeader: false,   authCookie: true,    output: "UNAUTHORISED" },
-                    { getTokenTransferMethodRes: "any",    sessionRequired: true,  authHeader: true,    authCookie: true,    output: "validateheader" },
-                    { getTokenTransferMethodRes: "any",    sessionRequired: false, authHeader: true,    authCookie: true,    output: "validateheader" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: true,  authHeader: true,    authCookie: true,    output: "validateheader" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: true,    authCookie: true,    output: "validateheader" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: true,  authHeader: true,    authCookie: true,    output: "validatecookie" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: true,    authCookie: true,    output: "validatecookie" },
-                    { getTokenTransferMethodRes: "any",    sessionRequired: true,  authHeader: true,    authCookie: false,   output: "validateheader" },
-                    { getTokenTransferMethodRes: "any",    sessionRequired: false, authHeader: true,    authCookie: false,   output: "validateheader" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: true,  authHeader: true,    authCookie: false,   output: "validateheader" },
-                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: true,    authCookie: false,   output: "validateheader" },
-                    { getTokenTransferMethodRes: "any",    sessionRequired: true,  authHeader: false,   authCookie: true,    output: "validatecookie" },
-                    { getTokenTransferMethodRes: "any",    sessionRequired: false, authHeader: false,   authCookie: true,    output: "validatecookie" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: true,  authHeader: false,   authCookie: true,    output: "validatecookie" },
-                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: false,   authCookie: true,    output: "validatecookie" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: false, authHeader: false, authCookie: false, output: "undefined" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: false, authCookie: false, output: "undefined" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: false, authCookie: false, output: "undefined" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: true, authCookie: false, output: "undefined" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: false, authCookie: true, output: "undefined" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: true, authHeader: false, authCookie: false, output: "UNAUTHORISED" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: true, authHeader: false, authCookie: false, output: "UNAUTHORISED" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: true, authHeader: false, authCookie: false, output: "UNAUTHORISED" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: true, authHeader: true, authCookie: false, output: "UNAUTHORISED" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: true, authHeader: false, authCookie: true, output: "UNAUTHORISED" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: true, authHeader: true, authCookie: true, output: "validateheader" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: false, authHeader: true, authCookie: true, output: "validateheader" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: true, authHeader: true, authCookie: true, output: "validateheader" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: true, authCookie: true, output: "validateheader" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: true, authHeader: true, authCookie: true, output: "validatecookie" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: true, authCookie: true, output: "validatecookie" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: true, authHeader: true, authCookie: false, output: "validateheader" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: false, authHeader: true, authCookie: false, output: "validateheader" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: true, authHeader: true, authCookie: false, output: "validateheader" },
+                    { getTokenTransferMethodRes: "header", sessionRequired: false, authHeader: true, authCookie: false, output: "validateheader" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: true, authHeader: false, authCookie: true, output: "validatecookie" },
+                    { getTokenTransferMethodRes: "any", sessionRequired: false, authHeader: false, authCookie: true, output: "validatecookie" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: true, authHeader: false, authCookie: true, output: "validatecookie" },
+                    { getTokenTransferMethodRes: "cookie", sessionRequired: false, authHeader: false, authCookie: true, output: "validatecookie" },
                 ];
 
                 for (let i = 0; i < behaviourTable.length; ++i) {
@@ -846,18 +846,18 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
             describe("from behaviour table", () => {
                 // prettier-ignore
                 const behaviourTable = [
-                    { getTokenTransferMethodRes: "any",    authHeader: false, authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "any",    authHeader: false, authCookie: true,  output: "validatecookie",   setTokens: "cookies", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: true,  output: "unauthorised",     setTokens: "none",    clearedTokens: "none" }, // 5
-                    { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: true,  output: "validatecookie",   setTokens: "cookies", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "any",    authHeader: true,  authCookie: false, output: "validateheader",   setTokens: "headers", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "header", authHeader: true,  authCookie: false, output: "validateheader",   setTokens: "headers", clearedTokens: "none" },
-                    { getTokenTransferMethodRes: "cookie", authHeader: true,  authCookie: false, output: "unauthorised",     setTokens: "none",    clearedTokens: "none" }, // 9
-                    { getTokenTransferMethodRes: "any",    authHeader: true,  authCookie: true,  output: "validateheader",   setTokens: "headers", clearedTokens: "cookies" },
-                    { getTokenTransferMethodRes: "header", authHeader: true,  authCookie: true,  output: "validateheader",   setTokens: "headers", clearedTokens: "cookies" },
-                    { getTokenTransferMethodRes: "cookie", authHeader: true,  authCookie: true,  output: "validatecookie",   setTokens: "cookies", clearedTokens: "headers" }, // 12
+                    { getTokenTransferMethodRes: "any", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "any", authHeader: false, authCookie: true, output: "validatecookie", setTokens: "cookies", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "header", authHeader: false, authCookie: true, output: "unauthorised", setTokens: "none", clearedTokens: "none" }, // 5
+                    { getTokenTransferMethodRes: "cookie", authHeader: false, authCookie: true, output: "validatecookie", setTokens: "cookies", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "any", authHeader: true, authCookie: false, output: "validateheader", setTokens: "headers", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "header", authHeader: true, authCookie: false, output: "validateheader", setTokens: "headers", clearedTokens: "none" },
+                    { getTokenTransferMethodRes: "cookie", authHeader: true, authCookie: false, output: "unauthorised", setTokens: "none", clearedTokens: "none" }, // 9
+                    { getTokenTransferMethodRes: "any", authHeader: true, authCookie: true, output: "validateheader", setTokens: "headers", clearedTokens: "cookies" },
+                    { getTokenTransferMethodRes: "header", authHeader: true, authCookie: true, output: "validateheader", setTokens: "headers", clearedTokens: "cookies" },
+                    { getTokenTransferMethodRes: "cookie", authHeader: true, authCookie: true, output: "validatecookie", setTokens: "cookies", clearedTokens: "headers" }, // 12
                 ];
 
                 for (let i = 0; i < behaviourTable.length; ++i) {

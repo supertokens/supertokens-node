@@ -281,7 +281,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response1.body.user.thirdParty.userId, "user");
         assert.strictEqual(response1.body.user.email, "email@test.com");
 
-        assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            true
+        );
     });
 
     it("test signUpAPI works when input is fine", async function () {
@@ -311,7 +314,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
     });
 
     it("test handlePostSignUpIn gets set correctly", async function () {
@@ -468,7 +471,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.emails[0] === "random@gmail.com");
 
         response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(response.status === 200);
@@ -655,7 +658,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserById("randomID"), undefined);
+        assert.strictEqual(await STExpress.getUser("randomID"), undefined);
 
         const app = express();
 
@@ -684,9 +687,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyEmailPassword.getUserById(signUpUserInfo.id);
+        let userInfo = await STExpress.getUser(signUpUserInfo.id);
 
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
+        assert.strictEqual(userInfo.emails[0], signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
     });
 
@@ -795,24 +798,24 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         let usersOldest = await STExpress.getUsersOldestFirst();
         assert(usersOldest.nextPaginationToken === undefined);
         assert(usersOldest.users.length === 3);
-        assert(usersOldest.users[0].recipeId === "emailpassword");
-        assert(usersOldest.users[0].user.email === "random@gmail.com");
+        assert(usersOldest.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersOldest.users[0].emails[0] === "random@gmail.com");
 
         let usersNewest = await STExpress.getUsersNewestFirst({
             limit: 2,
         });
         assert(usersNewest.nextPaginationToken !== undefined);
         assert(usersNewest.users.length === 2);
-        assert(usersNewest.users[0].recipeId === "emailpassword");
-        assert(usersNewest.users[0].user.email === "random1@gmail.com");
+        assert(usersNewest.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersNewest.users[0].emails[0] === "random1@gmail.com");
 
         let usersNewest2 = await STExpress.getUsersNewestFirst({
             paginationToken: usersNewest.nextPaginationToken,
         });
         assert(usersNewest2.nextPaginationToken === undefined);
         assert(usersNewest2.users.length === 1);
-        assert(usersNewest2.users[0].recipeId === "emailpassword");
-        assert(usersNewest2.users[0].user.email === "random@gmail.com");
+        assert(usersNewest2.users[0].loginMethods[0].recipeId === "emailpassword");
+        assert(usersNewest2.users[0].emails[0] === "random@gmail.com");
     });
 
     it("updateEmailOrPassword function test for third party login", async function () {
@@ -928,7 +931,6 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             assert.strictEqual(response.statusCode, 200);
 
             let signUpUserInfo = response.body.user;
-
             let r = await ThirdPartyEmailPassword.updateEmailOrPassword({
                 userId: signUpUserInfo.id,
                 email: "test2@example.com",
@@ -936,14 +938,12 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             });
 
             assert(r.status === "OK");
-
             let r2 = await ThirdPartyEmailPassword.updateEmailOrPassword({
                 userId: signUpUserInfo.id + "123",
                 email: "test2@example.com",
             });
 
             assert(r2.status === "UNKNOWN_USER_ID_ERROR");
-
             let r3 = await ThirdPartyEmailPassword.updateEmailOrPassword({
                 userId: signUpUserInfo.id,
                 email: "test2@example.com",

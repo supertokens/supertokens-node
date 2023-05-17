@@ -132,9 +132,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(response.status === 200);
 
         let userId = JSON.parse(response.text).user.id;
+        let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(userId, emailId);
         await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
@@ -282,9 +283,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user;
-                        emailToken = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    userInfo = input.user;
+                                    emailToken = input.emailVerifyLink;
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -317,7 +325,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response2.text).status === "OK");
         assert(Object.keys(JSON.parse(response2.text)).length === 1);
 
-        assert(userInfo.id === userId);
+        assert(userInfo.recipeUserId === userId);
         assert(userInfo.email === "test@gmail.com");
         assert(emailToken !== null);
     });
@@ -350,8 +358,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init({}),
@@ -512,8 +527,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -574,7 +596,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         // wait for the callback to be called...
         await new Promise((res) => setTimeout(res, 500));
 
-        assert(userInfoFromCallback.id === userId);
+        assert(userInfoFromCallback.recipeUserId === userId);
         assert(userInfoFromCallback.email === "test@gmail.com");
     });
 
@@ -596,8 +618,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -723,8 +752,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -840,8 +876,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -897,7 +940,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === "OK");
         assert(Object.keys(response2).length === 1);
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -918,8 +961,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         functions: (oI) => {
@@ -975,7 +1025,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === "OK");
         assert(Object.keys(response2).length === 1);
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -996,8 +1046,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -1061,7 +1118,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1083,8 +1140,15 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 EmailPassword.init(),
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: (input) => {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
                     },
                     override: {
                         functions: (oI) => {
@@ -1147,7 +1211,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.recipeUserId, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1189,7 +1253,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         let verifyToken = await EmailVerification.createEmailVerificationToken(userId, "test@gmail.com");
 
-        await EmailVerification.revokeEmailVerificationTokens(userId);
+        await EmailVerification.revokeEmailVerificationTokens(userId, "test@gmail.com");
 
         {
             let response = await EmailVerification.verifyEmailUsingToken(verifyToken.token);
@@ -1231,17 +1295,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(response.status === 200);
 
         let userId = JSON.parse(response.text).user.id;
+        let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        const verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        const verifyToken = await EmailVerification.createEmailVerificationToken(userId, emailId);
 
         await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
-        assert(await EmailVerification.isEmailVerified(userId));
+        assert(await EmailVerification.isEmailVerified(userId, emailId));
 
-        await EmailVerification.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId, emailId);
 
-        assert(!(await EmailVerification.isEmailVerified(userId)));
+        assert(!(await EmailVerification.isEmailVerified(userId, emailId)));
     });
 
     it("test the email verify API with deleted user", async function () {
@@ -1295,41 +1360,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.deepStrictEqual(response.body, { message: "unauthorised" });
     });
 
-    it("should work with getEmailForUserId returning errors", async () => {
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailVerification.init({
-                    mode: "OPTIONAL",
-                    getEmailForUserId: (userId) =>
-                        userId === "testuserid"
-                            ? { status: "EMAIL_DOES_NOT_EXIST_ERROR" }
-                            : { status: "UNKNOWN_USER_ID_ERROR" },
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-        });
-
-        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("testuserid"), { status: "OK" });
-
-        let caughtError;
-        try {
-            await EmailVerification.revokeEmailVerificationTokens("nouserid");
-        } catch (err) {
-            caughtError = err;
-        }
-
-        assert.ok(caughtError);
-        assert.strictEqual(caughtError.message, "Unknown User ID provided without email");
-    });
-
     it("test that generate email verification token API updates session claims", async function () {
         await startST();
 
@@ -1371,9 +1401,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(response.status, 200);
 
         let userId = response.body.user.id;
+        let emailId = response.body.user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
         let antiCsrfToken = infoFromResponse.antiCsrf;
-        let token = await EmailVerification.createEmailVerificationToken(userId);
+        let token = await EmailVerification.createEmailVerificationToken(userId, emailId);
         await EmailVerification.verifyEmailUsingToken(token.token);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
@@ -1390,7 +1421,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(infoFromResponse2.frontToken, undefined);
 
         // now we mark the email as unverified and try again
-        await EmailVerification.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId, emailId);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);

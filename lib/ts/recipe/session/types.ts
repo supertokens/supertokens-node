@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseRequest, BaseResponse } from "../../framework";
+import type { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
@@ -467,7 +467,7 @@ export abstract class SessionClaim<T> {
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
     async build(userId: string, recipeUserId?: string, userContext?: any): Promise<JSONObject> {
-        const value = await this.fetchValue(userId, recipeUserId || userId, userContext);
+        const value = await this.fetchValue(userId, recipeUserId ?? userId, userContext);
 
         if (value === undefined) {
             return {};

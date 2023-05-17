@@ -66,6 +66,9 @@ export declare type RecipeInterface = {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: {
+            [key: string]: string;
+        };
         userContext: any;
     }) => Promise<{
         users: User[];

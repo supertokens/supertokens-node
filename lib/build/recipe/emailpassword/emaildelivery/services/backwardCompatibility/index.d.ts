@@ -6,7 +6,7 @@ export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
     private isInServerlessEnv;
     private appInfo;
-    private resetPasswordUsingTokenFeature;
+    private createAndSendCustomEmail;
     constructor(_: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean);
     sendEmail: (
         input: TypeEmailPasswordEmailDeliveryInput & {

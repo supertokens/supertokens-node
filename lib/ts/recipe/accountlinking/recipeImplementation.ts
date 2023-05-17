@@ -18,6 +18,7 @@ import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
+import { mockListUsersByAccountInfo, mockGetUser, mockFetchFromAccountToLinkTable, mockGetUsers } from "./mockCore";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -59,30 +60,43 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 limit,
                 paginationToken,
                 includeRecipeIds,
+                query,
             }: {
                 timeJoinedOrder: "ASC" | "DESC";
                 limit?: number;
                 paginationToken?: string;
                 includeRecipeIds?: string[];
+                query?: { [key: string]: string };
             }
         ): Promise<{
             users: User[];
             nextPaginationToken?: string;
         }> {
-            let includeRecipeIdsStr = undefined;
-            if (includeRecipeIds !== undefined) {
-                includeRecipeIdsStr = includeRecipeIds.join(",");
+            if (process.env.TEST_MODE !== "testing") {
+                let includeRecipeIdsStr = undefined;
+                if (includeRecipeIds !== undefined) {
+                    includeRecipeIdsStr = includeRecipeIds.join(",");
+                }
+                let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+                    includeRecipeIds: includeRecipeIdsStr,
+                    timeJoinedOrder: timeJoinedOrder,
+                    limit: limit,
+                    paginationToken: paginationToken,
+                    ...query,
+                });
+                return {
+                    users: response.users,
+                    nextPaginationToken: response.nextPaginationToken,
+                };
+            } else {
+                return await mockGetUsers(querier, {
+                    timeJoinedOrder,
+                    limit,
+                    paginationToken,
+                    includeRecipeIds,
+                    query,
+                });
             }
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
-                includeRecipeIds: includeRecipeIdsStr,
-                timeJoinedOrder: timeJoinedOrder,
-                limit: limit,
-                paginationToken: paginationToken,
-            });
-            return {
-                users: response.users,
-                nextPaginationToken: response.nextPaginationToken,
-            };
         },
         canCreatePrimaryUserId: async function (
             this: RecipeInterface,
@@ -267,23 +281,31 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         },
 
         getUser: async function (this: RecipeInterface, { userId }: { userId: string }): Promise<User | undefined> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user"), {
-                userId,
-            });
-            if (result.status === "OK") {
-                return result.user;
+            if (process.env.MOCK !== "true") {
+                let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user"), {
+                    userId,
+                });
+                if (result.status === "OK") {
+                    return result.user;
+                }
+                return undefined;
+            } else {
+                return mockGetUser({ userId });
             }
-            return undefined;
         },
 
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
             { accountInfo }: { accountInfo: AccountInfo }
         ): Promise<User[]> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
-                ...accountInfo,
-            });
-            return result.users;
+            if (process.env.MOCK !== "true") {
+                let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
+                    ...accountInfo,
+                });
+                return result.users;
+            } else {
+                return mockListUsersByAccountInfo({ accountInfo });
+            }
         },
 
         deleteUser: async function (
@@ -309,10 +331,17 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         }: {
             recipeUserId: string;
         }): Promise<string | undefined> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link/table"), {
-                recipeUserId,
-            });
-            return result.user;
+            if (process.env.MOCK !== "true") {
+                let result = await querier.sendGetRequest(
+                    new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
+                    {
+                        recipeUserId,
+                    }
+                );
+                return result.user;
+            } else {
+                return mockFetchFromAccountToLinkTable({ recipeUserId });
+            }
         },
         storeIntoAccountToLinkTable: async function ({
             recipeUserId,
