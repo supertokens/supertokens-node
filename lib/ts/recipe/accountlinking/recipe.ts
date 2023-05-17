@@ -26,6 +26,7 @@ import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
 import SessionError from "../session/error";
+import supertokens from "../../supertokens";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -73,14 +74,24 @@ export default class Recipe extends RecipeModule {
         };
     }
 
-    static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance !== undefined) {
-            return Recipe.instance;
+    // we auto init the account linking recipe here cause we always require this
+    // to be initialized even if the user has not initialized it.
+    // The side effect of this is that if there are any APIs or errors specific to this recipe,
+    // those won't be handled by the supertokens middleware and error handler (cause this recipe
+    // is not in the recipeList).
+    static getInstance(): Recipe {
+        if (Recipe.instance === undefined) {
+            Recipe.init()(
+                supertokens.getInstanceOrThrowError().appInfo,
+                supertokens.getInstanceOrThrowError().isInServerlessEnv
+            );
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        return Recipe.instance!;
     }
 
     getAPIsHandled(): APIHandled[] {
+        // APIs won't be added to the supertokens middleware cause we are auto initializing
+        // it in getInstance function
         return [];
     }
 
@@ -95,6 +106,8 @@ export default class Recipe extends RecipeModule {
     }
 
     handleError(error: error, _request: BaseRequest, _response: BaseResponse): Promise<void> {
+        // Errors won't come here cause we are auto initializing
+        // it in getInstance function
         throw error;
     }
 

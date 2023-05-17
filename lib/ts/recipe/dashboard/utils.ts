@@ -210,7 +210,7 @@ async function _getUserForRecipeId(
         | "thirdpartypasswordless"
         | undefined;
 
-    const globalUser = await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+    const globalUser = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
         userId,
         userContext: {},
     });

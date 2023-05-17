@@ -36,7 +36,7 @@ export default function getRecipeInterface(
                   reason: string;
               }
         > {
-            let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+            let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                 newUser: {
                     recipeId: "emailpassword",
                     email,
@@ -61,7 +61,7 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            let userId = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts({
+            let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 // we can use index 0 cause this is a new recipe user
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,

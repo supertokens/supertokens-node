@@ -42,7 +42,7 @@ export default class SuperTokensWrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
+        return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "ASC",
             ...input,
             userContext: undefined,
@@ -58,7 +58,7 @@ export default class SuperTokensWrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUsers({
+        return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
             timeJoinedOrder: "DESC",
             ...input,
             userContext: undefined,
@@ -95,19 +95,19 @@ export default class SuperTokensWrapper {
     }
 
     static async getUser(userId: string, userContext?: any) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.getUser({
+        return await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
             userId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
     static async listUsersByAccountInfo(accountInfo: AccountInfo, userContext?: any) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.listUsersByAccountInfo({
+        return await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
     static async deleteUser(userId: string, removeAllLinkedAccounts: boolean = true, userContext?: any) {
-        return await AccountLinking.getInstanceOrThrowError().recipeInterfaceImpl.deleteUser({
+        return await AccountLinking.getInstance().recipeInterfaceImpl.deleteUser({
             userId,
             removeAllLinkedAccounts,
             userContext: userContext === undefined ? {} : userContext,

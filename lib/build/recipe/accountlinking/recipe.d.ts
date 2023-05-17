@@ -19,7 +19,7 @@ export default class Recipe extends RecipeModule {
         _ingredients: {}
     );
     static init(config?: TypeInput): RecipeListFunction;
-    static getInstanceOrThrowError(): Recipe;
+    static getInstance(): Recipe;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest(
         _id: string,

@@ -79,7 +79,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             };
 
-            let accountLinkingInstance = await AccountLinking.getInstanceOrThrowError();
+            let accountLinkingInstance = await AccountLinking.getInstance();
             let result = await accountLinkingInstance.linkAccountsWithUserFromSession<{
                 status: "WRONG_CREDENTIALS_ERROR";
             }>({
@@ -273,7 +273,7 @@ export default function getAPIImplementation(): APIInterface {
                 // this means that there is no email password user that exists for the input email.
                 // So we check for the sign up condition and only go ahead if that condition is
                 // met.
-                let isSignUpAllowed = await AccountLinking.getInstanceOrThrowError().isSignUpAllowed({
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "emailpassword",
                         email,
@@ -329,7 +329,7 @@ export default function getAPIImplementation(): APIInterface {
 
             // But first, this only matters it the user cares about checking for email verification status..
 
-            let shouldDoAccountLinkingResponse = await AccountLinking.getInstanceOrThrowError().config.shouldDoAutomaticAccountLinking(
+            let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
                 emailPasswordAccount,
                 primaryUserAssociatedWithEmail,
                 undefined,
@@ -551,14 +551,12 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        let linkedToUserId = await AccountLinking.getInstanceOrThrowError().createPrimaryUserIdOrLinkAccounts(
-                            {
-                                recipeUserId: createUserResponse.user.id,
-                                isVerified: true,
-                                checkAccountsToLinkTableAsWell: true,
-                                userContext,
-                            }
-                        );
+                        let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                            recipeUserId: createUserResponse.user.id,
+                            isVerified: true,
+                            checkAccountsToLinkTableAsWell: true,
+                            userContext,
+                        });
                         if (linkedToUserId !== existingUser.id) {
                             // this means that the account we just linked to
                             // was not the one we had expected to link it to. This can happen
