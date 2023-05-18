@@ -50,7 +50,8 @@ export declare function setAccessTokenInResponse(
     accessToken: string,
     frontToken: string,
     config: TypeNormalisedInput,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    userContext: any
 ): Promise<void>;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,

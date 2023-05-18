@@ -54,7 +54,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
                 });
@@ -74,7 +74,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -108,7 +108,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -156,7 +156,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -194,7 +194,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -234,7 +234,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -294,7 +294,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -348,7 +348,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -384,7 +384,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -423,7 +423,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -462,7 +462,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -509,7 +509,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -558,7 +558,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({
@@ -606,7 +606,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [
                         Session.init({

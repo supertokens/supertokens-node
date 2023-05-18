@@ -46,7 +46,7 @@ describe(`exposeAccessTokenToFrontendInCookieBasedAuth: ${printPath(
             appInfo: {
                 apiDomain: "api.supertokens.io",
                 appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
+                origin: "supertokens.io",
             },
             recipeList: [Session.init()],
         });
@@ -73,7 +73,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [Session.init(sessionConfig)],
                 });
@@ -106,7 +106,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [Session.init(sessionConfig)],
                 });
@@ -164,7 +164,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [Session.init(sessionConfig)],
                 });
@@ -226,7 +226,7 @@ function getTestCases(exposeAccessTokenToFrontendInCookieBasedAuth) {
                     appInfo: {
                         apiDomain: "api.supertokens.io",
                         appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
+                        origin: "supertokens.io",
                     },
                     recipeList: [Session.init(sessionConfig)],
                 });

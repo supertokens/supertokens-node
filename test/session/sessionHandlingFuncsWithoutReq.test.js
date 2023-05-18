@@ -40,7 +40,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -72,7 +72,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -109,7 +109,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -138,7 +138,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -167,8 +167,8 @@ describe(`Session handling functions without modifying response: ${printPath(
                 caught = ex;
             }
             assert.ok(caught);
-            assert(Session.Error.isErrorFromSuperTokens(caught));
-            assert.strictEqual(caught.type, Session.Error.TRY_REFRESH_TOKEN);
+            assert(Session.STError.isErrorFromSuperTokens(caught));
+            assert.strictEqual(caught.type, Session.STError.TRY_REFRESH_TOKEN);
 
             const getSessionWithAntiCSRFDisabled = await Session.getSessionWithoutRequestResponse(
                 tokens.accessToken,
@@ -188,7 +188,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -204,8 +204,8 @@ describe(`Session handling functions without modifying response: ${printPath(
                 caught = ex;
             }
             assert.ok(caught);
-            assert(Session.Error.isErrorFromSuperTokens(caught));
-            assert.strictEqual(caught.type, Session.Error.UNAUTHORISED);
+            assert(Session.STError.isErrorFromSuperTokens(caught));
+            assert.strictEqual(caught.type, Session.STError.UNAUTHORISED);
         });
 
         it("should return undefined for non-tokens with requireSession false", async () => {
@@ -216,7 +216,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -238,7 +238,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -256,8 +256,8 @@ describe(`Session handling functions without modifying response: ${printPath(
                 caught = ex;
             }
             assert.ok(caught);
-            assert(Session.Error.isErrorFromSuperTokens(caught));
-            assert.strictEqual(caught.type, Session.Error.INVALID_CLAIMS);
+            assert(Session.STError.isErrorFromSuperTokens(caught));
+            assert.strictEqual(caught.type, Session.STError.INVALID_CLAIMS);
         });
     });
 
@@ -271,7 +271,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -309,7 +309,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -338,8 +338,8 @@ describe(`Session handling functions without modifying response: ${printPath(
                 caught = ex;
             }
             assert.ok(caught);
-            assert(Session.Error.isErrorFromSuperTokens(caught));
-            assert.strictEqual(caught.type, Session.Error.UNAUTHORISED);
+            assert(Session.STError.isErrorFromSuperTokens(caught));
+            assert.strictEqual(caught.type, Session.STError.UNAUTHORISED);
 
             const sessionAfterRefreshWithDisabledAntiCsrf = await Session.refreshSessionWithoutRequestResponse(
                 tokensAfterRefresh.refreshToken,
@@ -358,7 +358,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -374,8 +374,8 @@ describe(`Session handling functions without modifying response: ${printPath(
                 caught = ex;
             }
             assert.ok(caught);
-            assert(Session.Error.isErrorFromSuperTokens(caught));
-            assert.strictEqual(caught.type, Session.Error.UNAUTHORISED);
+            assert(Session.STError.isErrorFromSuperTokens(caught));
+            assert.strictEqual(caught.type, Session.STError.UNAUTHORISED);
         });
     });
 });

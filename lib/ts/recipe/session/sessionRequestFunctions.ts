@@ -163,6 +163,7 @@ export async function getSessionFromRequest({
         accessToken: accessToken.rawTokenString,
         antiCsrfToken,
         options: { ...options, antiCsrfCheck: doAntiCsrfCheck },
+        antiCSRF,
         userContext,
     });
 
@@ -248,7 +249,16 @@ export async function refreshSessionInRequest({
         // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
         if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
             logDebugMessage("refreshSession: cleared legacy id refresh token because refresh token was not found");
-            await setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+            await setCookie(
+                config,
+                req,
+                res,
+                LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                "",
+                0,
+                "accessTokenPath",
+                userContext
+            );
         }
 
         logDebugMessage("refreshSession: UNAUTHORISED because refresh token in request is undefined");
@@ -299,7 +309,16 @@ export async function refreshSessionInRequest({
                 logDebugMessage(
                     "refreshSession: cleared legacy id refresh token because refresh is clearing other tokens"
                 );
-                await setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+                await setCookie(
+                    config,
+                    req,
+                    res,
+                    LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME,
+                    "",
+                    0,
+                    "accessTokenPath",
+                    userContext
+                );
             }
         }
         throw ex;
@@ -309,7 +328,7 @@ export async function refreshSessionInRequest({
     // We clear the tokens in all token transfer methods we are not going to overwrite
     for (const transferMethod of availableTokenTransferMethods) {
         if (transferMethod !== requestTransferMethod && refreshTokens[transferMethod] !== undefined) {
-            clearSession(config, req, res, transferMethod);
+            clearSession(config, req, res, transferMethod, userContext);
         }
     }
     await session.attachToRequestResponse({
@@ -323,7 +342,7 @@ export async function refreshSessionInRequest({
     // This token isn't handled by getToken/setToken to limit the scope of this legacy/migration code
     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
         logDebugMessage("refreshSession: cleared legacy id refresh token after successful refresh");
-        await setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath");
+        await setCookie(config, req, res, LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME, "", 0, "accessTokenPath", userContext);
     }
 
     return session;
@@ -417,7 +436,7 @@ export async function createNewSessionInRequest({
 
     for (const transferMethod of availableTokenTransferMethods) {
         if (transferMethod !== outputTransferMethod && getToken(req, "access", transferMethod) !== undefined) {
-            clearSession(config, req, res, transferMethod);
+            clearSession(config, req, res, transferMethod, userContext);
         }
     }
     logDebugMessage("createNewSession: Cleared old tokens");

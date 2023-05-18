@@ -65,7 +65,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -114,7 +114,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -164,7 +164,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });

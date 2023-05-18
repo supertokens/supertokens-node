@@ -49,7 +49,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -105,7 +105,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });

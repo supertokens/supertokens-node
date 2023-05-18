@@ -46,5 +46,5 @@ export default class Session implements SessionContainerInterface {
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
-    attachToRequestResponse(info: ReqResInfo): void;
+    attachToRequestResponse(info: ReqResInfo): Promise<void>;
 }

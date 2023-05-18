@@ -42,7 +42,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -83,7 +83,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -130,7 +130,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({

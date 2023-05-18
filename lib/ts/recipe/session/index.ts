@@ -24,6 +24,7 @@ import {
     SessionClaim,
     ClaimValidationError,
     RecipeInterface,
+    AntiCsrfType,
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
@@ -91,7 +92,7 @@ export default class SessionWrapper {
             if (appInfo.initialOriginType === "string") {
                 antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
             } else {
-                throw new Error(""); // better
+                throw new Error("Can not get value of antiCSRF"); // better
             }
         }
 
@@ -258,6 +259,7 @@ export default class SessionWrapper {
      * @param accessToken The access token extracted from the authorization header or cookies
      * @param antiCsrfToken The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
      * @param options Same options objects as getSession or verifySession takes, except the `sessionRequired` prop, which is always set to true in this function
+     * @param antiCSRF value of antiCSRF
      * @param userContext User context
      */
     static async getSessionWithoutRequestResponse(
@@ -268,31 +270,46 @@ export default class SessionWrapper {
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired?: true },
+        antiCSRF?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired: false },
+        antiCSRF?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
+        antiCSRF?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
+        antiCSRF?: AntiCsrfType,
         userContext: any = {}
     ): Promise<SessionContainer | undefined> {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const appInfo = recipeInstance.getAppInfo();
+
+        if (antiCSRF === undefined) {
+            if (appInfo.initialOriginType === "string") {
+                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
+            } else {
+                throw new Error("Can not get value of antiCSRF"); // better
+            }
+        }
         const session = await recipeInterfaceImpl.getSession({
             accessToken,
             antiCsrfToken,
             options,
+            antiCSRF,
             userContext,
         });
 
@@ -337,7 +354,7 @@ export default class SessionWrapper {
             if (appInfo.initialOriginType === "string") {
                 antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
             } else {
-                throw new Error(""); // better
+                throw new Error("Can not get value of antiCSRF"); // better
             }
         }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({

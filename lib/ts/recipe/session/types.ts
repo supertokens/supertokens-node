@@ -61,9 +61,13 @@ export type TypeInput = {
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
     accessTokenPath?: string;
-    cookieSecure?: boolean;
-    cookieSameSite?: "strict" | "lax" | "none";
-    cookieDomain?: string;
+    cookieSecure?: boolean | ((req: BaseRequest, userContext: any) => Promise<boolean>);
+    cookieSameSite?:
+        | "strict"
+        | "lax"
+        | "none"
+        | ((req: BaseRequest, userContext: any) => Promise<"strict" | "lax" | "none">);
+    cookieDomain?: string | ((req: BaseRequest, userContext: any) => Promise<string>);
 
     getTokenTransferMethod?: (input: {
         req: BaseRequest;
@@ -72,7 +76,11 @@ export type TypeInput = {
     }) => TokenTransferMethod | "any";
 
     errorHandlers?: ErrorHandlers;
-    antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    antiCsrf?:
+        | "VIA_TOKEN"
+        | "VIA_CUSTOM_HEADER"
+        | "NONE"
+        | ((req: BaseRequest, userContext: any) => Promise<"VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE">);
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (
@@ -107,9 +115,9 @@ export type TypeNormalisedInput = {
     useDynamicAccessTokenSigningKey: boolean;
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
-    cookieDomain: string | undefined;
+    cookieDomain: (req: BaseRequest, userContext: any) => Promise<string | undefined>;
     cookieSameSite: (req: BaseRequest, userContext: any) => Promise<"strict" | "lax" | "none">;
-    cookieSecure: boolean;
+    cookieSecure: (req: BaseRequest, userContext: any) => Promise<boolean>;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: (req: BaseRequest, userContext: any) => Promise<"VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE">;
@@ -203,6 +211,7 @@ export type RecipeInterface = {
 
     getSession(input: {
         accessToken: string;
+        antiCSRF: AntiCsrfType;
         antiCsrfToken?: string;
         options?: VerifySessionOptions;
         userContext: any;

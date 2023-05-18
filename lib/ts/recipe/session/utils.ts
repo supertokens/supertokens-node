@@ -127,24 +127,36 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    let cookieDomain =
-        config === undefined || config.cookieDomain === undefined
-            ? undefined
-            : normaliseSessionScopeOrThrowError(config.cookieDomain);
+    let cookieDomain = async (req: BaseRequest, userContext: any) => {
+        if (config !== undefined && config.cookieDomain !== undefined) {
+            if (typeof config.cookieDomain === "string") {
+                return normaliseSessionScopeOrThrowError(config.cookieDomain);
+            } else {
+                const domain = await config.cookieDomain(req, userContext);
+                return normaliseSessionScopeOrThrowError(domain);
+            }
+        }
+        return undefined;
+    };
     let accessTokenPath =
         config === undefined || config.accessTokenPath === undefined
             ? new NormalisedURLPath("/")
             : new NormalisedURLPath(config.accessTokenPath);
-    let cookieSameSiteNormalise: "strict" | "lax" | "none";
-    if (config !== undefined && config!.cookieSameSite !== undefined) {
-        cookieSameSiteNormalise = normaliseSameSiteOrThrowError(config!.cookieSameSite!);
-    }
     const cookieSameSite = async (req: BaseRequest, userContext: any) => {
         const origin = await appInfo.origin(req, userContext);
         const originString = origin.getAsStringDangerous();
         let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
         let protocolOfWebsiteDomain = getURLProtocol(originString);
         let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString);
+        let cookieSameSiteNormalise: "strict" | "lax" | "none" = "none";
+        if (config !== undefined && config!.cookieSameSite !== undefined) {
+            if (typeof config.cookieSameSite === "string") {
+                cookieSameSiteNormalise = normaliseSameSiteOrThrowError(config!.cookieSameSite!);
+            } else {
+                let cookieSameSiteFunc = await config!.cookieSameSite(req, userContext);
+                cookieSameSiteNormalise = normaliseSameSiteOrThrowError(cookieSameSiteFunc);
+            }
+        }
         let cookieSameSite: "strict" | "lax" | "none" =
             appInfo.topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
                 ? "none"
@@ -154,10 +166,19 @@ export function validateAndNormaliseUserInput(
         return cookieSameSite;
     };
 
-    let cookieSecure =
-        config === undefined || config.cookieSecure === undefined
+    let cookieSecure = async (req: BaseRequest, userContext: any) => {
+        let cookieSecureVal: boolean = appInfo.apiDomain.getAsStringDangerous().startsWith("https");
+        if (config !== undefined && config.cookieSecure !== undefined) {
+            if (typeof config.cookieSecure === "boolean") {
+                cookieSecureVal = config.cookieSecure;
+            } else {
+                cookieSecureVal = await config.cookieSecure(req, userContext);
+            }
+        }
+        return config === undefined || config.cookieSecure === undefined
             ? appInfo.apiDomain.getAsStringDangerous().startsWith("https")
-            : config.cookieSecure;
+            : cookieSecureVal;
+    };
 
     let sessionExpiredStatusCode =
         config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
@@ -167,19 +188,21 @@ export function validateAndNormaliseUserInput(
         throw new Error("sessionExpiredStatusCode and sessionExpiredStatusCode must be different");
     }
 
-    if (config !== undefined && config.antiCsrf !== undefined) {
-        if (config.antiCsrf !== "NONE" && config.antiCsrf !== "VIA_CUSTOM_HEADER" && config.antiCsrf !== "VIA_TOKEN") {
-            throw new Error("antiCsrf config must be one of 'NONE' or 'VIA_CUSTOM_HEADER' or 'VIA_TOKEN'");
-        }
-    }
-
     let antiCsrf = async (req: BaseRequest, userContext: any) => {
         const cookieSameSiteRes = await cookieSameSite(req, userContext);
+        let antiCsrfVal: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" = "NONE";
+        if (config !== undefined && config.antiCsrf !== undefined) {
+            if (typeof config.antiCsrf === "string") {
+                antiCsrfVal = config.antiCsrf;
+            } else {
+                antiCsrfVal = await config.antiCsrf(req, userContext);
+            }
+        }
         return config === undefined || config.antiCsrf === undefined
             ? cookieSameSiteRes === "none"
                 ? "VIA_CUSTOM_HEADER"
                 : "NONE"
-            : config.antiCsrf;
+            : antiCsrfVal;
     };
 
     let errorHandlers: NormalisedErrorHandlers = {
@@ -254,7 +277,8 @@ export async function setAccessTokenInResponse(
     accessToken: string,
     frontToken: string,
     config: TypeNormalisedInput,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    userContext: any
 ) {
     setFrontTokenInHeaders(res, frontToken);
     await setToken(
@@ -268,7 +292,8 @@ export async function setAccessTokenInResponse(
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
         // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
         Date.now() + hundredYearsInMs,
-        transferMethod
+        transferMethod,
+        userContext
     );
 
     if (config.exposeAccessTokenToFrontendInCookieBasedAuth && transferMethod === "cookie") {
@@ -283,7 +308,8 @@ export async function setAccessTokenInResponse(
             // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
             // Setting them to infinity would require special case handling on the frontend and just adding 100 years seems enough.
             Date.now() + hundredYearsInMs,
-            "header"
+            "header",
+            userContext
         );
     }
 }

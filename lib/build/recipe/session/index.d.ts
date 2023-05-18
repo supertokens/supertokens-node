@@ -10,6 +10,7 @@ import {
     SessionClaim,
     ClaimValidationError,
     RecipeInterface,
+    AntiCsrfType,
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
@@ -103,6 +104,7 @@ export default class SessionWrapper {
      * @param accessToken The access token extracted from the authorization header or cookies
      * @param antiCsrfToken The anti-csrf token extracted from the authorization header or cookies. Can be undefined if antiCsrfCheck is false
      * @param options Same options objects as getSession or verifySession takes, except the `sessionRequired` prop, which is always set to true in this function
+     * @param antiCSRF value of antiCSRF
      * @param userContext User context
      */
     static getSessionWithoutRequestResponse(accessToken: string, antiCsrfToken?: string): Promise<SessionContainer>;
@@ -112,6 +114,7 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired?: true;
         },
+        antiCSRF?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer>;
     static getSessionWithoutRequestResponse(
@@ -120,12 +123,14 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired: false;
         },
+        antiCSRF?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
+        antiCSRF?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;

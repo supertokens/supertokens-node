@@ -73,7 +73,7 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });

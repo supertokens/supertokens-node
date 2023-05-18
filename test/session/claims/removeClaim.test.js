@@ -58,7 +58,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -104,7 +104,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -152,7 +152,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({

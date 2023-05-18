@@ -4,14 +4,16 @@ import { TokenTransferMethod, TokenType, TypeNormalisedInput } from "./types";
 export declare function clearSessionFromAllTokenTransferMethods(
     config: TypeNormalisedInput,
     req: BaseRequest,
-    res: BaseResponse
-): void;
+    res: BaseResponse,
+    userContext: any
+): Promise<void>;
 export declare function clearSession(
     config: TypeNormalisedInput,
     req: BaseRequest,
     res: BaseResponse,
-    transferMethod: TokenTransferMethod
-): void;
+    transferMethod: TokenTransferMethod,
+    userContext: any
+): Promise<void>;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;
 export declare function buildFrontToken(userId: string, atExpiry: number, accessTokenPayload: any): string;
@@ -29,7 +31,8 @@ export declare function setToken(
     tokenType: TokenType,
     value: string,
     expires: number,
-    transferMethod: TokenTransferMethod
+    transferMethod: TokenTransferMethod,
+    userContext: any
 ): Promise<void>;
 export declare function setHeader(res: BaseResponse, name: string, value: string): void;
 /**
@@ -50,6 +53,7 @@ export declare function setCookie(
     name: string,
     value: string,
     expires: number,
-    pathType: "refreshTokenPath" | "accessTokenPath"
+    pathType: "refreshTokenPath" | "accessTokenPath",
+    userContext: any
 ): Promise<void>;
 export declare function getAuthModeFromHeader(req: BaseRequest): string | undefined;

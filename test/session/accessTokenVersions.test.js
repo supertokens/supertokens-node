@@ -49,7 +49,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -91,7 +91,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -137,7 +137,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -180,7 +180,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     EmailPassword.init(),
@@ -244,7 +244,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -345,7 +345,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -413,7 +413,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -471,7 +471,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -559,7 +559,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -641,7 +641,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -678,7 +678,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [
                     Session.init({
@@ -715,7 +715,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });
@@ -769,7 +769,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
                 appInfo: {
                     apiDomain: "api.supertokens.io",
                     appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
+                    origin: "supertokens.io",
                 },
                 recipeList: [Session.init()],
             });

@@ -46,7 +46,13 @@ export default class Session implements SessionContainerInterface {
             // If we instead clear the cookies only when revokeSession
             // returns true, it can cause this kind of a bug:
             // https://github.com/supertokens/supertokens-node/issues/343
-            clearSession(this.helpers.config, this.reqResInfo.req, this.reqResInfo.res, this.reqResInfo.transferMethod);
+            await clearSession(
+                this.helpers.config,
+                this.reqResInfo.req,
+                this.reqResInfo.res,
+                this.reqResInfo.transferMethod,
+                userContext
+            );
         }
     }
 
@@ -148,7 +154,8 @@ export default class Session implements SessionContainerInterface {
                     this.accessToken,
                     this.frontToken,
                     this.helpers.config,
-                    this.reqResInfo.transferMethod
+                    this.reqResInfo.transferMethod,
+                    userContext
                 );
             }
         } else {
@@ -239,22 +246,31 @@ export default class Session implements SessionContainerInterface {
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 
-    attachToRequestResponse(info: ReqResInfo) {
+    async attachToRequestResponse(info: ReqResInfo) {
         this.reqResInfo = info;
 
         if (this.accessTokenUpdated) {
             const { req, res, transferMethod } = info;
 
-            setAccessTokenInResponse(req, res, this.accessToken, this.frontToken, this.helpers.config, transferMethod);
+            await setAccessTokenInResponse(
+                req,
+                res,
+                this.accessToken,
+                this.frontToken,
+                this.helpers.config,
+                transferMethod,
+                {}
+            );
             if (this.refreshToken !== undefined) {
-                setToken(
+                await setToken(
                     this.helpers.config,
                     req,
                     res,
                     "refresh",
                     this.refreshToken.token,
                     this.refreshToken.expiry,
-                    transferMethod
+                    transferMethod,
+                    {}
                 );
             }
             if (this.antiCsrfToken !== undefined) {
