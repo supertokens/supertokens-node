@@ -51,7 +51,7 @@ export default function getAPIImplementation(): APIInterface {
             const session = await Session.createNewSession(
                 input.options.req,
                 input.options.res,
-                new RecipeUserId(user.recipeUserId),
+                new RecipeUserId(user.id), // TODO: change to recipeUserId
                 {},
                 {},
                 input.userContext

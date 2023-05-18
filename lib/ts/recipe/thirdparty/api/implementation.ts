@@ -233,7 +233,7 @@ export default function getAPIInterface(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                new RecipeUserId(response.user.recipeUserId),
+                new RecipeUserId(response.user.id), // TODO: change to recipeUserId
                 {},
                 {},
                 userContext
