@@ -218,8 +218,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             SessionRecipe.getInstanceOrThrowError();
-            // account linking is added on its own
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 1);
             resetAll();
         }
 
@@ -237,8 +236,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             SessionRecipe.getInstanceOrThrowError();
             EmailPasswordRecipe.getInstanceOrThrowError();
-            // account linking is added on its own
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 3);
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
             resetAll();
         }
     });
