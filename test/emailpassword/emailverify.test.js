@@ -325,7 +325,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response2.text).status === "OK");
         assert(Object.keys(JSON.parse(response2.text)).length === 1);
 
-        assert(userInfo.recipeUserId === userId);
+        assert(userInfo.recipeUserId.getAsString() === userId);
         assert(userInfo.email === "test@gmail.com");
         assert(emailToken !== null);
     });
@@ -596,7 +596,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         // wait for the callback to be called...
         await new Promise((res) => setTimeout(res, 500));
 
-        assert(userInfoFromCallback.recipeUserId === userId);
+        assert(userInfoFromCallback.recipeUserId.getAsString() === userId);
         assert(userInfoFromCallback.email === "test@gmail.com");
     });
 
@@ -940,7 +940,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === "OK");
         assert(Object.keys(response2).length === 1);
-        assert.strictEqual(user.recipeUserId, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1025,7 +1025,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === "OK");
         assert(Object.keys(response2).length === 1);
-        assert.strictEqual(user.recipeUserId, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1118,7 +1118,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.recipeUserId, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
@@ -1211,7 +1211,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
-        assert.strictEqual(user.recipeUserId, userId);
+        assert.strictEqual(user.recipeUserId.getAsString(), userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
 
