@@ -235,12 +235,14 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete user.loginMethods[0].hasSameEmailAs;
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
@@ -252,12 +254,14 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete user.loginMethods[0].hasSameEmailAs;
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
