@@ -28,3 +28,16 @@ export async function mockGetSession(requestBody: any, querier: any) {
         return response;
     }
 }
+
+export async function mockRegenerateSession(accessToken: string, newAccessTokenPayload: any, querier: any) {
+    let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
+        accessToken: accessToken,
+        userDataInJWT: newAccessTokenPayload,
+    });
+
+    if (response.status === "UNAUTHORISED") {
+        return response;
+    }
+    response.session.recipeUserId = response.session.userId;
+    return response;
+}

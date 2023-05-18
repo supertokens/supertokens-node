@@ -21,6 +21,7 @@ import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
+import { mockRegenerateSession } from "./mockCore";
 
 export type Helpers = {
     querier: Querier;
@@ -352,10 +353,15 @@ export default function getRecipeInterface(
                     ? {}
                     : input.newAccessTokenPayload;
 
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
-                accessToken: input.accessToken,
-                userDataInJWT: newAccessTokenPayload,
-            });
+            let response;
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
+                    accessToken: input.accessToken,
+                    userDataInJWT: newAccessTokenPayload,
+                });
+            } else {
+                response = await mockRegenerateSession(input.accessToken, newAccessTokenPayload, querier);
+            }
             if (response.status === "UNAUTHORISED") {
                 return undefined;
             }
