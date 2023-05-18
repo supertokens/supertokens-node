@@ -61,7 +61,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
             if (response.status === "OK") {
                 await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                    recipeUserId: response.userId,
+                    recipeUserId: new RecipeUserId(response.userId),
                     isVerified: true,
                     checkAccountsToLinkTableAsWell: true,
                     userContext,
