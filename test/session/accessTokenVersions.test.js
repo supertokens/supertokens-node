@@ -823,7 +823,7 @@ function getTestExpressApp() {
 
     app.post("/create", async (req, res) => {
         try {
-            await Session.createNewSession(req, res, "", undefined, req.body.payload, {});
+            await Session.createNewSession(req, res, "", req.body.payload, {});
             res.status(200).send("");
         } catch (ex) {
             res.status(400).json({ message: ex.message });

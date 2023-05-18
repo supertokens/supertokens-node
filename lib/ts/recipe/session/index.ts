@@ -45,6 +45,10 @@ export default class SessionWrapper {
         sessionDataInDatabase: any = {},
         userContext: any = {}
     ) {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const appInfo = recipeInstance.getAppInfo();
@@ -76,6 +80,10 @@ export default class SessionWrapper {
         disableAntiCsrf: boolean = false,
         userContext: any = {}
     ) {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
         const appInfo = recipeInstance.getAppInfo();
