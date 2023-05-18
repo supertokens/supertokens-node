@@ -445,6 +445,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("sameSite none invalid domain values", async function () {
+        await startST();
         const domainCombinations = [
             ["http://localhost:3000", "http://supertokensapi.io"],
             ["http://127.0.0.1:3000", "http://supertokensapi.io"],
