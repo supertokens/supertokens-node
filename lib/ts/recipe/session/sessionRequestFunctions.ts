@@ -17,6 +17,7 @@ import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import { NormalisedAppinfo } from "../../types";
 import SessionError from "./error";
+import RecipeUserId from "../../recipeUserId";
 
 // We are defining this here (and not exporting it) to reduce the scope of legacy code
 const LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME = "sIdRefreshToken";
@@ -325,7 +326,7 @@ export async function createNewSessionInRequest({
     recipeInstance: Recipe;
     accessTokenPayload: any;
     userId: string;
-    recipeUserId: string | undefined;
+    recipeUserId: RecipeUserId;
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;

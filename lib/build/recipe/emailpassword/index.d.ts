@@ -4,6 +4,7 @@ import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { User } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -74,8 +75,21 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
+    static getPasswordResetTokenInfo(
+        token: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     static updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext?: any;
@@ -123,7 +137,7 @@ export default class Wrapper {
         | {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
-              recipeUserId: string;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "CUSTOM_RESPONSE";
@@ -141,5 +155,6 @@ export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordT
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export declare let linkEmailPasswordAccountsWithUserFromSession: typeof Wrapper.linkEmailPasswordAccountsWithUserFromSession;
+export declare let getPasswordResetTokenInfo: typeof Wrapper.getPasswordResetTokenInfo;
 export type { RecipeInterface, User, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;

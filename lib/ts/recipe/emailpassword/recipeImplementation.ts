@@ -164,6 +164,23 @@ export default function getRecipeInterface(
             }
         },
 
+        getPasswordResetTokenInfo: async function ({
+            token,
+        }: {
+            token: string;
+        }): Promise<
+            | {
+                  status: "OK";
+                  userId: string;
+                  email: string;
+              }
+            | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+        > {
+            return await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
+                token,
+            });
+        },
+
         updateEmailOrPassword: async function (input: {
             recipeUserId: RecipeUserId;
             email?: string;

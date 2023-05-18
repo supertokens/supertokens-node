@@ -4,6 +4,7 @@ import EmailVerification from "../../../emailverification";
 import EmailVerificationRecipe from "../../../emailverification/recipe";
 import { getEmailVerifyLink } from "../../../emailverification/utils";
 import { getUser } from "../../../..";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response = {
     status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
@@ -12,7 +13,6 @@ type Response = {
 export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;
-    const email = requestBody.email;
 
     if (recipeUserId === undefined || typeof recipeUserId !== "string") {
         throw new STError({
@@ -21,15 +21,8 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         });
     }
 
-    if (email === undefined || typeof email !== "string") {
-        throw new STError({
-            message: "Required parameter 'userId' is missing or has an invalid type",
-            type: STError.BAD_INPUT_ERROR,
-        });
-    }
-
     let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
-        recipeUserId,
+        new RecipeUserId(recipeUserId),
         {}
     );
 
@@ -37,7 +30,7 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         throw new Error("Should never come here");
     }
 
-    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(recipeUserId, email);
+    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(new RecipeUserId(recipeUserId));
 
     if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
         return {
@@ -61,7 +54,7 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         type: "EMAIL_VERIFICATION",
         user: {
             id: primaryUser.id,
-            recipeUserId,
+            recipeUserId: new RecipeUserId(recipeUserId),
             email: emailResponse.email,
         },
         emailVerifyLink,

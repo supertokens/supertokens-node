@@ -631,7 +631,6 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                response.user.id,
                 emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},
@@ -695,7 +694,6 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                response.user.id,
                 emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},

@@ -13,6 +13,7 @@ import UserMetadataRecipe from "../../../usermetadata/recipe";
 import UserMetadata from "../../../usermetadata";
 import { FORM_FIELD_EMAIL_ID } from "../../../emailpassword/constants";
 import { defaultValidateEmail, defaultValidatePhoneNumber } from "../../../passwordless/utils";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
     | {
@@ -39,7 +40,7 @@ type Response =
 
 const updateEmailForRecipeId = async (
     recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
-    userId: string,
+    recipeUserId: RecipeUserId,
     email: string
 ): Promise<
     | {
@@ -72,7 +73,7 @@ const updateEmailForRecipeId = async (
         }
 
         const emailUpdateResponse = await EmailPassword.updateEmailOrPassword({
-            userId,
+            recipeUserId,
             email,
         });
 
@@ -109,7 +110,7 @@ const updateEmailForRecipeId = async (
         }
 
         const emailUpdateResponse = await ThirdPartyEmailPassword.updateEmailOrPassword({
-            userId,
+            recipeUserId,
             email,
         });
 
@@ -161,7 +162,7 @@ const updateEmailForRecipeId = async (
         }
 
         const updateResult = await Passwordless.updateUser({
-            userId,
+            userId: recipeUserId.getAsString(),
             email,
         });
 
@@ -210,7 +211,7 @@ const updateEmailForRecipeId = async (
         }
 
         const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            userId,
+            userId: recipeUserId.getAsString(),
             email,
         });
 
@@ -237,7 +238,7 @@ const updateEmailForRecipeId = async (
 
 const updatePhoneForRecipeId = async (
     recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
-    userId: string,
+    recipeUserId: RecipeUserId,
     phone: string
 ): Promise<
     | {
@@ -281,7 +282,7 @@ const updatePhoneForRecipeId = async (
         }
 
         const updateResult = await Passwordless.updateUser({
-            userId,
+            userId: recipeUserId.getAsString(),
             phoneNumber: phone,
         });
 
@@ -330,7 +331,7 @@ const updatePhoneForRecipeId = async (
         }
 
         const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            userId,
+            userId: recipeUserId.getAsString(),
             phoneNumber: phone,
         });
 
@@ -357,16 +358,16 @@ const updatePhoneForRecipeId = async (
 
 export const userPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
-    const userId = requestBody.userId;
+    const recipeUserId = requestBody.recipeUserId;
     const recipeId = requestBody.recipeId;
     const firstName = requestBody.firstName;
     const lastName = requestBody.lastName;
     const email = requestBody.email;
     const phone = requestBody.phone;
 
-    if (userId === undefined || typeof userId !== "string") {
+    if (recipeUserId === undefined || typeof recipeUserId !== "string") {
         throw new STError({
-            message: "Required parameter 'userId' is missing or has an invalid type",
+            message: "Required parameter 'recipeUserId' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -413,7 +414,7 @@ export const userPut = async (_: APIInterface, options: APIOptions): Promise<Res
         });
     }
 
-    let userResponse = await getUserForRecipeId(userId, recipeId);
+    let userResponse = await getUserForRecipeId(new RecipeUserId(recipeUserId), recipeId);
 
     if (userResponse.user === undefined || userResponse.recipe === undefined) {
         throw new Error("Should never come here");
@@ -439,12 +440,16 @@ export const userPut = async (_: APIInterface, options: APIOptions): Promise<Res
                 metaDataUpdate["last_name"] = lastName.trim();
             }
 
-            await UserMetadata.updateUserMetadata(userId, metaDataUpdate);
+            await UserMetadata.updateUserMetadata(recipeUserId, metaDataUpdate);
         }
     }
 
     if (email.trim() !== "") {
-        const emailUpdateResponse = await updateEmailForRecipeId(userResponse.recipe, userId, email.trim());
+        const emailUpdateResponse = await updateEmailForRecipeId(
+            userResponse.recipe,
+            new RecipeUserId(recipeUserId),
+            email.trim()
+        );
 
         if (emailUpdateResponse.status !== "OK") {
             return emailUpdateResponse;
@@ -452,7 +457,11 @@ export const userPut = async (_: APIInterface, options: APIOptions): Promise<Res
     }
 
     if (phone.trim() !== "") {
-        const phoneUpdateResponse = await updatePhoneForRecipeId(userResponse.recipe, userId, phone.trim());
+        const phoneUpdateResponse = await updatePhoneForRecipeId(
+            userResponse.recipe,
+            new RecipeUserId(recipeUserId),
+            phone.trim()
+        );
 
         if (phoneUpdateResponse.status !== "OK") {
             return phoneUpdateResponse;

@@ -1,6 +1,7 @@
 import { RecipeInterface } from "../../emailpassword/types";
 import { User } from "../../../types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPasswordRecipeInterface): RecipeInterface {
     return {
@@ -39,6 +40,10 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return recipeInterface.consumePasswordResetToken(input);
         },
 
+        getPasswordResetTokenInfo: async function (input: { token: string; userContext: any }) {
+            return recipeInterface.getPasswordResetTokenInfo(input);
+        },
+
         createNewRecipeUser: async function (input: {
             email: string;
             password: string;
@@ -54,7 +59,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         },
 
         updateEmailOrPassword: async function (input: {
-            userId: string;
+            recipeUserId: RecipeUserId;
             email?: string;
             password?: string;
             userContext: any;

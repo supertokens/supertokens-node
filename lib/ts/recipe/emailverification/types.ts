@@ -93,6 +93,11 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
 
+    getEmailVerificationTokenInfo(input: {
+        token: string;
+        userContext: any;
+    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
+
     isEmailVerified(input: { recipeUserId: RecipeUserId; email: string; userContext: any }): Promise<boolean>;
 
     revokeEmailVerificationTokens(input: {

@@ -34,6 +34,7 @@ import { RecipeInterface, APIInterface } from "./types";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import RecipeUserId from "../../recipeUserId";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -69,7 +70,7 @@ export async function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
     _: string,
-    __: string,
+    __: RecipeUserId,
     ___: BaseRequest,
     response: BaseResponse
 ) {
@@ -178,7 +179,7 @@ export function validateAndNormaliseUserInput(
         onTokenTheftDetected: async (
             sessionHandle: string,
             userId: string,
-            recipeUserId: string,
+            recipeUserId: RecipeUserId,
             request: BaseRequest,
             response: BaseResponse
         ) => {

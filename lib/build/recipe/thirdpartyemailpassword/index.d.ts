@@ -4,6 +4,7 @@ import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -78,9 +79,21 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
-    static Google: typeof import("../thirdparty/providers/google").default;
+    static getPasswordResetTokenInfo(
+        token: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     static updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext?: any;
@@ -98,6 +111,7 @@ export default class Wrapper {
               failureReason: string;
           }
     >;
+    static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;
     static Apple: typeof import("../thirdparty/providers/apple").default;
@@ -120,6 +134,7 @@ export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyIn
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
+export declare let getPasswordResetTokenInfo: typeof Wrapper.getPasswordResetTokenInfo;
 export declare let Google: typeof import("../thirdparty/providers/google").default;
 export declare let Github: typeof import("../thirdparty/providers/github").default;
 export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;

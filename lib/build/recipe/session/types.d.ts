@@ -6,6 +6,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
 import { JSONObject, JSONValue } from "../../types";
 import { GeneralErrorResponse } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -21,7 +22,7 @@ export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
         userId: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         userDataInJWT: any;
     };
     accessToken: TokenInfo;
@@ -134,7 +135,7 @@ export interface TokenTheftErrorHandlerMiddleware {
     (
         sessionHandle: string,
         userId: string,
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         request: BaseRequest,
         response: BaseResponse
     ): Promise<void>;
@@ -161,7 +162,7 @@ export interface VerifySessionOptions {
 export declare type RecipeInterface = {
     createNewSession(input: {
         userId: string;
-        recipeUserId: string | undefined;
+        recipeUserId: RecipeUserId;
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
@@ -169,7 +170,7 @@ export declare type RecipeInterface = {
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
         userId: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
@@ -193,8 +194,16 @@ export declare type RecipeInterface = {
      * Returns undefined if the sessionHandle does not exist
      */
     getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
-    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
-    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    revokeAllSessionsForUser(input: {
+        userId: string;
+        revokeSessionsForLinkedAccounts: boolean;
+        userContext: any;
+    }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: {
+        userId: string;
+        fetchSessionsForAllLinkedAccounts: boolean;
+        userContext: any;
+    }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
     updateSessionDataInDatabase(input: {
@@ -220,7 +229,7 @@ export declare type RecipeInterface = {
               session: {
                   handle: string;
                   userId: string;
-                  recipeUserId: string;
+                  recipeUserId: RecipeUserId;
                   userDataInJWT: any;
               };
               accessToken?: {
@@ -233,7 +242,7 @@ export declare type RecipeInterface = {
     >;
     validateClaims(input: {
         userId: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         accessTokenPayload: any;
         claimValidators: SessionClaimValidator[];
         userContext: any;
@@ -268,7 +277,7 @@ export interface SessionContainerInterface {
     getSessionDataFromDatabase(userContext?: any): Promise<any>;
     updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
-    getRecipeUserId(userContext?: any): string;
+    getRecipeUserId(userContext?: any): RecipeUserId;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAllSessionTokensDangerously(): {
@@ -325,7 +334,7 @@ export declare type APIInterface = {
 export declare type SessionInformation = {
     sessionHandle: string;
     userId: string;
-    recipeUserId: string;
+    recipeUserId: RecipeUserId;
     sessionDataInDatabase: any;
     expiry: number;
     customClaimsInAccessTokenPayload: any;
@@ -369,7 +378,11 @@ export declare abstract class SessionClaim<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchValue(userId: string, recipeUserId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    abstract fetchValue(
+        userId: string,
+        recipeUserId: RecipeUserId,
+        userContext: any
+    ): Promise<T | undefined> | T | undefined;
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
      *
@@ -394,7 +407,7 @@ export declare abstract class SessionClaim<T> {
      * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
-    build(userId: string, recipeUserId?: string, userContext?: any): Promise<JSONObject>;
+    build(userId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<JSONObject>;
 }
 export declare type ReqResInfo = {
     res: BaseResponse;

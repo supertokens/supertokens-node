@@ -222,7 +222,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             );
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
-                await Session.revokeAllSessionsForUser(recipeUserId, userContext);
+                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false, userContext);
                 let user: User | undefined = await this.getUser({
                     userId: primaryUserId,
                     userContext,
@@ -275,7 +275,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
 
                 // The reason we don't do this in the core is that if the user has overriden
                 // session recipe, it goes through their logic.
-                await Session.revokeAllSessionsForUser(recipeUserId, userContext);
+                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false, userContext);
             }
 
             return accountsUnlinkingResult;

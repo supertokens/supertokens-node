@@ -3,7 +3,7 @@ import { SessionContainerInterface } from "../session/types";
 import AccountLinking from "./";
 import RecipeUserId from "../../recipeUserId";
 
-class AccountLinkingClaimClass extends PrimitiveClaim<string> {
+export class AccountLinkingClaimClass extends PrimitiveClaim<string> {
     constructor() {
         super({
             key: "st-linking",

@@ -3,6 +3,7 @@ import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 import { User } from "./types";
 import { AccountInfo } from "./recipe/accountlinking/types";
+import RecipeUserId from "./recipeUserId";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
@@ -83,6 +84,7 @@ export default class SuperTokensWrapper {
     ): Promise<{
         status: "OK";
     }>;
+    static convertToRecipeUserId(recipeUserId: string): RecipeUserId;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -96,4 +98,5 @@ export declare let deleteUserIdMapping: typeof SuperTokensWrapper.deleteUserIdMa
 export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
 export declare let getUser: typeof SuperTokensWrapper.getUser;
 export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
+export declare let convertToRecipeUserId: typeof SuperTokensWrapper.convertToRecipeUserId;
 export declare let Error: typeof SuperTokensError;

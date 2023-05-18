@@ -2,6 +2,7 @@ import { RecipeInterface, User } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import AccountLinking from "../accountlinking";
+import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
@@ -9,7 +10,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             recipeUserId,
             email,
         }: {
-            recipeUserId: string;
+            recipeUserId: RecipeUserId;
             email: string;
         }): Promise<
             | {
@@ -20,7 +21,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         > {
             // userId can be either recipeUserId or primaryUserId
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
-                userId: recipeUserId,
+                userId: recipeUserId.getAsString(),
                 email,
             });
             if (response.status === "OK") {
@@ -33,6 +34,18 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     status: "EMAIL_ALREADY_VERIFIED_ERROR",
                 };
             }
+        },
+
+        getEmailVerificationTokenInfo: async function ({
+            token,
+        }: {
+            token: string;
+        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
+            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/token"), {
+                method: "token",
+                token,
+            });
+            return response;
         },
 
         verifyEmailUsingToken: async function ({
@@ -57,7 +70,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return {
                     status: "OK",
                     user: {
-                        recipeUserId: response.userId,
+                        recipeUserId: new RecipeUserId(response.userId),
                         email: response.email,
                     },
                 };
@@ -72,30 +85,33 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             recipeUserId,
             email,
         }: {
-            recipeUserId: string;
+            recipeUserId: RecipeUserId;
             email: string;
         }): Promise<boolean> {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
-                userId: recipeUserId,
+                userId: recipeUserId.getAsString(),
                 email,
             });
             return response.isVerified;
         },
 
         revokeEmailVerificationTokens: async function (input: {
-            recipeUserId: string;
+            recipeUserId: RecipeUserId;
             email: string;
         }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token/remove"), {
-                userId: input.recipeUserId,
+                userId: input.recipeUserId.getAsString(),
                 email: input.email,
             });
             return { status: "OK" };
         },
 
-        unverifyEmail: async function (input: { recipeUserId: string; email: string }): Promise<{ status: "OK" }> {
+        unverifyEmail: async function (input: {
+            recipeUserId: RecipeUserId;
+            email: string;
+        }): Promise<{ status: "OK" }> {
             await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/remove"), {
-                userId: input.recipeUserId,
+                userId: input.recipeUserId.getAsString(),
                 email: input.email,
             });
             return { status: "OK" };

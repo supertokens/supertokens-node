@@ -1,6 +1,7 @@
 import type { User } from "../../types";
 import axios from "axios";
 import { createUserObject } from "../accountlinking/mockCore";
+import RecipeUserId from "../../recipeUserId";
 
 let passwordResetTokens: { [key: string]: { userId: string; email: string } } = {};
 
@@ -95,7 +96,7 @@ export async function mockSignIn(input: {
             loginMethods: [
                 {
                     recipeId: "emailpassword",
-                    recipeUserId: user.id,
+                    recipeUserId: new RecipeUserId(user.id),
                     timeJoined: user.timeJoined,
                     verified: false,
                     email: user.email,
@@ -149,7 +150,7 @@ export async function mockCreateRecipeUser(input: {
             loginMethods: [
                 {
                     recipeId: "emailpassword",
-                    recipeUserId: user.id,
+                    recipeUserId: new RecipeUserId(user.id),
                     timeJoined: user.timeJoined,
                     verified: false,
                     email: user.email,

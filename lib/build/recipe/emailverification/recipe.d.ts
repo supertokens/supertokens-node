@@ -8,6 +8,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -45,7 +46,7 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest;
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
-        recipeUserIdWhoseEmailGotVerified: string;
+        recipeUserIdWhoseEmailGotVerified: RecipeUserId;
         userContext: any;
     }) => Promise<SessionContainerInterface | undefined>;
 }

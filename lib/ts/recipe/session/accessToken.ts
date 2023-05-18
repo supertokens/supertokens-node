@@ -17,6 +17,7 @@ import STError from "./error";
 import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
 import { ProcessState, PROCESS_STATE } from "../../processState";
+import RecipeUserId from "../../recipeUserId";
 
 export async function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
@@ -25,7 +26,7 @@ export async function getInfoFromAccessToken(
 ): Promise<{
     sessionHandle: string;
     userId: string;
-    recipeUserId: string;
+    recipeUserId: RecipeUserId;
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;
@@ -76,7 +77,7 @@ export async function getInfoFromAccessToken(
                 : sanitizeNumberInput(payload.iat)! * 1000;
         let userData = jwtInfo.version === 2 ? payload.userData : payload;
         let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
-        let recipeUserId = sanitizeStringInput(payload.recipeUserId)!;
+        let recipeUserId = new RecipeUserId(sanitizeStringInput(payload.recipeUserId)!);
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);

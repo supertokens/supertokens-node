@@ -39,7 +39,7 @@ export type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
         userId: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         userDataInJWT: any;
     };
     accessToken: TokenInfo;
@@ -165,7 +165,7 @@ export interface TokenTheftErrorHandlerMiddleware {
     (
         sessionHandle: string,
         userId: string,
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         request: BaseRequest,
         response: BaseResponse
     ): Promise<void>;
@@ -196,7 +196,7 @@ export interface VerifySessionOptions {
 export type RecipeInterface = {
     createNewSession(input: {
         userId: string;
-        recipeUserId: string | undefined;
+        recipeUserId: RecipeUserId;
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
@@ -205,7 +205,7 @@ export type RecipeInterface = {
 
     getGlobalClaimValidators(input: {
         userId: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
@@ -233,9 +233,17 @@ export type RecipeInterface = {
      */
     getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
 
-    revokeAllSessionsForUser(input: { userId: RecipeUserId; userContext: any }): Promise<string[]>;
+    revokeAllSessionsForUser(input: {
+        userId: string;
+        revokeSessionsForLinkedAccounts: boolean;
+        userContext: any;
+    }): Promise<string[]>;
 
-    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: {
+        userId: string;
+        fetchSessionsForAllLinkedAccounts: boolean;
+        userContext: any;
+    }): Promise<string[]>;
 
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
 
@@ -267,7 +275,7 @@ export type RecipeInterface = {
               session: {
                   handle: string;
                   userId: string;
-                  recipeUserId: string;
+                  recipeUserId: RecipeUserId;
                   userDataInJWT: any;
               };
               accessToken?: {
@@ -281,7 +289,7 @@ export type RecipeInterface = {
 
     validateClaims(input: {
         userId: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         accessTokenPayload: any;
         claimValidators: SessionClaimValidator[];
         userContext: any;
@@ -323,7 +331,7 @@ export interface SessionContainerInterface {
 
     getUserId(userContext?: any): string;
 
-    getRecipeUserId(userContext?: any): string;
+    getRecipeUserId(userContext?: any): RecipeUserId;
 
     getAccessTokenPayload(userContext?: any): any;
 
@@ -397,7 +405,7 @@ export type APIInterface = {
 export type SessionInformation = {
     sessionHandle: string;
     userId: string;
-    recipeUserId: string;
+    recipeUserId: RecipeUserId;
     sessionDataInDatabase: any;
     expiry: number;
     customClaimsInAccessTokenPayload: any;
@@ -437,7 +445,11 @@ export abstract class SessionClaim<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchValue(userId: string, recipeUserId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    abstract fetchValue(
+        userId: string,
+        recipeUserId: RecipeUserId,
+        userContext: any
+    ): Promise<T | undefined> | T | undefined;
 
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
@@ -467,8 +479,8 @@ export abstract class SessionClaim<T> {
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
-    async build(userId: string, recipeUserId?: string, userContext?: any): Promise<JSONObject> {
-        const value = await this.fetchValue(userId, recipeUserId ?? userId, userContext);
+    async build(userId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<JSONObject> {
+        const value = await this.fetchValue(userId, recipeUserId, userContext);
 
         if (value === undefined) {
             return {};

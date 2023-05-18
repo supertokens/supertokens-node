@@ -27,6 +27,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import { GeneralErrorResponse, User as GlobalUser } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type User = {
     id: string;
@@ -139,8 +140,20 @@ export type RecipeInterface = {
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
 
+    getPasswordResetTokenInfo(input: {
+        token: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+    >;
+
     updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext: any;

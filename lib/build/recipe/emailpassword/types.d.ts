@@ -8,6 +8,7 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -137,8 +138,21 @@ export declare type RecipeInterface = {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
+    getPasswordResetTokenInfo(input: {
+        token: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext: any;

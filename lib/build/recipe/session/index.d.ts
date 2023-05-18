@@ -13,21 +13,20 @@ import {
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static createNewSession(
         req: any,
         res: any,
-        userId: string,
-        recipeUserId?: string,
+        recipeUserId: RecipeUserId,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         userContext?: any
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
-        userId: string,
-        recipeUserId?: string,
+        recipeUserId: RecipeUserId,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
@@ -124,8 +123,16 @@ export default class SessionWrapper {
         antiCsrfToken?: string,
         userContext?: any
     ): Promise<SessionContainer>;
-    static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
-    static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
+    static revokeAllSessionsForUser(
+        userId: string,
+        revokeSessionsForLinkedAccounts?: boolean,
+        userContext?: any
+    ): Promise<string[]>;
+    static getAllSessionHandlesForUser(
+        userId: string,
+        fetchSessionsForAllLinkedAccounts?: boolean,
+        userContext?: any
+    ): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
     static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;

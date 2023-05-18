@@ -30,6 +30,7 @@ import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 import RecipeUserId from "../../recipeUserId";
+import { getUser } from "../..";
 
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -39,8 +40,7 @@ export default class SessionWrapper {
     static async createNewSession(
         req: any,
         res: any,
-        userId: string,
-        recipeUserId?: RecipeUserId,
+        recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         userContext: any = {}
@@ -48,6 +48,12 @@ export default class SessionWrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const appInfo = recipeInstance.getAppInfo();
+
+        let user = await getUser(recipeUserId.getAsString(), userContext);
+        let userId = recipeUserId.getAsString();
+        if (user !== undefined) {
+            userId = user.id;
+        }
 
         return await createNewSessionInRequest({
             req,
@@ -64,8 +70,7 @@ export default class SessionWrapper {
     }
 
     static async createNewSessionWithoutRequestResponse(
-        userId: string,
-        recipeUserId?: string,
+        recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
@@ -80,6 +85,12 @@ export default class SessionWrapper {
             ...accessTokenPayload,
             iss: issuer,
         };
+
+        let user = await getUser(recipeUserId.getAsString(), userContext);
+        let userId = recipeUserId.getAsString();
+        if (user !== undefined) {
+            userId = user.id;
+        }
 
         for (const claim of claimsAddedByOtherRecipes) {
             const update = await claim.build(userId, recipeUserId, userContext);
@@ -298,13 +309,26 @@ export default class SessionWrapper {
             userContext,
         });
     }
-    static revokeAllSessionsForUser(userId: RecipeUserId, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
+    static revokeAllSessionsForUser(
+        userId: string,
+        revokeSessionsForLinkedAccounts: boolean = true,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
+            userId,
+            revokeSessionsForLinkedAccounts,
+            userContext,
+        });
     }
 
-    static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
+    static getAllSessionHandlesForUser(
+        userId: string,
+        fetchSessionsForAllLinkedAccounts: boolean = true,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
+            fetchSessionsForAllLinkedAccounts,
             userContext,
         });
     }

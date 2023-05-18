@@ -4,6 +4,7 @@ import EmailPasswordRecipe from "../../../emailpassword/recipe";
 import EmailPassword from "../../../emailpassword";
 import ThirdPartyEmailPasswordRecipe from "../../../thirdpartyemailpassword/recipe";
 import ThirdPartyEmailPassword from "../../../thirdpartyemailpassword";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
     | {
@@ -19,12 +20,12 @@ type Response =
 
 export const userPasswordPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
-    const userId = requestBody.userId;
+    const recipeUserId = requestBody.recipeUserId;
     const newPassword = requestBody.newPassword;
 
-    if (userId === undefined || typeof userId !== "string") {
+    if (recipeUserId === undefined || typeof recipeUserId !== "string") {
         throw new STError({
-            message: "Required parameter 'userId' is missing or has an invalid type",
+            message: "Required parameter 'recipeUserId' is missing or has an invalid type",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -57,7 +58,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
 
     if (recipeToUse === "emailpassword") {
         const updateResponse = await EmailPassword.updateEmailOrPassword({
-            userId,
+            recipeUserId: new RecipeUserId(recipeUserId),
             password: newPassword,
         });
 
@@ -80,7 +81,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
     }
 
     const updateResponse = await ThirdPartyEmailPassword.updateEmailOrPassword({
-        userId,
+        recipeUserId: new RecipeUserId(recipeUserId),
         password: newPassword,
     });
 

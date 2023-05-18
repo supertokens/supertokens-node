@@ -8,11 +8,12 @@ import {
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 export declare type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForRecipeUserId?: (
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         userContext: any
     ) => Promise<
         | {
@@ -37,7 +38,7 @@ export declare type TypeNormalisedInput = {
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForRecipeUserId?: (
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         userContext: any
     ) => Promise<
         | {
@@ -57,12 +58,12 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type User = {
-    recipeUserId: string;
+    recipeUserId: RecipeUserId;
     email: string;
 };
 export declare type RecipeInterface = {
     createEmailVerificationToken(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         email: string;
         userContext: any;
     }): Promise<
@@ -86,16 +87,28 @@ export declare type RecipeInterface = {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    isEmailVerified(input: { recipeUserId: string; email: string; userContext: any }): Promise<boolean>;
+    getEmailVerificationTokenInfo(input: {
+        token: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+    >;
+    isEmailVerified(input: { recipeUserId: RecipeUserId; email: string; userContext: any }): Promise<boolean>;
     revokeEmailVerificationTokens(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         email: string;
         userContext: any;
     }): Promise<{
         status: "OK";
     }>;
     unverifyEmail(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         email: string;
         userContext: any;
     }): Promise<{
@@ -166,13 +179,13 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: {
         id: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         email: string;
     };
     emailVerifyLink: string;
 };
 export declare type GetEmailForRecipeUserIdFunc = (
-    recipeUserId: string,
+    recipeUserId: RecipeUserId,
     userContext: any
 ) => Promise<
     | {

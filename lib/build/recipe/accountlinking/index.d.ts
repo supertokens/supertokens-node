@@ -2,16 +2,18 @@
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
+    static AccountLinkingClaim: import("./accountLinkingClaim").AccountLinkingClaimClass;
     static getRecipeUserIdsForPrimaryUserIds(
         primaryUserIds: string[],
         userContext?: any
     ): Promise<{
-        [primaryUserId: string]: string[];
+        [primaryUserId: string]: RecipeUserId[];
     }>;
     static getPrimaryUserIdsForRecipeUserIds(
-        recipeUserIds: string[],
+        recipeUserIds: RecipeUserId[],
         userContext?: any
     ): Promise<{
         [recipeUserId: string]: string | null;
@@ -26,7 +28,7 @@ export default class Wrapper {
      * no linking that happened.
      */
     static createPrimaryUserIdOrLinkAccounts(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
@@ -41,12 +43,12 @@ export default class Wrapper {
      * into a primary user itself.
      */
     static getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }): Promise<import("../emailpassword").User | undefined>;
     static canCreatePrimaryUserId(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
         | {
@@ -62,7 +64,7 @@ export default class Wrapper {
           }
     >;
     static createPrimaryUser(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
         | {
@@ -120,7 +122,7 @@ export default class Wrapper {
         | {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
-              recipeUserId: string;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "CUSTOM_RESPONSE";
@@ -128,7 +130,7 @@ export default class Wrapper {
           }
     >;
     static canLinkAccounts(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         primaryUserId: string,
         userContext?: any
     ): Promise<
@@ -148,7 +150,7 @@ export default class Wrapper {
           }
     >;
     static linkAccounts(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         primaryUserId: string,
         userContext?: any
     ): Promise<
@@ -168,7 +170,7 @@ export default class Wrapper {
           }
     >;
     static unlinkAccounts(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
         | {
@@ -180,9 +182,9 @@ export default class Wrapper {
               description: string;
           }
     >;
-    static fetchFromAccountToLinkTable(recipeUserId: string, userContext?: any): Promise<string | undefined>;
+    static fetchFromAccountToLinkTable(recipeUserId: RecipeUserId, userContext?: any): Promise<string | undefined>;
     static storeIntoAccountToLinkTable(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         primaryUserId: string,
         userContext?: any
     ): Promise<
@@ -210,3 +212,4 @@ export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPri
 export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export declare const linkAccountsWithUserFromSession: typeof Wrapper.linkAccountsWithUserFromSession;
 export type { RecipeInterface };
+export { AccountLinkingClaim } from "./accountLinkingClaim";
