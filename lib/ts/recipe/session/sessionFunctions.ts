@@ -22,6 +22,7 @@ import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
+import { mockGetRefreshAPIResponse, mockCreateNewSession, mockGetSession } from "./mockCore";
 
 /**
  * @description call this to "login" a user.
@@ -46,8 +47,12 @@ export async function createNewSession(
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
-    const response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
-
+    let response;
+    if (process.env.MOCK !== "true") {
+        response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
+    } else {
+        response = await mockCreateNewSession(requestBody, helpers.querier);
+    }
     delete response.status;
     return response;
 }
@@ -208,14 +213,25 @@ export async function getSession(
         checkDatabase: alwaysCheckCore,
     };
 
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
+    let response;
+    if (process.env.MOCK !== "true") {
+        response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
+    } else {
+        response = await mockGetSession(requestBody, helpers.querier);
+    }
     if (response.status === "OK") {
         delete response.status;
         response.session.expiryTime =
             response.accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
             accessTokenInfo?.expiryTime || // if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
             parsedAccessToken.payload["expiryTime"]; // if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
-        return response;
+        return {
+            ...response,
+            session: {
+                ...response.session,
+                recipeUserId: new RecipeUserId(response.session.recipeUserId),
+            },
+        };
     } else if (response.status === "UNAUTHORISED") {
         logDebugMessage("getSession: Returning UNAUTHORISED because of core response");
         throw new STError({
@@ -289,7 +305,12 @@ export async function refreshSession(
         throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
     }
 
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
+    let response;
+    if (process.env.MOCK !== "true") {
+        response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
+    } else {
+        response = await mockGetRefreshAPIResponse(requestBody, helpers.querier);
+    }
     if (response.status === "OK") {
         delete response.status;
         return {

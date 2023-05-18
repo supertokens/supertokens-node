@@ -77,7 +77,9 @@ export async function getInfoFromAccessToken(
                 : sanitizeNumberInput(payload.iat)! * 1000;
         let userData = jwtInfo.version === 2 ? payload.userData : payload;
         let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
-        let recipeUserId = new RecipeUserId(sanitizeStringInput(payload.recipeUserId)!);
+
+        // we use ?? below cause recipeUserId may be undefined for JWTs that are of an older version.
+        let recipeUserId = new RecipeUserId(sanitizeStringInput(payload.recipeUserId) ?? userId);
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
