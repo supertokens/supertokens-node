@@ -145,6 +145,17 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
                 hasSameThirdPartyInfoAs: getHasSameThirdPartyInfoAs(lM),
             };
         }),
+        toJson: function () {
+            return {
+                ...this,
+                loginMethods: this.loginMethods.map((lM: any) => {
+                    return {
+                        ...lM,
+                        recipeUserId: lM.recipeUserId.getAsString(),
+                    };
+                }),
+            };
+        },
     };
 }
 

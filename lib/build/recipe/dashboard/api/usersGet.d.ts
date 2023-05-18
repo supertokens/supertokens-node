@@ -22,6 +22,7 @@ declare type User = {
     normalizedInputMap: {
         [key: string]: string | undefined;
     };
+    toJson: () => any;
 };
 export declare type Response = {
     status: "OK";
