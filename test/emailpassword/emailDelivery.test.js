@@ -583,7 +583,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                                 ...oI,
                                 sendEmail: async (input) => {
                                     email = input.user.email;
-                                    userIdInCb = input.user.recipeUserId;
+                                    userIdInCb = input.user.recipeUserId.getAsString();
                                     emailVerifyURL = input.emailVerifyLink;
                                 },
                             };
