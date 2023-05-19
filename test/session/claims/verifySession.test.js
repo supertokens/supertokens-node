@@ -26,6 +26,7 @@ const request = require("supertest");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
 const sinon = require("sinon");
 const { default: SessionError } = require("../../../lib/build/recipe/session/error");
+const { default: RecipeUserId } = require("../../../lib/build/recipeUserId");
 
 describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifySession.test.js]")}`, function () {
     beforeEach(async function () {
@@ -269,9 +270,11 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .create("validateClaims")
                     .once()
                     .withArgs({
-                        accessTokenPayload: sinon.match.object,
                         userId: "testing-userId",
-                        recipeUserId: "testing-userId",
+                        recipeUserId: sinon.match
+                            .has("recipeUserId", "testing-userId")
+                            .and(sinon.match.instanceOf(RecipeUserId)),
+                        accessTokenPayload: sinon.match.object,
                         claimValidators: testValidatorArr,
                         userContext: {
                             _default: {
