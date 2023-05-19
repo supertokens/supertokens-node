@@ -2,13 +2,14 @@
 import { ParsedJWTInfo } from "./jwt";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
+import RecipeUserId from "../../recipeUserId";
 /**
  * @description call this to "login" a user.
  */
 export declare function createNewSession(
     helpers: Helpers,
     userId: string,
-    recipeUserId: string | undefined,
+    recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
     accessTokenPayload?: any,
     sessionDataInDatabase?: any
@@ -26,7 +27,7 @@ export declare function getSession(
     session: {
         handle: string;
         userId: string;
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         userDataInJWT: any;
         expiryTime: number;
     };
@@ -58,11 +59,19 @@ export declare function refreshSession(
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  */
-export declare function revokeAllSessionsForUser(helpers: Helpers, userId: string): Promise<string[]>;
+export declare function revokeAllSessionsForUser(
+    helpers: Helpers,
+    userId: string,
+    revokeSessionsForLinkedAccounts: boolean
+): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  */
-export declare function getAllSessionHandlesForUser(helpers: Helpers, userId: string): Promise<string[]>;
+export declare function getAllSessionHandlesForUser(
+    helpers: Helpers,
+    userId: string,
+    fetchSessionsForAllLinkedAccounts: boolean
+): Promise<string[]>;
 /**
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete

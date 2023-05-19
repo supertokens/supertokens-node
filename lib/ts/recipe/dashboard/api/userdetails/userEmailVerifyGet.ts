@@ -2,6 +2,7 @@ import { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailVerificationRecipe from "../../../emailverification/recipe";
 import EmailVerification from "../../../emailverification";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
     | {
@@ -15,18 +16,10 @@ type Response =
 export const userEmailVerifyGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const req = options.req;
     const recipeUserId = req.getKeyValueFromQuery("recipeUserId");
-    const email = req.getKeyValueFromQuery("email");
 
     if (recipeUserId === undefined) {
         throw new STError({
             message: "Missing required parameter 'recipeUserId'",
-            type: STError.BAD_INPUT_ERROR,
-        });
-    }
-
-    if (email === undefined) {
-        throw new STError({
-            message: "Missing required parameter 'email'",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -39,7 +32,7 @@ export const userEmailVerifyGet: APIFunction = async (_: APIInterface, options: 
         };
     }
 
-    const response = await EmailVerification.isEmailVerified(recipeUserId, email);
+    const response = await EmailVerification.isEmailVerified(new RecipeUserId(recipeUserId));
     return {
         status: "OK",
         isVerified: response,

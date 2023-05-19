@@ -19,6 +19,7 @@ import * as thirdPartyProviders from "../thirdparty/providers";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -73,20 +74,31 @@ export default class Wrapper {
         });
     }
 
-    static Google = thirdPartyProviders.Google;
+    static getPasswordResetTokenInfo(token: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPasswordResetTokenInfo({
+            token,
+            userContext,
+        });
+    }
 
     static updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext?: any;
         applyPasswordPolicy?: boolean;
     }) {
+        if (typeof input.recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            input.recipeUserId = new RecipeUserId(input.recipeUserId);
+        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
         });
     }
+
+    static Google = thirdPartyProviders.Google;
 
     static Github = thirdPartyProviders.Github;
 
@@ -131,6 +143,8 @@ export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
+
+export let getPasswordResetTokenInfo = Wrapper.getPasswordResetTokenInfo;
 
 export let Google = Wrapper.Google;
 

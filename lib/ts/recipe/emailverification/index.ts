@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -26,7 +27,7 @@ export default class Wrapper {
     static EmailVerificationClaim = EmailVerificationClaim;
 
     static async createEmailVerificationToken(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<
@@ -36,6 +37,10 @@ export default class Wrapper {
           }
         | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
     > {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         if (email === undefined) {
@@ -65,7 +70,18 @@ export default class Wrapper {
         });
     }
 
-    static async isEmailVerified(recipeUserId: string, email?: string, userContext?: any) {
+    static async getEmailVerificationTokenInfo(token: string, userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getEmailVerificationTokenInfo({
+            token,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext?: any) {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
             const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
@@ -86,7 +102,11 @@ export default class Wrapper {
         });
     }
 
-    static async revokeEmailVerificationTokens(recipeUserId: string, email?: string, userContext?: any) {
+    static async revokeEmailVerificationTokens(recipeUserId: RecipeUserId, email?: string, userContext?: any) {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         // If the dev wants to delete the tokens for an old email address of the user they can pass the address
@@ -114,7 +134,11 @@ export default class Wrapper {
         });
     }
 
-    static async unverifyEmail(recipeUserId: string, email?: string, userContext?: any) {
+    static async unverifyEmail(recipeUserId: RecipeUserId, email?: string, userContext?: any) {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
             const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
@@ -162,5 +186,7 @@ export let unverifyEmail = Wrapper.unverifyEmail;
 export type { RecipeInterface, APIOptions, APIInterface, User };
 
 export let sendEmail = Wrapper.sendEmail;
+
+export let getEmailVerificationTokenInfo = Wrapper.getEmailVerificationTokenInfo;
 
 export { EmailVerificationClaim } from "./emailVerificationClaim";

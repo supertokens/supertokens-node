@@ -1183,7 +1183,11 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        let session = await Session.createNewSession(options.req, options.res, user.id);
+                        let session = await Session.createNewSession(
+                            options.req,
+                            options.res,
+                            Supertokens.convertToRecipeUserId(user.id)
+                        );
                         return {
                             status: "OK",
                             session,
@@ -1250,7 +1254,7 @@ EmailVerification.sendEmail({
     user: {
         id: "",
         email: "",
-        recipeUserId: "",
+        recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
 });
 
@@ -1554,7 +1558,7 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
 async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
     const userId = "user-id"; // This would be fetched from somewhere
 
-    const session = await Session.createNewSessionWithoutRequestResponse(userId);
+    const session = await Session.createNewSessionWithoutRequestResponse(Supertokens.convertToRecipeUserId(userId));
 
     const tokens = session.getAllSessionTokensDangerously();
     if (tokens.accessAndFrontTokenUpdated) {

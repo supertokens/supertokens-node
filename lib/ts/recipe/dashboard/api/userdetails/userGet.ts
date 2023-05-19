@@ -3,27 +3,28 @@ import STError from "../../../../error";
 import { getUserForRecipeId, isRecipeInitialised, isValidRecipeId } from "../../utils";
 import UserMetaDataRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
+import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
     | {
           status: "NO_USER_FOUND_ERROR";
       }
     | {
-          status: "RECIPE_NOT_INITIALISED";
+          status: "RECIPE_NOT_INITIALISED"; // TODO: this goes away
       }
     | {
           status: "OK";
           recipeId: "emailpassword" | "thirdparty" | "passwordless";
-          user: RecipeLevelUserWithFirstAndLastName;
+          user: RecipeLevelUserWithFirstAndLastName; // TODO: this needs to return the primary user id
       };
 
 export const userGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
-    const userId = options.req.getKeyValueFromQuery("userId");
+    const recipeUserId = options.req.getKeyValueFromQuery("recipeUserId"); // TODO: this needs to change to just be user ID
     const recipeId = options.req.getKeyValueFromQuery("recipeId");
 
-    if (userId === undefined) {
+    if (recipeUserId === undefined) {
         throw new STError({
-            message: "Missing required parameter 'userId'",
+            message: "Missing required parameter 'recipeUserId'",
             type: STError.BAD_INPUT_ERROR,
         });
     }
@@ -48,7 +49,9 @@ export const userGet: APIFunction = async (_: APIInterface, options: APIOptions)
         };
     }
 
-    let user: RecipeLevelUserWithFirstAndLastName | undefined = (await getUserForRecipeId(userId, recipeId)).user;
+    let user: RecipeLevelUserWithFirstAndLastName | undefined = (
+        await getUserForRecipeId(new RecipeUserId(recipeUserId), recipeId)
+    ).user;
 
     if (user === undefined) {
         return {
@@ -72,7 +75,7 @@ export const userGet: APIFunction = async (_: APIInterface, options: APIOptions)
         };
     }
 
-    const userMetaData = await UserMetaData.getUserMetadata(userId);
+    const userMetaData = await UserMetaData.getUserMetadata(recipeUserId);
     const { first_name, last_name } = userMetaData.metadata;
 
     user = {

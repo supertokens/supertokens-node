@@ -14,6 +14,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import { GeneralErrorResponse, User as GlobalUser } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type User = {
     id: string;
     recipeUserId: string;
@@ -85,10 +86,6 @@ export declare type RecipeInterface = {
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
-        | {
-              status: "SIGNUP_NOT_ALLOWED";
-              reason: string;
-          }
     >;
     createNewEmailPasswordRecipeUser(input: {
         email: string;
@@ -142,8 +139,21 @@ export declare type RecipeInterface = {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
+    getPasswordResetTokenInfo(input: {
+        token: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              email: string;
+              userId: string;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext: any;
@@ -165,7 +175,7 @@ export declare type RecipeInterface = {
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export declare type APIInterface = {
-    linkThirdPartyAccountToExistingAccountPOST:
+    linkThirdPartyAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               provider: TypeProvider;
@@ -307,7 +317,7 @@ export declare type APIInterface = {
                     description: string;
                 }
           >);
-    linkEmailPasswordAccountToExistingAccountPOST:
+    linkEmailPasswordAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               formFields: {
@@ -368,10 +378,6 @@ export declare type APIInterface = {
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
-                }
-              | {
-                    status: "SIGNUP_NOT_ALLOWED";
-                    reason: string;
                 }
               | GeneralErrorResponse
           >);

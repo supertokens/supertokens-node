@@ -8,6 +8,7 @@ import { getEmailVerifyLink } from "../utils";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { SessionContainerInterface } from "../../session/types";
 import { getUser } from "../../..";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -66,7 +67,7 @@ export default function getAPIInterface(): APIInterface {
             const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
             if (fromAccountLinkingClaim !== undefined) {
                 // this means that the claim exists and so we will generate the token for that user id
-                recipeUserIdForWhomToGenerateToken = fromAccountLinkingClaim;
+                recipeUserIdForWhomToGenerateToken = new RecipeUserId(fromAccountLinkingClaim);
 
                 // there is a possibility that this user ID is not a recipe user ID anymore
                 // (cause of some race condition), but that shouldn't matter much anyway.
@@ -90,7 +91,7 @@ export default function getAPIInterface(): APIInterface {
                     // whilst the first browser is polling this API - in this case,
                     // we want to have the same effect to the session as if the
                     // email was opened on the original browser itself.
-                    let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                    let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
                     if (user === undefined) {
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
@@ -163,7 +164,7 @@ export default function getAPIInterface(): APIInterface {
             const fromAccountLinkingClaim = await AccountLinkingClaim.resyncAndGetValue(session, userContext);
             if (fromAccountLinkingClaim !== undefined) {
                 // this means that the claim exists and so we will generate the token for that user id
-                recipeUserIdForWhomToGenerateToken = fromAccountLinkingClaim;
+                recipeUserIdForWhomToGenerateToken = new RecipeUserId(fromAccountLinkingClaim);
 
                 // there is a possibility that this user ID is not a recipe user ID anymore
                 // (cause of some race condition), but that shouldn't matter much anyway.
@@ -181,7 +182,7 @@ export default function getAPIInterface(): APIInterface {
                 // this can happen if the user ID was found, but it has no email. In this
                 // case, we treat it as a success case.
 
-                let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
                 if (user === undefined) {
                     throw new SessionError({
                         type: SessionError.UNAUTHORISED,
@@ -210,7 +211,7 @@ export default function getAPIInterface(): APIInterface {
                 });
 
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-                    let user = await getUser(recipeUserIdForWhomToGenerateToken, userContext);
+                    let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
                     if (user === undefined) {
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,

@@ -29,7 +29,9 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
-// For Express
+import RecipeUserId from "../../recipeUserId";
+import { getUser } from "../..";
+
 export default class SessionWrapper {
     static init = Recipe.init;
 
@@ -38,15 +40,24 @@ export default class SessionWrapper {
     static async createNewSession(
         req: any,
         res: any,
-        userId: string,
-        recipeUserId?: string,
+        recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         userContext: any = {}
     ) {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const appInfo = recipeInstance.getAppInfo();
+
+        let user = await getUser(recipeUserId.getAsString(), userContext);
+        let userId = recipeUserId.getAsString();
+        if (user !== undefined) {
+            userId = user.id;
+        }
 
         return await createNewSessionInRequest({
             req,
@@ -63,13 +74,16 @@ export default class SessionWrapper {
     }
 
     static async createNewSessionWithoutRequestResponse(
-        userId: string,
-        recipeUserId?: string,
+        recipeUserId: RecipeUserId,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
         userContext: any = {}
     ) {
+        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            recipeUserId = new RecipeUserId(recipeUserId);
+        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
         const appInfo = recipeInstance.getAppInfo();
@@ -79,6 +93,12 @@ export default class SessionWrapper {
             ...accessTokenPayload,
             iss: issuer,
         };
+
+        let user = await getUser(recipeUserId.getAsString(), userContext);
+        let userId = recipeUserId.getAsString();
+        if (user !== undefined) {
+            userId = user.id;
+        }
 
         for (const claim of claimsAddedByOtherRecipes) {
             const update = await claim.build(userId, recipeUserId, userContext);
@@ -297,13 +317,26 @@ export default class SessionWrapper {
             userContext,
         });
     }
-    static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
+    static revokeAllSessionsForUser(
+        userId: string,
+        revokeSessionsForLinkedAccounts: boolean = true,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
+            userId,
+            revokeSessionsForLinkedAccounts,
+            userContext,
+        });
     }
 
-    static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
+    static getAllSessionHandlesForUser(
+        userId: string,
+        fetchSessionsForAllLinkedAccounts: boolean = true,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
+            fetchSessionsForAllLinkedAccounts,
             userContext,
         });
     }

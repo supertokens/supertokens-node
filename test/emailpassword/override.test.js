@@ -68,12 +68,14 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.loginMethods[0],
+                                                    recipeUserId: response.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete user.loginMethods[0].hasSameEmailAs;
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
@@ -94,12 +96,14 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete user.loginMethods[0].hasSameEmailAs;
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
@@ -111,12 +115,14 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete user.loginMethods[0].hasSameEmailAs;
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
@@ -136,12 +142,15 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await STExpress.getUser(userId));
+            let user = await STExpress.getUser(userId);
+            user.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
+            res.json(user);
         });
 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
+        signUpResponse.body.user.normalizedInputMap = {}; // we do this cause the sign up request will have the map for user@test.com, but the user object won't since it comes from the getUser override
         assert.deepStrictEqual(signUpResponse.body.user, user);
 
         user = undefined;
@@ -173,6 +182,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         );
 
         assert.notStrictEqual(user, undefined);
+        signInResponse.user.normalizedInputMap = {}; // we do this cause the sign up request will have the map for user@test.com, but the user object won't since it comes from the getUser override
         assert.deepStrictEqual(signInResponse.user, user);
 
         user = undefined;
@@ -225,12 +235,14 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete user.loginMethods[0].hasSameEmailAs;
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },
@@ -242,12 +254,14 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete user.loginMethods[0].hasSameEmailAs;
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                     }
                                     return response;
                                 },

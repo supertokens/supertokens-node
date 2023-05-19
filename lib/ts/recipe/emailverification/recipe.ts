@@ -37,6 +37,7 @@ import SessionError from "../session/error";
 import Session from "../session";
 import { AccountLinkingClaim } from "../accountlinking/accountLinkingClaim";
 import { getUser } from "../..";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -197,7 +198,7 @@ export default class Recipe extends RecipeModule {
             }
         }
 
-        let user = await getUser(recipeUserId, userContext);
+        let user = await getUser(recipeUserId.getAsString(), userContext);
 
         if (user === undefined) {
             return {
@@ -207,7 +208,7 @@ export default class Recipe extends RecipeModule {
 
         for (let i = 0; i < user.loginMethods.length; i++) {
             let currLM = user.loginMethods[i];
-            if (currLM.recipeUserId === recipeUserId) {
+            if (currLM.recipeUserId.getAsString() === recipeUserId.getAsString()) {
                 if (currLM.email !== undefined) {
                     return {
                         email: currLM.email,
@@ -230,10 +231,10 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest;
         res: BaseResponse;
         session: SessionContainerInterface | undefined;
-        recipeUserIdWhoseEmailGotVerified: string;
+        recipeUserIdWhoseEmailGotVerified: RecipeUserId;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined> => {
-        let primaryUser = await getUser(input.recipeUserIdWhoseEmailGotVerified, input.userContext);
+        let primaryUser = await getUser(input.recipeUserIdWhoseEmailGotVerified.getAsString(), input.userContext);
         if (primaryUser === undefined) {
             if (input.session === undefined) {
                 return undefined;
@@ -262,7 +263,9 @@ export default class Recipe extends RecipeModule {
             // got linked to ANOTHER primary account (user ID of account has changed to a different user ID != session.getUserId, but
             // we should ignore this since it will result in the user's session changing.)
 
-            if (input.session.getRecipeUserId() === input.recipeUserIdWhoseEmailGotVerified) {
+            if (
+                input.session.getRecipeUserId().getAsString() === input.recipeUserIdWhoseEmailGotVerified.getAsString()
+            ) {
                 // this means that the session's login method's account is the
                 // one that just got verified and that we are NOT doing post login
                 // account linking. So this is only for (Case 1) and (Case 2)
@@ -306,13 +309,16 @@ export default class Recipe extends RecipeModule {
 
                     // Revoke all session belonging to session.getRecipeUserId()
                     // We do not really need to do this, but we do it anyway.. no harm.
-                    await Session.revokeAllSessionsForUser(input.recipeUserIdWhoseEmailGotVerified, input.userContext);
+                    await Session.revokeAllSessionsForUser(
+                        input.recipeUserIdWhoseEmailGotVerified.getAsString(),
+                        false,
+                        input.userContext
+                    );
 
                     // create a new session and return that..
                     return await Session.createNewSession(
                         input.req,
                         input.res,
-                        primaryUser.id,
                         input.session.getRecipeUserId(),
                         {},
                         {},

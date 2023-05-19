@@ -27,6 +27,7 @@ import { Querier } from "../../querier";
 import SuperTokensError from "../../error";
 import SessionError from "../session/error";
 import supertokens from "../../supertokens";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -133,12 +134,12 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell,
         userContext,
     }: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }): Promise<string> => {
-        let recipeUser = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId, userContext });
+        let recipeUser = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
         if (recipeUser === undefined) {
             throw Error("Race condition error. It means that the input recipeUserId was deleted");
         }
@@ -167,11 +168,11 @@ export default class Recipe extends RecipeModule {
             );
 
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-                return recipeUserId;
+                return recipeUserId.getAsString();
             }
 
             if (shouldDoAccountLinking.shouldRequireVerification && !isVerified) {
-                return recipeUserId;
+                return recipeUserId.getAsString();
             }
 
             let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
@@ -209,11 +210,11 @@ export default class Recipe extends RecipeModule {
             );
 
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-                return recipeUserId;
+                return recipeUserId.getAsString();
             }
 
             if (shouldDoAccountLinking.shouldRequireVerification && !isVerified) {
-                return recipeUserId;
+                return recipeUserId.getAsString();
             }
 
             let linkAccountsResult = await this.recipeInterfaceImpl.linkAccounts({
@@ -263,13 +264,13 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell,
         userContext,
     }: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }): Promise<User | undefined> => {
         // first we check if this user itself is a
         // primary user or not. If it is, we return that.
-        let user = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId, userContext });
+        let user = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
         if (user === undefined) {
             return undefined;
         }
@@ -350,9 +351,11 @@ export default class Recipe extends RecipeModule {
 
     isSignUpAllowed = async ({
         newUser,
+        allowLinking,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
+        allowLinking: boolean;
         userContext: any;
     }): Promise<boolean> => {
         // we find other accounts based on the email / phone number.
@@ -393,6 +396,16 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
+        if (!allowLinking) {
+            // this will exist early with a false here cause it means that
+            // if we come here, the newUser will be linked to the primary user.
+
+            // We also do this AFTER calling shouldDoAutomaticAccountLinking cause
+            // in case email verification is not required, then linking should not be
+            // an issue anyway.
+            return false;
+        }
+
         let identitiesForPrimaryUser = this.transformUserInfoIntoVerifiedAndUnverifiedBucket(primaryUser);
 
         // we check the verified array and not the
@@ -408,7 +421,7 @@ export default class Recipe extends RecipeModule {
         return false;
     };
 
-    linkAccountsWithUserFromSession = async <T>({
+    linkAccountWithUserFromSession = async <T>({
         session,
         newUser,
         createRecipeUserFunc,
@@ -440,7 +453,7 @@ export default class Recipe extends RecipeModule {
         | {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
-              recipeUserId: string;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "CUSTOM_RESPONSE";
@@ -550,7 +563,7 @@ export default class Recipe extends RecipeModule {
                 // this can happen if there is a race condition in which the
                 // existing user becomes a primary user ID by the time the code
                 // execution comes into this block. So we call the function once again.
-                return await this.linkAccountsWithUserFromSession({
+                return await this.linkAccountWithUserFromSession({
                     session,
                     newUser,
                     createRecipeUserFunc,
@@ -636,7 +649,7 @@ export default class Recipe extends RecipeModule {
             await createRecipeUserFunc(userContext);
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
-            return await this.linkAccountsWithUserFromSession({
+            return await this.linkAccountWithUserFromSession({
                 session,
                 newUser,
                 createRecipeUserFunc,
@@ -689,13 +702,13 @@ export default class Recipe extends RecipeModule {
                 return {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
                     primaryUserId: existingUser.id,
-                    recipeUserId: userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id,
+                    recipeUserId: userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.loginMethods[0].recipeUserId,
                 };
             }
         }
 
         const linkAccountResponse = await this.recipeInterfaceImpl.linkAccounts({
-            recipeUserId: userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id,
+            recipeUserId: userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.loginMethods[0].recipeUserId,
             primaryUserId: existingUser.id,
             userContext,
         });

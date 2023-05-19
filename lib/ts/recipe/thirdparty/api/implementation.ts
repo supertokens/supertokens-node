@@ -6,10 +6,11 @@ import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import EmailVerification from "../../emailverification/recipe";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        linkAccountToExistingAccountPOST: async function (_input: {
+        linkAccountWithUserFromSessionPOST: async function (_input: {
             provider: TypeProvider;
             code: string;
             redirectURI: string;
@@ -214,7 +215,7 @@ export default function getAPIInterface(): APIInterface {
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            recipeUserId: response.user.id, // TODO: change to recipeUserId
+                            recipeUserId: new RecipeUserId(response.user.id), // TODO: change to recipeUserId
                             email: response.user.email,
                             userContext,
                         }
@@ -232,8 +233,7 @@ export default function getAPIInterface(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                response.user.id,
-                response.user.recipeUserId,
+                new RecipeUserId(response.user.id), // TODO: change to recipeUserId
                 {},
                 {},
                 userContext

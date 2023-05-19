@@ -19,6 +19,7 @@ import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
 import { mockListUsersByAccountInfo, mockGetUser, mockFetchFromAccountToLinkTable, mockGetUsers } from "./mockCore";
+import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
@@ -30,7 +31,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 primaryUserIds: string[];
             }
         ): Promise<{
-            [primaryUserId: string]: string[];
+            [primaryUserId: string]: RecipeUserId[];
         }> {
             let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/users"), {
                 primaryUserIds: primaryUserIds.join(","),
@@ -43,7 +44,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             {
                 recipeUserIds,
             }: {
-                recipeUserIds: string[];
+                recipeUserIds: RecipeUserId[];
             }
         ): Promise<{
             [recipeUserId: string]: string | null;
@@ -103,7 +104,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             {
                 recipeUserId,
             }: {
-                recipeUserId: string;
+                recipeUserId: RecipeUserId;
             }
         ): Promise<
             | {
@@ -128,7 +129,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             {
                 recipeUserId,
             }: {
-                recipeUserId: string;
+                recipeUserId: RecipeUserId;
                 userContext: any;
             }
         ): Promise<
@@ -158,7 +159,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId,
                 primaryUserId,
             }: {
-                recipeUserId: string;
+                recipeUserId: RecipeUserId;
                 primaryUserId: string;
             }
         ): Promise<
@@ -192,7 +193,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 primaryUserId,
                 userContext,
             }: {
-                recipeUserId: string;
+                recipeUserId: RecipeUserId;
                 primaryUserId: string;
                 userContext: any;
             }
@@ -221,7 +222,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             );
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
-                await Session.revokeAllSessionsForUser(recipeUserId, userContext);
+                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false, userContext);
                 let user: User | undefined = await this.getUser({
                     userId: primaryUserId,
                     userContext,
@@ -246,7 +247,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 recipeUserId,
                 userContext,
             }: {
-                recipeUserId: string;
+                recipeUserId: RecipeUserId;
                 userContext: any;
             }
         ): Promise<
@@ -274,7 +275,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
 
                 // The reason we don't do this in the core is that if the user has overriden
                 // session recipe, it goes through their logic.
-                await Session.revokeAllSessionsForUser(recipeUserId, userContext);
+                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false, userContext);
             }
 
             return accountsUnlinkingResult;
@@ -329,7 +330,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         fetchFromAccountToLinkTable: async function ({
             recipeUserId,
         }: {
-            recipeUserId: string;
+            recipeUserId: RecipeUserId;
         }): Promise<string | undefined> {
             if (process.env.MOCK !== "true") {
                 let result = await querier.sendGetRequest(
@@ -347,7 +348,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             recipeUserId,
             primaryUserId,
         }: {
-            recipeUserId: string;
+            recipeUserId: RecipeUserId;
             primaryUserId: string;
         }): Promise<
             | {

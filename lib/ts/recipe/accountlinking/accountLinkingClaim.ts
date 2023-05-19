@@ -1,8 +1,9 @@
 import { PrimitiveClaim } from "../session/claims";
 import { SessionContainerInterface } from "../session/types";
 import AccountLinking from "./";
+import RecipeUserId from "../../recipeUserId";
 
-class AccountLinkingClaimClass extends PrimitiveClaim<string> {
+export class AccountLinkingClaimClass extends PrimitiveClaim<string> {
     constructor() {
         super({
             key: "st-linking",
@@ -25,7 +26,10 @@ class AccountLinkingClaimClass extends PrimitiveClaim<string> {
             return undefined;
         }
 
-        let primaryUserToLinkTo = await AccountLinking.fetchFromAccountToLinkTable(fromSession, userContext);
+        let primaryUserToLinkTo = await AccountLinking.fetchFromAccountToLinkTable(
+            new RecipeUserId(fromSession),
+            userContext
+        );
         if (primaryUserToLinkTo === undefined || primaryUserToLinkTo !== session.getUserId()) {
             // this means that this session has stale data about which account to
             // link to. So we remove the claim

@@ -67,7 +67,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         let res = await signIn("test@gmail.com", "testPass123");
 
         await updateEmailOrPassword({
-            userId: res.user.id,
+            recipeUserId: res.user.id,
             email: "test2@gmail.com",
             password: "testPass",
             applyPasswordPolicy: false,
@@ -185,7 +185,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         let res = await signIn("test@gmail.com", "testPass123");
 
         const res2 = await updateEmailOrPassword({
-            userId: res.user.id,
+            recipeUserId: res.user.id,
             email: "test2@gmail.com",
             password: "testPass2",
         });

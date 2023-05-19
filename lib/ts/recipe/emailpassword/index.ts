@@ -19,6 +19,7 @@ import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDelive
 import { User } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 import { linkAccountsWithUserFromSession } from "../accountlinking";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -67,13 +68,24 @@ export default class Wrapper {
         });
     }
 
+    static getPasswordResetTokenInfo(token: string, userContext?: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPasswordResetTokenInfo({
+            token,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
     static updateEmailOrPassword(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string;
         password?: string;
         userContext?: any;
         applyPasswordPolicy?: boolean;
     }) {
+        if (typeof input.recipeUserId === "string" && process.env.TEST_MODE === "testing") {
+            // This is there cause for tests, we pass in a string in most tests.
+            input.recipeUserId = new RecipeUserId(input.recipeUserId);
+        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
@@ -168,6 +180,8 @@ export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export let linkEmailPasswordAccountsWithUserFromSession = Wrapper.linkEmailPasswordAccountsWithUserFromSession;
+
+export let getPasswordResetTokenInfo = Wrapper.getPasswordResetTokenInfo;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
 

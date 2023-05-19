@@ -9,10 +9,11 @@ import EmailVerification from "../../emailverification/recipe";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { storeIntoAccountToLinkTable } from "../../accountlinking";
 import { RecipeLevelUser } from "../../accountlinking/types";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        linkAccountToExistingAccountPOST: async function ({
+        linkAccountWithUserFromSessionPOST: async function ({
             formFields,
             session,
             options,
@@ -80,7 +81,7 @@ export default function getAPIImplementation(): APIInterface {
             };
 
             let accountLinkingInstance = await AccountLinking.getInstance();
-            let result = await accountLinkingInstance.linkAccountsWithUserFromSession<{
+            let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
                 status: "WRONG_CREDENTIALS_ERROR";
             }>({
                 session,
@@ -119,7 +120,7 @@ export default function getAPIImplementation(): APIInterface {
                     }
                 }
                 // status: "OK"
-                await session.setClaimValue(AccountLinkingClaim, result.recipeUserId, userContext);
+                await session.setClaimValue(AccountLinkingClaim, result.recipeUserId.getAsString(), userContext);
                 return {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
                     description: "Before accounts can be linked, the new account must be verified",
@@ -262,7 +263,7 @@ export default function getAPIImplementation(): APIInterface {
                         status: "OK",
                     };
                 }
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId);
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
 
             // Now we need to check that if there exists any email password user at all
@@ -278,11 +279,12 @@ export default function getAPIImplementation(): APIInterface {
                         recipeId: "emailpassword",
                         email,
                     },
+                    allowLinking: true,
                     userContext,
                 });
                 if (isSignUpAllowed) {
                     // notice that we pass in the primary user ID here. This means that
-                    // we will be creating a new email password account with the token
+                    // we will be creating a new email password account when the token
                     // is consumed and linking it to this primary user.
                     return await generateAndSendPasswordResetToken(primaryUserAssociatedWithEmail.id);
                 } else {
@@ -302,11 +304,11 @@ export default function getAPIImplementation(): APIInterface {
 
             let areTheTwoAccountsLinked =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
-                    return lm.recipeUserId === emailPasswordAccount!.recipeUserId;
+                    return lm.recipeUserId.getAsString() === emailPasswordAccount!.recipeUserId.getAsString();
                 }) !== undefined;
 
             if (areTheTwoAccountsLinked) {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
 
             // Here we know that the two accounts are NOT linked. We now need to check for an
@@ -340,20 +342,20 @@ export default function getAPIImplementation(): APIInterface {
                 // here we will go ahead with the token generation cause
                 // even when the token is consumed, we will not be linking the accounts
                 // so no need to check for anything
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
 
             if (!shouldDoAccountLinkingResponse.shouldRequireVerification) {
                 // the checks below are related to email verification, and if the user
                 // does not care about that, then we should just continue with token generation
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
 
             // Now we start the required security checks. First we check if the primary user
             // it has just one linked account. And if that's true, then we continue
             // cause then there is no scope for account takeover
             if (primaryUserAssociatedWithEmail.loginMethods.length === 1) {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
 
             // Next we check if there is any login method in which the input email is verified.
@@ -365,7 +367,7 @@ export default function getAPIImplementation(): APIInterface {
                 }) !== undefined;
 
             if (emailVerified) {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
 
             // finally, we check if the primary user has any other email / phone number
@@ -385,7 +387,7 @@ export default function getAPIImplementation(): APIInterface {
                     reason: "Token generation was not done because of account take over risk. Please contact support.",
                 };
             } else {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeId);
+                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
         },
         passwordResetPOST: async function ({
@@ -411,7 +413,7 @@ export default function getAPIImplementation(): APIInterface {
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
             | GeneralErrorResponse
         > {
-            async function markEmailAsVerified(recipeUserId: string, email: string) {
+            async function markEmailAsVerified(recipeUserId: RecipeUserId, email: string) {
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
@@ -431,7 +433,9 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            async function doUpdatePassword(): Promise<
+            async function doUpdatePassword(
+                recipeUserId: RecipeUserId
+            ): Promise<
                 | {
                       status: "OK";
                       user: User;
@@ -442,7 +446,9 @@ export default function getAPIImplementation(): APIInterface {
                 | GeneralErrorResponse
             > {
                 let updateResponse = await options.recipeImplementation.updateEmailOrPassword({
-                    userId: recipeUserIdForWhomTokenWasGenerated,
+                    // we can treat userIdForWhomTokenWasGenerated as a recipe user id cause
+                    // whenever this function is called,
+                    recipeUserId,
                     password: newPassword,
                     userContext,
                 });
@@ -483,7 +489,7 @@ export default function getAPIImplementation(): APIInterface {
                 return tokenConsumptionResponse;
             }
 
-            let recipeUserIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
+            let userIdForWhomTokenWasGenerated = tokenConsumptionResponse.userId;
             let emailForWhomTokenWasGenerated = tokenConsumptionResponse.email;
 
             let existingUser = await getUser(tokenConsumptionResponse.userId, userContext);
@@ -511,11 +517,14 @@ export default function getAPIImplementation(): APIInterface {
                         // the primary user ID is used for token generation is if the email password
                         // user did not exist - in which case the value of emailPasswordUserExists will
                         // resolve to false anyway, and that's what we want.
-                        return lm.recipeUserId === recipeUserIdForWhomTokenWasGenerated;
+                        return (
+                            lm.recipeUserId.getAsString() === userIdForWhomTokenWasGenerated &&
+                            lm.recipeId === "emailpassword"
+                        );
                     }) !== undefined;
 
                 if (emailPasswordUserIsLinkedToExistingUser) {
-                    return doUpdatePassword();
+                    return doUpdatePassword(new RecipeUserId(userIdForWhomTokenWasGenerated));
                 } else {
                     // this means that the existingUser does not have an emailpassword user associated
                     // with it. It could now mean that no emailpassword user exists, or it could mean that
@@ -545,14 +554,17 @@ export default function getAPIImplementation(): APIInterface {
                         // access to the email to work.. This has a good side effect that
                         // any other login method with the same email in existingAccount will also get marked
                         // as verified.
-                        await markEmailAsVerified(createUserResponse.user.id, tokenConsumptionResponse.email);
+                        await markEmailAsVerified(
+                            createUserResponse.user.loginMethods[0].recipeUserId,
+                            tokenConsumptionResponse.email
+                        );
 
                         // Now we try and link the accounts. The function below will try and also
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
                         let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                            recipeUserId: createUserResponse.user.id,
+                            recipeUserId: createUserResponse.user.loginMethods[0].recipeUserId,
                             isVerified: true,
                             checkAccountsToLinkTableAsWell: true,
                             userContext,
@@ -575,7 +587,7 @@ export default function getAPIImplementation(): APIInterface {
                 // it must be a non linked email password account. In this case, we simply update the password.
                 // Linking to an existing account will be done after the user goes through the email
                 // verification flow once they log in (if applicable).
-                return doUpdatePassword();
+                return doUpdatePassword(new RecipeUserId(userIdForWhomTokenWasGenerated));
             }
         },
         signInPOST: async function ({
@@ -620,7 +632,6 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                response.user.id,
                 emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},
@@ -652,10 +663,6 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
-            | {
-                  status: "SIGNUP_NOT_ALLOWED";
-                  reason: string;
-              }
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -668,8 +675,6 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                return response;
-            } else if (response.status === "SIGNUP_NOT_ALLOWED") {
                 return response;
             }
             let emailPasswordRecipeUser = response.user.loginMethods.find(
@@ -684,7 +689,6 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                response.user.id,
                 emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},

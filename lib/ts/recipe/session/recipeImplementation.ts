@@ -20,6 +20,8 @@ import { logDebugMessage } from "../../logger";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
+import RecipeUserId from "../../recipeUserId";
+import { mockRegenerateSession } from "./mockCore";
 
 export type Helpers = {
     querier: Querier;
@@ -90,7 +92,7 @@ export default function getRecipeInterface(
             disableAntiCsrf,
         }: {
             userId: string;
-            recipeUserId?: string;
+            recipeUserId: RecipeUserId;
             disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
@@ -227,7 +229,7 @@ export default function getRecipeInterface(
             this: RecipeInterface,
             input: {
                 userId: string;
-                recipeUserId: string;
+                recipeUserId: RecipeUserId;
                 accessTokenPayload: any;
                 claimValidators: SessionClaimValidator[];
                 userContext: any;
@@ -244,11 +246,7 @@ export default function getRecipeInterface(
                 logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(
-                        input.userId,
-                        input.recipeUserId ?? input.userId,
-                        input.userContext
-                    );
+                    const value = await validator.claim.fetchValue(input.userId, input.recipeUserId, input.userContext);
                     logDebugMessage(
                         "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
                     );
@@ -339,7 +337,7 @@ export default function getRecipeInterface(
                   session: {
                       handle: string;
                       userId: string;
-                      recipeUserId: string;
+                      recipeUserId: RecipeUserId;
                       userDataInJWT: any;
                   };
                   accessToken?: {
@@ -355,22 +353,45 @@ export default function getRecipeInterface(
                     ? {}
                     : input.newAccessTokenPayload;
 
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
-                accessToken: input.accessToken,
-                userDataInJWT: newAccessTokenPayload,
-            });
+            let response;
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
+                    accessToken: input.accessToken,
+                    userDataInJWT: newAccessTokenPayload,
+                });
+            } else {
+                response = await mockRegenerateSession(input.accessToken, newAccessTokenPayload, querier);
+            }
             if (response.status === "UNAUTHORISED") {
                 return undefined;
             }
-            return response;
+            return {
+                ...response,
+                session: {
+                    ...response.session,
+                    recipeUserId: new RecipeUserId(response.session.recipeUserId),
+                },
+            };
         },
 
-        revokeAllSessionsForUser: function ({ userId }: { userId: string }) {
-            return SessionFunctions.revokeAllSessionsForUser(helpers, userId);
+        revokeAllSessionsForUser: function ({
+            userId,
+            revokeSessionsForLinkedAccounts,
+        }: {
+            userId: string;
+            revokeSessionsForLinkedAccounts: boolean;
+        }) {
+            return SessionFunctions.revokeAllSessionsForUser(helpers, userId, revokeSessionsForLinkedAccounts);
         },
 
-        getAllSessionHandlesForUser: function ({ userId }: { userId: string }): Promise<string[]> {
-            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId);
+        getAllSessionHandlesForUser: function ({
+            userId,
+            fetchSessionsForAllLinkedAccounts,
+        }: {
+            userId: string;
+            fetchSessionsForAllLinkedAccounts: boolean;
+        }): Promise<string[]> {
+            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, fetchSessionsForAllLinkedAccounts);
         },
 
         revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {

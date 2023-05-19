@@ -133,7 +133,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     });
                     const respJson = await res.json();
                     assert.deepStrictEqual(respJson.status, "OK");
-                    assert.deepStrictEqual(respJson.user.email, "john.doe@supertokens.io");
+                    assert.deepStrictEqual(respJson.user.emails[0], "john.doe@supertokens.io");
                     assert.strictEqual(respJson.user.id, process.env.user);
                     assert.notStrictEqual(res.headers.get("front-token"), undefined);
                     const tokens = getSessionTokensFromResponse(res);
@@ -170,7 +170,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     const respJson = await res.json();
 
                     assert.deepStrictEqual(respJson.status, "OK");
-                    assert.deepStrictEqual(respJson.user.email, "john.doe@supertokens.io");
+                    assert.deepStrictEqual(respJson.user.emails[0], "john.doe@supertokens.io");
                     assert(res.headers.get("front-token") !== undefined);
                     tokens = getSessionTokensFromResponse(res);
                     assert.notEqual(tokens.access, undefined);

@@ -18,6 +18,7 @@ import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResI
 import { Helpers, protectedProps } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
 import { parseJWTWithoutSignatureVerification } from "./jwt";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -28,14 +29,14 @@ export default class Session implements SessionContainerInterface {
         protected antiCsrfToken: string | undefined,
         protected sessionHandle: string,
         protected userId: string,
-        protected recipeUserId: string,
+        protected recipeUserId: RecipeUserId,
         protected userDataInAccessToken: any,
         protected reqResInfo: ReqResInfo | undefined,
         protected accessTokenUpdated: boolean
     ) {}
 
-    getRecipeUserId(_userContext?: any): string {
-        return this.recipeUserId ?? this.userId;
+    getRecipeUserId(_userContext?: any): RecipeUserId {
+        return this.recipeUserId;
     }
 
     async revokeSession(userContext?: any) {

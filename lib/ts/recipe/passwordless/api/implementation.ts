@@ -2,6 +2,7 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -32,7 +33,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            recipeUserId: user.id, // TODO: change to recipeUserId
+                            recipeUserId: new RecipeUserId(user.id), // TODO: change to recipeUserId
                             email: user.email,
                             userContext: input.userContext,
                         }
@@ -50,8 +51,7 @@ export default function getAPIImplementation(): APIInterface {
             const session = await Session.createNewSession(
                 input.options.req,
                 input.options.res,
-                user.id,
-                user.recipeUserId,
+                new RecipeUserId(user.id), // TODO: change to recipeUserId
                 {},
                 {},
                 input.userContext
@@ -265,7 +265,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
         },
-        linkAccountToExistingAccountPOST: async function (_input) {
+        linkAccountWithUserFromSessionPOST: async function (_input) {
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 description: "",

@@ -345,7 +345,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    linkThirdPartyAccountToExistingAccountPOST:
+    linkThirdPartyAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               provider: TypeProvider;
@@ -514,7 +514,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    linkPasswordlessAccountToExistingAccountPOST:
+    linkPasswordlessAccountWithUserFromSessionPOST:
         | undefined
         | ((
               input: (

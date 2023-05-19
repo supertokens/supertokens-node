@@ -25,6 +25,7 @@ const { maxVersion } = require("../lib/build/utils");
 const { fail } = require("assert");
 const sinon = require("sinon");
 const request = require("http");
+const { default: RecipeUserId } = require("../lib/build/recipeUserId");
 
 /* TODO:
 - the opposite of the above (check that if signing key changes, things are still fine) condition
@@ -73,7 +74,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -165,7 +166,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const oldSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -174,7 +175,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -185,7 +186,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const newSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -248,7 +249,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -259,7 +260,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -331,7 +332,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -342,7 +343,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -413,7 +414,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -461,7 +462,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}
@@ -564,7 +565,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         let session = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
-            undefined,
+            new RecipeUserId(""),
             false,
             {},
             {}

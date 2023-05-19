@@ -198,7 +198,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", undefined, {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             return res.send("").code(200);
         });
 

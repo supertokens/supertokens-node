@@ -16,6 +16,7 @@
 import OverrideableBuilder from "supertokens-js-override";
 import type { User } from "../../types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
@@ -70,10 +71,10 @@ export type RecipeInterface = {
         primaryUserIds: string[];
         userContext: any;
     }) => Promise<{
-        [primaryUserId: string]: string[]; // recipeUserIds. If input primary user ID doesn't exists, those ids will not be part of the output set.
+        [primaryUserId: string]: RecipeUserId[]; // recipeUserIds. If input primary user ID doesn't exists, those ids will not be part of the output set.
     }>;
     getPrimaryUserIdsForRecipeUserIds: (input: {
-        recipeUserIds: string[];
+        recipeUserIds: RecipeUserId[];
         userContext: any;
     }) => Promise<{
         [recipeUserId: string]: string | null; // if recipeUserId doesn't have a primaryUserId, then it will be mapped to `null`. If the input recipeUserId doesn't exist, then it won't be a part of the map
@@ -90,7 +91,7 @@ export type RecipeInterface = {
         nextPaginationToken?: string;
     }>;
     canCreatePrimaryUserId: (input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<
         | {
@@ -106,7 +107,7 @@ export type RecipeInterface = {
           }
     >;
     createPrimaryUser: (input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<
         | {
@@ -123,7 +124,7 @@ export type RecipeInterface = {
           }
     >;
     canLinkAccounts: (input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: any;
     }) => Promise<
@@ -143,7 +144,7 @@ export type RecipeInterface = {
           }
     >;
     linkAccounts: (input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: any;
     }) => Promise<
@@ -163,7 +164,7 @@ export type RecipeInterface = {
           }
     >;
     unlinkAccounts: (input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<
         | {
@@ -182,9 +183,19 @@ export type RecipeInterface = {
         removeAllLinkedAccounts: boolean;
         userContext: any;
     }) => Promise<{ status: "OK" }>;
-    fetchFromAccountToLinkTable: (input: { recipeUserId: string; userContext: any }) => Promise<string | undefined>;
+
+    // these two functions and table is there in the core only because
+    // if the user clicks on the email verification link and opens it in a new
+    // browser which doesn't have the session, it will fetch from this table
+    // and do the linking. If these functions / table was not there, then
+    // the email verification POST API in this case would not know which recipeUserId
+    // to link to.
+    fetchFromAccountToLinkTable: (input: {
+        recipeUserId: RecipeUserId;
+        userContext: any;
+    }) => Promise<string | undefined>;
     storeIntoAccountToLinkTable: (input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: any;
     }) => Promise<
@@ -208,5 +219,5 @@ export type AccountInfoWithRecipeId = {
 
 export type RecipeLevelUser = {
     timeJoined: number;
-    recipeUserId: string;
+    recipeUserId: RecipeUserId;
 } & AccountInfoWithRecipeId;

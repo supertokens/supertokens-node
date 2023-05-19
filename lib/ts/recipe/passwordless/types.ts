@@ -375,7 +375,7 @@ export type APIInterface = {
           }
     >;
 
-    linkAccountToExistingAccountPOST:
+    linkAccountWithUserFromSessionPOST:
         | undefined
         | ((
               input: (

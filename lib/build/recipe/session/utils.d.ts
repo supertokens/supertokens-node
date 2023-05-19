@@ -11,6 +11,7 @@ import {
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
 import type { BaseRequest, BaseResponse } from "../../framework";
+import RecipeUserId from "../../recipeUserId";
 export declare function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
     _: string,
@@ -33,7 +34,7 @@ export declare function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
     _: string,
-    __: string,
+    __: RecipeUserId,
     ___: BaseRequest,
     response: BaseResponse
 ): Promise<void>;

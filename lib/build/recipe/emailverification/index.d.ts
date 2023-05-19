@@ -2,12 +2,13 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<
@@ -31,16 +32,28 @@ export default class Wrapper {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    static isEmailVerified(recipeUserId: string, email?: string, userContext?: any): Promise<boolean>;
+    static getEmailVerificationTokenInfo(
+        token: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+    >;
+    static isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<{
         status: string;
     }>;
     static unverifyEmail(
-        recipeUserId: string,
+        recipeUserId: RecipeUserId,
         email?: string,
         userContext?: any
     ): Promise<{
@@ -61,4 +74,5 @@ export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVeri
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 export type { RecipeInterface, APIOptions, APIInterface, User };
 export declare let sendEmail: typeof Wrapper.sendEmail;
+export declare let getEmailVerificationTokenInfo: typeof Wrapper.getEmailVerificationTokenInfo;
 export { EmailVerificationClaim } from "./emailVerificationClaim";

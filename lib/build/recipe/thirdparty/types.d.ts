@@ -148,7 +148,7 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
-    linkAccountToExistingAccountPOST:
+    linkAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               provider: TypeProvider;

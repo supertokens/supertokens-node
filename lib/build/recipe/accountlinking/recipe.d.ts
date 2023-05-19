@@ -6,6 +6,7 @@ import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import type { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
+import RecipeUserId from "../../recipeUserId";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -38,7 +39,7 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell,
         userContext,
     }: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
@@ -48,7 +49,7 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell,
         userContext,
     }: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<User | undefined>;
@@ -66,12 +67,14 @@ export default class Recipe extends RecipeModule {
     };
     isSignUpAllowed: ({
         newUser,
+        allowLinking,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
+        allowLinking: boolean;
         userContext: any;
     }) => Promise<boolean>;
-    linkAccountsWithUserFromSession: <T>({
+    linkAccountWithUserFromSession: <T>({
         session,
         newUser,
         createRecipeUserFunc,
@@ -105,7 +108,7 @@ export default class Recipe extends RecipeModule {
         | {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
-              recipeUserId: string;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "CUSTOM_RESPONSE";

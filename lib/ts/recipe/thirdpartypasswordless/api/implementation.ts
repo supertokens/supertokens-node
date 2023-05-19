@@ -14,14 +14,14 @@ export default function getAPIImplementation(): APIInterface {
         passwordlessUserPhoneNumberExistsGET: passwordlessImplementation.phoneNumberExistsGET?.bind(
             DerivedPwdless(this)
         ),
-        linkThirdPartyAccountToExistingAccountPOST: thirdPartyImplementation.linkAccountToExistingAccountPOST?.bind(
+        linkThirdPartyAccountWithUserFromSessionPOST: thirdPartyImplementation.linkAccountWithUserFromSessionPOST?.bind(
             DerivedTP(this)
         ),
         resendCodePOST: passwordlessImplementation.resendCodePOST?.bind(DerivedPwdless(this)),
         authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET?.bind(DerivedTP(this)),
         thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST?.bind(DerivedTP(this)),
         appleRedirectHandlerPOST: thirdPartyImplementation.appleRedirectHandlerPOST?.bind(DerivedTP(this)),
-        linkPasswordlessAccountToExistingAccountPOST: passwordlessImplementation.linkAccountToExistingAccountPOST?.bind(
+        linkPasswordlessAccountWithUserFromSessionPOST: passwordlessImplementation.linkAccountWithUserFromSessionPOST?.bind(
             DerivedPwdless(this)
         ),
     };

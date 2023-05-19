@@ -9,6 +9,7 @@ import DerivedTP from "./thirdPartyRecipeImplementation";
 import { User as GlobalUser } from "../../../types";
 import { getUser } from "../../../";
 import { TypeNormalisedInput } from "../../emailpassword/types";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
@@ -26,14 +27,7 @@ export default function getRecipeInterface(
             email: string;
             password: string;
             userContext: any;
-        }): Promise<
-            | { status: "OK"; user: GlobalUser }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-            | {
-                  status: "SIGNUP_NOT_ALLOWED";
-                  reason: string;
-              }
-        > {
+        }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
 
@@ -80,6 +74,10 @@ export default function getRecipeInterface(
             return originalEmailPasswordImplementation.consumePasswordResetToken.bind(DerivedEP(this))(input);
         },
 
+        getPasswordResetTokenInfo: async function (input: { token: string; userContext: any }) {
+            return originalEmailPasswordImplementation.getPasswordResetTokenInfo.bind(DerivedEP(this))(input);
+        },
+
         createNewEmailPasswordRecipeUser: async function (input: {
             email: string;
             password: string;
@@ -97,7 +95,7 @@ export default function getRecipeInterface(
         updateEmailOrPassword: async function (
             this: RecipeInterface,
             input: {
-                userId: string;
+                recipeUserId: RecipeUserId;
                 email?: string;
                 password?: string;
                 userContext: any;
@@ -113,7 +111,7 @@ export default function getRecipeInterface(
               }
             | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
         > {
-            let user = await getUser(input.userId, input.userContext);
+            let user = await getUser(input.recipeUserId.getAsString(), input.userContext);
             if (user === undefined) {
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",
@@ -121,7 +119,10 @@ export default function getRecipeInterface(
             }
             let inputUserIdIsPointingToEmailPasswordUser =
                 user.loginMethods.find((lM) => {
-                    return lM.recipeId === "emailpassword" && lM.recipeUserId === input.userId;
+                    return (
+                        lM.recipeId === "emailpassword" &&
+                        lM.recipeUserId.getAsString() === input.recipeUserId.getAsString()
+                    );
                 }) !== undefined;
 
             if (!inputUserIdIsPointingToEmailPasswordUser) {

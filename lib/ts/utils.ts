@@ -99,8 +99,29 @@ export function sendNon200Response(res: BaseResponse, statusCode: number, body: 
 
 export function send200Response(res: BaseResponse, responseJson: any) {
     logDebugMessage("Sending response to client with status code: 200");
+    responseJson = deepTransform(responseJson);
     res.setStatusCode(200);
     res.sendJSONResponse(responseJson);
+}
+
+// this function tries to convert the json response based on the toJson function
+// defined in the objects in the input. This is primarily used to convert the RecipeUserId
+// type to a string type before sending it to the client.
+function deepTransform(obj: { [key: string]: any }): { [key: string]: any } {
+    let out: { [key: string]: any } = Array.isArray(obj) ? [] : {};
+
+    for (let key in obj) {
+        let val = obj[key];
+        if (val && typeof val === "object" && val["toJson"] !== undefined && typeof val["toJson"] === "function") {
+            out[key] = val.toJson();
+        } else if (val && typeof val === "object") {
+            out[key] = deepTransform(val);
+        } else {
+            out[key] = val;
+        }
+    }
+
+    return out;
 }
 
 export function isAnIpAddress(ipaddress: string) {

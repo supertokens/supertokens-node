@@ -156,7 +156,7 @@ export default class Recipe extends RecipeModule {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
                 id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
-                disabled: this.apiImpl.linkAccountToExistingAccountPOST === undefined,
+                disabled: this.apiImpl.linkAccountWithUserFromSessionPOST === undefined,
             },
         ];
     };

@@ -16,8 +16,12 @@
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import { SessionContainerInterface } from "../session/types";
+import RecipeUserId from "../../recipeUserId";
+import { AccountLinkingClaim } from "./accountLinkingClaim";
 export default class Wrapper {
     static init = Recipe.init;
+
+    static AccountLinkingClaim = AccountLinkingClaim;
 
     static async getRecipeUserIdsForPrimaryUserIds(primaryUserIds: string[], userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.getRecipeUserIdsForPrimaryUserIds({
@@ -26,7 +30,7 @@ export default class Wrapper {
         });
     }
 
-    static async getPrimaryUserIdsForRecipeUserIds(recipeUserIds: string[], userContext?: any) {
+    static async getPrimaryUserIdsForRecipeUserIds(recipeUserIds: RecipeUserId[], userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.getPrimaryUserIdsForRecipeUserIds({
             recipeUserIds,
             userContext: userContext === undefined ? {} : userContext,
@@ -43,7 +47,7 @@ export default class Wrapper {
      * no linking that happened.
      */
     static async createPrimaryUserIdOrLinkAccounts(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         isVerified: boolean;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
@@ -66,7 +70,7 @@ export default class Wrapper {
      * into a primary user itself.
      */
     static async getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
-        recipeUserId: string;
+        recipeUserId: RecipeUserId;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }) {
@@ -77,14 +81,14 @@ export default class Wrapper {
         });
     }
 
-    static async canCreatePrimaryUserId(recipeUserId: string, userContext?: any) {
+    static async canCreatePrimaryUserId(recipeUserId: RecipeUserId, userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUserId({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async createPrimaryUser(recipeUserId: string, userContext?: any) {
+    static async createPrimaryUser(recipeUserId: RecipeUserId, userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
@@ -120,7 +124,7 @@ export default class Wrapper {
         >;
         userContext?: any;
     }) {
-        return await Recipe.getInstance().linkAccountsWithUserFromSession<T>({
+        return await Recipe.getInstance().linkAccountWithUserFromSession<T>({
             session: input.session,
             newUser: input.newUser,
             createRecipeUserFunc: input.createRecipeUserFunc,
@@ -129,7 +133,7 @@ export default class Wrapper {
         });
     }
 
-    static async canLinkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any) {
+    static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
             primaryUserId,
@@ -137,7 +141,7 @@ export default class Wrapper {
         });
     }
 
-    static async linkAccounts(recipeUserId: string, primaryUserId: string, userContext?: any) {
+    static async linkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.linkAccounts({
             recipeUserId,
             primaryUserId,
@@ -145,14 +149,14 @@ export default class Wrapper {
         });
     }
 
-    static async unlinkAccounts(recipeUserId: string, userContext?: any) {
+    static async unlinkAccounts(recipeUserId: RecipeUserId, userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.unlinkAccounts({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async fetchFromAccountToLinkTable(recipeUserId: string, userContext?: any) {
+    static async fetchFromAccountToLinkTable(recipeUserId: RecipeUserId, userContext?: any) {
         userContext = userContext === undefined ? {} : userContext;
         return await Recipe.getInstance().recipeInterfaceImpl.fetchFromAccountToLinkTable({
             recipeUserId,
@@ -160,7 +164,7 @@ export default class Wrapper {
         });
     }
 
-    static async storeIntoAccountToLinkTable(recipeUserId: string, primaryUserId: string, userContext?: any) {
+    static async storeIntoAccountToLinkTable(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
         userContext = userContext === undefined ? {} : userContext;
         return await Recipe.getInstance().recipeInterfaceImpl.storeIntoAccountToLinkTable({
             recipeUserId,
@@ -185,3 +189,5 @@ export const getPrimaryUserIdThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryU
 export const linkAccountsWithUserFromSession = Wrapper.linkAccountsWithUserFromSession;
 
 export type { RecipeInterface };
+
+export { AccountLinkingClaim } from "./accountLinkingClaim";
