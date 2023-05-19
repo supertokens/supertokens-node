@@ -141,7 +141,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                                 createNewSession: async (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
-                                        ...(await TrueClaim.build(input.userId, input.userContext)),
+                                        ...(await TrueClaim.build(input.userId, input.recipeUserId, input.userContext)),
                                         ...customClaims,
                                     };
                                     return oI.createNewSession(input);
@@ -159,6 +159,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             assert.strictEqual(Object.keys(payloadParam).length, 1);
 
             const payload = res.getAccessTokenPayload();
+
             assert.strictEqual(Object.keys(payload).length, 13); // 5 + 8 standard
             // We have the prop from the payload param
             assert.strictEqual(payload["initial"], true);
