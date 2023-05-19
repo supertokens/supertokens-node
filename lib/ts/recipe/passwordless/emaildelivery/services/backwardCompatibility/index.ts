@@ -14,9 +14,8 @@
  */
 import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import axios, { AxiosError } from "axios";
 import { NormalisedAppinfo } from "../../../../../types";
-import { logDebugMessage } from "../../../../../logger";
+import { postWithFetch } from "../../../../../utils";
 
 function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (
@@ -34,59 +33,37 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
         if (process.env.TEST_MODE === "testing") {
             return;
         }
-        try {
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.io/0/st/auth/passwordless/login",
-                data: {
-                    email: input.email,
-                    appName: appInfo.appName,
-                    codeLifetime: input.codeLifetime,
-                    urlWithLinkCode: input.urlWithLinkCode,
-                    userInputCode: input.userInputCode,
-                },
-                headers: {
-                    "api-version": 0,
-                },
-            });
-            logDebugMessage(`Email sent to ${input.email}`);
-        } catch (error) {
-            logDebugMessage("Error sending passwordless login email");
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                if (err.response) {
-                    logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
-                } else {
-                    logDebugMessage(`Error: ${err.message}`);
-                }
+        const result = await postWithFetch(
+            "https://api.supertokens.io/0/st/auth/passwordless/login",
+            {
+                "api-version": "0",
+                "content-type": "application/json; charset=utf-8",
+            },
+            {
+                email: input.email,
+                appName: appInfo.appName,
+                codeLifetime: input.codeLifetime,
+                urlWithLinkCode: input.urlWithLinkCode,
+                userInputCode: input.userInputCode,
+            },
+            {
+                successLog: `Email sent to ${input.email}`,
+                errorLogHeader: "Error sending passwordless login email",
+            }
+        );
+        if ("error" in result) {
+            throw result.error;
+        }
+        if (result.resp && result.resp.status >= 400) {
+            if (result.resp.body.err) {
+                /**
+                 * if the error is thrown from API, the response object
+                 * will be of type `{err: string}`
+                 */
+                throw new Error(result.resp.body.err);
             } else {
-                logDebugMessage(`Error: ${JSON.stringify(error)}`);
+                throw new Error("Failed to fetch - please see debug logs");
             }
-            logDebugMessage("Logging the input below:");
-            logDebugMessage(
-                JSON.stringify(
-                    {
-                        email: input.email,
-                        appName: appInfo.appName,
-                        codeLifetime: input.codeLifetime,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        userInputCode: input.userInputCode,
-                    },
-                    null,
-                    2
-                )
-            );
-            /**
-             * if the error is thrown from API, the response object
-             * will be of type `{err: string}`
-             */
-            if (axios.isAxiosError(error) && error.response !== undefined) {
-                if (error.response.data.err !== undefined) {
-                    throw Error(error.response.data.err);
-                }
-            }
-            throw error;
         }
     };
 }

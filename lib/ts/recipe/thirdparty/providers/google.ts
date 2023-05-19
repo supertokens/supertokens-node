@@ -13,7 +13,7 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import fetch from "cross-fetch";
 
 type TypeThirdPartyProviderGoogleConfig = {
     clientId: string;
@@ -69,17 +69,16 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
         }) {
             let accessToken = accessTokenAPIResponse.access_token;
             let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
+            let response = await fetch("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", {
                 method: "get",
-                url: "https://www.googleapis.com/oauth2/v1/userinfo",
-                params: {
-                    alt: "json",
-                },
                 headers: {
                     Authorization: authHeader,
                 },
             });
-            let userInfo = response.data;
+            if (response.status >= 400) {
+                throw response;
+            }
+            let userInfo = await response.json();
             let id = userInfo.id;
             let email = userInfo.email;
             if (email === undefined || email === null) {

@@ -1,8 +1,5 @@
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
 import Session from "../../session";
-import { URLSearchParams } from "url";
-import * as axios from "axios";
-import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import EmailVerification from "../../emailverification/recipe";
@@ -128,10 +125,9 @@ export default function getAPIInterface(): APIInterface {
                     });
                 }
 
-                accessTokenAPIResponse = await axios.default({
+                accessTokenAPIResponse = await fetch(providerInfo.accessTokenAPI.url, {
                     method: "post",
-                    url: providerInfo.accessTokenAPI.url,
-                    data: qs.stringify(providerInfo.accessTokenAPI.params),
+                    body: new URLSearchParams(providerInfo.accessTokenAPI.params).toString(),
                     headers: {
                         "content-type": "application/x-www-form-urlencoded",
                         accept: "application/json", // few providers like github don't send back json response by default

@@ -14,7 +14,7 @@
  */
 
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import fetch from "cross-fetch";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 
 type TypeThirdPartyProviderGitLabConfig = {
@@ -73,14 +73,16 @@ export default function GitLab(config: TypeThirdPartyProviderGitLabConfig): Type
         }) {
             let accessToken = accessTokenAPIResponse.access_token;
             let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
+            let response = await fetch(baseUrl + "/api/v4/user", {
                 method: "get",
-                url: baseUrl + "/api/v4/user",
                 headers: {
                     Authorization: authHeader,
                 },
             });
-            let userInfo = response.data;
+            if (response.status >= 400) {
+                throw response;
+            }
+            let userInfo = await response.json();
             let id = userInfo.id + "";
             let email = userInfo.email;
             if (email === undefined || email === null) {

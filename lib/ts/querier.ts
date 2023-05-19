@@ -12,8 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import axios from "axios";
-import fetch from "node-fetch";
+import fetch, { Response } from "cross-fetch";
 
 import { getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
@@ -62,10 +61,7 @@ export class Querier {
                     method: "GET",
                     headers,
                 });
-                return {
-                    status: 200,
-                    data: await response.json(),
-                };
+                return response;
             },
             this.__hosts?.length || 0
         );
@@ -135,10 +131,9 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios({
+                return fetch(url, {
                     method: "POST",
-                    url,
-                    data: body,
+                    body,
                     headers,
                 });
             },
@@ -153,12 +148,11 @@ export class Querier {
             "DELETE",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion };
+                let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
                         "api-key": Querier.apiKey,
-                        "content-type": "application/json; charset=utf-8",
                     };
                 }
                 if (path.isARecipePath() && this.rIdToCore !== undefined) {
@@ -167,12 +161,14 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios({
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(params);
+                finalURL.search = searchParams.toString();
+
+                return fetch(finalURL.toString(), {
                     method: "DELETE",
-                    url,
-                    data: body,
+                    body,
                     headers,
-                    params,
                 });
             },
             this.__hosts?.length || 0
@@ -199,14 +195,10 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                let response = await fetch(url + new URLSearchParams(params).toString(), {
+                return await fetch(url + new URLSearchParams(params).toString(), {
                     method: "GET",
                     headers,
                 });
-                return {
-                    status: 200,
-                    data: await response.json(),
-                };
             },
             this.__hosts?.length || 0
         );
@@ -232,10 +224,10 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios({
+
+                return fetch(url, {
                     method: "PUT",
-                    url,
-                    data: body,
+                    body,
                     headers,
                 });
             },
@@ -262,7 +254,7 @@ export class Querier {
     private sendRequestHelper = async (
         path: NormalisedURLPath,
         method: string,
-        axiosFunction: (url: string) => Promise<any>,
+        axiosFunction: (url: string) => Promise<Response>,
         numberOfTries: number
     ): Promise<any> => {
         if (this.__hosts === undefined) {
@@ -287,21 +279,21 @@ export class Querier {
             if (response.status !== 200) {
                 throw response;
             }
-            return response.data;
+            return await response.json();
         } catch (err) {
-            if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
+            if (err.message !== undefined && err.message.includes("Failed to fetch")) {
                 return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
             }
-            if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
+            if (err instanceof Response) {
                 throw new Error(
                     "SuperTokens core threw an error for a " +
                         method +
                         " request to path: '" +
                         path.getAsStringDangerous() +
                         "' with status code: " +
-                        err.response.status +
+                        err.status +
                         " and message: " +
-                        err.response.data
+                        (await err.text())
                 );
             } else {
                 throw err;
