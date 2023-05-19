@@ -891,7 +891,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
             try {
                 await ThirdPartyEmailPassword.updateEmailOrPassword({
-                    userId: userInfo.id,
+                    recipeUserId: userInfo.id,
                     email: "test2@example.com",
                 });
                 throw new Error("test failed");
@@ -932,20 +932,20 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
             let signUpUserInfo = response.body.user;
             let r = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                userId: signUpUserInfo.id,
+                recipeUserId: signUpUserInfo.id,
                 email: "test2@example.com",
                 password: "haha@1234",
             });
 
             assert(r.status === "OK");
             let r2 = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                userId: signUpUserInfo.id + "123",
+                recipeUserId: signUpUserInfo.id + "123",
                 email: "test2@example.com",
             });
 
             assert(r2.status === "UNKNOWN_USER_ID_ERROR");
             let r3 = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                userId: signUpUserInfo.id,
+                recipeUserId: signUpUserInfo.id,
                 email: "test2@example.com",
                 password: "test",
             });
