@@ -76,10 +76,6 @@ export declare type RecipeInterface = {
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
-        | {
-              status: "SIGNUP_NOT_ALLOWED";
-              reason: string;
-          }
     >;
     createNewRecipeUser(input: {
         email: string;
@@ -276,10 +272,6 @@ export declare type APIInterface = {
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
-                }
-              | {
-                    status: "SIGNUP_NOT_ALLOWED";
-                    reason: string;
                 }
               | GeneralErrorResponse
           >);

@@ -95,10 +95,6 @@ export type RecipeInterface = {
               user: User;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-        | {
-              status: "SIGNUP_NOT_ALLOWED";
-              reason: string;
-          }
     >;
 
     // this function is meant only for creating the recipe in the core and nothing else.
@@ -282,10 +278,6 @@ export type APIInterface = {
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
-                }
-              | {
-                    status: "SIGNUP_NOT_ALLOWED";
-                    reason: string;
                 }
               | GeneralErrorResponse
           >);

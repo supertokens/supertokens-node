@@ -279,6 +279,7 @@ export default function getAPIImplementation(): APIInterface {
                         recipeId: "emailpassword",
                         email,
                     },
+                    allowLinking: true,
                     userContext,
                 });
                 if (isSignUpAllowed) {
@@ -662,10 +663,6 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
-            | {
-                  status: "SIGNUP_NOT_ALLOWED";
-                  reason: string;
-              }
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -678,8 +675,6 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-                return response;
-            } else if (response.status === "SIGNUP_NOT_ALLOWED") {
                 return response;
             }
             let emailPasswordRecipeUser = response.user.loginMethods.find(

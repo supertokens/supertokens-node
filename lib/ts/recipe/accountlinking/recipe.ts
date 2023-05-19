@@ -351,9 +351,11 @@ export default class Recipe extends RecipeModule {
 
     isSignUpAllowed = async ({
         newUser,
+        allowLinking,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
+        allowLinking: boolean;
         userContext: any;
     }): Promise<boolean> => {
         // we find other accounts based on the email / phone number.
@@ -376,6 +378,12 @@ export default class Recipe extends RecipeModule {
         if (primaryUser === undefined) {
             // since there is no primary user, we allow the sign up..
             return true;
+        }
+
+        if (!allowLinking) {
+            // this will exist early with a false here cause it means that
+            // if we come here, the newUser will be linked to the primary user.
+            return false;
         }
 
         let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(

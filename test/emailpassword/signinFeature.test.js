@@ -1044,12 +1044,14 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                                             loginMethods: [
                                                 {
                                                     ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
                                                 },
                                             ],
                                         };
                                         delete customUser.loginMethods[0].hasSameEmailAs;
                                         delete customUser.loginMethods[0].hasSamePhoneNumberAs;
                                         delete customUser.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete customUser.toJson;
                                     }
                                     return response;
                                 },

@@ -95,14 +95,7 @@ export type RecipeInterface = {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<
-        | { status: "OK"; user: GlobalUser }
-        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-        | {
-              status: "SIGNUP_NOT_ALLOWED";
-              reason: string;
-          }
-    >;
+    }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
     createNewEmailPasswordRecipeUser(input: {
         email: string;
@@ -381,10 +374,6 @@ export type APIInterface = {
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
-                }
-              | {
-                    status: "SIGNUP_NOT_ALLOWED";
-                    reason: string;
                 }
               | GeneralErrorResponse
           >);

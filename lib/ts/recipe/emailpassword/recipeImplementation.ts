@@ -29,27 +29,27 @@ export default function getRecipeInterface(
                 password: string;
                 userContext: any;
             }
-        ): Promise<
-            | { status: "OK"; user: User }
-            | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
-            | {
-                  status: "SIGNUP_NOT_ALLOWED";
-                  reason: string;
-              }
-        > {
+        ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            // Here we do this check because if the input email already exists with a primary user,
+            // then we do not allow sign up, cause even though we do not link this and the existing
+            // account right away, and we send an email verification link, the user
+            // may click on it by mistake assuming it's for their existing account - resulting
+            // in account take over. In this case, we return an EMAIL_ALREADY_EXISTS_ERROR
+            // and if the user goes through the forgot password flow, it will create
+            // an account there and it will work fine cause there the email is also verified.
+
             let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                 newUser: {
                     recipeId: "emailpassword",
                     email,
                 },
+                allowLinking: false,
                 userContext,
             });
 
             if (!isSignUpAllowed) {
                 return {
-                    status: "SIGNUP_NOT_ALLOWED",
-                    reason:
-                        "The input email is already associated with a primary account where it is not verified. Please verify the other account before trying again.",
+                    status: "EMAIL_ALREADY_EXISTS_ERROR",
                 };
             }
 
