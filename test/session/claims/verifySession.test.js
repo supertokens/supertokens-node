@@ -334,7 +334,9 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .withArgs({
                         accessTokenPayload: sinon.match.object,
                         userId: "testing-userId",
-                        recipeUserId: "testing-userId",
+                        recipeUserId: sinon.match
+                            .has("recipeUserId", "testing-userId")
+                            .and(sinon.match.instanceOf(RecipeUserId)),
                         claimValidators: testValidatorArr,
                         userContext: {
                             _default: {
