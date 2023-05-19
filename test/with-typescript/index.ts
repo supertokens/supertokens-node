@@ -822,6 +822,7 @@ import { TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 import SuperTokensError from "../../lib/build/error";
+import { ExpressRequest } from "../../lib/build/framework/express/framework";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {
@@ -1415,7 +1416,9 @@ Supertokens.init({
 });
 
 app.post("/create-anonymous-session", async (req, res) => {
+    let request = new ExpressRequest(req);
     let token = await JWT.createJWT(
+        request,
         {
             sub: "<Generate random ID>",
             isAnonymous: true,

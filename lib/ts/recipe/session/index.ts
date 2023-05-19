@@ -73,7 +73,11 @@ export default class SessionWrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
         const appInfo = recipeInstance.getAppInfo();
-        const issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+        if (appInfo.initialAPIDomainType !== "string") {
+            throw new Error("Can not create new session with provided api domain");
+        }
+        const apiDomain = await appInfo.apiDomain({} as BaseRequest, userContext);
+        const issuer = apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
 
         let finalAccessTokenPayload = {
             ...accessTokenPayload,

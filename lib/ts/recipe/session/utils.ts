@@ -145,9 +145,12 @@ export function validateAndNormaliseUserInput(
     const cookieSameSite = async (req: BaseRequest, userContext: any) => {
         const origin = await appInfo.origin(req, userContext);
         const originString = origin.getAsStringDangerous();
-        let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
+        const apiDomain = await appInfo.apiDomain(req, userContext);
+        const apiDomainString = apiDomain.getAsStringDangerous();
+        let protocolOfAPIDomain = getURLProtocol(apiDomainString);
         let protocolOfWebsiteDomain = getURLProtocol(originString);
         let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString);
+        let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomainString);
         let cookieSameSiteNormalise: "strict" | "lax" | "none" = "none";
         if (config !== undefined && config!.cookieSameSite !== undefined) {
             if (typeof config.cookieSameSite === "string") {
@@ -158,7 +161,7 @@ export function validateAndNormaliseUserInput(
             }
         }
         let cookieSameSite: "strict" | "lax" | "none" =
-            appInfo.topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
+            topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
                 ? "none"
                 : "lax";
         cookieSameSite =
@@ -167,7 +170,8 @@ export function validateAndNormaliseUserInput(
     };
 
     let cookieSecure = async (req: BaseRequest, userContext: any) => {
-        let cookieSecureVal: boolean = appInfo.apiDomain.getAsStringDangerous().startsWith("https");
+        let apiDomain = await appInfo.apiDomain(req, userContext);
+        let cookieSecureVal: boolean = apiDomain.getAsStringDangerous().startsWith("https");
         if (config !== undefined && config.cookieSecure !== undefined) {
             if (typeof config.cookieSecure === "boolean") {
                 cookieSecureVal = config.cookieSecure;
@@ -176,7 +180,7 @@ export function validateAndNormaliseUserInput(
             }
         }
         return config === undefined || config.cookieSecure === undefined
-            ? appInfo.apiDomain.getAsStringDangerous().startsWith("https")
+            ? apiDomain.getAsStringDangerous().startsWith("https")
             : cookieSecureVal;
     };
 

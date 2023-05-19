@@ -16,8 +16,8 @@ import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { sign as jwtSign } from "jsonwebtoken";
 import STError from "../error";
 import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
-import SuperTokens from "../../../supertokens";
-import { APPLE_REDIRECT_HANDLER } from "../constants";
+// import SuperTokens from "../../../supertokens";
+// import { APPLE_REDIRECT_HANDLER } from "../constants";
 import verifyAppleToken from "verify-apple-id-token";
 
 type TypeThirdPartyProviderAppleConfig = {
@@ -138,12 +138,13 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             };
         }
         function getRedirectURI() {
-            let supertokens = SuperTokens.getInstanceOrThrowError();
-            return (
-                supertokens.appInfo.apiDomain.getAsStringDangerous() +
-                supertokens.appInfo.apiBasePath.getAsStringDangerous() +
-                APPLE_REDIRECT_HANDLER
-            );
+            // let supertokens = SuperTokens.getInstanceOrThrowError();
+            // return (
+            //     supertokens.appInfo.apiDomain.getAsStringDangerous() +
+            //     supertokens.appInfo.apiBasePath.getAsStringDangerous() +
+            //     APPLE_REDIRECT_HANDLER
+            // );
+            return "";
         }
         return {
             accessTokenAPI: {

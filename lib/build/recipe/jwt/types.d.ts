@@ -40,6 +40,7 @@ export declare type APIOptions = {
 };
 export declare type RecipeInterface = {
     createJWT(input: {
+        req: BaseRequest;
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;

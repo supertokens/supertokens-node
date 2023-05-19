@@ -23,7 +23,7 @@ export type AppInfo = {
     appName: string;
     origin: string | ((req: BaseRequest, userContext: any) => Promise<string>);
     originBasePath?: string;
-    apiDomain: string;
+    apiDomain: string | ((req: BaseRequest, userContext: any) => Promise<string>);
     apiBasePath?: string;
     apiGatewayPath?: string;
 };
@@ -31,12 +31,12 @@ export type AppInfo = {
 export type NormalisedAppinfo = {
     appName: string;
     origin: (req: BaseRequest, userContext: any) => Promise<NormalisedURLDomain>;
-    apiDomain: NormalisedURLDomain;
-    topLevelAPIDomain: string;
+    apiDomain: (req: BaseRequest, userContext: any) => Promise<NormalisedURLDomain>;
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     originBasePath: NormalisedURLPath;
     initialOriginType: string;
+    initialAPIDomainType: string;
 };
 
 export type SuperTokensInfo = {

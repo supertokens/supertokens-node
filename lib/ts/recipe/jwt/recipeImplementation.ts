@@ -17,6 +17,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
 import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
+import { BaseRequest } from "../../framework";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -25,10 +26,12 @@ export default function getRecipeInterface(
 ): RecipeInterface {
     return {
         createJWT: async function ({
+            req,
             payload,
             validitySeconds,
             useStaticSigningKey,
         }: {
+            req: BaseRequest;
             payload?: any;
             useStaticSigningKey?: boolean;
             validitySeconds?: number;
@@ -46,12 +49,14 @@ export default function getRecipeInterface(
                 validitySeconds = config.jwtValiditySeconds;
             }
 
+            let apiDomain = await appInfo.apiDomain(req, {});
+
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
                 payload: payload ?? {},
                 validity: validitySeconds,
                 useStaticSigningKey: useStaticSigningKey !== false,
                 algorithm: "RS256",
-                jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
+                jwksDomain: apiDomain.getAsStringDangerous(),
             });
 
             if (response.status === "OK") {

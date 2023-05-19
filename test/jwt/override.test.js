@@ -82,7 +82,7 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
 
         app.post("/jwtcreate", async (req, res) => {
             let payload = req.body.payload;
-            res.json(await JWTRecipe.createJWT(payload, 1000));
+            res.json(await JWTRecipe.createJWT({}, payload, 1000));
         });
 
         let createJWTResponse = await new Promise((resolve) => {

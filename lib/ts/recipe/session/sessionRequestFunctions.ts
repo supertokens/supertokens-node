@@ -381,7 +381,8 @@ export async function createNewSessionInRequest({
     userContext = setRequestInUserContextIfNotDefined(userContext, req);
 
     const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
-    const issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+    const apiDomainVal = await appInfo.apiDomain(req, userContext);
+    const issuer = apiDomainVal.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
 
     let finalAccessTokenPayload = {
         ...accessTokenPayload,
@@ -405,13 +406,14 @@ export async function createNewSessionInRequest({
     const cookieSameSite = await config.cookieSameSite(req, userContext);
     const origin = await appInfo.origin(req, userContext);
     const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(origin.getAsStringDangerous());
+    const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomainVal.getAsStringDangerous());
 
     if (
         outputTransferMethod === "cookie" &&
         cookieSameSite === "none" &&
         !config.cookieSecure &&
         !(
-            (appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(appInfo.topLevelAPIDomain)) &&
+            (topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
             (topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
         )
     ) {
@@ -436,7 +438,7 @@ export async function createNewSessionInRequest({
 
     for (const transferMethod of availableTokenTransferMethods) {
         if (transferMethod !== outputTransferMethod && getToken(req, "access", transferMethod) !== undefined) {
-            clearSession(config, req, res, transferMethod, userContext);
+            await clearSession(config, req, res, transferMethod, userContext);
         }
     }
     logDebugMessage("createNewSession: Cleared old tokens");

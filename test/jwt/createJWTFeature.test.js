@@ -183,7 +183,7 @@ describe(`createJWTFeature: ${printPath("[test/jwt/createJWTFeature.test.js]")}`
         let currentTimeInSeconds = Date.now() / 1000;
         let targetExpiryDuration = 500; // 100 years in seconds
 
-        let jwt = (await JWTRecipe.createJWT({}, targetExpiryDuration)).jwt.split(".")[1];
+        let jwt = (await JWTRecipe.createJWT({}, {}, targetExpiryDuration)).jwt.split(".")[1];
         let decodedJWTPayload = Buffer.from(jwt, "base64").toString("utf-8");
 
         let jwtExpiry = JSON.parse(decodedJWTPayload)["exp"];

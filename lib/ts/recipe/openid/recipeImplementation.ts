@@ -16,20 +16,28 @@ import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
+import { BaseRequest } from "../../framework";
 
 export default function getRecipeInterface(
     config: TypeNormalisedInput,
     jwtRecipeImplementation: JWTRecipeInterface
 ): RecipeInterface {
     return {
-        getOpenIdDiscoveryConfiguration: async function (): Promise<{
+        getOpenIdDiscoveryConfiguration: async function ({
+            req,
+            userContext,
+        }: {
+            req: BaseRequest;
+            userContext: any;
+        }): Promise<{
             status: "OK";
             issuer: string;
             jwks_uri: string;
         }> {
-            let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
+            let issuerDomain = await config.issuerDomain(req, userContext);
+            let issuer = issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
             let jwks_uri =
-                config.issuerDomain.getAsStringDangerous() +
+                issuerDomain.getAsStringDangerous() +
                 config.issuerPath.appendPath(new NormalisedURLPath(GET_JWKS_API)).getAsStringDangerous();
             return {
                 status: "OK",
@@ -38,11 +46,13 @@ export default function getRecipeInterface(
             };
         },
         createJWT: async function ({
+            req,
             payload,
             validitySeconds,
             useStaticSigningKey,
             userContext,
         }: {
+            req: BaseRequest;
             payload?: any;
             validitySeconds?: number;
             useStaticSigningKey?: boolean;
@@ -57,9 +67,10 @@ export default function getRecipeInterface(
               }
         > {
             payload = payload === undefined || payload === null ? {} : payload;
-
-            let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
+            let issuerDomain = await config.issuerDomain(req, userContext);
+            let issuer = issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
             return await jwtRecipeImplementation.createJWT({
+                req,
                 payload: {
                     iss: issuer,
                     ...payload,

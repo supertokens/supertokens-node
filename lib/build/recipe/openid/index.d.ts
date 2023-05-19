@@ -1,5 +1,6 @@
 // @ts-nocheck
 import OpenIdRecipe from "./recipe";
+import { BaseRequest } from "../../framework";
 export default class OpenIdRecipeWrapper {
     static init: typeof OpenIdRecipe.init;
     static getOpenIdDiscoveryConfiguration(
@@ -10,6 +11,7 @@ export default class OpenIdRecipeWrapper {
         jwks_uri: string;
     }>;
     static createJWT(
+        req: BaseRequest,
         payload?: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,

@@ -1,4 +1,5 @@
 import OpenIdRecipe from "./recipe";
+import { BaseRequest } from "../../framework";
 
 export default class OpenIdRecipeWrapper {
     static init = OpenIdRecipe.init;
@@ -9,8 +10,15 @@ export default class OpenIdRecipeWrapper {
         });
     }
 
-    static createJWT(payload?: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext?: any) {
+    static createJWT(
+        req: BaseRequest,
+        payload?: any,
+        validitySeconds?: number,
+        useStaticSigningKey?: boolean,
+        userContext?: any
+    ) {
         return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.createJWT({
+            req,
             payload,
             validitySeconds,
             useStaticSigningKey,

@@ -65,8 +65,16 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         }
         return new NormalisedURLDomain(url);
     };
-    const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
-    const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
+    const initialAPIDomainType = typeof appInfo.apiDomain;
+    const apiDomain = async (req: BaseRequest, userContext: any) => {
+        let url;
+        if (typeof appInfo.apiDomain === "string") {
+            return new NormalisedURLDomain(appInfo.apiDomain);
+        } else {
+            url = await appInfo.apiDomain(req, userContext);
+        }
+        return new NormalisedURLDomain(url);
+    };
     return {
         appName: appInfo.appName,
         origin,
@@ -81,8 +89,8 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
                 ? new NormalisedURLPath("/auth")
                 : new NormalisedURLPath(appInfo.originBasePath),
         apiGatewayPath,
-        topLevelAPIDomain,
         initialOriginType,
+        initialAPIDomainType,
     };
 }
 

@@ -15,12 +15,20 @@
 
 import Recipe from "./recipe";
 import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
+import { BaseRequest } from "../../framework";
 
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async createJWT(payload: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext?: any) {
+    static async createJWT(
+        req: BaseRequest,
+        payload: any,
+        validitySeconds?: number,
+        useStaticSigningKey?: boolean,
+        userContext?: any
+    ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
+            req,
             payload,
             validitySeconds,
             useStaticSigningKey,

@@ -27,7 +27,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    issuerDomain: NormalisedURLDomain;
+    issuerDomain: (req: BaseRequest, userContext: any) => Promise<NormalisedURLDomain>;
     issuerPath: NormalisedURLPath;
     jwtValiditySeconds?: number;
     override: {

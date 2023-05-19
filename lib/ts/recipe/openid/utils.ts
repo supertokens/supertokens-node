@@ -16,14 +16,22 @@ import NormalisedURLDomain from "../../normalisedURLDomain";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { BaseRequest } from "../../framework";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
-    let issuerDomain = appInfo.apiDomain;
+    let issuerDomain = async (req: BaseRequest, userContext: any) => {
+        let issuerDomainVal = await appInfo.apiDomain(req, userContext);
+        if (config !== undefined) {
+            if (config.issuer !== undefined) {
+                issuerDomainVal = new NormalisedURLDomain(config.issuer);
+            }
+        }
+        return issuerDomainVal;
+    };
     let issuerPath = appInfo.apiBasePath;
 
     if (config !== undefined) {
         if (config.issuer !== undefined) {
-            issuerDomain = new NormalisedURLDomain(config.issuer);
             issuerPath = new NormalisedURLPath(config.issuer);
         }
 
