@@ -380,12 +380,6 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
-        if (!allowLinking) {
-            // this will exist early with a false here cause it means that
-            // if we come here, the newUser will be linked to the primary user.
-            return false;
-        }
-
         let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
             newUser,
             primaryUser,
@@ -400,6 +394,16 @@ export default class Recipe extends RecipeModule {
             // so we can link this new user to the primary user post recipe user creation
             // even if that user's email / phone number is not verified.
             return true;
+        }
+
+        if (!allowLinking) {
+            // this will exist early with a false here cause it means that
+            // if we come here, the newUser will be linked to the primary user.
+
+            // We also do this AFTER calling shouldDoAutomaticAccountLinking cause
+            // in case email verification is not required, then linking should not be
+            // an issue anyway.
+            return false;
         }
 
         let identitiesForPrimaryUser = this.transformUserInfoIntoVerifiedAndUnverifiedBucket(primaryUser);
@@ -417,7 +421,7 @@ export default class Recipe extends RecipeModule {
         return false;
     };
 
-    linkAccountsWithUserFromSession = async <T>({
+    linkAccountWithUserFromSession = async <T>({
         session,
         newUser,
         createRecipeUserFunc,
@@ -559,7 +563,7 @@ export default class Recipe extends RecipeModule {
                 // this can happen if there is a race condition in which the
                 // existing user becomes a primary user ID by the time the code
                 // execution comes into this block. So we call the function once again.
-                return await this.linkAccountsWithUserFromSession({
+                return await this.linkAccountWithUserFromSession({
                     session,
                     newUser,
                     createRecipeUserFunc,
@@ -645,7 +649,7 @@ export default class Recipe extends RecipeModule {
             await createRecipeUserFunc(userContext);
 
             // now when we recurse, the new recipe user will be found and we can try linking again.
-            return await this.linkAccountsWithUserFromSession({
+            return await this.linkAccountWithUserFromSession({
                 session,
                 newUser,
                 createRecipeUserFunc,

@@ -74,7 +74,7 @@ export default class Recipe extends RecipeModule {
         allowLinking: boolean;
         userContext: any;
     }) => Promise<boolean>;
-    linkAccountsWithUserFromSession: <T>({
+    linkAccountWithUserFromSession: <T>({
         session,
         newUser,
         createRecipeUserFunc,

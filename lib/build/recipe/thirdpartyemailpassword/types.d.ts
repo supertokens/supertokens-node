@@ -175,7 +175,7 @@ export declare type RecipeInterface = {
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export declare type APIInterface = {
-    linkThirdPartyAccountToExistingAccountPOST:
+    linkThirdPartyAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               provider: TypeProvider;
@@ -317,7 +317,7 @@ export declare type APIInterface = {
                     description: string;
                 }
           >);
-    linkEmailPasswordAccountToExistingAccountPOST:
+    linkEmailPasswordAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               formFields: {

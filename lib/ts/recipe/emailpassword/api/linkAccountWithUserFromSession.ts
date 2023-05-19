@@ -23,7 +23,7 @@ export default async function linkAccountToExistingAccountAPI(
     apiImplementation: APIInterface,
     options: APIOptions
 ): Promise<boolean> {
-    if (apiImplementation.linkAccountToExistingAccountPOST === undefined) {
+    if (apiImplementation.linkAccountWithUserFromSessionPOST === undefined) {
         return false;
     }
 
@@ -42,7 +42,7 @@ export default async function linkAccountToExistingAccountAPI(
         { overrideGlobalClaimValidators: () => [] },
         userContext
     );
-    let result = await apiImplementation.linkAccountToExistingAccountPOST({
+    let result = await apiImplementation.linkAccountWithUserFromSessionPOST({
         formFields,
         session: session,
         options,

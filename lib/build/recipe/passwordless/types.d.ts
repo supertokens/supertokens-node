@@ -328,7 +328,7 @@ export declare type APIInterface = {
               reason: string;
           }
     >;
-    linkAccountToExistingAccountPOST:
+    linkAccountWithUserFromSessionPOST:
         | undefined
         | ((
               input: (

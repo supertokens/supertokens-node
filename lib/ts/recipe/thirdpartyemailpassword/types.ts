@@ -167,7 +167,7 @@ export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 
 export type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export type APIInterface = {
-    linkThirdPartyAccountToExistingAccountPOST:
+    linkThirdPartyAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               provider: TypeProvider;
@@ -312,7 +312,7 @@ export type APIInterface = {
                 }
           >);
 
-    linkEmailPasswordAccountToExistingAccountPOST:
+    linkEmailPasswordAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               formFields: {

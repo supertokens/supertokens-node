@@ -13,7 +13,7 @@ import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        linkAccountToExistingAccountPOST: async function ({
+        linkAccountWithUserFromSessionPOST: async function ({
             formFields,
             session,
             options,
@@ -81,7 +81,7 @@ export default function getAPIImplementation(): APIInterface {
             };
 
             let accountLinkingInstance = await AccountLinking.getInstance();
-            let result = await accountLinkingInstance.linkAccountsWithUserFromSession<{
+            let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
                 status: "WRONG_CREDENTIALS_ERROR";
             }>({
                 session,

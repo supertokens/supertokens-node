@@ -10,7 +10,7 @@ import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        linkAccountToExistingAccountPOST: async function (_input: {
+        linkAccountWithUserFromSessionPOST: async function (_input: {
             provider: TypeProvider;
             code: string;
             redirectURI: string;

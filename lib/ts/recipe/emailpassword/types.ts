@@ -282,7 +282,7 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    linkAccountToExistingAccountPOST:
+    linkAccountWithUserFromSessionPOST:
         | undefined
         | ((input: {
               formFields: {

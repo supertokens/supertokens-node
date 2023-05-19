@@ -8,7 +8,7 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyPasswordless
         createCodePOST: apiImplmentation.createCodePOST?.bind(apiImplmentation),
         phoneNumberExistsGET: apiImplmentation.passwordlessUserPhoneNumberExistsGET?.bind(apiImplmentation),
         resendCodePOST: apiImplmentation.resendCodePOST?.bind(apiImplmentation),
-        linkAccountToExistingAccountPOST: apiImplmentation.linkPasswordlessAccountToExistingAccountPOST?.bind(
+        linkAccountWithUserFromSessionPOST: apiImplmentation.linkPasswordlessAccountWithUserFromSessionPOST?.bind(
             apiImplmentation
         ),
     };

@@ -265,7 +265,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
         },
-        linkAccountToExistingAccountPOST: async function (_input) {
+        linkAccountWithUserFromSessionPOST: async function (_input) {
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 description: "",

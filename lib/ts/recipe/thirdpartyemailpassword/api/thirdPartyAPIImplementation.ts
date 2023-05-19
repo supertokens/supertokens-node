@@ -3,13 +3,13 @@ import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 
 export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswordAPIInterface): APIInterface {
     const signInUpPOSTFromThirdPartyEmailPassword = apiImplmentation.thirdPartySignInUpPOST?.bind(apiImplmentation);
-    const linkThirdPartyAccountToExistingAccountPOST = apiImplmentation.linkThirdPartyAccountToExistingAccountPOST?.bind(
+    const linkThirdPartyAccountToExistingAccountPOST = apiImplmentation.linkThirdPartyAccountWithUserFromSessionPOST?.bind(
         apiImplmentation
     );
     return {
         authorisationUrlGET: apiImplmentation.authorisationUrlGET?.bind(apiImplmentation),
         appleRedirectHandlerPOST: apiImplmentation.appleRedirectHandlerPOST?.bind(apiImplmentation),
-        linkAccountToExistingAccountPOST:
+        linkAccountWithUserFromSessionPOST:
             linkThirdPartyAccountToExistingAccountPOST === undefined
                 ? undefined
                 : async function (input) {

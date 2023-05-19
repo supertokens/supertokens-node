@@ -124,7 +124,7 @@ export default class Wrapper {
         >;
         userContext?: any;
     }) {
-        return await Recipe.getInstance().linkAccountsWithUserFromSession<T>({
+        return await Recipe.getInstance().linkAccountWithUserFromSession<T>({
             session: input.session,
             newUser: input.newUser,
             createRecipeUserFunc: input.createRecipeUserFunc,
