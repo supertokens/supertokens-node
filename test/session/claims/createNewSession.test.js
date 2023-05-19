@@ -53,7 +53,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                                 createNewSession: async (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
-                                        ...(await TrueClaim.build(input.userId, input.userContext)),
+                                        ...(await TrueClaim.build(input.userId, input.recipeUserId, input.userContext)),
                                     };
                                     return oI.createNewSession(input);
                                 },
@@ -96,7 +96,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
                                         ...input.accessTokenPayload,
                                         ...(await UndefinedClaim.build(
                                             input.userId,
-                                            input.accessTokenPayload,
+                                            input.recipeUserId,
                                             input.userContext
                                         )),
                                     };
@@ -153,7 +153,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId", undefined, payloadParam);
+            const res = await Session.createNewSession(mockRequest(), response, "someId", payloadParam);
 
             // The passed object should be unchanged
             assert.strictEqual(Object.keys(payloadParam).length, 1);
