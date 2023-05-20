@@ -23,20 +23,6 @@ export default class Wrapper {
 
     static AccountLinkingClaim = AccountLinkingClaim;
 
-    static async getRecipeUserIdsForPrimaryUserIds(primaryUserIds: string[], userContext?: any) {
-        return await Recipe.getInstance().recipeInterfaceImpl.getRecipeUserIdsForPrimaryUserIds({
-            primaryUserIds,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
-    static async getPrimaryUserIdsForRecipeUserIds(recipeUserIds: RecipeUserId[], userContext?: any) {
-        return await Recipe.getInstance().recipeInterfaceImpl.getPrimaryUserIdsForRecipeUserIds({
-            recipeUserIds,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
     /**
      * This is a function which is a combination of createPrimaryUser and
      * linkAccounts where the input recipeUserID is either linked to a user that it can be
@@ -175,8 +161,6 @@ export default class Wrapper {
 }
 
 export const init = Wrapper.init;
-export const getRecipeUserIdsForPrimaryUserIds = Wrapper.getRecipeUserIdsForPrimaryUserIds;
-export const getPrimaryUserIdsForRecipeUserIds = Wrapper.getPrimaryUserIdsForRecipeUserIds;
 export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
 export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;

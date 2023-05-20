@@ -6,18 +6,6 @@ import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static AccountLinkingClaim: import("./accountLinkingClaim").AccountLinkingClaimClass;
-    static getRecipeUserIdsForPrimaryUserIds(
-        primaryUserIds: string[],
-        userContext?: any
-    ): Promise<{
-        [primaryUserId: string]: RecipeUserId[];
-    }>;
-    static getPrimaryUserIdsForRecipeUserIds(
-        recipeUserIds: RecipeUserId[],
-        userContext?: any
-    ): Promise<{
-        [recipeUserId: string]: string | null;
-    }>;
     /**
      * This is a function which is a combination of createPrimaryUser and
      * linkAccounts where the input recipeUserID is either linked to a user that it can be
@@ -199,8 +187,6 @@ export default class Wrapper {
     >;
 }
 export declare const init: typeof Recipe.init;
-export declare const getRecipeUserIdsForPrimaryUserIds: typeof Wrapper.getRecipeUserIdsForPrimaryUserIds;
-export declare const getPrimaryUserIdsForRecipeUserIds: typeof Wrapper.getPrimaryUserIdsForRecipeUserIds;
 export declare const canCreatePrimaryUserId: typeof Wrapper.canCreatePrimaryUserId;
 export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;

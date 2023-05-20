@@ -50,18 +50,6 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getRecipeUserIdsForPrimaryUserIds: (input: {
-        primaryUserIds: string[];
-        userContext: any;
-    }) => Promise<{
-        [primaryUserId: string]: RecipeUserId[];
-    }>;
-    getPrimaryUserIdsForRecipeUserIds: (input: {
-        recipeUserIds: RecipeUserId[];
-        userContext: any;
-    }) => Promise<{
-        [recipeUserId: string]: string | null;
-    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;

@@ -23,37 +23,6 @@ import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     return {
-        getRecipeUserIdsForPrimaryUserIds: async function (
-            this: RecipeInterface,
-            {
-                primaryUserIds,
-            }: {
-                primaryUserIds: string[];
-            }
-        ): Promise<{
-            [primaryUserId: string]: RecipeUserId[];
-        }> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/users"), {
-                primaryUserIds: primaryUserIds.join(","),
-            });
-            return result.userIdMapping;
-        },
-
-        getPrimaryUserIdsForRecipeUserIds: async function (
-            this: RecipeInterface,
-            {
-                recipeUserIds,
-            }: {
-                recipeUserIds: RecipeUserId[];
-            }
-        ): Promise<{
-            [recipeUserId: string]: string | null;
-        }> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/users"), {
-                recipeUserIds: recipeUserIds.join(","),
-            });
-            return result.userIdMapping;
-        },
         getUsers: async function (
             this: RecipeInterface,
             {

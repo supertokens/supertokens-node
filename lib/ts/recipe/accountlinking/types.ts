@@ -67,18 +67,6 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getRecipeUserIdsForPrimaryUserIds: (input: {
-        primaryUserIds: string[];
-        userContext: any;
-    }) => Promise<{
-        [primaryUserId: string]: RecipeUserId[]; // recipeUserIds. If input primary user ID doesn't exists, those ids will not be part of the output set.
-    }>;
-    getPrimaryUserIdsForRecipeUserIds: (input: {
-        recipeUserIds: RecipeUserId[];
-        userContext: any;
-    }) => Promise<{
-        [recipeUserId: string]: string | null; // if recipeUserId doesn't have a primaryUserId, then it will be mapped to `null`. If the input recipeUserId doesn't exist, then it won't be a part of the map
-    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
