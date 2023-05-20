@@ -20,6 +20,12 @@ let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
 let AccountLinking = require("../../recipe/accountlinking");
 
+/**
+ * TODO:
+ *  - All recipe functions and their output types
+ *  - Fetch from account to link table is cleared after linking or making a primary user.
+ */
+
 describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
