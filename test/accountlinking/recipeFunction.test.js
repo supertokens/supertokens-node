@@ -13,19 +13,12 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
-let STExpress = require("../../");
+let supertokens = require("../../");
 let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
-let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
-let utils = require("../../lib/build/recipe/emailpassword/utils");
-let { middleware, errorHandler } = require("../../framework/express");
+let AccountLinking = require("../../recipe/accountlinking");
 
 describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]")}`, function () {
     beforeEach(async function () {
@@ -39,9 +32,9 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         await cleanST();
     });
 
-    it("test default config for emailpassword module", async function () {
+    it("make primary user success", async function () {
         await startST();
-        STExpress.init({
+        supertokens.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
             },
@@ -53,29 +46,27 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
             recipeList: [EmailPassword.init()],
         });
 
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
 
-        let signUpFeature = emailpassword.config.signUpFeature;
-        assert(signUpFeature.formFields.length === 2);
-        assert(signUpFeature.formFields.filter((f) => f.id === "email")[0].optional === false);
-        assert(signUpFeature.formFields.filter((f) => f.id === "password")[0].optional === false);
-        assert(signUpFeature.formFields.filter((f) => f.id === "email")[0].validate !== undefined);
-        assert(signUpFeature.formFields.filter((f) => f.id === "password")[0].validate !== undefined);
+        assert(user.isPrimaryUser === false);
 
-        let signInFeature = emailpassword.config.signInFeature;
-        assert(signInFeature.formFields.length === 2);
-        assert(signInFeature.formFields.filter((f) => f.id === "email")[0].optional === false);
-        assert(signInFeature.formFields.filter((f) => f.id === "password")[0].optional === false);
-        assert(signInFeature.formFields.filter((f) => f.id === "email")[0].validate !== undefined);
-        assert(signInFeature.formFields.filter((f) => f.id === "password")[0].validate !== undefined);
+        let response = await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        assert(response.status === "OK");
+        assert(response.user.isPrimaryUser === true);
+        assert(response.wasAlreadyAPrimaryUser === false);
 
-        let resetPasswordUsingTokenFeature = emailpassword.config.resetPasswordUsingTokenFeature;
+        assert(response.user.id === user.id);
+        assert((response.user.emails = user.emails));
+        assert((response.user.loginMethods.length = 1));
 
-        assert(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm.length === 1);
-        assert(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm[0].id === "email");
-        assert(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm.length === 1);
-        assert(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm[0].id === "password");
+        let refetchedUser = await supertokens.getUser(user.id);
 
-        let emailVerificationFeature = emailpassword.config.emailVerificationFeature;
+        refetchedUser.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
+
+        response.user.loginMethods[0].recipeUserId = response.user.loginMethods[0].recipeUserId.getAsString();
+
+        // we do the json parse/stringify to remove the toJson and other functions in the login
+        // method array in each of the below user objects.
+        assert.deepStrictEqual(JSON.parse(JSON.stringify(refetchedUser)), JSON.parse(JSON.stringify(response.user)));
     });
 });

@@ -25,6 +25,139 @@ type UserWithoutHelperFunctions = {
     normalizedInputMap: { [key: string]: string | undefined };
 };
 
+let primaryUserMap: Map<string, RecipeUserId[]> = new Map(); // primary user id -> recipe user id[]
+
+let accountToLink: Map<string, string> = new Map(); // recipe user id -> primary user id
+
+export async function mockCanCreatePrimaryUser(
+    recipeUserId: RecipeUserId
+): Promise<
+    | {
+          status: "OK";
+          wasAlreadyAPrimaryUser: boolean;
+      }
+    | {
+          status:
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+> {
+    let user = await mockGetUser({ userId: recipeUserId.getAsString() });
+
+    if (user === undefined) {
+        throw new Error("User does not exist");
+    }
+
+    if (user.isPrimaryUser) {
+        if (user.id === recipeUserId.getAsString()) {
+            return {
+                status: "OK",
+                wasAlreadyAPrimaryUser: true,
+            };
+        } else {
+            return {
+                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR",
+                primaryUserId: user.id,
+                description: "This user ID is already linked to another user ID",
+            };
+        }
+    }
+
+    let email = user.loginMethods[0].email;
+    if (email !== undefined) {
+        let users = await mockListUsersByAccountInfo({
+            accountInfo: {
+                email,
+            },
+        });
+        for (let user of users) {
+            if (user.isPrimaryUser) {
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: user.id,
+                    description: "This user's email is already associated with another user ID",
+                };
+            }
+        }
+    }
+
+    let phoneNumber = user.loginMethods[0].phoneNumber;
+    if (phoneNumber !== undefined) {
+        let users = await mockListUsersByAccountInfo({
+            accountInfo: {
+                phoneNumber,
+            },
+        });
+        for (let user of users) {
+            if (user.isPrimaryUser) {
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: user.id,
+                    description: "This user's phone number is already associated with another user ID",
+                };
+            }
+        }
+    }
+
+    let thirdParty = user.loginMethods[0].thirdParty;
+    if (thirdParty !== undefined) {
+        let users = await mockListUsersByAccountInfo({
+            accountInfo: {
+                thirdParty,
+            },
+        });
+        for (let user of users) {
+            if (user.isPrimaryUser) {
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: user.id,
+                    description: "This user's third party info is already associated with another user ID",
+                };
+            }
+        }
+    }
+
+    return {
+        status: "OK",
+        wasAlreadyAPrimaryUser: false,
+    };
+}
+
+export async function mockCreatePrimaryUser(
+    recipeUserId: RecipeUserId
+): Promise<
+    | {
+          status: "OK";
+          user: User;
+          wasAlreadyAPrimaryUser: boolean;
+      }
+    | {
+          status:
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+> {
+    let canCreateResult = await mockCanCreatePrimaryUser(recipeUserId);
+
+    if (canCreateResult.status !== "OK") {
+        return canCreateResult;
+    }
+
+    primaryUserMap.set(recipeUserId.getAsString(), [recipeUserId]);
+
+    accountToLink.delete(recipeUserId.getAsString());
+
+    return {
+        status: "OK",
+        user: (await mockGetUser({ userId: recipeUserId.getAsString() }))!,
+        wasAlreadyAPrimaryUser: false,
+    };
+}
+
 export async function mockGetUsers(
     querier: Querier,
     input: {
@@ -38,6 +171,7 @@ export async function mockGetUsers(
     users: User[];
     nextPaginationToken?: string;
 }> {
+    // TODO: needs to take into account primaryUserMap table.
     const normalizedInputMap: { [key: string]: string } = {};
     if (input.query?.email !== undefined) {
         let splitted = input.query.email.split(";");
@@ -159,7 +293,10 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
     };
 }
 
-async function isEmailVerified(userId: string, email: string): Promise<boolean> {
+async function isEmailVerified(userId: string, email: string | undefined): Promise<boolean> {
+    if (email === undefined) {
+        return true;
+    }
     let response = await axios.get(`http://localhost:8080/recipe/user/email/verify?userId=${userId}&email=${email}`, {
         headers: {
             rid: "emailverification",
@@ -190,28 +327,18 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 },
             });
             if (response.data.status === "OK") {
-                let user = response.data.user;
-                let verified = await isEmailVerified(user.id, user.email);
-                users.push(
-                    createUserObject({
-                        id: user.id,
-                        emails: [user.email],
-                        timeJoined: user.timeJoined,
-                        isPrimaryUser: false,
-                        phoneNumbers: [],
-                        thirdParty: [],
-                        loginMethods: [
-                            {
-                                recipeId: "emailpassword",
-                                recipeUserId: new RecipeUserId(user.id),
-                                timeJoined: user.timeJoined,
-                                verified,
-                                email: user.email,
-                            },
-                        ],
-                        normalizedInputMap,
-                    })
-                );
+                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+                user.normalizedInputMap = normalizedInputMap;
+                let userAlreadyAdded = false;
+                for (let u of users) {
+                    if (u.id === user.id) {
+                        userAlreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!userAlreadyAdded) {
+                    users.push(user);
+                }
             }
         }
 
@@ -224,29 +351,18 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             });
             if (response.data.status === "OK") {
                 for (let i = 0; i < response.data.users.length; i++) {
-                    let user = response.data.users[i];
-                    let verified = await isEmailVerified(user.id, user.email);
-                    users.push(
-                        createUserObject({
-                            id: user.id,
-                            emails: [user.email],
-                            timeJoined: user.timeJoined,
-                            isPrimaryUser: false,
-                            phoneNumbers: [],
-                            thirdParty: [user.thirdParty],
-                            loginMethods: [
-                                {
-                                    recipeId: "thirdparty",
-                                    recipeUserId: new RecipeUserId(user.id),
-                                    timeJoined: user.timeJoined,
-                                    verified,
-                                    email: user.email,
-                                    thirdParty: user.thirdParty,
-                                },
-                            ],
-                            normalizedInputMap,
-                        })
-                    );
+                    let user = (await mockGetUser({ userId: response.data.users[i].id }))!;
+                    user.normalizedInputMap = normalizedInputMap;
+                    let userAlreadyAdded = false;
+                    for (let u of users) {
+                        if (u.id === user.id) {
+                            userAlreadyAdded = true;
+                            break;
+                        }
+                    }
+                    if (!userAlreadyAdded) {
+                        users.push(user);
+                    }
                 }
             }
         }
@@ -259,28 +375,18 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 },
             });
             if (response.data.status === "OK") {
-                let user = response.data.user;
-                let verified = await isEmailVerified(user.id, user.email);
-                users.push(
-                    createUserObject({
-                        id: user.id,
-                        emails: [user.email],
-                        timeJoined: user.timeJoined,
-                        isPrimaryUser: false,
-                        phoneNumbers: [],
-                        thirdParty: [],
-                        loginMethods: [
-                            {
-                                recipeId: "passwordless",
-                                recipeUserId: new RecipeUserId(user.id),
-                                timeJoined: user.timeJoined,
-                                verified,
-                                email: user.email,
-                            },
-                        ],
-                        normalizedInputMap,
-                    })
-                );
+                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+                user.normalizedInputMap = normalizedInputMap;
+                let userAlreadyAdded = false;
+                for (let u of users) {
+                    if (u.id === user.id) {
+                        userAlreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!userAlreadyAdded) {
+                    users.push(user);
+                }
             }
         }
     }
@@ -294,27 +400,18 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 },
             });
             if (response.data.status === "OK") {
-                let user = response.data.user;
-                users.push(
-                    createUserObject({
-                        id: user.id,
-                        emails: [],
-                        timeJoined: user.timeJoined,
-                        isPrimaryUser: false,
-                        phoneNumbers: [user.phoneNumber],
-                        thirdParty: [],
-                        loginMethods: [
-                            {
-                                recipeId: "passwordless",
-                                recipeUserId: new RecipeUserId(user.id),
-                                timeJoined: user.timeJoined,
-                                verified: true,
-                                phoneNumber: user.phoneNumber,
-                            },
-                        ],
-                        normalizedInputMap,
-                    })
-                );
+                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+                user.normalizedInputMap = normalizedInputMap;
+                let userAlreadyAdded = false;
+                for (let u of users) {
+                    if (u.id === user.id) {
+                        userAlreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!userAlreadyAdded) {
+                    users.push(user);
+                }
             }
         }
     }
@@ -331,29 +428,18 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 }
             );
             if (response.data.status === "OK") {
-                let user = response.data.user;
-                let verified = await isEmailVerified(user.id, user.email);
-                users.push(
-                    createUserObject({
-                        id: user.id,
-                        emails: [user.email],
-                        timeJoined: user.timeJoined,
-                        isPrimaryUser: false,
-                        phoneNumbers: [],
-                        thirdParty: [user.thirdParty],
-                        loginMethods: [
-                            {
-                                recipeId: "thirdparty",
-                                recipeUserId: new RecipeUserId(user.id),
-                                timeJoined: user.timeJoined,
-                                verified,
-                                email: user.email,
-                                thirdParty: user.thirdParty,
-                            },
-                        ],
-                        normalizedInputMap,
-                    })
-                );
+                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+                user.normalizedInputMap = normalizedInputMap;
+                let userAlreadyAdded = false;
+                for (let u of users) {
+                    if (u.id === user.id) {
+                        userAlreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!userAlreadyAdded) {
+                    users.push(user);
+                }
             }
         }
     }
@@ -361,106 +447,139 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
     return users;
 }
 
-export async function mockGetUser({ userId }: { userId: string }): Promise<User | undefined> {
-    const normalizedInputMap: { [key: string]: string } = {};
-
-    // email password
-    {
-        let response = await axios.get(`http://localhost:8080/recipe/user?userId=${userId}`, {
-            headers: {
-                rid: "emailpassword",
-            },
-        });
-        if (response.data.status === "OK") {
-            let user = response.data.user;
-            let verified = await isEmailVerified(user.id, user.email);
-            return createUserObject({
-                id: user.id,
-                emails: [user.email],
-                timeJoined: user.timeJoined,
-                isPrimaryUser: false,
-                phoneNumbers: [],
-                thirdParty: [],
-                loginMethods: [
-                    {
-                        recipeId: "emailpassword",
-                        recipeUserId: new RecipeUserId(user.id),
-                        timeJoined: user.timeJoined,
-                        verified,
-                        email: user.email,
-                    },
-                ],
-                normalizedInputMap,
-            });
+function getPrimaryUserForUserId(userId: string): string {
+    let allPrimaryUsers = primaryUserMap.keys();
+    for (let pUser in allPrimaryUsers) {
+        let recipeUserIds = primaryUserMap.get(pUser);
+        if (recipeUserIds !== undefined) {
+            for (let i = 0; i < recipeUserIds.length; i++) {
+                if (recipeUserIds[i].getAsString() === userId) {
+                    return pUser;
+                }
+            }
         }
     }
-
-    // third party
-    {
-        let response = await axios.get(`http://localhost:8080/recipe/user?userId=${userId}`, {
-            headers: {
-                rid: "thirdparty",
-            },
-        });
-        if (response.data.status === "OK") {
-            let user = response.data.user;
-            let verified = await isEmailVerified(user.id, user.email);
-            return createUserObject({
-                id: user.id,
-                emails: [user.email],
-                timeJoined: user.timeJoined,
-                isPrimaryUser: false,
-                phoneNumbers: [],
-                thirdParty: [user.thirdParty],
-                loginMethods: [
-                    {
-                        recipeId: "thirdparty",
-                        recipeUserId: new RecipeUserId(user.id),
-                        timeJoined: user.timeJoined,
-                        verified,
-                        email: user.email,
-                        thirdParty: user.thirdParty,
-                    },
-                ],
-                normalizedInputMap,
-            });
-        }
-    }
-
-    // passwordless
-    {
-        let response = await axios.get(`http://localhost:8080/recipe/user?userId=${userId}`, {
-            headers: {
-                rid: "passwordless",
-            },
-        });
-        if (response.data.status === "OK") {
-            let user = response.data.user;
-            let verified = await isEmailVerified(user.id, user.email);
-            return createUserObject({
-                id: user.id,
-                emails: [user.email],
-                timeJoined: user.timeJoined,
-                isPrimaryUser: false,
-                phoneNumbers: [],
-                thirdParty: [],
-                loginMethods: [
-                    {
-                        recipeId: "passwordless",
-                        recipeUserId: new RecipeUserId(user.id),
-                        timeJoined: user.timeJoined,
-                        verified,
-                        email: user.email,
-                    },
-                ],
-                normalizedInputMap,
-            });
-        }
-    }
-
-    return undefined;
+    return userId;
 }
 
-export async function mockFetchFromAccountToLinkTable(_: { recipeUserId: RecipeUserId }): Promise<string | undefined> {
-    return undefined;
+export async function mockGetUser({
+    userId,
+    normalizedInputMap,
+}: {
+    userId: string;
+    normalizedInputMap?: { [key: string]: string };
+}): Promise<User | undefined> {
+    normalizedInputMap = normalizedInputMap === undefined ? {} : normalizedInputMap;
+
+    userId = getPrimaryUserForUserId(userId);
+
+    let allRecipeUserIds = primaryUserMap.get(userId);
+
+    const isPrimaryUser = allRecipeUserIds !== undefined;
+
+    if (allRecipeUserIds === undefined) {
+        // login method will still have this user.
+        allRecipeUserIds = [new RecipeUserId(userId)];
+    }
+
+    let finalResult: UserWithoutHelperFunctions = {
+        id: userId,
+        isPrimaryUser,
+        timeJoined: 9684609700828, // this is there cause we get the min from the loop below.
+        emails: [],
+        phoneNumbers: [],
+        thirdParty: [],
+        normalizedInputMap,
+        loginMethods: [],
+    };
+
+    for (let i = 0; i < allRecipeUserIds.length; i++) {
+        let currUser = allRecipeUserIds[i].getAsString();
+        // email password
+        {
+            let response = await axios.get(`http://localhost:8080/recipe/user?userId=${currUser}`, {
+                headers: {
+                    rid: "emailpassword",
+                },
+            });
+            if (response.data.status === "OK") {
+                let user = response.data.user;
+                let verified = await isEmailVerified(user.id, user.email);
+                finalResult.loginMethods.push({
+                    recipeId: "emailpassword",
+                    recipeUserId: new RecipeUserId(user.id),
+                    timeJoined: user.timeJoined,
+                    verified,
+                    email: user.email,
+                });
+                finalResult.emails.push(user.email);
+                finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
+            }
+        }
+
+        // third party
+        {
+            let response = await axios.get(`http://localhost:8080/recipe/user?userId=${currUser}`, {
+                headers: {
+                    rid: "thirdparty",
+                },
+            });
+            if (response.data.status === "OK") {
+                let user = response.data.user;
+                let verified = await isEmailVerified(user.id, user.email);
+                finalResult.loginMethods.push({
+                    recipeId: "thirdparty",
+                    recipeUserId: new RecipeUserId(user.id),
+                    timeJoined: user.timeJoined,
+                    verified,
+                    email: user.email,
+                    thirdParty: user.thirdParty,
+                });
+                finalResult.emails.push(user.email);
+                finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
+                finalResult.thirdParty.push(user.thirdParty);
+            }
+        }
+
+        // passwordless
+        {
+            let response = await axios.get(`http://localhost:8080/recipe/user?userId=${currUser}`, {
+                headers: {
+                    rid: "passwordless",
+                },
+            });
+            if (response.data.status === "OK") {
+                let user = response.data.user;
+                let verified = await isEmailVerified(user.id, user.email);
+
+                finalResult.loginMethods.push({
+                    recipeId: "passwordless",
+                    recipeUserId: new RecipeUserId(user.id),
+                    timeJoined: user.timeJoined,
+                    verified,
+                    email: user.email,
+                    phoneNumber: user.phoneNumber,
+                });
+                if (user.email !== undefined) {
+                    finalResult.emails.push(user.email);
+                }
+                if (user.phoneNumber !== undefined) {
+                    finalResult.phoneNumbers.push(user.phoneNumber);
+                }
+                finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
+            }
+        }
+    }
+
+    if (finalResult.loginMethods.length === 0) {
+        return undefined;
+    }
+
+    return createUserObject(finalResult);
+}
+
+export async function mockFetchFromAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+}): Promise<string | undefined> {
+    return accountToLink.get(input.recipeUserId.getAsString());
 }

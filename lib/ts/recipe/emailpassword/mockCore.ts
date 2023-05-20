@@ -1,6 +1,6 @@
 import type { User } from "../../types";
 import axios from "axios";
-import { createUserObject } from "../accountlinking/mockCore";
+import { createUserObject, mockGetUser } from "../accountlinking/mockCore";
 import RecipeUserId from "../../recipeUserId";
 
 let passwordResetTokens: { [key: string]: { userId: string; email: string } } = {};
@@ -86,24 +86,10 @@ export async function mockSignIn(input: {
     let user = response.data.user;
     return {
         status: "OK",
-        user: createUserObject({
-            id: user.id,
-            emails: [user.email],
-            timeJoined: user.timeJoined,
-            isPrimaryUser: false,
-            phoneNumbers: [],
-            thirdParty: [],
-            loginMethods: [
-                {
-                    recipeId: "emailpassword",
-                    recipeUserId: new RecipeUserId(user.id),
-                    timeJoined: user.timeJoined,
-                    verified: false,
-                    email: user.email,
-                },
-            ],
+        user: (await mockGetUser({
+            userId: user.id,
             normalizedInputMap,
-        }),
+        }))!,
     };
 }
 

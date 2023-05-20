@@ -76,6 +76,7 @@ export default function getRecipeInterface(
                 throw new Error("Should never come here.");
             }
 
+            // this is there cause getUser sets an empty map for normalizedInputMap
             updatedUser.normalizedInputMap = response.user.normalizedInputMap;
 
             return {

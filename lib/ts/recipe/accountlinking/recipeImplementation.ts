@@ -18,7 +18,14 @@ import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import Session from "../session";
-import { mockListUsersByAccountInfo, mockGetUser, mockFetchFromAccountToLinkTable, mockGetUsers } from "./mockCore";
+import {
+    mockListUsersByAccountInfo,
+    mockGetUser,
+    mockFetchFromAccountToLinkTable,
+    mockGetUsers,
+    mockCreatePrimaryUser,
+    mockCanCreatePrimaryUser,
+} from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
@@ -88,9 +95,16 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            return await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary/check"), {
-                recipeUserId,
-            });
+            if (process.env.MOCK !== "true") {
+                return await querier.sendGetRequest(
+                    new NormalisedURLPath("/recipe/accountlinking/user/primary/check"),
+                    {
+                        recipeUserId,
+                    }
+                );
+            } else {
+                return await mockCanCreatePrimaryUser(recipeUserId);
+            }
         },
 
         createPrimaryUser: async function (
@@ -115,11 +129,18 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
-                recipeUserId,
-            });
+            if (process.env.MOCK !== "true") {
+                let response = await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/accountlinking/user/primary"),
+                    {
+                        recipeUserId,
+                    }
+                );
 
-            return response;
+                return response;
+            } else {
+                return await mockCreatePrimaryUser(recipeUserId);
+            }
         },
 
         canLinkAccounts: async function (

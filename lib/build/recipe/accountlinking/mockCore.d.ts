@@ -20,6 +20,37 @@ declare type UserWithoutHelperFunctions = {
         [key: string]: string | undefined;
     };
 };
+export declare function mockCanCreatePrimaryUser(
+    recipeUserId: RecipeUserId
+): Promise<
+    | {
+          status: "OK";
+          wasAlreadyAPrimaryUser: boolean;
+      }
+    | {
+          status:
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+>;
+export declare function mockCreatePrimaryUser(
+    recipeUserId: RecipeUserId
+): Promise<
+    | {
+          status: "OK";
+          user: User;
+          wasAlreadyAPrimaryUser: boolean;
+      }
+    | {
+          status:
+              | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
+              | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+>;
 export declare function mockGetUsers(
     querier: Querier,
     input: {
@@ -37,6 +68,16 @@ export declare function mockGetUsers(
 }>;
 export declare function createUserObject(input: UserWithoutHelperFunctions): User;
 export declare function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]>;
-export declare function mockGetUser({ userId }: { userId: string }): Promise<User | undefined>;
-export declare function mockFetchFromAccountToLinkTable(_: { recipeUserId: RecipeUserId }): Promise<string | undefined>;
+export declare function mockGetUser({
+    userId,
+    normalizedInputMap,
+}: {
+    userId: string;
+    normalizedInputMap?: {
+        [key: string]: string;
+    };
+}): Promise<User | undefined>;
+export declare function mockFetchFromAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+}): Promise<string | undefined>;
 export {};
