@@ -24,6 +24,8 @@ let AccountLinking = require("../../recipe/accountlinking");
  * TODO:
  *  - All recipe functions and their output types
  *  - Fetch from account to link table is cleared after linking or making a primary user.
+ *  - Test toJson function
+ *  - Test hasSameEmail etc functions
  */
 
 describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]")}`, function () {
