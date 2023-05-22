@@ -170,4 +170,190 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         assert(response.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
         assert(response.primaryUserId === user.id);
     });
+
+    it("link accounts success", async function () {
+        await startST();
+        let primaryUserInCallback;
+        let newAccountInfoInCallback;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    onAccountLinked: (primaryUser, newAccountInfo) => {
+                        primaryUserInCallback = primaryUser;
+                        newAccountInfoInCallback = newAccountInfo;
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked === false);
+
+        let linkedUser = await supertokens.getUser(user.id);
+        // we do the json parse/stringify to remove the toJson and other functions in the login
+        // method array in each of the below user objects.
+        assert.deepStrictEqual(
+            JSON.parse(JSON.stringify(linkedUser)),
+            JSON.parse(JSON.stringify(primaryUserInCallback))
+        );
+
+        assert(newAccountInfoInCallback.recipeId === "emailpassword");
+        assert(newAccountInfoInCallback.email === "test2@example.com");
+    });
+
+    it("link accounts success - already linked", async function () {
+        await startST();
+        let primaryUserInCallback;
+        let newAccountInfoInCallback;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    onAccountLinked: (primaryUser, newAccountInfo) => {
+                        primaryUserInCallback = primaryUser;
+                        newAccountInfoInCallback = newAccountInfo;
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked);
+
+        let linkedUser = await supertokens.getUser(user.id);
+        // we do the json parse/stringify to remove the toJson and other functions in the login
+        // method array in each of the below user objects.
+        assert.deepStrictEqual(
+            JSON.parse(JSON.stringify(linkedUser)),
+            JSON.parse(JSON.stringify(primaryUserInCallback))
+        );
+
+        assert(newAccountInfoInCallback.recipeId === "emailpassword");
+        assert(newAccountInfoInCallback.email === "test2@example.com");
+    });
+
+    it("link accounts failure - recipe user id already linked with another primary user id", async function () {
+        await startST();
+        let primaryUserInCallback;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    onAccountLinked: (primaryUser, newAccountInfo) => {
+                        primaryUserInCallback = primaryUser;
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        let otherPrimaryUser = (await EmailPassword.signUp("test3@example.com", "password123")).user;
+        await AccountLinking.createPrimaryUser(otherPrimaryUser.loginMethods[0].recipeUserId);
+
+        primaryUserInCallback = undefined;
+
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, otherPrimaryUser.id);
+
+        assert(response.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
+        assert(response.primaryUserId === user.id);
+
+        assert(primaryUserInCallback === undefined);
+    });
+
+    it("account linking failure - account info user already associated with a primary user", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+
+        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+        let otherPrimaryUser = (await EmailPassword.signUp("test3@example.com", "password123")).user;
+
+        let response = await AccountLinking.linkAccounts(
+            supertokens.convertToRecipeUserId(user2.id),
+            otherPrimaryUser.id
+        );
+
+        assert(response.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
+        assert(response.primaryUserId === user.id);
+    });
 });
