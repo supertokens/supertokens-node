@@ -18,6 +18,7 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
+let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 
 /**
@@ -129,6 +130,44 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
 
         let response = await AccountLinking.createPrimaryUser(user2.loginMethods[0].recipeUserId);
         assert(response.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR");
+        assert(response.primaryUserId === user.id);
+    });
+
+    it("make primary user failure - account info user already associated with a primary user", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+
+        let response = await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user2.id));
+        assert(response.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
         assert(response.primaryUserId === user.id);
     });
 });
