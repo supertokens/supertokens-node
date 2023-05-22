@@ -4,6 +4,7 @@ import axios from "axios";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
+import Session from "../session";
 
 type UserWithoutHelperFunctions = {
     id: string; // primaryUserId or recipeUserId
@@ -194,6 +195,8 @@ export async function mockLinkAccounts({
     existing.push(recipeUserId);
     primaryUserMap.set(primaryUserId, existing);
     accountToLink.delete(recipeUserId.getAsString());
+
+    await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
 
     return {
         status: "OK",
@@ -756,4 +759,109 @@ export async function mockFetchFromAccountToLinkTable(input: {
     recipeUserId: RecipeUserId;
 }): Promise<string | undefined> {
     return accountToLink.get(input.recipeUserId.getAsString());
+}
+
+export async function mockUnlinkAccounts({
+    recipeUserId,
+    querier,
+}: {
+    recipeUserId: RecipeUserId;
+    querier: Querier;
+}): Promise<{
+    status: "OK";
+    wasRecipeUserDeleted: boolean;
+}> {
+    let primaryUser = await mockGetUser({ userId: recipeUserId.getAsString() });
+
+    if (primaryUser === undefined) {
+        throw new Error("Input user not found");
+    }
+
+    if (!primaryUser.isPrimaryUser) {
+        throw new Error("Input user is not linked with any user");
+    }
+
+    if (primaryUser.id === recipeUserId.getAsString()) {
+        let existingList = primaryUserMap.get(primaryUser.id);
+        if (existingList !== undefined) {
+            if (existingList.length === 1) {
+                primaryUserMap.delete(primaryUser.id);
+                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
+            } else {
+                existingList = existingList.filter((u) => u.getAsString() !== recipeUserId.getAsString());
+                primaryUserMap.set(primaryUser.id, existingList);
+                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
+                await mockDeleteUser({
+                    userId: recipeUserId.getAsString(),
+                    removeAllLinkedAccounts: false,
+                    querier,
+                });
+                return {
+                    status: "OK",
+                    wasRecipeUserDeleted: true,
+                };
+            }
+        }
+    } else {
+        let existingList = primaryUserMap.get(primaryUser.id);
+        if (existingList !== undefined) {
+            existingList = existingList.filter((u) => u.getAsString() !== recipeUserId.getAsString());
+            primaryUserMap.set(primaryUser.id, existingList);
+            await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
+        }
+    }
+    return {
+        status: "OK",
+        wasRecipeUserDeleted: false,
+    };
+}
+
+export async function mockDeleteUser({
+    userId,
+    removeAllLinkedAccounts,
+    querier,
+}: {
+    userId: string;
+    removeAllLinkedAccounts: boolean;
+    querier: Querier;
+}): Promise<{
+    status: "OK";
+}> {
+    let primaryUser = await mockGetUser({ userId });
+    if (primaryUser === undefined) {
+        return {
+            status: "OK",
+        };
+    }
+    let allRecipeIdsToDelete: string[] = [];
+    if (removeAllLinkedAccounts) {
+        if (primaryUser.isPrimaryUser) {
+            allRecipeIdsToDelete = primaryUserMap.get(userId)!.map((u) => u.getAsString());
+        } else {
+            allRecipeIdsToDelete = [userId];
+        }
+    } else {
+        allRecipeIdsToDelete = [userId];
+    }
+
+    for (let i = 0; i < allRecipeIdsToDelete.length; i++) {
+        await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
+            userId: allRecipeIdsToDelete[i],
+        });
+
+        let existingUsers = primaryUserMap.get(primaryUser.id)!;
+        existingUsers = existingUsers.filter((u) => u.getAsString() !== allRecipeIdsToDelete[i]);
+        if (existingUsers.length === 0) {
+            primaryUserMap.delete(primaryUser.id);
+        } else {
+            // NOTE: We are actually supposed to not delete the metadata stuff for the primary user
+            // here cause there are still linked users (see lucid chart diagram). But
+            // this is controlled by the core, so we can't do anything here whilst mocking
+            primaryUserMap.set(primaryUser.id, existingUsers);
+        }
+    }
+
+    return {
+        status: "OK",
+    };
 }

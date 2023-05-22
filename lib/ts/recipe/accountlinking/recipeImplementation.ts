@@ -17,7 +17,6 @@ import { AccountInfo, RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import type { User } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import Session from "../session";
 import {
     mockListUsersByAccountInfo,
     mockGetUser,
@@ -27,6 +26,8 @@ import {
     mockCanCreatePrimaryUser,
     mockLinkAccounts,
     mockCanLinkAccounts,
+    mockUnlinkAccounts,
+    mockDeleteUser,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 
@@ -226,7 +227,6 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
-                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false, userContext);
                 let user: User | undefined = await this.getUser({
                     userId: primaryUserId,
                     userContext,
@@ -251,40 +251,24 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             this: RecipeInterface,
             {
                 recipeUserId,
-                userContext,
             }: {
                 recipeUserId: RecipeUserId;
-                userContext: any;
             }
-        ): Promise<
-            | {
-                  status: "OK";
-                  wasRecipeUserDeleted: boolean;
-              }
-            | {
-                  status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
-                  description: string;
-              }
-        > {
-            let accountsUnlinkingResult = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
-                {
-                    recipeUserId,
-                }
-            );
-            if (accountsUnlinkingResult.status === "OK" && !accountsUnlinkingResult.wasRecipeUserDeleted) {
-                // we have the !accountsUnlinkingResult.wasRecipeUserDeleted check
-                // cause if the user was deleted, it means that it's user ID was the
-                // same as the primary user ID, AND that the primary user ID has more
-                // than one login method - so if we revoke the session in this case,
-                // it will revoke the session for all login methods as well (since recipeUserId == primaryUserID).
-
-                // The reason we don't do this in the core is that if the user has overriden
-                // session recipe, it goes through their logic.
-                await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false, userContext);
+        ): Promise<{
+            status: "OK";
+            wasRecipeUserDeleted: boolean;
+        }> {
+            if (process.env.MOCK !== "true") {
+                let accountsUnlinkingResult = await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
+                    {
+                        recipeUserId,
+                    }
+                );
+                return accountsUnlinkingResult;
+            } else {
+                return await mockUnlinkAccounts({ recipeUserId, querier });
             }
-
-            return accountsUnlinkingResult;
         },
 
         getUser: async function (this: RecipeInterface, { userId }: { userId: string }): Promise<User | undefined> {
@@ -327,10 +311,14 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
         ): Promise<{
             status: "OK";
         }> {
-            return await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
-                userId,
-                removeAllLinkedAccounts,
-            });
+            if (process.env.MOCK !== "true") {
+                return await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
+                    userId,
+                    removeAllLinkedAccounts,
+                });
+            } else {
+                return await mockDeleteUser({ userId, removeAllLinkedAccounts, querier });
+            }
         },
 
         fetchFromAccountToLinkTable: async function ({

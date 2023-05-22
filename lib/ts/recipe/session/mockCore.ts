@@ -21,6 +21,7 @@ export async function mockGetRefreshAPIResponse(requestBody: any, querier: any) 
 }
 
 export async function mockCreateNewSession(requestBody: any, querier: any) {
+    requestBody.userId = requestBody.recipeUserId;
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
     response.session.recipeUserId = response.session.userId;
     sessionHandles.push({
@@ -87,7 +88,7 @@ export async function mockRevokeAllSessionsForUser(input: {
                     sessionHandles[i].primaryUserId === input.userId ||
                     sessionHandles[i].recipeUserId === input.userId
                 ) {
-                    usersToRevokeSessionFor.push(sessionHandles[i].sessionHandle);
+                    usersToRevokeSessionFor.push(sessionHandles[i].recipeUserId);
                 }
             }
         }
@@ -101,7 +102,6 @@ export async function mockRevokeAllSessionsForUser(input: {
 
     // remove duplicates from sessionHandlesRevoked
     sessionHandlesRevoked = sessionHandlesRevoked.filter((v, i, a) => a.indexOf(v) === i);
-
     sessionHandles = sessionHandles.filter((v) => !sessionHandlesRevoked.includes(v.sessionHandle));
 
     return sessionHandlesRevoked;

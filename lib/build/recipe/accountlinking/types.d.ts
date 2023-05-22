@@ -139,16 +139,10 @@ export declare type RecipeInterface = {
     unlinkAccounts: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              wasRecipeUserDeleted: boolean;
-          }
-        | {
-              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
-              description: string;
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        wasRecipeUserDeleted: boolean;
+    }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: { accountInfo: AccountInfo; userContext: any }) => Promise<User[]>;
     deleteUser: (input: {

@@ -369,4 +369,50 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         assert(response.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
         assert(response.primaryUserId === user.id);
     });
+
+    it("unlinking accounts success and removes session", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        // we create a new session to check that the session has not been revoked
+        // when we link accounts, cause these users are already linked.
+        await Session.createNewSessionWithoutRequestResponse(user2.loginMethods[0].recipeUserId);
+        let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 1);
+
+        let response = await AccountLinking.unlinkAccounts(user2.loginMethods[0].recipeUserId);
+        assert(response.wasRecipeUserDeleted === false);
+
+        let primaryUser = await supertokens.getUser(user.id);
+        assert(primaryUser !== undefined);
+        assert(primaryUser.loginMethods.length === 1);
+        assert(primaryUser.isPrimaryUser);
+
+        let recipeUser = await supertokens.getUser(user2.id);
+        assert(recipeUser !== undefined);
+        assert(recipeUser.loginMethods.length === 1);
+        assert(!recipeUser.isPrimaryUser);
+
+        sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 0);
+    });
 });

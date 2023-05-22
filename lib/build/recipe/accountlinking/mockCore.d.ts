@@ -124,4 +124,25 @@ export declare function mockGetUser({
 export declare function mockFetchFromAccountToLinkTable(input: {
     recipeUserId: RecipeUserId;
 }): Promise<string | undefined>;
+export declare function mockUnlinkAccounts({
+    recipeUserId,
+    querier,
+}: {
+    recipeUserId: RecipeUserId;
+    querier: Querier;
+}): Promise<{
+    status: "OK";
+    wasRecipeUserDeleted: boolean;
+}>;
+export declare function mockDeleteUser({
+    userId,
+    removeAllLinkedAccounts,
+    querier,
+}: {
+    userId: string;
+    removeAllLinkedAccounts: boolean;
+    querier: Querier;
+}): Promise<{
+    status: "OK";
+}>;
 export {};

@@ -160,16 +160,10 @@ export default class Wrapper {
     static unlinkAccounts(
         recipeUserId: RecipeUserId,
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              wasRecipeUserDeleted: boolean;
-          }
-        | {
-              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
-              description: string;
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        wasRecipeUserDeleted: boolean;
+    }>;
     static fetchFromAccountToLinkTable(recipeUserId: RecipeUserId, userContext?: any): Promise<string | undefined>;
     static storeIntoAccountToLinkTable(
         recipeUserId: RecipeUserId,
