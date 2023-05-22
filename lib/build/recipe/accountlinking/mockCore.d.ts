@@ -20,6 +20,50 @@ declare type UserWithoutHelperFunctions = {
         [key: string]: string | undefined;
     };
 };
+export declare function mockCanLinkAccounts({
+    recipeUserId,
+    primaryUserId,
+}: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          accountsAlreadyLinked: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+    | {
+          status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+>;
+export declare function mockLinkAccounts({
+    recipeUserId,
+    primaryUserId,
+}: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          accountsAlreadyLinked: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+    | {
+          status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+>;
 export declare function mockCanCreatePrimaryUser(
     recipeUserId: RecipeUserId
 ): Promise<

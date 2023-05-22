@@ -77,4 +77,58 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         // method array in each of the below user objects.
         assert.deepStrictEqual(JSON.parse(JSON.stringify(refetchedUser)), JSON.parse(JSON.stringify(response.user)));
     });
+
+    it("make primary user succcess - already is a primary user", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+
+        assert(user.isPrimaryUser === false);
+
+        let response = await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        assert(response.status === "OK");
+
+        let response2 = await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        assert(response2.status === "OK");
+        assert(response2.user.id === user.id);
+        assert(response2.wasAlreadyAPrimaryUser);
+    });
+
+    it("make primary user failure - recipe user already linked to another user", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        let response = await AccountLinking.createPrimaryUser(user2.loginMethods[0].recipeUserId);
+        assert(response.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR");
+        assert(response.primaryUserId === user.id);
+    });
 });

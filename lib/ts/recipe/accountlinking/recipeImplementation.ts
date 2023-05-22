@@ -25,6 +25,8 @@ import {
     mockGetUsers,
     mockCreatePrimaryUser,
     mockCanCreatePrimaryUser,
+    mockLinkAccounts,
+    mockCanLinkAccounts,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 
@@ -168,12 +170,19 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link/check"), {
-                recipeUserId,
-                primaryUserId,
-            });
+            if (process.env.MOCK !== "true") {
+                let result = await querier.sendGetRequest(
+                    new NormalisedURLPath("/recipe/accountlinking/user/link/check"),
+                    {
+                        recipeUserId,
+                        primaryUserId,
+                    }
+                );
 
-            return result;
+                return result;
+            } else {
+                return await mockCanLinkAccounts({ recipeUserId, primaryUserId });
+            }
         },
 
         linkAccounts: async function (
@@ -203,13 +212,18 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   description: string;
               }
         > {
-            let accountsLinkingResult = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/link"),
-                {
-                    recipeUserId,
-                    primaryUserId,
-                }
-            );
+            let accountsLinkingResult;
+            if (process.env.MOCK !== "true") {
+                accountsLinkingResult = await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/accountlinking/user/link"),
+                    {
+                        recipeUserId,
+                        primaryUserId,
+                    }
+                );
+            } else {
+                accountsLinkingResult = await mockLinkAccounts({ recipeUserId, primaryUserId });
+            }
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
                 await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false, userContext);
@@ -220,7 +234,9 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 if (user === undefined) {
                     throw Error("this error should never be thrown");
                 }
-                let loginMethodInfo = user.loginMethods.find((u) => u.recipeUserId === recipeUserId);
+                let loginMethodInfo = user.loginMethods.find(
+                    (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
+                );
                 if (loginMethodInfo === undefined) {
                     throw Error("this error should never be thrown");
                 }

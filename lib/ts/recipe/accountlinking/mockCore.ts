@@ -29,6 +29,178 @@ let primaryUserMap: Map<string, RecipeUserId[]> = new Map(); // primary user id 
 
 let accountToLink: Map<string, string> = new Map(); // recipe user id -> primary user id
 
+export async function mockCanLinkAccounts({
+    recipeUserId,
+    primaryUserId,
+}: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          accountsAlreadyLinked: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+    | {
+          status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+> {
+    let primaryUser = await mockGetUser({ userId: primaryUserId });
+
+    if (primaryUser === undefined) {
+        throw new Error("Primary user does not exist");
+    }
+
+    let recipeUser = await mockGetUser({ userId: recipeUserId.getAsString() });
+
+    if (recipeUser === undefined) {
+        throw new Error("Recipe user does not exist");
+    }
+
+    if (recipeUser.isPrimaryUser) {
+        if (recipeUser.id === primaryUserId) {
+            return {
+                status: "OK",
+                accountsAlreadyLinked: true,
+            };
+        } else {
+            return {
+                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                primaryUserId: recipeUser.id,
+                description: "This user ID is already linked to another user ID",
+            };
+        }
+    }
+
+    let email = recipeUser.loginMethods[0].email;
+    if (email !== undefined) {
+        let users = await mockListUsersByAccountInfo({
+            accountInfo: {
+                email,
+            },
+        });
+        for (let user of users) {
+            if (user.isPrimaryUser) {
+                if (user.id === primaryUserId) {
+                    return {
+                        status: "OK",
+                        accountsAlreadyLinked: false,
+                    };
+                }
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: user.id,
+                    description: "This user's email is already associated with another user ID",
+                };
+            }
+        }
+    }
+
+    let phoneNumber = recipeUser.loginMethods[0].phoneNumber;
+    if (phoneNumber !== undefined) {
+        let users = await mockListUsersByAccountInfo({
+            accountInfo: {
+                phoneNumber,
+            },
+        });
+        for (let user of users) {
+            if (user.isPrimaryUser) {
+                if (user.id === primaryUserId) {
+                    return {
+                        status: "OK",
+                        accountsAlreadyLinked: false,
+                    };
+                }
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: user.id,
+                    description: "This user's phone number is already associated with another user ID",
+                };
+            }
+        }
+    }
+
+    let thirdParty = recipeUser.loginMethods[0].thirdParty;
+    if (thirdParty !== undefined) {
+        let users = await mockListUsersByAccountInfo({
+            accountInfo: {
+                thirdParty,
+            },
+        });
+        for (let user of users) {
+            if (user.isPrimaryUser) {
+                if (user.id === primaryUserId) {
+                    return {
+                        status: "OK",
+                        accountsAlreadyLinked: false,
+                    };
+                }
+                return {
+                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                    primaryUserId: user.id,
+                    description: "This user's third party info is already associated with another user ID",
+                };
+            }
+        }
+    }
+
+    return {
+        status: "OK",
+        accountsAlreadyLinked: false,
+    };
+}
+
+export async function mockLinkAccounts({
+    recipeUserId,
+    primaryUserId,
+}: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          accountsAlreadyLinked: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+    | {
+          status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+          description: string;
+      }
+> {
+    let canLinkAccounts = await mockCanLinkAccounts({
+        recipeUserId,
+        primaryUserId,
+    });
+
+    if (canLinkAccounts.status !== "OK" || canLinkAccounts.accountsAlreadyLinked) {
+        return canLinkAccounts;
+    }
+
+    let existing = primaryUserMap.get(primaryUserId);
+    if (existing === undefined) {
+        existing = [];
+    }
+    existing.push(recipeUserId);
+    primaryUserMap.set(primaryUserId, existing);
+    accountToLink.delete(recipeUserId.getAsString());
+
+    return {
+        status: "OK",
+        accountsAlreadyLinked: false,
+    };
+}
+
 export async function mockCanCreatePrimaryUser(
     recipeUserId: RecipeUserId
 ): Promise<
@@ -147,14 +319,18 @@ export async function mockCreatePrimaryUser(
         return canCreateResult;
     }
 
-    primaryUserMap.set(recipeUserId.getAsString(), [recipeUserId]);
+    let wasAlreadyAPrimaryUser = false;
+    if (primaryUserMap.has(recipeUserId.getAsString())) {
+        wasAlreadyAPrimaryUser = true;
+    } else {
+        primaryUserMap.set(recipeUserId.getAsString(), [recipeUserId]);
 
-    accountToLink.delete(recipeUserId.getAsString());
-
+        accountToLink.delete(recipeUserId.getAsString());
+    }
     return {
         status: "OK",
         user: (await mockGetUser({ userId: recipeUserId.getAsString() }))!,
-        wasAlreadyAPrimaryUser: false,
+        wasAlreadyAPrimaryUser,
     };
 }
 
@@ -448,9 +624,7 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
 }
 
 function getPrimaryUserForUserId(userId: string): string {
-    let allPrimaryUsers = primaryUserMap.keys();
-    for (let pUser in allPrimaryUsers) {
-        let recipeUserIds = primaryUserMap.get(pUser);
+    for (let [pUser, recipeUserIds] of primaryUserMap) {
         if (recipeUserIds !== undefined) {
             for (let i = 0; i < recipeUserIds.length; i++) {
                 if (recipeUserIds[i].getAsString() === userId) {
