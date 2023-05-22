@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import {
+import type {
     TypeInput,
     TypeNormalisedInput,
     NormalisedErrorHandlers,
@@ -22,6 +22,8 @@ import {
     SessionContainerInterface,
     VerifySessionOptions,
     TokenTransferMethod,
+    CookieSameSiteType,
+    AntiCsrfType,
 } from "./types";
 import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
 import { URL } from "url";
@@ -154,7 +156,7 @@ export function validateAndNormaliseUserInput(
         let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
         let protocolOfWebsiteDomain = getURLProtocol(originString);
         let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString);
-        let cookieSameSiteNormalise: "strict" | "lax" | "none" = "none";
+        let cookieSameSiteNormalise: CookieSameSiteType = "none";
         if (config !== undefined && config!.cookieSameSite !== undefined) {
             if (typeof config.cookieSameSite === "string") {
                 cookieSameSiteNormalise = normaliseSameSiteOrThrowError(config!.cookieSameSite!);
@@ -163,7 +165,7 @@ export function validateAndNormaliseUserInput(
                 cookieSameSiteNormalise = normaliseSameSiteOrThrowError(cookieSameSiteFunc);
             }
         }
-        let cookieSameSite: "strict" | "lax" | "none" =
+        let cookieSameSite: CookieSameSiteType =
             appInfo.topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
                 ? "none"
                 : "lax";
@@ -196,7 +198,7 @@ export function validateAndNormaliseUserInput(
 
     let antiCsrf = async (req: BaseRequest, userContext: any) => {
         const cookieSameSiteRes = await cookieSameSite(req, userContext);
-        let antiCsrfVal: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" = "NONE";
+        let antiCsrfVal: AntiCsrfType = "NONE";
         if (config !== undefined && config.antiCsrf !== undefined) {
             if (typeof config.antiCsrf === "string") {
                 antiCsrfVal = config.antiCsrf;
@@ -268,7 +270,7 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none" {
+export function normaliseSameSiteOrThrowError(sameSite: string): CookieSameSiteType {
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {

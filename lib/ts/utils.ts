@@ -56,13 +56,14 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
     const initialOriginType = typeof appInfo.origin;
+    if (!["string", "function"].includes(initialOriginType)) {
+        throw new Error('Type of origin in supertokens.init can only be either "string" or "function"');
+    }
     const origin = async (req: BaseRequest, userContext: any) => {
-        let url;
         if (typeof appInfo.origin === "string") {
             return new NormalisedURLDomain(appInfo.origin);
-        } else {
-            url = await appInfo.origin(req, userContext);
         }
+        let url = await appInfo.origin(req, userContext);
         return new NormalisedURLDomain(url);
     };
     const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
@@ -82,6 +83,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
                 : new NormalisedURLPath(appInfo.originBasePath),
         apiGatewayPath,
         topLevelAPIDomain,
+        // @ts-ignore
         initialOriginType,
     };
 }

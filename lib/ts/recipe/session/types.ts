@@ -56,17 +56,15 @@ export type TokenType = "access" | "refresh";
 // When adding a new token transfer method, it's also necessary to update the related constant (availableTokenTransferMethods)
 export type TokenTransferMethod = "header" | "cookie";
 
+export type CookieSameSiteType = "strict" | "lax" | "none";
+
 export type TypeInput = {
     useDynamicAccessTokenSigningKey?: boolean;
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
     accessTokenPath?: string;
     cookieSecure?: boolean | ((req: BaseRequest, userContext: any) => Promise<boolean>);
-    cookieSameSite?:
-        | "strict"
-        | "lax"
-        | "none"
-        | ((req: BaseRequest, userContext: any) => Promise<"strict" | "lax" | "none">);
+    cookieSameSite?: "strict" | "lax" | "none" | ((req: BaseRequest, userContext: any) => Promise<CookieSameSiteType>);
     cookieDomain?: string | ((req: BaseRequest, userContext: any) => Promise<string>);
 
     getTokenTransferMethod?: (input: {
@@ -116,7 +114,7 @@ export type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     accessTokenPath: NormalisedURLPath;
     cookieDomain: (req: BaseRequest, userContext: any) => Promise<string | undefined>;
-    cookieSameSite: (req: BaseRequest, userContext: any) => Promise<"strict" | "lax" | "none">;
+    cookieSameSite: (req: BaseRequest, userContext: any) => Promise<CookieSameSiteType>;
     cookieSecure: (req: BaseRequest, userContext: any) => Promise<boolean>;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;

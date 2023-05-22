@@ -20,7 +20,7 @@ export declare type NormalisedAppinfo = {
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     originBasePath: NormalisedURLPath;
-    initialOriginType: string;
+    initialOriginType: "string" | "function";
 };
 export declare type SuperTokensInfo = {
     connectionURI: string;
