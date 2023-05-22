@@ -67,7 +67,7 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
-        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined = undefined,
+        antiCSRF: AntiCsrfType | undefined = undefined,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -88,13 +88,7 @@ export default class SessionWrapper {
             };
         }
 
-        if (antiCSRF === undefined) {
-            if (appInfo.initialOriginType === "string") {
-                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
-            } else {
-                throw new Error("Can not get value of antiCSRF"); // better
-            }
-        }
+        antiCSRF = await checkAntiCsrfOrThrowError(antiCSRF, userContext);
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             userId,
@@ -295,16 +289,8 @@ export default class SessionWrapper {
         userContext: any = {}
     ): Promise<SessionContainer | undefined> {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        const appInfo = recipeInstance.getAppInfo();
 
-        if (antiCSRF === undefined) {
-            if (appInfo.initialOriginType === "string") {
-                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
-            } else {
-                throw new Error("Can not get value of antiCSRF"); // better
-            }
-        }
+        antiCSRF = await checkAntiCsrfOrThrowError(antiCSRF, userContext);
         const session = await recipeInterfaceImpl.getSession({
             accessToken,
             antiCsrfToken,
@@ -332,31 +318,22 @@ export default class SessionWrapper {
         });
     }
 
-    static async refreshSession(req: any, res: any, userContext: any = {}) {
+    static refreshSession(req: any, res: any, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
 
-        return await refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
+        return refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
     }
 
     static async refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf: boolean = false,
         antiCsrfToken?: string,
-        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined = undefined,
+        antiCSRF: AntiCsrfType | undefined = undefined,
         userContext: any = {}
     ) {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        const appInfo = recipeInstance.getAppInfo();
-
-        if (antiCSRF === undefined) {
-            if (appInfo.initialOriginType === "string") {
-                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
-            } else {
-                throw new Error("Can not get value of antiCSRF"); // better
-            }
-        }
+        antiCSRF = await checkAntiCsrfOrThrowError(antiCSRF, userContext);
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
             refreshToken,
             disableAntiCsrf,
@@ -474,6 +451,21 @@ export default class SessionWrapper {
             claim,
             userContext,
         });
+    }
+}
+
+async function checkAntiCsrfOrThrowError(antiCSRF: AntiCsrfType | undefined, userContext: any): Promise<AntiCsrfType> {
+    const recipeInstance = Recipe.getInstanceOrThrowError();
+    const appInfo = recipeInstance.getAppInfo();
+
+    if (antiCSRF === undefined) {
+        if (appInfo.initialOriginType === "string") {
+            return await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
+        } else {
+            throw new Error("Can not get value of antiCSRF"); // TODO - iresh: come up with better Error message
+        }
+    } else {
+        return antiCSRF;
     }
 }
 

@@ -137,7 +137,7 @@ export default function getRecipeInterface(
             options,
         }: {
             accessToken: string;
-            antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+            antiCSRF: AntiCsrfType;
             antiCsrfToken?: string;
             options?: VerifySessionOptions;
             userContext: any;

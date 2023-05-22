@@ -80,7 +80,7 @@ export type TypeInput = {
         | "VIA_TOKEN"
         | "VIA_CUSTOM_HEADER"
         | "NONE"
-        | ((req: BaseRequest, userContext: any) => Promise<"VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE">);
+        | ((req: BaseRequest, userContext: any) => Promise<AntiCsrfType>);
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (
@@ -120,7 +120,7 @@ export type TypeNormalisedInput = {
     cookieSecure: (req: BaseRequest, userContext: any) => Promise<boolean>;
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
-    antiCsrf: (req: BaseRequest, userContext: any) => Promise<"VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE">;
+    antiCsrf: (req: BaseRequest, userContext: any) => Promise<AntiCsrfType>;
 
     getTokenTransferMethod: (input: {
         req: BaseRequest;
@@ -199,7 +199,7 @@ export type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
-        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+        antiCSRF: AntiCsrfType;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -221,7 +221,7 @@ export type RecipeInterface = {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
-        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+        antiCSRF: AntiCsrfType;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
