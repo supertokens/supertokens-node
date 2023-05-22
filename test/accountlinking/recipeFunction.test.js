@@ -415,4 +415,88 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 0);
     });
+
+    it("unlinking account of primary user causes it to become a recipe user", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+
+        // we create a new session to check that the session has not been revoked
+        // when we link accounts, cause these users are already linked.
+        await Session.createNewSessionWithoutRequestResponse(user.loginMethods[0].recipeUserId);
+        let sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 1);
+
+        let response = await AccountLinking.unlinkAccounts(user.loginMethods[0].recipeUserId);
+        assert(response.wasRecipeUserDeleted === false);
+
+        let primaryUser = await supertokens.getUser(user.id);
+        assert(primaryUser !== undefined);
+        assert(primaryUser.loginMethods.length === 1);
+        assert(!primaryUser.isPrimaryUser);
+
+        sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 0);
+    });
+
+    it("unlinking accounts where user id is primary user causes that user id to be deleted", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        // we create a new session to check that the session has not been revoked
+        // when we link accounts, cause these users are already linked.
+        await Session.createNewSessionWithoutRequestResponse(user.loginMethods[0].recipeUserId);
+        let sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 1);
+
+        let response = await AccountLinking.unlinkAccounts(user.loginMethods[0].recipeUserId);
+        assert(response.wasRecipeUserDeleted === true);
+
+        let primaryUser = await supertokens.getUser(user.id);
+        assert(primaryUser !== undefined);
+        assert(primaryUser.loginMethods.length === 1);
+        assert(primaryUser.isPrimaryUser);
+
+        let recipeUser = await supertokens.getUser(user2.id);
+
+        // we do the json parse/stringify to remove the toJson and other functions in the login
+        // method array in each of the below user objects.
+        assert.deepStrictEqual(JSON.parse(JSON.stringify(recipeUser)), JSON.parse(JSON.stringify(primaryUser)));
+
+        sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 0);
+    });
 });
