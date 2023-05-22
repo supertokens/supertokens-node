@@ -107,7 +107,6 @@ export default class SessionWrapper {
                 ...update,
             };
         }
-
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             userId,
             recipeUserId,

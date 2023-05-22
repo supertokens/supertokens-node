@@ -22,7 +22,13 @@ import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
-import { mockGetRefreshAPIResponse, mockCreateNewSession, mockGetSession } from "./mockCore";
+import {
+    mockGetRefreshAPIResponse,
+    mockCreateNewSession,
+    mockGetSession,
+    mockGetAllSessionHandlesForUser,
+    mockRevokeAllSessionsForUser,
+} from "./mockCore";
 
 /**
  * @description call this to "login" a user.
@@ -349,11 +355,19 @@ export async function revokeAllSessionsForUser(
     userId: string,
     revokeSessionsForLinkedAccounts: boolean
 ): Promise<string[]> {
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
-        userId,
-        revokeSessionsForLinkedAccounts,
-    });
-    return response.sessionHandlesRevoked;
+    if (process.env.MOCK !== "true") {
+        let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+            userId,
+            revokeSessionsForLinkedAccounts,
+        });
+        return response.sessionHandlesRevoked;
+    } else {
+        return await mockRevokeAllSessionsForUser({
+            userId,
+            revokeSessionsForLinkedAccounts,
+            querier: helpers.querier,
+        });
+    }
 }
 
 /**
@@ -364,11 +378,15 @@ export async function getAllSessionHandlesForUser(
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean
 ): Promise<string[]> {
-    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
-        userId,
-        fetchSessionsForAllLinkedAccounts,
-    });
-    return response.sessionHandles;
+    if (process.env.MOCK !== "true") {
+        let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
+            userId,
+            fetchSessionsForAllLinkedAccounts,
+        });
+        return response.sessionHandles;
+    } else {
+        return await mockGetAllSessionHandlesForUser({ userId, fetchSessionsForAllLinkedAccounts });
+    }
 }
 
 /**

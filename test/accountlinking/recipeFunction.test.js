@@ -202,6 +202,13 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+
+        // we create a new session to check that the session has not been revoked
+        // when we link accounts, cause these users are already linked.
+        await Session.createNewSessionWithoutRequestResponse(user2.loginMethods[0].recipeUserId);
+        let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 1);
+
         let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
@@ -217,6 +224,8 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
 
         assert(newAccountInfoInCallback.recipeId === "emailpassword");
         assert(newAccountInfoInCallback.email === "test2@example.com");
+        sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 0);
     });
 
     it("link accounts success - already linked", async function () {
@@ -252,21 +261,25 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
         await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
+        primaryUserInCallback = undefined;
+        newAccountInfoInCallback = undefined;
+
+        // we create a new session to check that the session has not been revoked
+        // when we link accounts, cause these users are already linked.
+        await Session.createNewSessionWithoutRequestResponse(user2.loginMethods[0].recipeUserId);
+        let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 1);
+
         let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked);
 
-        let linkedUser = await supertokens.getUser(user.id);
-        // we do the json parse/stringify to remove the toJson and other functions in the login
-        // method array in each of the below user objects.
-        assert.deepStrictEqual(
-            JSON.parse(JSON.stringify(linkedUser)),
-            JSON.parse(JSON.stringify(primaryUserInCallback))
-        );
+        assert(primaryUserInCallback === undefined);
+        assert(newAccountInfoInCallback === undefined);
 
-        assert(newAccountInfoInCallback.recipeId === "emailpassword");
-        assert(newAccountInfoInCallback.email === "test2@example.com");
+        sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
+        assert(sessions.length === 1);
     });
 
     it("link accounts failure - recipe user id already linked with another primary user id", async function () {
