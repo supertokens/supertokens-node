@@ -21,14 +21,6 @@ let EmailPassword = require("../../recipe/emailpassword");
 let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 
-/**
- * TODO:
- *  - All recipe functions and their output types
- *  - Fetch from account to link table is cleared after linking or making a primary user.
- *  - Test toJson function
- *  - Test hasSameEmail etc functions
- */
-
 describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -919,6 +911,4 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
         assert(response === undefined);
     });
-
-    // TODO: change in account to link does not cause account linking post email verification with the older primary user id (with and without session)
 });
