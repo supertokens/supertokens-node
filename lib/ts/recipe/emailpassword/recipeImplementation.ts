@@ -10,6 +10,7 @@ import {
     mockSignIn,
     mockConsumePasswordResetToken,
     mockCreatePasswordResetToken,
+    mockUpdateEmailOrPassword,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 
@@ -207,12 +208,19 @@ export default function getRecipeInterface(
                     }
                 }
             }
-            // the input userId must be a recipe user ID.
-            return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
-                userId: input.recipeUserId.getAsString(),
-                email: input.email,
-                password: input.password,
-            });
+            if (process.env.MOCK !== "true") {
+                // the input userId must be a recipe user ID.
+                return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
+                    userId: input.recipeUserId.getAsString(),
+                    email: input.email,
+                    password: input.password,
+                });
+            } else {
+                return mockUpdateEmailOrPassword({
+                    ...input,
+                    querier,
+                });
+            }
         },
     };
 }

@@ -21,6 +21,8 @@ let EmailPassword = require("../../recipe/emailpassword");
 let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 
+// TODO: updateEmailOrPassword tests + checking that the email has been marked as verified or not automatically
+
 describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

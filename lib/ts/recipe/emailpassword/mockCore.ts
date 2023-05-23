@@ -2,6 +2,9 @@ import type { User } from "../../types";
 import axios from "axios";
 import { createUserObject, mockGetUser } from "../accountlinking/mockCore";
 import RecipeUserId from "../../recipeUserId";
+import { Querier } from "../../querier";
+import NormalisedURLPath from "../../normalisedURLPath";
+import AccountLinking from "../accountlinking/recipe";
 
 let passwordResetTokens: { [key: string]: { userId: string; email: string } } = {};
 
@@ -137,4 +140,78 @@ export async function mockCreateRecipeUser(input: {
             ],
         }),
     };
+}
+
+export async function mockUpdateEmailOrPassword(input: {
+    recipeUserId: RecipeUserId;
+    email?: string;
+    password?: string;
+    applyPasswordPolicy?: boolean;
+    querier: Querier;
+}): Promise<
+    | {
+          status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+      }
+    | {
+          status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+          reason: string;
+      }
+    | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+> {
+    let shouldMarkEmailVerified = false;
+    if (input.email !== undefined) {
+        let user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
+            userId: input.recipeUserId.getAsString(),
+            userContext: {},
+        });
+        if (user !== undefined && user.isPrimaryUser) {
+            let existingUsersWithNewEmail = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo(
+                {
+                    accountInfo: {
+                        email: input.email,
+                    },
+                    userContext: {},
+                }
+            );
+            let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
+            if (primaryUserForNewEmail.length === 1) {
+                if (primaryUserForNewEmail[0].id === user.id) {
+                    user.loginMethods.forEach((loginMethod) => {
+                        if (loginMethod.hasSameEmailAs(input.email) && loginMethod.verified) {
+                            shouldMarkEmailVerified = true;
+                        }
+                    });
+                } else {
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        reason: "New email is already associated with another primary user ID",
+                    };
+                }
+            }
+        }
+    }
+
+    let response = await input.querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
+        userId: input.recipeUserId.getAsString(),
+        email: input.email,
+        password: input.password,
+    });
+
+    if (response.status === "OK" && shouldMarkEmailVerified) {
+        let EmailVerification = require("../emailverification");
+        try {
+            let tokenResp = await EmailVerification.createEmailVerificationToken(input.recipeUserId);
+            if (tokenResp.status === "OK") {
+                await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+            }
+        } catch (err) {
+            if (err.message === "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
+                // this means email verification is not enabled.. So we just ignore.
+            } else {
+                throw err;
+            }
+        }
+    }
+
+    return response;
 }

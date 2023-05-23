@@ -18,8 +18,11 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
+let EmailVerification = require("../../recipe/emailverification");
 let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
+
+// TODO: check that post account linking, email is auto marked as verified (which should work both ways).
 
 describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]")}`, function () {
     beforeEach(async function () {
@@ -109,7 +112,13 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+            ],
         });
 
         let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
