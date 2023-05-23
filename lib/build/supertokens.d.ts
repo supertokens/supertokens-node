@@ -90,4 +90,5 @@ export default class SuperTokens {
     }>;
     middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
+    getRequestFromUserContext: (userContext: any | undefined) => BaseRequest | undefined;
 }
