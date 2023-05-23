@@ -194,6 +194,7 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
 
         assert(response.status === "OK");
         assert(response.user.id === user.user.id);
+        assert(response.user.loginMethods.length === 2);
     });
 
     it("sign up allowed if account linking is off, and email already used by another recipe", async function () {
