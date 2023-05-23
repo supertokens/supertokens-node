@@ -58,5 +58,6 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
         assert(user.loginMethods[0].hasSameEmailAs("test@example.com"));
         assert(user.loginMethods[0].hasSameEmailAs(" Test@example.com"));
         assert(user.loginMethods[0].hasSameEmailAs("test@examplE.com"));
+        assert(!user.loginMethods[0].hasSameEmailAs("t2est@examplE.com"));
     });
 });

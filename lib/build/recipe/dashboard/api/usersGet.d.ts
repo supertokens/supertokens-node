@@ -19,9 +19,6 @@ declare type User = {
         hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
         hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
     })[];
-    normalizedInputMap: {
-        [key: string]: string | undefined;
-    };
     toJson: () => any;
 };
 export declare type Response = {

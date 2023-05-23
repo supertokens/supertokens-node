@@ -16,9 +16,6 @@ declare type UserWithoutHelperFunctions = {
     loginMethods: (RecipeLevelUser & {
         verified: boolean;
     })[];
-    normalizedInputMap: {
-        [key: string]: string | undefined;
-    };
 };
 export declare function mockCanLinkAccounts({
     recipeUserId,
@@ -112,15 +109,7 @@ export declare function mockGetUsers(
 }>;
 export declare function createUserObject(input: UserWithoutHelperFunctions): User;
 export declare function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]>;
-export declare function mockGetUser({
-    userId,
-    normalizedInputMap,
-}: {
-    userId: string;
-    normalizedInputMap?: {
-        [key: string]: string;
-    };
-}): Promise<User | undefined>;
+export declare function mockGetUser({ userId }: { userId: string }): Promise<User | undefined>;
 export declare function mockUnlinkAccount({
     recipeUserId,
     querier,

@@ -5,6 +5,7 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import Session from "../session";
+import parsePhoneNumber from "libphonenumber-js/max";
 
 type UserWithoutHelperFunctions = {
     id: string; // primaryUserId or recipeUserId
@@ -19,11 +20,6 @@ type UserWithoutHelperFunctions = {
     loginMethods: (RecipeLevelUser & {
         verified: boolean;
     })[];
-
-    // this is there so that when we fetch users based on certain identifiers
-    // like email or phone number, we add the normalized version of these to the map
-    // so that further filtering is not buggy.
-    normalizedInputMap: { [key: string]: string | undefined };
 };
 
 let primaryUserMap: Map<string, RecipeUserId[]> = new Map(); // primary user id -> recipe user id[]
@@ -351,19 +347,6 @@ export async function mockGetUsers(
     nextPaginationToken?: string;
 }> {
     // TODO: needs to take into account primaryUserMap table.
-    const normalizedInputMap: { [key: string]: string } = {};
-    if (input.query?.email !== undefined) {
-        let splitted = input.query.email.split(";");
-        for (let s of splitted) {
-            normalizedInputMap[s] = s.toLowerCase().trim();
-        }
-    }
-    if (input.query?.phone !== undefined) {
-        let splitted = input.query.phone.split(";");
-        for (let s of splitted) {
-            normalizedInputMap[s] = s.toLowerCase().trim();
-        }
-    }
     let includeRecipeIdsStr = undefined;
     if (input.includeRecipeIds !== undefined) {
         includeRecipeIdsStr = input.includeRecipeIds.join(",");
@@ -400,7 +383,6 @@ export async function mockGetUsers(
                     thirdParty: user.thirdParty,
                 },
             ],
-            normalizedInputMap,
         };
         users.push(createUserObject(userWithoutHelperFunctions));
     }
@@ -417,8 +399,9 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
             if (email === undefined) {
                 return false;
             }
-            let normalisedEmail = input.normalizedInputMap[email] ?? email;
-            return lM.email !== undefined && lM.email === normalisedEmail;
+            // this needs to be the same as what's done in the core.
+            email = email.toLowerCase().trim();
+            return lM.email !== undefined && lM.email === email;
         }
         return hasSameEmailAs;
     }
@@ -428,8 +411,15 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
             if (phoneNumber === undefined) {
                 return false;
             }
-            let normalisedPhoneNumber = input.normalizedInputMap[phoneNumber] ?? phoneNumber;
-            return lM.phoneNumber !== undefined && lM.phoneNumber === normalisedPhoneNumber;
+            const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
+            if (parsedPhoneNumber === undefined) {
+                // this means that the phone number is not valid according to the E.164 standard.
+                // but we still just trim it.
+                phoneNumber = phoneNumber.trim();
+            } else {
+                phoneNumber = parsedPhoneNumber.format("E.164");
+            }
+            return lM.phoneNumber !== undefined && lM.phoneNumber === phoneNumber;
         }
         return hasSamePhoneNumberAs;
     }
@@ -486,17 +476,6 @@ async function isEmailVerified(userId: string, email: string | undefined): Promi
 
 export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]> {
     let users: User[] = [];
-
-    // we want to provide all the normalized inputs to the user
-    const normalizedInputMap: { [key: string]: string } = {};
-    if (accountInfo.email !== undefined) {
-        normalizedInputMap[accountInfo.email] = accountInfo.email.toLowerCase().trim();
-    }
-    if (accountInfo.phoneNumber !== undefined) {
-        // TODO: need to normalize phone number
-        normalizedInputMap[accountInfo.phoneNumber] = accountInfo.phoneNumber.toLowerCase().trim();
-    }
-
     if (accountInfo.email !== undefined) {
         // email password
         {
@@ -507,7 +486,6 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             });
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
-                user.normalizedInputMap = normalizedInputMap;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -531,7 +509,6 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             if (response.data.status === "OK") {
                 for (let i = 0; i < response.data.users.length; i++) {
                     let user = (await mockGetUser({ userId: response.data.users[i].id }))!;
-                    user.normalizedInputMap = normalizedInputMap;
                     let userAlreadyAdded = false;
                     for (let u of users) {
                         if (u.id === user.id) {
@@ -555,7 +532,6 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             });
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
-                user.normalizedInputMap = normalizedInputMap;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -580,7 +556,6 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             });
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
-                user.normalizedInputMap = normalizedInputMap;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -608,7 +583,6 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
             );
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
-                user.normalizedInputMap = normalizedInputMap;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -639,15 +613,7 @@ function getPrimaryUserForUserId(userId: string): string {
     return userId;
 }
 
-export async function mockGetUser({
-    userId,
-    normalizedInputMap,
-}: {
-    userId: string;
-    normalizedInputMap?: { [key: string]: string };
-}): Promise<User | undefined> {
-    normalizedInputMap = normalizedInputMap === undefined ? {} : normalizedInputMap;
-
+export async function mockGetUser({ userId }: { userId: string }): Promise<User | undefined> {
     userId = getPrimaryUserForUserId(userId);
 
     let allRecipeUserIds = primaryUserMap.get(userId);
@@ -666,7 +632,6 @@ export async function mockGetUser({
         emails: [],
         phoneNumbers: [],
         thirdParty: [],
-        normalizedInputMap,
         loginMethods: [],
     };
 

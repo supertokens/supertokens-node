@@ -64,9 +64,6 @@ export async function mockSignIn(input: {
     email: string;
     password: string;
 }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-    const normalizedInputMap: { [key: string]: string } = {};
-    normalizedInputMap[input.email] = input.email.toLowerCase().trim();
-
     let response = await axios(`http://localhost:8080/recipe/signin`, {
         method: "post",
         headers: {
@@ -88,7 +85,6 @@ export async function mockSignIn(input: {
         status: "OK",
         user: (await mockGetUser({
             userId: user.id,
-            normalizedInputMap,
         }))!,
     };
 }
@@ -104,9 +100,6 @@ export async function mockCreateRecipeUser(input: {
       }
     | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
 > {
-    const normalizedInputMap: { [key: string]: string } = {};
-    normalizedInputMap[input.email] = input.email.toLowerCase().trim();
-
     let response = await axios(`http://localhost:8080/recipe/signup`, {
         method: "post",
         headers: {
@@ -142,7 +135,6 @@ export async function mockCreateRecipeUser(input: {
                     email: user.email,
                 },
             ],
-            normalizedInputMap,
         }),
     };
 }

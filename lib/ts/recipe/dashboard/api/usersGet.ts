@@ -38,11 +38,6 @@ type User = {
         hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
     })[];
 
-    // this is there so that when we fetch users based on certain identifiers
-    // like email or phone number, we add the normalized version of these to the map
-    // so that further filtering is not buggy.
-    normalizedInputMap: { [key: string]: string | undefined };
-
     // this function will be used in the send200Response function in utils to
     // convert this object to JSON before sending it to the client. So that in RecipeLevelUser
     // the recipeUserId can be converted to string from the RecipeUserId object type.
