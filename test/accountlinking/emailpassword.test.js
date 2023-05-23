@@ -150,4 +150,91 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
 
         assert(response.status === "EMAIL_ALREADY_EXISTS_ERROR");
     });
+
+    it("sign up allowed if account linking is on, email verification is off, and email already used by another recipe", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
+
+        let response = await EmailPassword.signUp("test@example.com", "password123");
+
+        assert(response.status === "OK");
+    });
+
+    it("sign up allowed if account linking is off, and email already used by another recipe", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
+
+        let response = await EmailPassword.signUp("test@example.com", "password123");
+
+        assert(response.status === "OK");
+    });
 });
