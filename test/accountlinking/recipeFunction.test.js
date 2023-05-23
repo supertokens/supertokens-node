@@ -22,8 +22,6 @@ let EmailVerification = require("../../recipe/emailverification");
 let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 
-// TODO: check that post account linking, email is auto marked as verified (which should work both ways).
-
 describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -919,5 +917,208 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
 
         response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
         assert(response === undefined);
+    });
+
+    it("link accounts success causes new account's email to be verified if same email", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+
+        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user.id));
+        await EmailVerification.verifyEmailUsingToken(token.token);
+
+        let user2 = (await EmailPassword.signUp("test@example.com", "password123")).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
+
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked === false);
+
+        let isVerified = await EmailVerification.isEmailVerified(user2.loginMethods[0].recipeUserId);
+        assert(isVerified === true);
+    });
+
+    it("link accounts success causes primary user's account's email to be verified if same email", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+
+        let user2 = (await EmailPassword.signUp("test@example.com", "password123")).user;
+
+        let user3 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user2.id));
+        await EmailVerification.verifyEmailUsingToken(token.token);
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
+
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked === false);
+
+        await AccountLinking.linkAccounts(user3.loginMethods[0].recipeUserId, user.id);
+
+        {
+            let isVerified = await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(user.id));
+            assert(isVerified === true);
+        }
+
+        {
+            let isVerified = await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(user3.id));
+            assert(isVerified === false);
+        }
+    });
+
+    it("link accounts success does not cause new account's email to be verified if different email", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+
+        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user.id));
+        await EmailVerification.verifyEmailUsingToken(token.token);
+
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
+
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked === false);
+
+        let isVerified = await EmailVerification.isEmailVerified(user2.loginMethods[0].recipeUserId);
+        assert(isVerified === false);
+    });
+
+    it("link accounts does not cause primary user's account's email to be verified if different email", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user2.id));
+        await EmailVerification.verifyEmailUsingToken(token.token);
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
+
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked === false);
+
+        let isVerified = await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(user.id));
+        assert(isVerified === false);
     });
 });
