@@ -755,45 +755,6 @@ export async function mockGetUser({
     return createUserObject(finalResult);
 }
 
-export async function mockFetchFromAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-}): Promise<string | undefined> {
-    return accountToLink.get(input.recipeUserId.getAsString());
-}
-
-export async function mockStoreIntoAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-    primaryUserId: string;
-}): Promise<
-    | {
-          status: "OK";
-          didInsertNewRow: boolean;
-      }
-    | {
-          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-          primaryUserId: string;
-      }
-> {
-    let existingPrimaryUserId = accountToLink.get(input.recipeUserId.getAsString());
-    if (existingPrimaryUserId !== undefined) {
-        if (existingPrimaryUserId !== input.primaryUserId) {
-            return {
-                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR",
-                primaryUserId: existingPrimaryUserId,
-            };
-        }
-        return {
-            status: "OK",
-            didInsertNewRow: false,
-        };
-    }
-    accountToLink.set(input.recipeUserId.getAsString(), input.primaryUserId);
-    return {
-        status: "OK",
-        didInsertNewRow: true,
-    };
-}
-
 export async function mockUnlinkAccounts({
     recipeUserId,
     querier,
@@ -896,5 +857,65 @@ export async function mockDeleteUser({
 
     return {
         status: "OK",
+    };
+}
+
+export async function mockFetchFromAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+}): Promise<string | undefined> {
+    return accountToLink.get(input.recipeUserId.getAsString());
+}
+
+export async function mockStoreIntoAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          didInsertNewRow: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+      }
+    | {
+          status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
+      }
+> {
+    let recipeUser = await mockGetUser({ userId: input.recipeUserId.getAsString() });
+    if (recipeUser === undefined) {
+        throw new Error("Input recipeUser does not exist");
+    }
+
+    if (recipeUser.isPrimaryUser) {
+        return {
+            status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR",
+            primaryUserId: recipeUser.id,
+        };
+    }
+
+    let primaryUser = await mockGetUser({ userId: input.primaryUserId });
+    if (primaryUser === undefined) {
+        throw new Error("Input primaryUser does not exist");
+    }
+
+    if (!primaryUser.isPrimaryUser) {
+        return {
+            status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR",
+        };
+    }
+
+    let existingPrimaryUserId = accountToLink.get(input.recipeUserId.getAsString());
+    if (existingPrimaryUserId !== undefined && existingPrimaryUserId === input.primaryUserId) {
+        return {
+            status: "OK",
+            didInsertNewRow: false,
+        };
+    }
+    // this will also override any existing to link entry.
+    accountToLink.set(input.recipeUserId.getAsString(), input.primaryUserId);
+    return {
+        status: "OK",
+        didInsertNewRow: true,
     };
 }

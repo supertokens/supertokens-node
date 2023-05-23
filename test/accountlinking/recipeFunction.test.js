@@ -661,6 +661,36 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         }
     });
 
+    it("set in account to link table success", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(primaryUser.isPrimaryUser === false);
+        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
+
+        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+
+        await AccountLinking.storeIntoAccountToLinkTable(user.loginMethods[0].recipeUserId, primaryUser.id);
+
+        let response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
+        assert(response !== undefined);
+        assert(response === primaryUser.id);
+    });
+
+    // TODO: storeIntoAccountToLinkTable should not allow already linked user
     // TODO: fetchFromAccountToLinkTable test
     // TODO: storeIntoAccountToLinkTable test
+    // TODO: change in account to link does not cause account linking post email verification with the older primary user id (with and without session)
 });

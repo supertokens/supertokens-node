@@ -121,22 +121,6 @@ export declare function mockGetUser({
         [key: string]: string;
     };
 }): Promise<User | undefined>;
-export declare function mockFetchFromAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-}): Promise<string | undefined>;
-export declare function mockStoreIntoAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-    primaryUserId: string;
-}): Promise<
-    | {
-          status: "OK";
-          didInsertNewRow: boolean;
-      }
-    | {
-          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-          primaryUserId: string;
-      }
->;
 export declare function mockUnlinkAccounts({
     recipeUserId,
     querier,
@@ -158,4 +142,23 @@ export declare function mockDeleteUser({
 }): Promise<{
     status: "OK";
 }>;
+export declare function mockFetchFromAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+}): Promise<string | undefined>;
+export declare function mockStoreIntoAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          didInsertNewRow: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+      }
+    | {
+          status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
+      }
+>;
 export {};
