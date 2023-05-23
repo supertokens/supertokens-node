@@ -193,6 +193,7 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
         let response = await EmailPassword.signUp("test@example.com", "password123");
 
         assert(response.status === "OK");
+        assert(response.user.id === user.user.id);
     });
 
     it("sign up allowed if account linking is off, and email already used by another recipe", async function () {
@@ -236,5 +237,62 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
         let response = await EmailPassword.signUp("test@example.com", "password123");
 
         assert(response.status === "OK");
+    });
+
+    it("sign up doesn't link user to existing account if email verification is needed", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        if (newAccountInfo.recipeId === "emailpassword") {
+                            let existingUser = await supertokens.listUsersByAccountInfo({
+                                email: newAccountInfo.email,
+                            });
+                            let doesEmailPasswordUserExist = existingUser.length > 1;
+                            if (!doesEmailPasswordUserExist) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
+
+        let response = await EmailPassword.signUp("test@example.com", "password123");
+
+        assert(response.status === "OK");
+        assert(response.user.id !== user.user.id);
+        assert(!response.user.isPrimaryUser);
     });
 });
