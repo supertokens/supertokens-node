@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changes
+
+-   Added a new `getRequestFromUserContext` function that can be used to read the original network request from the user context in overridden APIs and recipe functions
+
 ## [14.0.2] - 2023-05-11
 
 ### Changes
