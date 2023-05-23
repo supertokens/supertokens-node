@@ -161,18 +161,18 @@ export default function getAPIImplementation(): APIInterface {
                 userContext
             );
 
-            let exists =
-                usersWithSameEmail.find((user) => {
-                    return (
-                        user.loginMethods.find((lM) => {
-                            return lM.recipeId === "emailpassword" && lM.hasSameEmailAs(email);
-                        }) !== undefined
-                    );
-                }) !== undefined;
+            // this api impl checks for the same email across all recipes
+            // and not just email password recipe cause this API is used during
+            // sign up, and if we allow sign up with the same email that already exists
+            // even though it's not an email password user, then there is a case where
+            // if the user clicks on the email verification link after by mistake, and
+            // this is an attacker signing up, then the attacker can get access to the account.
+            // Instead, the user should go via the password reset flow which will create this
+            // account.
 
             return {
                 status: "OK",
-                exists,
+                exists: usersWithSameEmail.length > 0,
             };
         },
         generatePasswordResetTokenPOST: async function ({
