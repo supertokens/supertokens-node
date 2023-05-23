@@ -124,6 +124,19 @@ export declare function mockGetUser({
 export declare function mockFetchFromAccountToLinkTable(input: {
     recipeUserId: RecipeUserId;
 }): Promise<string | undefined>;
+export declare function mockStoreIntoAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          didInsertNewRow: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+      }
+>;
 export declare function mockUnlinkAccounts({
     recipeUserId,
     querier,

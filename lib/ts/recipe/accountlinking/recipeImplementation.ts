@@ -28,6 +28,7 @@ import {
     mockCanLinkAccounts,
     mockUnlinkAccounts,
     mockDeleteUser,
+    mockStoreIntoAccountToLinkTable,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 
@@ -354,14 +355,18 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                   primaryUserId: string;
               }
         > {
-            let result = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
-                {
-                    recipeUserId,
-                    primaryUserId,
-                }
-            );
-            return result;
+            if (process.env.MOCK !== "true") {
+                let result = await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
+                    {
+                        recipeUserId,
+                        primaryUserId,
+                    }
+                );
+                return result;
+            } else {
+                return mockStoreIntoAccountToLinkTable({ recipeUserId, primaryUserId });
+            }
         },
     };
 }

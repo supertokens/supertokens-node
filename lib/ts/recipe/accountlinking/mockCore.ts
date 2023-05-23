@@ -761,6 +761,39 @@ export async function mockFetchFromAccountToLinkTable(input: {
     return accountToLink.get(input.recipeUserId.getAsString());
 }
 
+export async function mockStoreIntoAccountToLinkTable(input: {
+    recipeUserId: RecipeUserId;
+    primaryUserId: string;
+}): Promise<
+    | {
+          status: "OK";
+          didInsertNewRow: boolean;
+      }
+    | {
+          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+          primaryUserId: string;
+      }
+> {
+    let existingPrimaryUserId = accountToLink.get(input.recipeUserId.getAsString());
+    if (existingPrimaryUserId !== undefined) {
+        if (existingPrimaryUserId !== input.primaryUserId) {
+            return {
+                status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR",
+                primaryUserId: existingPrimaryUserId,
+            };
+        }
+        return {
+            status: "OK",
+            didInsertNewRow: false,
+        };
+    }
+    accountToLink.set(input.recipeUserId.getAsString(), input.primaryUserId);
+    return {
+        status: "OK",
+        didInsertNewRow: true,
+    };
+}
+
 export async function mockUnlinkAccounts({
     recipeUserId,
     querier,
