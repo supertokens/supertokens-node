@@ -26,7 +26,7 @@ import {
     mockCanCreatePrimaryUser,
     mockLinkAccounts,
     mockCanLinkAccounts,
-    mockUnlinkAccounts,
+    mockUnlinkAccount,
     mockDeleteUser,
     mockStoreIntoAccountToLinkTable,
 } from "./mockCore";
@@ -248,7 +248,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             return accountsLinkingResult;
         },
 
-        unlinkAccounts: async function (
+        unlinkAccount: async function (
             this: RecipeInterface,
             {
                 recipeUserId,
@@ -268,7 +268,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 );
                 return accountsUnlinkingResult;
             } else {
-                return await mockUnlinkAccounts({ recipeUserId, querier });
+                return await mockUnlinkAccount({ recipeUserId, querier });
             }
         },
 

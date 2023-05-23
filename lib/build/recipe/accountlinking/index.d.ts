@@ -157,7 +157,7 @@ export default class Wrapper {
               description: string;
           }
     >;
-    static unlinkAccounts(
+    static unlinkAccount(
         recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<{
@@ -188,7 +188,7 @@ export declare const canCreatePrimaryUserId: typeof Wrapper.canCreatePrimaryUser
 export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
-export declare const unlinkAccounts: typeof Wrapper.unlinkAccounts;
+export declare const unlinkAccount: typeof Wrapper.unlinkAccount;
 export declare const fetchFromAccountToLinkTable: typeof Wrapper.fetchFromAccountToLinkTable;
 export declare const storeIntoAccountToLinkTable: typeof Wrapper.storeIntoAccountToLinkTable;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;

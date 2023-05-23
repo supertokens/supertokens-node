@@ -755,7 +755,7 @@ export async function mockGetUser({
     return createUserObject(finalResult);
 }
 
-export async function mockUnlinkAccounts({
+export async function mockUnlinkAccount({
     recipeUserId,
     querier,
 }: {
@@ -780,6 +780,11 @@ export async function mockUnlinkAccounts({
         if (existingList !== undefined) {
             if (existingList.length === 1) {
                 primaryUserMap.delete(primaryUser.id);
+                for (const [recipeUserId, primaryUserId] of accountToLink) {
+                    if (primaryUserId === primaryUser.id) {
+                        accountToLink.delete(recipeUserId);
+                    }
+                }
                 await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
             } else {
                 existingList = existingList.filter((u) => u.getAsString() !== recipeUserId.getAsString());
@@ -863,7 +868,34 @@ export async function mockDeleteUser({
 export async function mockFetchFromAccountToLinkTable(input: {
     recipeUserId: RecipeUserId;
 }): Promise<string | undefined> {
-    return accountToLink.get(input.recipeUserId.getAsString());
+    let recipeUser = await mockGetUser({ userId: input.recipeUserId.getAsString() });
+    if (recipeUser === undefined || recipeUser.isPrimaryUser) {
+        accountToLink.delete(input.recipeUserId.getAsString());
+        return undefined;
+    }
+
+    let primaryUserId = accountToLink.get(input.recipeUserId.getAsString());
+
+    if (primaryUserId === undefined) {
+        return undefined;
+    }
+
+    let primaryUser = await mockGetUser({ userId: primaryUserId });
+    if (primaryUser === undefined) {
+        accountToLink.delete(input.recipeUserId.getAsString());
+        return undefined;
+    }
+
+    if (!primaryUser.isPrimaryUser) {
+        for (const [recipeUserId, primaryUserId] of accountToLink) {
+            if (primaryUserId === primaryUser.id) {
+                accountToLink.delete(recipeUserId);
+            }
+        }
+        return undefined;
+    }
+
+    return primaryUserId;
 }
 
 export async function mockStoreIntoAccountToLinkTable(input: {

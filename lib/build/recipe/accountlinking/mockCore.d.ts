@@ -121,7 +121,7 @@ export declare function mockGetUser({
         [key: string]: string;
     };
 }): Promise<User | undefined>;
-export declare function mockUnlinkAccounts({
+export declare function mockUnlinkAccount({
     recipeUserId,
     querier,
 }: {

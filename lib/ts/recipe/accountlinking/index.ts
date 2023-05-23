@@ -135,8 +135,8 @@ export default class Wrapper {
         });
     }
 
-    static async unlinkAccounts(recipeUserId: RecipeUserId, userContext?: any) {
-        return await Recipe.getInstance().recipeInterfaceImpl.unlinkAccounts({
+    static async unlinkAccount(recipeUserId: RecipeUserId, userContext?: any) {
+        return await Recipe.getInstance().recipeInterfaceImpl.unlinkAccount({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -165,7 +165,7 @@ export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
 export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
-export const unlinkAccounts = Wrapper.unlinkAccounts;
+export const unlinkAccount = Wrapper.unlinkAccount;
 export const fetchFromAccountToLinkTable = Wrapper.fetchFromAccountToLinkTable;
 export const storeIntoAccountToLinkTable = Wrapper.storeIntoAccountToLinkTable;
 export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;

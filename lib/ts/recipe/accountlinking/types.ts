@@ -151,7 +151,7 @@ export type RecipeInterface = {
               description: string;
           }
     >;
-    unlinkAccounts: (input: {
+    unlinkAccount: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<{
