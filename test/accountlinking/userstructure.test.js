@@ -18,14 +18,6 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
-let ThirdParty = require("../../recipe/thirdparty");
-let AccountLinking = require("../../recipe/accountlinking");
-
-/**
- * TODO:
- *  - Test toJson function
- *  - Test hasSameEmail etc functions
- */
 
 describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
     beforeEach(async function () {
@@ -59,5 +51,35 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
         assert(user.loginMethods[0].hasSameEmailAs(" Test@example.com"));
         assert(user.loginMethods[0].hasSameEmailAs("test@examplE.com"));
         assert(!user.loginMethods[0].hasSameEmailAs("t2est@examplE.com"));
+    });
+
+    it("toJson works as expected", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+
+        let jsonifiedUser = user.toJson();
+
+        user.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
+        assert.deepEqual(jsonifiedUser, user);
+    });
+
+    it("hasSamePhoneNumberAs function in user object work", async function () {
+        // TODO:...
+    });
+
+    it("hasSameThirdPartyInfoAs function in user object work", async function () {
+        // TODO:...
     });
 });
