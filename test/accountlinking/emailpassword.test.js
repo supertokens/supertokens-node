@@ -20,6 +20,7 @@ let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
 let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
+let EmailVerification = require("../../recipe/emailverification");
 
 // TODO: updateEmailOrPassword tests + checking that the email has been marked as verified or not automatically
 
@@ -297,5 +298,179 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
         assert(response.status === "OK");
         assert(response.user.id !== user.user.id);
         assert(!response.user.isPrimaryUser);
+    });
+
+    it("update email which belongs to other primary account should not work", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
+
+        let response = await EmailPassword.signUp("test2@example.com", "password123");
+        assert(response.status === "OK");
+
+        response = await EmailPassword.updateEmailOrPassword({
+            recipeUserId: response.user.loginMethods[0].recipeUserId,
+            email: "test@example.com",
+        });
+
+        assert(response.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR");
+    });
+
+    it("update email which belongs to other primary account should work if email password user is not a primary user or is not linked", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
+
+        let tokenResp = await EmailVerification.createEmailVerificationToken(
+            supertokens.convertToRecipeUserId(user.user.id)
+        );
+        await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+
+        let response = await EmailPassword.signUp("test2@example.com", "password123");
+        assert(response.status === "OK");
+        let recipeUserId = response.user.loginMethods[0].recipeUserId;
+
+        response = await EmailPassword.updateEmailOrPassword({
+            recipeUserId: response.user.loginMethods[0].recipeUserId,
+            email: "test@example.com",
+        });
+
+        assert(response.status === "OK");
+        let isVerified = await EmailVerification.isEmailVerified(recipeUserId);
+        assert(!isVerified);
+    });
+
+    it("update email which belongs to linked user should mark email as verified of email password user", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
+
+        let tokenResp = await EmailVerification.createEmailVerificationToken(
+            supertokens.convertToRecipeUserId(user.user.id)
+        );
+        await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+
+        let response = await EmailPassword.signUp("test2@example.com", "password123");
+        assert(response.status === "OK");
+        let recipeUserId = response.user.loginMethods[0].recipeUserId;
+
+        await AccountLinking.linkAccounts(response.user.loginMethods[0].recipeUserId, user.user.id);
+
+        response = await EmailPassword.updateEmailOrPassword({
+            recipeUserId: response.user.loginMethods[0].recipeUserId,
+            email: "test@example.com",
+        });
+
+        assert(response.status === "OK");
+        let isVerified = await EmailVerification.isEmailVerified(recipeUserId);
+        assert(isVerified);
     });
 });
