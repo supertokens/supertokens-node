@@ -286,4 +286,142 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
         assert(signInAPIContextWorks);
         assert(createNewSessionContextWorks);
     });
+
+    it("Test that SuperTokens.getRequestFromUserContext works as expected", async function () {
+        await startST();
+        let signInContextWorks = false;
+        let signInAPIContextWorks = false;
+        let createNewSessionContextWorks = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                signIn: async function (input) {
+                                    const requestFromContext = SuperTokens.getRequestFromUserContext(input.userContext);
+                                    if (requestFromContext !== undefined) {
+                                        assert(requestFromContext.getMethod() === "post");
+                                        assert(requestFromContext.getOriginalURL() === "/auth/signin");
+                                        const body = await requestFromContext.getJSONBody();
+                                        assert(body !== undefined);
+                                        assert.deepEqual(body.customData, {
+                                            customObject: {
+                                                customKey: "customValue",
+                                            },
+                                        });
+                                        signInContextWorks = true;
+                                    }
+
+                                    return await oI.signIn(input);
+                                },
+                            };
+                        },
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: async function (input) {
+                                    const requestFromContext = SuperTokens.getRequestFromUserContext(input.userContext);
+                                    if (requestFromContext !== undefined) {
+                                        assert(requestFromContext.getMethod() === "post");
+                                        assert(requestFromContext.getOriginalURL() === "/auth/signin");
+                                        const body = await requestFromContext.getJSONBody();
+                                        assert(body !== undefined);
+                                        assert.deepEqual(body.customData, {
+                                            customObject: {
+                                                customKey: "customValue",
+                                            },
+                                        });
+                                        signInAPIContextWorks = true;
+                                    }
+
+                                    return await oI.signInPOST(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init({
+                    getTokenTransferMethod: () => "cookie",
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                createNewSession: async function (input) {
+                                    const requestFromContext = SuperTokens.getRequestFromUserContext(input.userContext);
+                                    if (requestFromContext !== undefined) {
+                                        assert(requestFromContext.getMethod() === "post");
+                                        assert(requestFromContext.getOriginalURL() === "/auth/signin");
+                                        const body = await requestFromContext.getJSONBody();
+                                        assert(body !== undefined);
+                                        assert.deepEqual(body.customData, {
+                                            customObject: {
+                                                customKey: "customValue",
+                                            },
+                                        });
+                                        createNewSessionContextWorks = true;
+                                    }
+
+                                    return await oI.createNewSession(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await EmailPassword.signUp("random@gmail.com", "validpass123", {
+            manualCall: true,
+        });
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                    customData: {
+                        customObject: {
+                            customKey: "customValue",
+                        },
+                    },
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 200);
+        assert(signInContextWorks);
+        assert(signInAPIContextWorks);
+        assert(createNewSessionContextWorks);
+    });
 });

@@ -79,6 +79,7 @@ export default class SuperTokensWrapper {
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
+    static getRequestFromUserContext(userContext: any | undefined): import("./framework").BaseRequest | undefined;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -90,4 +91,5 @@ export declare let createUserIdMapping: typeof SuperTokensWrapper.createUserIdMa
 export declare let getUserIdMapping: typeof SuperTokensWrapper.getUserIdMapping;
 export declare let deleteUserIdMapping: typeof SuperTokensWrapper.deleteUserIdMapping;
 export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
+export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getRequestFromUserContext;
 export declare let Error: typeof SuperTokensError;
