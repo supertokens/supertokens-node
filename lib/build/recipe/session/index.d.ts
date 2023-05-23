@@ -16,7 +16,7 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
-    static STError: typeof SuperTokensError;
+    static Error: typeof SuperTokensError;
     static createNewSession(
         req: any,
         res: any,
@@ -220,7 +220,7 @@ export declare let getClaimValue: typeof SessionWrapper.getClaimValue;
 export declare let removeClaim: typeof SessionWrapper.removeClaim;
 export declare let validateClaimsInJWTPayload: typeof SessionWrapper.validateClaimsInJWTPayload;
 export declare let validateClaimsForSessionHandle: typeof SessionWrapper.validateClaimsForSessionHandle;
-export declare let STError: typeof SuperTokensError;
+export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
 export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;

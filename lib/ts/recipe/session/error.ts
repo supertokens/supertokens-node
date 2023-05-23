@@ -48,6 +48,10 @@ export default class SessionError extends STError {
                   type: "INVALID_CLAIMS";
                   payload: ClaimValidationError[];
               }
+            | {
+                  message: string;
+                  type: "INVALID_INPUT";
+              }
     ) {
         super(
             options.type === "UNAUTHORISED" && options.payload === undefined

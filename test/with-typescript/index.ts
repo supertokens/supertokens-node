@@ -1478,24 +1478,24 @@ async function getSessionWithoutErrorHandler(req: express.Request, resp: express
         /* .... */
     } catch (err) {
         if (SuperTokensError.isErrorFromSuperTokens(err)) {
-            if (err.type === Session.STError.TRY_REFRESH_TOKEN) {
+            if (err.type === Session.Error.TRY_REFRESH_TOKEN) {
                 resp.status(401).json({ message: "try again " });
                 // This means that the session exists, but the access token
                 // has expired.
 
                 // You can handle this in a custom way by sending a 401.
                 // Or you can call the errorHandler middleware as shown below
-            } else if (err.type === Session.STError.UNAUTHORISED) {
+            } else if (err.type === Session.Error.UNAUTHORISED) {
                 resp.status(401).json({ message: "try again " });
                 // This means that the session does not exist anymore.
                 // You can handle this in a custom way by sending a 401.
                 // Or you can call the errorHandler middleware as shown below
-            } else if (err.type === Session.STError.TOKEN_THEFT_DETECTED) {
+            } else if (err.type === Session.Error.TOKEN_THEFT_DETECTED) {
                 // Security Alert!!
                 resp.status(401).json({ message: "try again " });
                 // Session hijacking attempted. You should revoke the session
                 // using Session.revokeSession fucntion and send a 401
-            } else if (err.type === Session.STError.INVALID_CLAIMS) {
+            } else if (err.type === Session.Error.INVALID_CLAIMS) {
                 resp.status(403).json({ status: "CLAIM_VALIDATION_ERROR", claimValidationErrors: err.payload });
                 // The user is missing some required claim.
                 // You can pass the missing claims to the frontend and handle it there
@@ -1537,8 +1537,8 @@ async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp
             session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
             session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { ...options });
         } catch (ex) {
-            if (Session.STError.isErrorFromSuperTokens(ex)) {
-                if (ex.type === Session.STError.INVALID_CLAIMS) {
+            if (Session.Error.isErrorFromSuperTokens(ex)) {
+                if (ex.type === Session.Error.INVALID_CLAIMS) {
                     return resp.status(403).json({
                         message: "invalid claim",
                         claimValidationErrors: ex.payload,
@@ -1603,7 +1603,7 @@ async function refreshSessionWithoutRequestResponse(req: express.Request, resp: 
         try {
             session = await Session.refreshSessionWithoutRequestResponse(refreshToken, true);
         } catch (ex) {
-            if (Session.STError.isErrorFromSuperTokens(ex)) {
+            if (Session.Error.isErrorFromSuperTokens(ex)) {
                 return resp
                     .status(401)
                     .set("st-access-token", "")

@@ -35,7 +35,7 @@ import { BaseRequest } from "../../framework";
 export default class SessionWrapper {
     static init = Recipe.init;
 
-    static STError = SuperTokensError;
+    static Error = SuperTokensError;
 
     static async createNewSession(
         req: any,
@@ -462,7 +462,11 @@ async function checkAntiCsrfOrThrowError(antiCSRF: AntiCsrfType | undefined, use
         if (appInfo.initialOriginType === "string") {
             return await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
         } else {
-            throw new Error("Can not get value of antiCSRF"); // TODO - iresh: come up with better Error message
+            throw new Error({
+                type: "INVALID_INPUT",
+                message:
+                    "To use this function, either value of anti_csrf should be passed or typeof origin should be string",
+            });
         }
     } else {
         return antiCSRF;
@@ -501,7 +505,7 @@ export let removeClaim = SessionWrapper.removeClaim;
 export let validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload;
 export let validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle;
 
-export let STError = SessionWrapper.STError;
+export let Error = SessionWrapper.Error;
 
 // JWT Functions
 export let createJWT = SessionWrapper.createJWT;
