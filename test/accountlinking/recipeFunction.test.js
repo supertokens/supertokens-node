@@ -499,4 +499,168 @@ describe(`configTest: ${printPath("[test/accountlinking/recipeFunction.test.js]"
         sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 0);
     });
+
+    it("delete user successful", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        if (newAccountInfo.email === "test2@example.com" && user === undefined) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === true);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        {
+            let primaryUser = await supertokens.getUser(user.id);
+            assert(primaryUser !== undefined);
+            assert(primaryUser.loginMethods.length === 2);
+            assert(primaryUser.isPrimaryUser);
+        }
+        await supertokens.deleteUser(user2.id, false);
+
+        {
+            let primaryUser = await supertokens.getUser(user.id);
+            assert(primaryUser !== undefined);
+            assert(primaryUser.loginMethods.length === 1);
+            assert(primaryUser.loginMethods[0].recipeUserId.getAsString() === primaryUser.id);
+            assert(primaryUser.isPrimaryUser);
+        }
+    });
+
+    it("delete user successful - primary user being deleted", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        if (newAccountInfo.email === "test2@example.com" && user === undefined) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === true);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        {
+            let primaryUser = await supertokens.getUser(user.id);
+            assert(primaryUser !== undefined);
+            assert(primaryUser.loginMethods.length === 2);
+            assert(primaryUser.isPrimaryUser);
+        }
+        await supertokens.deleteUser(user.id, false);
+
+        {
+            let primaryUser = await supertokens.getUser(user.id);
+            assert(primaryUser !== undefined);
+            assert(primaryUser.loginMethods.length === 1);
+            assert(primaryUser.loginMethods[0].recipeUserId.getAsString() === user2.id);
+            assert(primaryUser.isPrimaryUser);
+        }
+    });
+
+    it("delete user successful - remove all linked accounts", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        if (newAccountInfo.email === "test2@example.com" && user === undefined) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === true);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        {
+            let primaryUser = await supertokens.getUser(user.id);
+            assert(primaryUser !== undefined);
+            assert(primaryUser.loginMethods.length === 2);
+            assert(primaryUser.isPrimaryUser);
+        }
+        await supertokens.deleteUser(user.id);
+
+        {
+            let primaryUser = await supertokens.getUser(user.id);
+            assert(primaryUser === undefined);
+        }
+
+        {
+            let user = await supertokens.getUser(user2.id);
+            assert(user === undefined);
+        }
+    });
+
+    // TODO: fetchFromAccountToLinkTable test
+    // TODO: storeIntoAccountToLinkTable test
 });
