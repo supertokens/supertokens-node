@@ -18,6 +18,7 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
+let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 
 describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
@@ -104,5 +105,49 @@ describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")
 
         let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
         assert(!user.isPrimaryUser);
+    });
+
+    it("sign up not allowed if account linking is on and email already used by another recipe", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let user = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
+
+        let response = await EmailPassword.signUp("test@example.com", "password123");
+
+        assert(response.status === "EMAIL_ALREADY_EXISTS_ERROR");
     });
 });
