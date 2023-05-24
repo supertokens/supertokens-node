@@ -585,7 +585,7 @@ export default class Recipe extends RecipeModule {
         if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "Account linking not allowed by the developer for new user.",
+                description: "Account linking not allowed by the developer for new account.",
             };
         }
 
