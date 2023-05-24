@@ -21,9 +21,13 @@ export async function mockGetRefreshAPIResponse(requestBody: any, querier: any) 
 }
 
 export async function mockCreateNewSession(requestBody: any, querier: any) {
+    let ogRecipeUserId = requestBody.recipeUserId;
+    let ogUserId = requestBody.userId;
     requestBody.userId = requestBody.recipeUserId;
+    delete requestBody.recipeUserId;
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
-    response.session.recipeUserId = response.session.userId;
+    response.session.recipeUserId = ogRecipeUserId;
+    response.session.userId = ogUserId;
     sessionHandles.push({
         primaryUserId: requestBody.userId,
         recipeUserId: requestBody.recipeUserId,

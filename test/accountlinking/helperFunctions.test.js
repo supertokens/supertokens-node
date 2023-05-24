@@ -871,4 +871,750 @@ describe(`configTest: ${printPath("[test/accountlinking/helperFunctions.test.js]
 
         assert(isAllowed);
     });
+
+    it("calling linkAccountWithUserFromSession with a random user ID does not throw an error", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        let session = await Session.createNewSessionWithoutRequestResponse(supertokens.convertToRecipeUserId("random"));
+
+        let response = await AccountLinking.linkAccountsWithUserFromSession({
+            session,
+            newUser: {
+                recipeId: "emailpassword",
+                email: "test@example.com",
+            },
+            createRecipeUserFunc: () => {},
+            verifyCredentialsFunc: () => {
+                return {
+                    status: "OK",
+                };
+            },
+        });
+
+        assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
+        assert(
+            response.description ===
+                "Accounts cannot be linked because the session belongs to a user ID that does not exist in SuperTokens."
+        );
+    });
+
+    it("calling linkAccountWithUserFromSession makes the session user a primary user and then links.", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        assert(!thirdPartyUser.isPrimaryUser);
+        let token = await EmailVerification.createEmailVerificationToken(
+            supertokens.convertToRecipeUserId(thirdPartyUser.id)
+        );
+        await EmailVerification.verifyEmailUsingToken(token.token);
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test@example.com",
+            newUserPassword: "password123",
+        });
+
+        assert(response.status === "OK");
+        assert(!response.wereAccountsAlreadyLinked);
+
+        let primaryUser = await supertokens.getUser(thirdPartyUser.id);
+        assert(primaryUser.isPrimaryUser);
+        assert(primaryUser.loginMethods.length === 2);
+        assert(primaryUser.id === session.getUserId());
+
+        assert(callbackNewAccount.email === "test@example.com");
+        assert(callbackNewAccount.recipeId === "emailpassword");
+        assert(callbackUser.id === thirdPartyUser.id);
+        assert(numberOfTimesCallbackCalled === 1);
+    });
+
+    it("calling linkAccountWithUserFromSession fails when existing user can't be made into a primary user", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        if (userContext.doNotLink2 && newAccountInfo.recipeId === "thirdparty") {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        assert(!thirdPartyUser.isPrimaryUser);
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test@example.com",
+            newUserPassword: "password123",
+            userContext: {
+                doNotLink2: true,
+            },
+        });
+
+        assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
+        assert(response.description === "Account linking not allowed by the developer for existing user.");
+        assert(numberOfTimesCallbackCalled === 0);
+    });
+
+    it("calling linkAccountWithUserFromSession throws email verification claim failure if the session user's email is not verified and we are trying to make it a primary user", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (newAccountInfo, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        if (userContext.doNotLink2 && newAccountInfo.recipeId === "thirdparty") {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        assert(!thirdPartyUser.isPrimaryUser);
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser.id)
+        );
+
+        // now we try and do the linking
+        try {
+            await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+                session,
+                newUserEmail: "test@example.com",
+                newUserPassword: "password123",
+                userContext: {
+                    doNotLink2: true,
+                },
+            });
+            assert(false);
+        } catch (err) {
+            try {
+                await session.assertClaims([EmailVerification.EmailVerificationClaim.validators.isTrue()]);
+                assert(false);
+            } catch (expectedError) {
+                assert.deepStrictEqual(expectedError, err);
+            }
+        }
+
+        assert(numberOfTimesCallbackCalled === 0);
+    });
+
+    it("calling linkAccountWithUserFromSession links correctly when the session's recipe user id is a primary user id and email verification is not required", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test2@example.com",
+            newUserPassword: "password123",
+        });
+
+        assert(response.status === "OK");
+        assert(!response.wereAccountsAlreadyLinked);
+
+        let primaryUser = await supertokens.getUser(thirdPartyUser.id);
+        assert(primaryUser.isPrimaryUser);
+        assert(primaryUser.loginMethods.length === 2);
+        assert(primaryUser.id === session.getUserId());
+        assert(primaryUser.emails.length === 2);
+
+        assert(callbackNewAccount.email === "test2@example.com");
+        assert(callbackNewAccount.recipeId === "emailpassword");
+        assert(callbackUser.id === thirdPartyUser.id);
+        assert(numberOfTimesCallbackCalled === 1);
+    });
+
+    it("calling linkAccountWithUserFromSession does not link when the session's recipe user id is a primary user id and email verification is required and different emails", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test2@example.com",
+            newUserPassword: "password123",
+        });
+
+        assert(response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
+        assert(response.primaryUserId === thirdPartyUser.id);
+        let recipeUsers = await supertokens.listUsersByAccountInfo({
+            email: "test2@example.com",
+        });
+        assert(response.recipeUserId.getAsString() === recipeUsers[0].id);
+    });
+
+    it("calling linkAccountWithUserFromSession does linking when the session's recipe user id is a primary user id and email verification is required and same emails, even though email is not verified.", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test@example.com",
+            newUserPassword: "password123",
+        });
+
+        assert(response.status === "OK");
+    });
+
+    it("calling linkAccountWithUserFromSession links accounts correctly even though the session's recipe user id not the primary user id", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
+
+        let thirdPartyUser2 = (
+            await ThirdParty.signInUp("google", "abc1", "test2@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.linkAccounts(supertokens.convertToRecipeUserId(thirdPartyUser2.id), thirdPartyUser.id);
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser2.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test2@example.com",
+            newUserPassword: "password123",
+        });
+
+        // this does not return email verification needed cause we are using the
+        // same email as an already linked account (test2@example.com third party account)
+        assert(response.status === "OK");
+        assert(!response.wereAccountsAlreadyLinked);
+
+        let primaryUser = await supertokens.getUser(thirdPartyUser.id);
+        assert(primaryUser.isPrimaryUser);
+        assert(primaryUser.loginMethods.length === 3);
+        assert(primaryUser.id === session.getUserId());
+        assert(primaryUser.emails.length === 2);
+
+        assert(callbackNewAccount.email === "test2@example.com");
+        assert(callbackNewAccount.recipeId === "emailpassword");
+        assert(callbackUser.id === thirdPartyUser.id);
+        assert(numberOfTimesCallbackCalled === 2);
+    });
+
+    it("calling linkAccountWithUserFromSession links accounts correctly even though the session's recipe user id not the primary user id", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
+
+        let thirdPartyUser2 = (
+            await ThirdParty.signInUp("google", "abc1", "test2@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.linkAccounts(supertokens.convertToRecipeUserId(thirdPartyUser2.id), thirdPartyUser.id);
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(thirdPartyUser2.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test3@example.com",
+            newUserPassword: "password123",
+        });
+
+        // this does not return email verification needed cause we are using the
+        // same email as an already linked account (test2@example.com third party account)
+        assert(response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
+        assert(response.primaryUserId === thirdPartyUser.id);
+        let recipeUsers = await supertokens.listUsersByAccountInfo({
+            email: "test3@example.com",
+        });
+        assert(response.recipeUserId.getAsString() === recipeUsers[0].id);
+    });
 });

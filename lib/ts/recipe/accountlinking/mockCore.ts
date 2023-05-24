@@ -489,6 +489,28 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
         return hasSameThirdPartyInfoAs;
     }
 
+    // remove duplicate items from the input.emails array
+    input.emails = input.emails.filter((email, index) => {
+        return input.emails.indexOf(email) === index;
+    });
+
+    // remove duplicate items from the input.phoneNumbers array
+    input.phoneNumbers = input.phoneNumbers.filter((phoneNumber, index) => {
+        return input.phoneNumbers.indexOf(phoneNumber) === index;
+    });
+
+    // remove duplicate items from the input.thirdParty array
+    input.thirdParty = input.thirdParty.filter((thirdParty, index) => {
+        let indexFound = index;
+        for (let i = 0; i < input.thirdParty.length; i++) {
+            if (input.thirdParty[i].id === thirdParty.id && input.thirdParty[i].userId === thirdParty.userId) {
+                indexFound = i;
+                break;
+            }
+        }
+        return indexFound === index;
+    });
+
     return {
         ...input,
         loginMethods: input.loginMethods.map((lM) => {

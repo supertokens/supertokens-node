@@ -476,32 +476,13 @@ export default class Recipe extends RecipeModule {
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 description:
-                    "We cannot link accounts since the session belongs to a user ID that does not exist in SuperTokens.",
+                    "Accounts cannot be linked because the session belongs to a user ID that does not exist in SuperTokens.",
             };
         }
 
         if (!existingUser.isPrimaryUser) {
-            // we will try and make the existing user a primary user. But before that, we must ask the
-            // dev if they want to allow for that.
-
-            // we ask the dev if the new user should be a candidate for account linking.
-            const shouldDoAccountLinkingOfNewUser = await this.config.shouldDoAutomaticAccountLinking(
-                newUser,
-                undefined,
-                session,
-                userContext
-            );
-
-            if (!shouldDoAccountLinkingOfNewUser.shouldAutomaticallyLink) {
-                return {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "Account linking not allowed by the developer for new user.",
-                };
-            }
-            // we do not care about the new user's verification status here cause we are in the process of making the session user a primary user first.
-
-            // Now we ask the user if the existing login method can be linked to anything
-            // (since it's not a primary user)
+            // we will try and make the existing user a primary user. But before that, we must ask
+            // the dev if they want to allow for that.
 
             // here we can use the index of 0 cause the existingUser is not a primary user,
             // therefore it will only have one login method in the loginMethods' array.
@@ -549,7 +530,7 @@ export default class Recipe extends RecipeModule {
                             reason: { message: "wrong value", expectedValue: true, actualValue: false },
                         },
                     ],
-                    message: "invalid claim",
+                    message: "INVALID_CLAIMS",
                 });
             }
 
