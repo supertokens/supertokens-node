@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [14.1.1] - 2023-05-24
+
+### Added
+
+-   Adds additional debug logs whenever the SDK throws a `TRY_REFRESH_TOKEN` or `UNAUTHORISED` error to make debugging easier
+
 ## [14.1.0] - 2023-05-23
 
 ### Changes

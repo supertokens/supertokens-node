@@ -18,6 +18,7 @@ import { SessionClaim, SessionClaimValidator, SessionContainerInterface, ReqResI
 import { Helpers, protectedProps } from "./recipeImplementation";
 import { setAccessTokenInResponse } from "./utils";
 import { parseJWTWithoutSignatureVerification } from "./jwt";
+import { logDebugMessage } from "../../logger";
 
 export default class Session implements SessionContainerInterface {
     constructor(
@@ -56,6 +57,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
+            logDebugMessage("getSessionDataFromDatabase: Throwing UNAUTHORISED because session does not exist anymore");
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -72,6 +74,9 @@ export default class Session implements SessionContainerInterface {
                 userContext: userContext === undefined ? {} : userContext,
             }))
         ) {
+            logDebugMessage(
+                "updateSessionDataInDatabase: Throwing UNAUTHORISED because session does not exist anymore"
+            );
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -127,6 +132,9 @@ export default class Session implements SessionContainerInterface {
         });
 
         if (response === undefined) {
+            logDebugMessage(
+                "mergeIntoAccessTokenPayload: Throwing UNAUTHORISED because session does not exist anymore"
+            );
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -167,6 +175,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
+            logDebugMessage("getTimeCreated: Throwing UNAUTHORISED because session does not exist anymore");
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -181,6 +190,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
+            logDebugMessage("getExpiry: Throwing UNAUTHORISED because session does not exist anymore");
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
