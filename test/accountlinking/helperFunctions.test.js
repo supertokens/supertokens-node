@@ -405,4 +405,236 @@ describe(`configTest: ${printPath("[test/accountlinking/helperFunctions.test.js]
         assert(userObj.id === user.id);
         assert(userObj.loginMethods.length === 1);
     });
+
+    it("calling getPrimaryUserIdThatCanBeLinkedToRecipeUserId returns undefined if nothing can be linked", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let primaryUser = (
+            await ThirdParty.signInUp("google", "abc", "test2@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
+
+        let user = (
+            await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            })
+        ).user;
+
+        assert(user.isPrimaryUser === false);
+
+        let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            recipeUserId: user.loginMethods[0].recipeUserId,
+            checkAccountsToLinkTableAsWell: true,
+        });
+
+        assert(response === undefined);
+    });
+
+    it("calling getPrimaryUserIdThatCanBeLinkedToRecipeUserId returns the right primary user if it can be linked", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let primaryUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
+
+        let user = (
+            await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            })
+        ).user;
+
+        assert(user.isPrimaryUser === false);
+
+        let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            recipeUserId: user.loginMethods[0].recipeUserId,
+            checkAccountsToLinkTableAsWell: true,
+        });
+
+        assert(response.id === primaryUser.id);
+    });
+
+    it("calling getPrimaryUserIdThatCanBeLinkedToRecipeUserId returns from account to link to table in priority", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let primaryUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
+
+        let user = (
+            await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            })
+        ).user;
+
+        assert(user.isPrimaryUser === false);
+
+        let accountToLinkToUser = (
+            await EmailPassword.signUp("test2@example.com", "password123", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(accountToLinkToUser.loginMethods[0].recipeUserId);
+
+        let resp = await AccountLinking.storeIntoAccountToLinkTable(
+            user.loginMethods[0].recipeUserId,
+            accountToLinkToUser.id
+        );
+        assert(resp.status === "OK");
+
+        let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            recipeUserId: user.loginMethods[0].recipeUserId,
+            checkAccountsToLinkTableAsWell: true,
+        });
+
+        assert(response.id === accountToLinkToUser.id);
+    });
+
+    it("calling getPrimaryUserIdThatCanBeLinkedToRecipeUserId takes into account checkAccountsToLinkTableAsWell boolean", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let primaryUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
+
+        let user = (
+            await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            })
+        ).user;
+
+        assert(user.isPrimaryUser === false);
+
+        let accountToLinkToUser = (
+            await EmailPassword.signUp("test2@example.com", "password123", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(accountToLinkToUser.loginMethods[0].recipeUserId);
+
+        let resp = await AccountLinking.storeIntoAccountToLinkTable(
+            user.loginMethods[0].recipeUserId,
+            accountToLinkToUser.id
+        );
+        assert(resp.status === "OK");
+
+        let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            recipeUserId: user.loginMethods[0].recipeUserId,
+            checkAccountsToLinkTableAsWell: false,
+        });
+
+        assert(response.id === primaryUser.id);
+    });
 });
