@@ -28,6 +28,7 @@ import SuperTokensError from "../../error";
 import SessionError from "../session/error";
 import supertokens from "../../supertokens";
 import RecipeUserId from "../../recipeUserId";
+import { ProcessState, PROCESS_STATE } from "../../processState";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -651,6 +652,11 @@ export default class Recipe extends RecipeModule {
         // a primary user or not, and if it is, then it means that our newUser
         // is already linked so we can return early.
 
+        // we do this even though it will be checked later during linkAccounts function
+        // call cause we do not want to do the email verification check that's below this block,
+        // in case this block errors out so that we do not make the user go through the email
+        // verification flow unnecessarily.
+
         if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser) {
             if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id === existingUser.id) {
                 // this means that the accounts we want to link are already linked.
@@ -704,15 +710,18 @@ export default class Recipe extends RecipeModule {
             // so we can't link it to the existing user.
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "New user is already linked to another account",
+                description: "New user is already linked to another account or is a primary user.",
             };
         } else {
             // status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
             // this means that the account info of the newUser already belongs to some other primary user ID.
             // So we cannot link it to existing user.
+            ProcessState.getInstance().addState(
+                PROCESS_STATE.ACCOUNT_LINKING_NOT_ALLOWED_ERROR_END_OF_linkAccountWithUserFromSession_FUNCTION
+            );
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "Not allowed because it will lead to two primary user id having same account info",
+                description: "Not allowed because it will lead to two primary user id having same account info.",
             };
         }
     };

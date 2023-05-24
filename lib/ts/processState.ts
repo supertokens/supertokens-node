@@ -18,6 +18,10 @@ export enum PROCESS_STATE {
     CALLING_SERVICE_IN_GET_API_VERSION,
     CALLING_SERVICE_IN_REQUEST_HELPER,
     MULTI_JWKS_VALIDATION,
+
+    // this is used to distinguish between two reachable states in the
+    // linkAccountWithUserFromSession function during tests
+    ACCOUNT_LINKING_NOT_ALLOWED_ERROR_END_OF_linkAccountWithUserFromSession_FUNCTION,
 }
 
 export class ProcessState {
