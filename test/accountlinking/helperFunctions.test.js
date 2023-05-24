@@ -1617,4 +1617,88 @@ describe(`configTest: ${printPath("[test/accountlinking/helperFunctions.test.js]
         });
         assert(response.recipeUserId.getAsString() === recipeUsers[0].id);
     });
+
+    it("calling linkAccountWithUserFromSession fails if session user is not a primary user and there exists another primary user with the same account info", async function () {
+        await startST();
+        let callbackUser = undefined;
+        let callbackNewAccount = undefined;
+        let numberOfTimesCallbackCalled = 0;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    onAccountLinked: (user, newAccount) => {
+                        numberOfTimesCallbackCalled++;
+                        callbackUser = user;
+                        callbackNewAccount = newAccount;
+                    },
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        // first we create a recipe user with third party
+        let thirdPartyUser = (
+            await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            })
+        ).user;
+
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
+
+        let epUser1 = await EmailPassword.signUp("test@example.com", "password123", {
+            doNotLink: true,
+        });
+        assert(!epUser1.user.isPrimaryUser);
+
+        // now we create a new session for this user.
+        let session = await Session.createNewSessionWithoutRequestResponse(
+            supertokens.convertToRecipeUserId(epUser1.user.id)
+        );
+
+        // now we try and do the linking
+        let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
+            session,
+            newUserEmail: "test3@example.com",
+            newUserPassword: "password123",
+        });
+
+        assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
+        assert(
+            response.description ===
+                "No account can be linked to the session account cause the session account is not a primary account and the account info is already associated with another primary account, so we cannot make this a primary account either. Please contact support."
+        );
+    });
 });
