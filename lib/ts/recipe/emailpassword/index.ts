@@ -113,7 +113,24 @@ export default class Wrapper {
         newUserEmail: string;
         newUserPassword: string;
         userContext?: any;
-    }) {
+    }): Promise<
+        | {
+              status: "OK";
+              wereAccountsAlreadyLinked: boolean;
+          }
+        | {
+              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+              description: string;
+          }
+        | {
+              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              primaryUserId: string;
+              recipeUserId: RecipeUserId;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const createRecipeUserFunc = async (userContext: any): Promise<void> => {
             await recipeInstance.recipeInterfaceImpl.createNewRecipeUser({
@@ -152,7 +169,7 @@ export default class Wrapper {
             }
         };
 
-        return await linkAccountsWithUserFromSession({
+        let response = await linkAccountsWithUserFromSession({
             session: input.session,
             newUser: {
                 recipeId: "emailpassword",
@@ -162,6 +179,10 @@ export default class Wrapper {
             verifyCredentialsFunc,
             userContext: input.userContext === undefined ? {} : input.userContext,
         });
+        if (response.status === "CUSTOM_RESPONSE") {
+            return response.resp;
+        }
+        return response;
     }
 }
 

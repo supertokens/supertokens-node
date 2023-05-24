@@ -622,7 +622,7 @@ export default class Recipe extends RecipeModule {
             if (otherPrimaryUser !== undefined && otherPrimaryUser.id !== existingUser.id) {
                 return {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "Not allowed because it will lead to two primary user id having same account info",
+                    description: "Not allowed because it will lead to two primary user id having same account info.",
                 };
             }
 
