@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [14.1.2] - 2023-05-24
+
+### Changes
+
+-   Email templates updated to support superhuman client.
+
+## [14.1.1] - 2023-05-24
+
+### Added
+
+-   Adds additional debug logs whenever the SDK throws a `TRY_REFRESH_TOKEN` or `UNAUTHORISED` error to make debugging easier
+
+## [14.1.0] - 2023-05-23
+
+### Changes
+
+-   Added a new `getRequestFromUserContext` function that can be used to read the original network request from the user context in overridden APIs and recipe functions
+
 ## [14.0.2] - 2023-05-11
 
 ### Changes
