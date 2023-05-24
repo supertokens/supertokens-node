@@ -10,6 +10,7 @@ import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { storeIntoAccountToLinkTable } from "../../accountlinking";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
+import { validateFormFieldsOrThrowError } from "./utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -44,6 +45,12 @@ export default function getAPIImplementation(): APIInterface {
             const password = formFields.filter((f) => f.id === "password")[0].value;
 
             const createRecipeUserFunc = async (userContext: any): Promise<void> => {
+                // this will throw and get caught by the supertokens error handler.
+                await validateFormFieldsOrThrowError(
+                    options.config.signUpFeature.formFields,
+                    (await options.req.getJSONBody()).formFields
+                );
+
                 await options.recipeImplementation.createNewRecipeUser({
                     email,
                     password,
