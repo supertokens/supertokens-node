@@ -19,7 +19,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
 
-describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
+describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

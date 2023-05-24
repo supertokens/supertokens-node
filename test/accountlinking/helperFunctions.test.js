@@ -23,7 +23,7 @@ let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 let AccountLinkingRecipe = require("../../lib/build/recipe/accountlinking/recipe").default;
 
-describe(`configTest: ${printPath("[test/accountlinking/helperFunctions.test.js]")}`, function () {
+describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

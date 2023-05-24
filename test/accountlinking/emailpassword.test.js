@@ -22,7 +22,7 @@ let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 let EmailVerification = require("../../recipe/emailverification");
 
-describe(`configTest: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
+describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
