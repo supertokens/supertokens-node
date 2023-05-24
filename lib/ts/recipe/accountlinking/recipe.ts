@@ -661,7 +661,7 @@ export default class Recipe extends RecipeModule {
             } else {
                 return {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "New user is already linked to another account",
+                    description: "New user is already linked to another account or is a primary user.",
                 };
             }
         }
