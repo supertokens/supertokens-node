@@ -21,7 +21,6 @@ let EmailPassword = require("../../recipe/emailpassword");
 let EmailVerification = require("../../recipe/emailverification");
 let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
-let AccountLinkingRecipe = require("../../lib/build/recipe/accountlinking/recipe").default;
 
 describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions.test.js]")}`, function () {
     beforeEach(async function () {
@@ -653,17 +652,99 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let isAllowed = await AccountLinkingRecipe.getInstance().isSignUpAllowed({
-            newUser: {
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
                 email: "test@example.com",
             },
-            isVerified: true,
-        });
+            true
+        );
 
         assert(isAllowed);
     });
 
-    it("calling isSignUpAllowed returns true if user exists with same email, but is not a primary user", async function () {
+    it("calling isSignUpAllowed returns true if user exists with same email, but is not a primary user, and email verification not required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        await EmailPassword.signUp("test@example.com", "password123", {
+            doNotLink: true,
+        });
+
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
+                email: "test@example.com",
+            },
+            false
+        );
+
+        assert(isAllowed);
+    });
+
+    it("calling isSignUpAllowed returns true if user exists with same email, but is not a primary user, and account linking is disabled", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        return {
+                            shouldAutomaticallyLink: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        await EmailPassword.signUp("test@example.com", "password123", {
+            doNotLink: true,
+        });
+
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
+                email: "test@example.com",
+            },
+            false
+        );
+
+        assert(isAllowed);
+    });
+
+    it("calling isSignUpAllowed returns false if user exists with same email, but is not a primary user, and email verification is required", async function () {
         await startST();
         supertokens.init({
             supertokens: {
@@ -697,14 +778,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             doNotLink: true,
         });
 
-        let isAllowed = await AccountLinkingRecipe.getInstance().isSignUpAllowed({
-            newUser: {
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
                 email: "test@example.com",
             },
-            isVerified: false,
-        });
+            false
+        );
 
-        assert(isAllowed);
+        assert(!isAllowed);
     });
 
     it("calling isSignUpAllowed returns false if user exists with same email, but linking is not allowed", async function () {
@@ -737,12 +818,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
         pUser = await supertokens.getUser(pUser.id);
         assert(pUser.isPrimaryUser);
 
-        let isAllowed = await AccountLinkingRecipe.getInstance().isSignUpAllowed({
-            newUser: {
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
                 email: "test@example.com",
             },
-            isVerified: false,
-        });
+            false
+        );
 
         assert(!isAllowed);
     });
@@ -776,12 +857,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
         pUser = await supertokens.getUser(pUser.id);
         assert(pUser.isPrimaryUser);
 
-        let isAllowed = await AccountLinkingRecipe.getInstance().isSignUpAllowed({
-            newUser: {
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
                 email: "test@example.com",
             },
-            isVerified: false,
-        });
+            false
+        );
 
         assert(isAllowed);
     });
@@ -816,12 +897,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
         pUser = await supertokens.getUser(pUser.id);
         assert(pUser.isPrimaryUser);
 
-        let isAllowed = await AccountLinkingRecipe.getInstance().isSignUpAllowed({
-            newUser: {
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
                 email: "test@example.com",
             },
-            isVerified: true,
-        });
+            true
+        );
 
         assert(!isAllowed);
     });
@@ -862,12 +943,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
         let token = await EmailVerification.createEmailVerificationToken(pUser.loginMethods[0].recipeUserId);
         await EmailVerification.verifyEmailUsingToken(token.token);
 
-        let isAllowed = await AccountLinkingRecipe.getInstance().isSignUpAllowed({
-            newUser: {
+        let isAllowed = await AccountLinking.isSignUpAllowed(
+            {
                 email: "test@example.com",
             },
-            isVerified: true,
-        });
+            true
+        );
 
         assert(isAllowed);
     });

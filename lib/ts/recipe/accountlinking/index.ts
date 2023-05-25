@@ -158,6 +158,15 @@ export default class Wrapper {
             userContext,
         });
     }
+
+    static async isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstance().isSignUpAllowed({
+            newUser,
+            isVerified,
+            userContext,
+        });
+    }
 }
 
 export const init = Wrapper.init;
@@ -171,6 +180,7 @@ export const storeIntoAccountToLinkTable = Wrapper.storeIntoAccountToLinkTable;
 export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
 export const getPrimaryUserIdThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export const linkAccountsWithUserFromSession = Wrapper.linkAccountsWithUserFromSession;
+export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 
 export type { RecipeInterface };
 

@@ -53,18 +53,6 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<User | undefined>;
-    transformUserInfoIntoVerifiedAndUnverifiedBucket: (
-        user: User
-    ) => {
-        verified: {
-            emails: string[];
-            phoneNumbers: string[];
-        };
-        unverified: {
-            emails: string[];
-            phoneNumbers: string[];
-        };
-    };
     isSignUpAllowed: ({
         newUser,
         isVerified,
