@@ -67,11 +67,11 @@ export default class Recipe extends RecipeModule {
     };
     isSignUpAllowed: ({
         newUser,
-        allowLinking,
+        isVerified,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
-        allowLinking: boolean;
+        isVerified: boolean;
         userContext: any;
     }) => Promise<boolean>;
     linkAccountWithUserFromSession: <T>({

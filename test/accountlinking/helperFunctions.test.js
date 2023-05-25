@@ -657,7 +657,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             newUser: {
                 email: "test@example.com",
             },
-            allowLinking: true,
+            isVerified: true,
         });
 
         assert(isAllowed);
@@ -701,7 +701,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             newUser: {
                 email: "test@example.com",
             },
-            allowLinking: false,
+            isVerified: false,
         });
 
         assert(isAllowed);
@@ -741,7 +741,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             newUser: {
                 email: "test@example.com",
             },
-            allowLinking: false,
+            isVerified: false,
         });
 
         assert(!isAllowed);
@@ -780,7 +780,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             newUser: {
                 email: "test@example.com",
             },
-            allowLinking: false,
+            isVerified: false,
         });
 
         assert(isAllowed);
@@ -820,7 +820,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             newUser: {
                 email: "test@example.com",
             },
-            allowLinking: true,
+            isVerified: true,
         });
 
         assert(!isAllowed);
@@ -866,7 +866,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             newUser: {
                 email: "test@example.com",
             },
-            allowLinking: true,
+            isVerified: true,
         });
 
         assert(isAllowed);

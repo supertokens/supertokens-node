@@ -352,11 +352,11 @@ export default class Recipe extends RecipeModule {
 
     isSignUpAllowed = async ({
         newUser,
-        allowLinking,
+        isVerified,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
-        allowLinking: boolean;
+        isVerified: boolean;
         userContext: any;
     }): Promise<boolean> => {
         // we find other accounts based on the email / phone number.
@@ -372,7 +372,9 @@ export default class Recipe extends RecipeModule {
         // now we check if there exists some primary user with the same email / phone number
         // such that that info is not verified for that account. In this case, we do not allow
         // sign up cause we cannot link this new account to that primary account yet (since
-        // the email / phone is unverified), and we can't make this a primary user either (since
+        // the email / phone is unverified - this is to prevent an attach where an attacker
+        // might have access to the unverified account's primary user and we do not want to
+        // link this account to that one), and we can't make this a primary user either (since
         // then there would be two primary users with the same email / phone number - which is
         // not allowed..)
         let primaryUser = users.find((u) => u.isPrimaryUser);
@@ -397,11 +399,15 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
-        if (!allowLinking) {
+        if (!isVerified) {
             // this will exist early with a false here cause it means that
-            // if we come here, the newUser will be linked to the primary user.
+            // if we come here, the newUser will be linked to the primary user post email
+            // verification. Whilst this seems OK, there is a risk that the actual user might
+            // click on the email verification link thinking that they it's for their existing
+            // (legit) account, and then the attacker (who signed up with email password maybe)
+            // will have access to the account - cause email verification will cause account linking.
 
-            // We also do this AFTER calling shouldDoAutomaticAccountLinking cause
+            // We do this AFTER calling shouldDoAutomaticAccountLinking cause
             // in case email verification is not required, then linking should not be
             // an issue anyway.
             return false;

@@ -175,7 +175,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "emailpassword",
                     email,
                 },
-                allowLinking: false,
+                isVerified: false,
                 userContext,
             });
 
@@ -354,7 +354,7 @@ export default function getAPIImplementation(): APIInterface {
                         recipeId: "emailpassword",
                         email,
                     },
-                    allowLinking: true,
+                    isVerified: true, // cause when the token is consumed, we will mark the email as verified
                     userContext,
                 });
                 if (isSignUpAllowed) {
@@ -766,7 +766,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "emailpassword",
                     email,
                 },
-                allowLinking: false,
+                isVerified: false,
                 userContext,
             });
 
