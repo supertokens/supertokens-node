@@ -110,7 +110,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(!res.body.wereAccountsAlreadyLinked);
 
             tokens = extractInfoFromResponse(res);
-            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
 
             let pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 2);
@@ -188,7 +188,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(!res.body.wereAccountsAlreadyLinked);
 
             tokens = extractInfoFromResponse(res);
-            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
 
             let pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 2);
@@ -270,7 +270,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.wereAccountsAlreadyLinked);
 
             tokens = extractInfoFromResponse(res);
-            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
 
             let pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 2);
@@ -348,7 +348,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(!res.body.wereAccountsAlreadyLinked);
 
             tokens = extractInfoFromResponse(res);
-            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
 
             let pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 1);
@@ -429,7 +429,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             });
 
             tokens = extractInfoFromResponse(res);
-            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
 
             let pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 1);
@@ -499,7 +499,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
 
             tokens = extractInfoFromResponse(res);
-            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessToken);
+            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
             let claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
             let newUser = await supertokens.getUser(claimValue);
             assert(newUser.emails[0] === "test2@example.com");
@@ -1477,7 +1477,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1508,6 +1508,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let epUser = await supertokens.getUser(res.body.user.id);
             assert(epUser.isPrimaryUser === false);
             assert(epUser.loginMethods.length === 1);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert(session.getUserId() !== tpUser.user.id);
+            assert(session.getUserId() !== session.getRecipeUserId());
         });
 
         it("calling signUpPOST succeeds, and linked account, if email exists in some non email password primary user - account linking enabled and email verification not required", async function () {
@@ -1581,6 +1586,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let epUser = await supertokens.getUser(res.body.user.id);
             assert(epUser.isPrimaryUser === true);
             assert(epUser.loginMethods.length === 2);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert(session.getUserId() === tpUser.user.id);
+            assert(session.getUserId() !== session.getRecipeUserId());
+            let didAsserts = false;
+            for (let i = 0; i < epUser.loginMethods.length; i++) {
+                if (epUser.loginMethods[i].recipeId === "emailpassword") {
+                    didAsserts = true;
+                    assert(
+                        epUser.loginMethods[i].recipeUserId.getAsString() === session.getRecipeUserId().getAsString()
+                    );
+                    assert(epUser.loginMethods[i].email === "test@example.com");
+                }
+            }
+            assert(didAsserts);
         });
 
         it("calling signUpPOST succeeds, and not linked account, but is a primary user, if email exists in some non email password, non primary user - account linking enabled, and email verification not required", async function () {
@@ -2270,5 +2291,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 ],
             });
         });
+    });
+
+    describe("signInPOST tests", function () {
+        // TODO:..
     });
 });

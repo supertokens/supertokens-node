@@ -29,17 +29,40 @@ export async function mockCreateNewSession(requestBody: any, querier: any) {
     response.session.recipeUserId = ogRecipeUserId;
     response.session.userId = ogUserId;
     sessionHandles.push({
-        primaryUserId: requestBody.userId,
-        recipeUserId: requestBody.recipeUserId,
+        primaryUserId: ogUserId,
+        recipeUserId: ogRecipeUserId,
         sessionHandle: response.session.handle,
     });
     return response;
 }
 
+export function mockAccessTokenPayload(payload: any) {
+    if (payload.sessionHandle === undefined) {
+        return payload;
+    }
+
+    if (payload.sub === undefined) {
+        return payload;
+    }
+
+    for (let i = 0; i < sessionHandles.length; i++) {
+        if (payload.sessionHandle === sessionHandles[i].sessionHandle) {
+            payload.sub = sessionHandles[i].primaryUserId;
+            payload.recipeUserId = sessionHandles[i].recipeUserId;
+        }
+    }
+    return payload;
+}
+
 export async function mockGetSession(requestBody: any, querier: any) {
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
-        response.session.recipeUserId = response.session.userId;
+        for (let i = 0; i < sessionHandles.length; i++) {
+            if (response.session.sessionHandle === sessionHandles[i].sessionHandle) {
+                response.session.sub = sessionHandles[i].primaryUserId;
+                response.session.recipeUserId = sessionHandles[i].recipeUserId;
+            }
+        }
         return response;
     } else {
         return response;

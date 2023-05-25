@@ -18,6 +18,7 @@ import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import RecipeUserId from "../../recipeUserId";
+import { mockAccessTokenPayload } from "./mockCore";
 
 export async function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
@@ -39,6 +40,9 @@ export async function getInfoFromAccessToken(
         let payload = undefined;
         try {
             payload = (await jose.jwtVerify(jwtInfo.rawTokenString, jwks)).payload;
+            if (process.env.MOCK === "true") {
+                payload = mockAccessTokenPayload(payload);
+            }
         } catch (error) {
             // We only want to opt-into this for V2 access tokens
             if (jwtInfo.version === 2 && error?.code === "ERR_JWKS_MULTIPLE_MATCHING_KEYS") {
