@@ -35,7 +35,7 @@ type Response =
       }
     | {
           status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-          reason: string;
+          error: string;
       };
 
 const updateEmailForRecipeId = async (
@@ -450,6 +450,13 @@ export const userPut = async (_: APIInterface, options: APIOptions): Promise<Res
             new RecipeUserId(recipeUserId),
             email.trim()
         );
+
+        if (emailUpdateResponse.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+            return {
+                error: emailUpdateResponse.reason,
+                status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+            };
+        }
 
         if (emailUpdateResponse.status !== "OK") {
             return emailUpdateResponse;
