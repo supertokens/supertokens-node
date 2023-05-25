@@ -25,7 +25,16 @@ export async function mockCreatePasswordResetToken(
     });
 
     if (response.data.status === "UNKNOWN_USER_ID_ERROR") {
-        return response.data;
+        // this is cause maybe we are trying to use a primary user id..
+        let user = await mockGetUser({
+            userId,
+        });
+        if (user !== undefined) {
+            response.data.status = "OK";
+            response.data.token = (Math.random() + 1).toString(36).substring(7);
+        } else {
+            return response.data;
+        }
     }
 
     passwordResetTokens[response.data.token] = {
