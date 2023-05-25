@@ -228,7 +228,8 @@ export default function getAPIImplementation(): APIInterface {
 
             // this function will be reused in different parts of the flow below..
             async function generateAndSendPasswordResetToken(
-                userId: string
+                primaryUserId: string,
+                recipeUserId: RecipeUserId | undefined
             ): Promise<
                 | {
                       status: "OK";
@@ -238,12 +239,16 @@ export default function getAPIImplementation(): APIInterface {
             > {
                 // the user ID here can be primary or recipe level.
                 let response = await options.recipeImplementation.createResetPasswordToken({
-                    userId,
+                    userId: recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString(),
                     email,
                     userContext,
                 });
                 if (response.status === "UNKNOWN_USER_ID_ERROR") {
-                    logDebugMessage(`Password reset email not sent, unknown user id: ${userId}`);
+                    logDebugMessage(
+                        `Password reset email not sent, unknown user id: ${
+                            recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString()
+                        }`
+                    );
                     return {
                         status: "OK",
                     };
@@ -261,7 +266,8 @@ export default function getAPIImplementation(): APIInterface {
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     type: "PASSWORD_RESET",
                     user: {
-                        id: userId,
+                        id: primaryUserId,
+                        recipeUserId,
                         email,
                     },
                     passwordResetLink,
@@ -305,7 +311,10 @@ export default function getAPIImplementation(): APIInterface {
                         status: "OK",
                     };
                 }
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
+                return await generateAndSendPasswordResetToken(
+                    emailPasswordAccount.recipeUserId.getAsString(),
+                    emailPasswordAccount.recipeUserId
+                );
             }
 
             let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
@@ -352,7 +361,7 @@ export default function getAPIImplementation(): APIInterface {
                     // notice that we pass in the primary user ID here. This means that
                     // we will be creating a new email password account when the token
                     // is consumed and linking it to this primary user.
-                    return await generateAndSendPasswordResetToken(primaryUserAssociatedWithEmail.id);
+                    return await generateAndSendPasswordResetToken(primaryUserAssociatedWithEmail.id, undefined);
                 } else {
                     logDebugMessage(
                         `Password reset email not sent, isSignUpAllowed returned false for email: ${email}`
@@ -367,14 +376,16 @@ export default function getAPIImplementation(): APIInterface {
             // and also some primary user ID exist. We now need to find out if they are linked
             // together or not. If they are linked together, then we can just generate the token
             // else we check for more security conditions (since we will be linking them post token generation)
-
             let areTheTwoAccountsLinked =
                 primaryUserAssociatedWithEmail.loginMethods.find((lm) => {
                     return lm.recipeUserId.getAsString() === emailPasswordAccount!.recipeUserId.getAsString();
                 }) !== undefined;
 
             if (areTheTwoAccountsLinked) {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
+                return await generateAndSendPasswordResetToken(
+                    primaryUserAssociatedWithEmail.id,
+                    emailPasswordAccount.recipeUserId
+                );
             }
 
             // Here we know that the two accounts are NOT linked. We now need to check for an
@@ -401,20 +412,29 @@ export default function getAPIImplementation(): APIInterface {
                 // here we will go ahead with the token generation cause
                 // even when the token is consumed, we will not be linking the accounts
                 // so no need to check for anything
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
+                return await generateAndSendPasswordResetToken(
+                    emailPasswordAccount.recipeUserId.getAsString(),
+                    emailPasswordAccount.recipeUserId
+                );
             }
 
             if (!shouldDoAccountLinkingResponse.shouldRequireVerification) {
                 // the checks below are related to email verification, and if the user
                 // does not care about that, then we should just continue with token generation
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
+                return await generateAndSendPasswordResetToken(
+                    emailPasswordAccount.recipeUserId.getAsString(),
+                    emailPasswordAccount.recipeUserId
+                );
             }
 
             // Now we start the required security checks. First we check if the primary user
             // it has just one linked account. And if that's true, then we continue
             // cause then there is no scope for account takeover
             if (primaryUserAssociatedWithEmail.loginMethods.length === 1) {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
+                return await generateAndSendPasswordResetToken(
+                    emailPasswordAccount.recipeUserId.getAsString(),
+                    emailPasswordAccount.recipeUserId
+                );
             }
 
             // Next we check if there is any login method in which the input email is verified.
@@ -426,7 +446,10 @@ export default function getAPIImplementation(): APIInterface {
                 }) !== undefined;
 
             if (emailVerified) {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
+                return await generateAndSendPasswordResetToken(
+                    emailPasswordAccount.recipeUserId.getAsString(),
+                    emailPasswordAccount.recipeUserId
+                );
             }
 
             // finally, we check if the primary user has any other email / phone number
@@ -446,7 +469,10 @@ export default function getAPIImplementation(): APIInterface {
                     reason: "Token generation was not done because of account take over risk. Please contact support.",
                 };
             } else {
-                return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
+                return await generateAndSendPasswordResetToken(
+                    emailPasswordAccount.recipeUserId.getAsString(),
+                    emailPasswordAccount.recipeUserId
+                );
             }
         },
         passwordResetPOST: async function ({

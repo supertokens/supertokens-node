@@ -39,6 +39,8 @@ export default function getRecipeInterface(
             // and if the user goes through the forgot password flow, it will create
             // an account there and it will work fine cause there the email is also verified.
 
+            // TODO: maybe this should be called with true for allowLlinking here,
+            // and false for allowLinking in the api layer (cause in case user calls the recipe function...)
             let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                 newUser: {
                     recipeId: "emailpassword",

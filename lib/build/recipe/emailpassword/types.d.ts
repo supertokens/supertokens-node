@@ -304,6 +304,7 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
+        recipeUserId: RecipeUserId | undefined;
         email: string;
     };
     passwordResetLink: string;
