@@ -161,13 +161,6 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let usersWithSameEmail = await listUsersByAccountInfo(
-                {
-                    email,
-                },
-                userContext
-            );
-
             // this api impl checks for the same email across all recipes
             // and not just email password recipe cause this API is used during
             // sign up, and if we allow sign up with the same email that already exists
@@ -177,9 +170,40 @@ export default function getAPIImplementation(): APIInterface {
             // Instead, the user should go via the password reset flow which will create this
             // account.
 
+            let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                newUser: {
+                    recipeId: "emailpassword",
+                    email,
+                },
+                allowLinking: false,
+                userContext,
+            });
+
+            if (!isSignUpAllowed) {
+                return {
+                    status: "OK",
+                    exists: true,
+                };
+            }
+
+            // even if the above returns true, we still need to check if there
+            // exists an email password user with the same email cause the function
+            // above does not check for that.
+            let users = await listUsersByAccountInfo({
+                email,
+            });
+            let emailPasswordUserExists =
+                users.find((u) => {
+                    return (
+                        u.loginMethods.find((lm) => {
+                            return lm.recipeId === "emailpassword";
+                        }) !== undefined
+                    );
+                }) !== undefined;
+
             return {
                 status: "OK",
-                exists: usersWithSameEmail.length > 0,
+                exists: emailPasswordUserExists,
             };
         },
         generatePasswordResetTokenPOST: async function ({

@@ -646,4 +646,712 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         let pUser = await supertokens.getUser(epUser.id);
         assert(pUser.loginMethods.length === 1);
     });
+
+    it("calling emailExistsGET returns true if email exists in some non email password primary user - account linking enabled and email verification required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(res.body.exists);
+    });
+
+    it("calling emailExistsGET returns false if email exists in some non email password, non primary user - account linking enabled, and email verification required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(!res.body.exists);
+    });
+
+    it("calling emailExistsGET returns false if email exists in some non email password primary user - account linking enabled and email verification not required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(!res.body.exists);
+    });
+
+    it("calling emailExistsGET returns false if email exists in some non email password, non primary user - account linking enabled, and email verification not required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(!res.body.exists);
+    });
+
+    it("calling emailExistsGET returns false if email exists in some non email password primary user - account linking disabled", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(!res.body.exists);
+    });
+
+    it("calling emailExistsGET returns false if email exists in some non email password, non primary user - account linking disabled", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(!res.body.exists);
+    });
+
+    it("calling emailExistsGET returns true if email exists in email password primary user - account linking enabled and email verification required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let epUser = await EmailPassword.signUp("test@example.com", "password123");
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(epUser.user.id));
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(res.body.exists);
+    });
+
+    it("calling emailExistsGET returns true if email exists in email password user, non primary user - account linking enabled, and email verification required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let epUser = await EmailPassword.signUp("test@example.com", "password123");
+        assert(!epUser.user.isPrimaryUser);
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(res.body.exists);
+    });
+
+    it("calling emailExistsGET returns true if email exists in email password primary user - account linking enabled and email verification not required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let epUser = await EmailPassword.signUp("test@example.com", "password123");
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(epUser.user.id));
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(res.body.exists);
+    });
+
+    it("calling emailExistsGET returns true if email exists in email password, non primary user - account linking enabled, and email verification not required", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        if (userContext.doNotLink) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        }
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let epUser = await EmailPassword.signUp("test@example.com", "password123", {
+            doNotLink: true,
+        });
+        assert(!epUser.user.isPrimaryUser);
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(res.body.exists);
+    });
+
+    it("calling emailExistsGET returns true if email exists in email password primary user - account linking disabled", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let epUser = await EmailPassword.signUp("test@example.com", "password123");
+        await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(epUser.user.id));
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(res.body.exists);
+    });
+
+    it("calling emailExistsGET returns true if email exists in email password, non primary user - account linking disabled", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async () => {
+                        return {
+                            shouldAutomaticallyLink: false,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let epUser = await EmailPassword.signUp("test@example.com", "password123");
+        assert(epUser.user.isPrimaryUser === false);
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res !== undefined);
+        assert(res.body.status === "OK");
+        assert(res.body.exists);
+    });
 });
