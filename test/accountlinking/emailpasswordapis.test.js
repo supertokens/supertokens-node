@@ -81,7 +81,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
@@ -159,7 +159,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
@@ -241,7 +241,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
@@ -319,7 +319,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
@@ -393,7 +393,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
@@ -471,7 +471,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
@@ -543,7 +543,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
@@ -616,7 +616,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/auth/signup/link-account")
+                .post("/auth/signinup/link-account")
                 .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                 .send({
                     formFields: [
