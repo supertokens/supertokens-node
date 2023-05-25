@@ -308,6 +308,16 @@ export default function getAPIImplementation(): APIInterface {
                 return await generateAndSendPasswordResetToken(emailPasswordAccount.recipeUserId.getAsString());
             }
 
+            let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
+                {
+                    recipeId: "emailpassword",
+                    email,
+                },
+                primaryUserAssociatedWithEmail,
+                undefined,
+                userContext
+            );
+
             // Now we need to check that if there exists any email password user at all
             // for the input email. If not, then it implies that when the token is consumed,
             // then we will create a new user - so we should only generate the token if
@@ -316,6 +326,20 @@ export default function getAPIImplementation(): APIInterface {
                 // this means that there is no email password user that exists for the input email.
                 // So we check for the sign up condition and only go ahead if that condition is
                 // met.
+
+                // But first we must check if account linking is enabled at all - cause if it's
+                // not, then the new email password user that will be created in password reset
+                // code consume cannot be linked to the primary user - therefore, we should
+                // not generate a password reset token
+                if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
+                    logDebugMessage(
+                        `Password reset email not sent, since email password user didn't exist, and account linking not enabled`
+                    );
+                    return {
+                        status: "OK",
+                    };
+                }
+
                 let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "emailpassword",
@@ -372,13 +396,6 @@ export default function getAPIImplementation(): APIInterface {
             */
 
             // But first, this only matters it the user cares about checking for email verification status..
-
-            let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-                emailPasswordAccount,
-                primaryUserAssociatedWithEmail,
-                undefined,
-                userContext
-            );
 
             if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
                 // here we will go ahead with the token generation cause
