@@ -108,7 +108,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
         assert(!user.isPrimaryUser);
     });
 
-    it("sign up not allowed if account linking is on and email already used by another recipe", async function () {
+    it("sign up allowed even if account linking is on and email already used by another recipe (cause in recipe level, it is allowed), but no linking happens if email verification is required", async function () {
         await startST();
         supertokens.init({
             supertokens: {
@@ -149,7 +149,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
 
         let response = await EmailPassword.signUp("test@example.com", "password123");
 
-        assert(response.status === "EMAIL_ALREADY_EXISTS_ERROR");
+        assert(response.status === "OK");
+        assert(response.user.id !== user.user.id);
+        assert(response.user.isPrimaryUser === false);
     });
 
     it("sign up allowed if account linking is on, email verification is off, and email already used by another recipe", async function () {
