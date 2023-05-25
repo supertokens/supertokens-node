@@ -2309,6 +2309,178 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
     });
 
     describe("signInPOST tests", function () {
-        // TODO:..
+        it("calling signInPOST creates session with correct userId and recipeUserId in case accounts are linked", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+                doNotLink: true,
+            });
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signin")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password1234",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "OK");
+            let epUserFromResponse = await supertokens.getUser(res.body.user.id);
+            assert(epUserFromResponse.isPrimaryUser === true);
+            assert(epUserFromResponse.loginMethods.length === 2);
+            assert(epUserFromResponse.id === tpUser.user.id);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert(session.getUserId() === tpUser.user.id);
+            assert(session.getRecipeUserId().getAsString() === epUser.user.id);
+        });
+
+        it("calling signInPOST creates session with correct userId and recipeUserId in case accounts are not linked", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signin")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password1234",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "OK");
+            let epUserFromResponse = await supertokens.getUser(res.body.user.id);
+            assert(epUserFromResponse.isPrimaryUser === false);
+            assert(epUserFromResponse.loginMethods.length === 1);
+            assert(epUserFromResponse.id === epUser.user.id);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert(session.getUserId() === epUser.user.id);
+            assert(session.getRecipeUserId().getAsString() === epUser.user.id);
+        });
     });
 });
