@@ -1512,7 +1512,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let sessionTokens = extractInfoFromResponse(res);
             let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
             assert(session.getUserId() !== tpUser.user.id);
-            assert(session.getUserId() !== session.getRecipeUserId());
+            assert(session.getUserId() === session.getRecipeUserId().getAsString());
         });
 
         it("calling signUpPOST succeeds, and linked account, if email exists in some non email password primary user - account linking enabled and email verification not required", async function () {
@@ -1643,7 +1643,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1674,6 +1674,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let epUser = await supertokens.getUser(res.body.user.id);
             assert(epUser.isPrimaryUser === true);
             assert(epUser.loginMethods.length === 1);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert(session.getUserId() !== tpUser.user.id);
+            assert(session.getUserId() === session.getRecipeUserId().getAsString());
         });
 
         it("calling signUpPOST succeeds if email exists in some non email password primary user - account linking disabled", async function () {
@@ -1746,6 +1751,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let epUser = await supertokens.getUser(res.body.user.id);
             assert(epUser.isPrimaryUser === false);
             assert(epUser.loginMethods.length === 1);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert(session.getUserId() !== tpUser.user.id);
+            assert(session.getUserId() === session.getRecipeUserId().getAsString());
         });
 
         it("calling signUpPOST succeeds if email exists in some non email password, non primary user - account linking disabled", async function () {
@@ -1786,7 +1796,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1817,6 +1827,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let epUser = await supertokens.getUser(res.body.user.id);
             assert(epUser.isPrimaryUser === false);
             assert(epUser.loginMethods.length === 1);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert(session.getUserId() !== tpUser.user.id);
+            assert(session.getUserId() === session.getRecipeUserId().getAsString());
         });
 
         it("calling signUpPOST fails if email exists in email password primary user - account linking enabled and email verification required", async function () {
@@ -1897,7 +1912,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             });
         });
 
-        it("calling signUpPOST false if email exists in email password user, non primary user - account linking enabled, and email verification required", async function () {
+        it("calling signUpPOST fails if email exists in email password user, non primary user - account linking enabled, and email verification required", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
