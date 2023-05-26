@@ -30,7 +30,7 @@ export async function createNewSession(
     userId: string,
     disableAntiCsrf: boolean,
     accessTokenPayload: any = {},
-    antiCSRF: AntiCsrfType,
+    antiCSRFMode: AntiCsrfType,
     sessionDataInDatabase: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
@@ -42,7 +42,7 @@ export async function createNewSession(
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionDataInDatabase,
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
-        enableAntiCsrf: !disableAntiCsrf && antiCSRF === "VIA_TOKEN",
+        enableAntiCsrf: !disableAntiCsrf && antiCSRFMode === "VIA_TOKEN",
     };
     const response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
 
@@ -59,7 +59,7 @@ export async function getSession(
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     alwaysCheckCore: boolean,
-    antiCSRF: AntiCsrfType
+    antiCSRFMode: AntiCsrfType
 ): Promise<{
     session: {
         handle: string;
@@ -82,7 +82,7 @@ export async function getSession(
         accessTokenInfo = await getInfoFromAccessToken(
             parsedAccessToken,
             helpers.JWKS,
-            antiCSRF === "VIA_TOKEN" && doAntiCsrfCheck
+            antiCSRFMode === "VIA_TOKEN" && doAntiCsrfCheck
         );
     } catch (err) {
         /**
@@ -154,7 +154,7 @@ export async function getSession(
      * which means token verification was successful
      */
     if (doAntiCsrfCheck) {
-        if (antiCSRF === "VIA_TOKEN") {
+        if (antiCSRFMode === "VIA_TOKEN") {
             if (accessTokenInfo !== undefined) {
                 if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
                     if (antiCsrfToken === undefined) {
@@ -177,7 +177,7 @@ export async function getSession(
                     }
                 }
             }
-        } else if (antiCSRF === "VIA_CUSTOM_HEADER") {
+        } else if (antiCSRFMode === "VIA_CUSTOM_HEADER") {
             // The function should never be called by this (we check this outside the function as well)
             // There we can add a bit more information to the error, so that's the primary check, this is just making sure.
             throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
@@ -201,7 +201,7 @@ export async function getSession(
         accessToken: parsedAccessToken.rawTokenString,
         antiCsrfToken,
         doAntiCsrfCheck,
-        enableAntiCsrf: antiCSRF === "VIA_TOKEN",
+        enableAntiCsrf: antiCSRFMode === "VIA_TOKEN",
         checkDatabase: alwaysCheckCore,
     };
 
@@ -269,7 +269,7 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     disableAntiCsrf: boolean,
-    antiCSRF: AntiCsrfType
+    antiCSRFMode: AntiCsrfType
 ): Promise<CreateOrRefreshAPIResponse> {
     let requestBody: {
         refreshToken: string;
@@ -278,10 +278,10 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
-        enableAntiCsrf: !disableAntiCsrf && antiCSRF === "VIA_TOKEN",
+        enableAntiCsrf: !disableAntiCsrf && antiCSRFMode === "VIA_TOKEN",
     };
 
-    if (antiCSRF === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
+    if (antiCSRFMode === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
         // The function should never be called by this (we check this outside the function as well)
         // There we can add a bit more information to the error, so that's the primary check, this is just making sure.
         throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");

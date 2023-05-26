@@ -36,6 +36,8 @@ import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import Recipe from "./recipe";
+import SuperTokensError from "../../error";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -87,12 +89,7 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
             sessionScope = sessionScope.substr(1);
         }
 
-        // Node.js URL object separates protocol by splitting via ':' which is not true in every case
-        // let x = "localhost:3000"
-        // let y = new URL(x)
-        // y.protocol = "localhost:"
-        // which not the the desired result, hence to resolve all protocols
-        // including deeplinks like "fb://" and conventional protocols including "http://" and "https://"
+        // The following check is to check if the input string includes a protocol
         if (!sessionScope.includes("://")) {
             sessionScope = "http://" + sessionScope;
         }
@@ -360,6 +357,28 @@ export async function validateClaimsInPayload(
         }
     }
     return validationErrors;
+}
+
+export async function checkAntiCsrfOrThrowError(
+    antiCSRF: AntiCsrfType | undefined,
+    userContext: any
+): Promise<AntiCsrfType> {
+    const recipeInstance = Recipe.getInstanceOrThrowError();
+    const appInfo = recipeInstance.getAppInfo();
+
+    if (antiCSRF === undefined) {
+        if (appInfo.initialOriginType === "string") {
+            return await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
+        } else {
+            throw new SuperTokensError({
+                type: "INVALID_INPUT",
+                message:
+                    "To use this function, either value of antiCSRF should be passed or typeof origin should be string",
+            });
+        }
+    } else {
+        return antiCSRF;
+    }
 }
 
 function defaultGetTokenTransferMethod({

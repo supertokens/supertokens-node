@@ -32,12 +32,7 @@ function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): 
     input = input.trim().toLowerCase();
 
     try {
-        // Node.js URL object separates protocol by splitting via ':' which is not true in every case
-        // let x = "localhost:3000"
-        // let y = new URL(x)
-        // y.protocol = "localhost:"
-        // which not the the desired result, hence to resolve all protocols
-        // including deeplinks like "fb://" and conventional protocols including "http://" and "https://"
+        // The following check is to check if the input string includes a protocol
         if (!input.includes("://")) {
             throw new Error("converting to proper URL");
         }

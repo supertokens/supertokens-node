@@ -8,6 +8,7 @@ import type {
     VerifySessionOptions,
     TokenTransferMethod,
     CookieSameSiteType,
+    AntiCsrfType,
 } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
@@ -69,3 +70,7 @@ export declare function validateClaimsInPayload(
         reason: import("../../types").JSONValue;
     }[]
 >;
+export declare function checkAntiCsrfOrThrowError(
+    antiCSRF: AntiCsrfType | undefined,
+    userContext: any
+): Promise<AntiCsrfType>;

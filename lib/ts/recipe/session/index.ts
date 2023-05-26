@@ -28,9 +28,8 @@ import {
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
-import { getRequiredClaimValidators } from "./utils";
+import { getRequiredClaimValidators, checkAntiCsrfOrThrowError } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
-import { BaseRequest } from "../../framework";
 // For Express
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -453,26 +452,6 @@ export default class SessionWrapper {
         });
     }
 }
-
-async function checkAntiCsrfOrThrowError(antiCSRF: AntiCsrfType | undefined, userContext: any): Promise<AntiCsrfType> {
-    const recipeInstance = Recipe.getInstanceOrThrowError();
-    const appInfo = recipeInstance.getAppInfo();
-
-    if (antiCSRF === undefined) {
-        if (appInfo.initialOriginType === "string") {
-            return await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
-        } else {
-            throw new Error({
-                type: "INVALID_INPUT",
-                message:
-                    "To use this function, either value of anti_csrf should be passed or typeof origin should be string",
-            });
-        }
-    } else {
-        return antiCSRF;
-    }
-}
-
 export let init = SessionWrapper.init;
 
 export let createNewSession = SessionWrapper.createNewSession;
