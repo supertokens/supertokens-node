@@ -197,7 +197,7 @@ export type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
-        antiCSRF: AntiCsrfType;
+        antiCSRFMode: AntiCsrfType;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -209,7 +209,7 @@ export type RecipeInterface = {
 
     getSession(input: {
         accessToken: string;
-        antiCSRF: AntiCsrfType;
+        antiCSRFMode: AntiCsrfType;
         antiCsrfToken?: string;
         options?: VerifySessionOptions;
         userContext: any;
@@ -219,7 +219,7 @@ export type RecipeInterface = {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
-        antiCSRF: AntiCsrfType;
+        antiCSRFMode: AntiCsrfType;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 

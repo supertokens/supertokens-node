@@ -30,7 +30,7 @@ export default class SessionWrapper {
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
-        antiCSRF?: AntiCsrfType | undefined,
+        antiCSRFMode?: AntiCsrfType | undefined,
         userContext?: any
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(
@@ -114,7 +114,7 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired?: true;
         },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer>;
     static getSessionWithoutRequestResponse(
@@ -123,14 +123,14 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired: false;
         },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
@@ -139,7 +139,7 @@ export default class SessionWrapper {
         refreshToken: string,
         disableAntiCsrf?: boolean,
         antiCsrfToken?: string,
-        antiCSRF?: AntiCsrfType | undefined,
+        antiCSRFMode?: AntiCsrfType | undefined,
         userContext?: any
     ): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;

@@ -66,7 +66,7 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
-        antiCSRF: AntiCsrfType | undefined = undefined,
+        antiCSRFMode: AntiCsrfType | undefined = undefined,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -87,14 +87,14 @@ export default class SessionWrapper {
             };
         }
 
-        antiCSRF = await checkAntiCsrfOrThrowError(antiCSRF, userContext);
+        antiCSRFMode = await checkAntiCsrfOrThrowError(antiCSRFMode, userContext);
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             userId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             disableAntiCsrf,
-            antiCSRF,
+            antiCSRFMode,
             userContext,
         });
     }
@@ -263,38 +263,38 @@ export default class SessionWrapper {
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired?: true },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired: false },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext: any = {}
     ): Promise<SessionContainer | undefined> {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
 
-        antiCSRF = await checkAntiCsrfOrThrowError(antiCSRF, userContext);
+        antiCSRFMode = await checkAntiCsrfOrThrowError(antiCSRFMode, userContext);
         const session = await recipeInterfaceImpl.getSession({
             accessToken,
             antiCsrfToken,
             options,
-            antiCSRF,
+            antiCSRFMode,
             userContext,
         });
 
@@ -329,15 +329,15 @@ export default class SessionWrapper {
         refreshToken: string,
         disableAntiCsrf: boolean = false,
         antiCsrfToken?: string,
-        antiCSRF: AntiCsrfType | undefined = undefined,
+        antiCSRFMode: AntiCsrfType | undefined = undefined,
         userContext: any = {}
     ) {
-        antiCSRF = await checkAntiCsrfOrThrowError(antiCSRF, userContext);
+        antiCSRFMode = await checkAntiCsrfOrThrowError(antiCSRFMode, userContext);
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
             refreshToken,
             disableAntiCsrf,
             antiCsrfToken,
-            antiCSRF,
+            antiCSRFMode,
             userContext,
         });
     }

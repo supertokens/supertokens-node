@@ -162,7 +162,7 @@ export declare type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
-        antiCSRF: AntiCsrfType;
+        antiCSRFMode: AntiCsrfType;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
@@ -172,7 +172,7 @@ export declare type RecipeInterface = {
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
     getSession(input: {
         accessToken: string;
-        antiCSRF: AntiCsrfType;
+        antiCSRFMode: AntiCsrfType;
         antiCsrfToken?: string;
         options?: VerifySessionOptions;
         userContext: any;
@@ -181,7 +181,7 @@ export declare type RecipeInterface = {
         refreshToken: string;
         antiCsrfToken?: string;
         disableAntiCsrf: boolean;
-        antiCSRF: AntiCsrfType;
+        antiCSRFMode: AntiCsrfType;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     /**
