@@ -408,6 +408,8 @@ export default function getAPIImplementation(): APIInterface {
 
             // But first, this only matters it the user cares about checking for email verification status..
 
+            // ........................TESTING REMAINING OF THE BELOW CODE........................
+
             if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
                 // here we will go ahead with the token generation cause
                 // even when the token is consumed, we will not be linking the accounts

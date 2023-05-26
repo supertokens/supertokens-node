@@ -56,6 +56,7 @@ export declare function mockUpdateEmailOrPassword(input: {
     email?: string;
     password?: string;
     applyPasswordPolicy?: boolean;
+    isAccountLinkingEnabled: boolean;
     querier: Querier;
 }): Promise<
     | {
