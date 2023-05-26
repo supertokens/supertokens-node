@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import {
+import type {
     TypeInput,
     TypeNormalisedInput,
     NormalisedErrorHandlers,
@@ -22,6 +22,8 @@ import {
     SessionContainerInterface,
     VerifySessionOptions,
     TokenTransferMethod,
+    CookieSameSiteType,
+    AntiCsrfType,
 } from "./types";
 import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
 import { URL } from "url";
@@ -34,6 +36,8 @@ import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import Recipe from "./recipe";
+import SuperTokensError from "../../error";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -85,6 +89,7 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
             sessionScope = sessionScope.substr(1);
         }
 
+        // The following check is to check if the input string includes a protocol
         if (!sessionScope.includes("://")) {
             sessionScope = "http://" + sessionScope;
         }
@@ -151,7 +156,7 @@ export function validateAndNormaliseUserInput(
         let protocolOfWebsiteDomain = getURLProtocol(originString);
         let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(originString);
         let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomainString);
-        let cookieSameSiteNormalise: "strict" | "lax" | "none" = "none";
+        let cookieSameSiteNormalise: CookieSameSiteType = "none";
         if (config !== undefined && config!.cookieSameSite !== undefined) {
             if (typeof config.cookieSameSite === "string") {
                 cookieSameSiteNormalise = normaliseSameSiteOrThrowError(config!.cookieSameSite!);
@@ -160,7 +165,7 @@ export function validateAndNormaliseUserInput(
                 cookieSameSiteNormalise = normaliseSameSiteOrThrowError(cookieSameSiteFunc);
             }
         }
-        let cookieSameSite: "strict" | "lax" | "none" =
+        let cookieSameSite: CookieSameSiteType =
             topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
                 ? "none"
                 : "lax";
@@ -194,7 +199,7 @@ export function validateAndNormaliseUserInput(
 
     let antiCsrf = async (req: BaseRequest, userContext: any) => {
         const cookieSameSiteRes = await cookieSameSite(req, userContext);
-        let antiCsrfVal: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" = "NONE";
+        let antiCsrfVal: AntiCsrfType = "NONE";
         if (config !== undefined && config.antiCsrf !== undefined) {
             if (typeof config.antiCsrf === "string") {
                 antiCsrfVal = config.antiCsrf;
@@ -266,7 +271,7 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none" {
+export function normaliseSameSiteOrThrowError(sameSite: string): CookieSameSiteType {
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
@@ -356,6 +361,28 @@ export async function validateClaimsInPayload(
         }
     }
     return validationErrors;
+}
+
+export async function checkAntiCsrfOrThrowError(
+    antiCSRF: AntiCsrfType | undefined,
+    userContext: any
+): Promise<AntiCsrfType> {
+    const recipeInstance = Recipe.getInstanceOrThrowError();
+    const appInfo = recipeInstance.getAppInfo();
+
+    if (antiCSRF === undefined) {
+        if (appInfo.initialOriginType === "string") {
+            return await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
+        } else {
+            throw new SuperTokensError({
+                type: "INVALID_INPUT",
+                message:
+                    "To use this function, either value of antiCSRF should be passed or typeof origin should be string",
+            });
+        }
+    } else {
+        return antiCSRF;
+    }
 }
 
 function defaultGetTokenTransferMethod({

@@ -42,9 +42,6 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     if (appInfo === undefined) {
         throw new Error("Please provide the appInfo object when calling supertokens.init");
     }
-    if (appInfo.apiDomain === undefined) {
-        throw new Error("Please provide your apiDomain inside the appInfo object when calling supertokens.init");
-    }
     if (appInfo.appName === undefined) {
         throw new Error("Please provide your appName inside the appInfo object when calling supertokens.init");
     }
@@ -56,16 +53,20 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
     const initialOriginType = typeof appInfo.origin;
+    if (!["string", "function"].includes(initialOriginType)) {
+        throw new Error('Type of origin in supertokens.init can only be either "string" or "function"');
+    }
     const origin = async (req: BaseRequest, userContext: any) => {
-        let url;
         if (typeof appInfo.origin === "string") {
             return new NormalisedURLDomain(appInfo.origin);
-        } else {
-            url = await appInfo.origin(req, userContext);
         }
+        let url = await appInfo.origin(req, userContext);
         return new NormalisedURLDomain(url);
     };
     const initialAPIDomainType = typeof appInfo.apiDomain;
+    if (!["string", "function"].includes(initialAPIDomainType)) {
+        throw new Error('Type of origin in supertokens.init can only be either "string" or "function"');
+    }
     const apiDomain = async (req: BaseRequest, userContext: any) => {
         let url;
         if (typeof appInfo.apiDomain === "string") {
@@ -75,7 +76,7 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         }
         return new NormalisedURLDomain(url);
     };
-    return {
+    return <NormalisedAppinfo>{
         appName: appInfo.appName,
         origin,
         apiDomain,

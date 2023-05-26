@@ -10,7 +10,7 @@ export declare function createNewSession(
     userId: string,
     disableAntiCsrf: boolean,
     accessTokenPayload: any,
-    antiCSRF: AntiCsrfType,
+    antiCSRFMode: AntiCsrfType,
     sessionDataInDatabase?: any
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
@@ -22,7 +22,7 @@ export declare function getSession(
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
     alwaysCheckCore: boolean,
-    antiCSRF: AntiCsrfType
+    antiCSRFMode: AntiCsrfType
 ): Promise<{
     session: {
         handle: string;
@@ -53,7 +53,7 @@ export declare function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     disableAntiCsrf: boolean,
-    antiCSRF: AntiCsrfType
+    antiCSRFMode: AntiCsrfType
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.

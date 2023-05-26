@@ -16,7 +16,7 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
-    static STError: typeof SuperTokensError;
+    static Error: typeof SuperTokensError;
     static createNewSession(
         req: any,
         res: any,
@@ -30,7 +30,7 @@ export default class SessionWrapper {
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
-        antiCSRF?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined,
+        antiCSRFMode?: AntiCsrfType | undefined,
         userContext?: any
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(
@@ -114,7 +114,7 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired?: true;
         },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer>;
     static getSessionWithoutRequestResponse(
@@ -123,14 +123,14 @@ export default class SessionWrapper {
         options?: VerifySessionOptions & {
             sessionRequired: false;
         },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
@@ -139,7 +139,7 @@ export default class SessionWrapper {
         refreshToken: string,
         disableAntiCsrf?: boolean,
         antiCsrfToken?: string,
-        antiCSRF?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined,
+        antiCSRFMode?: AntiCsrfType | undefined,
         userContext?: any
     ): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
@@ -220,7 +220,7 @@ export declare let getClaimValue: typeof SessionWrapper.getClaimValue;
 export declare let removeClaim: typeof SessionWrapper.removeClaim;
 export declare let validateClaimsInJWTPayload: typeof SessionWrapper.validateClaimsInJWTPayload;
 export declare let validateClaimsForSessionHandle: typeof SessionWrapper.validateClaimsForSessionHandle;
-export declare let STError: typeof SuperTokensError;
+export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
 export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;

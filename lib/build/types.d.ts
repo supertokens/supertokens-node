@@ -2,7 +2,7 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { TypeFramework } from "./framework/types";
+import type { TypeFramework } from "./framework/types";
 import { BaseRequest } from "./framework";
 export declare type AppInfo = {
     appName: string;
@@ -19,8 +19,8 @@ export declare type NormalisedAppinfo = {
     apiBasePath: NormalisedURLPath;
     apiGatewayPath: NormalisedURLPath;
     originBasePath: NormalisedURLPath;
-    initialOriginType: string;
-    initialAPIDomainType: string;
+    initialOriginType: "string" | "function";
+    initialAPIDomainType: "string" | "function";
 };
 export declare type SuperTokensInfo = {
     connectionURI: string;

@@ -141,10 +141,10 @@ export async function getSessionFromRequest({
         doAntiCsrfCheck = false;
     }
 
-    const antiCSRF = await config.antiCsrf(req, userContext);
+    const antiCSRFMode = await config.antiCsrf(req, userContext);
 
-    if (doAntiCsrfCheck && antiCSRF === "VIA_CUSTOM_HEADER") {
-        if (antiCSRF === "VIA_CUSTOM_HEADER") {
+    if (doAntiCsrfCheck && antiCSRFMode === "VIA_CUSTOM_HEADER") {
+        if (antiCSRFMode === "VIA_CUSTOM_HEADER") {
             if (getRidFromHeader(req) === undefined) {
                 logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
                 throw new SessionError({
@@ -163,7 +163,7 @@ export async function getSessionFromRequest({
         accessToken: accessToken.rawTokenString,
         antiCsrfToken,
         options: { ...options, antiCsrfCheck: doAntiCsrfCheck },
-        antiCSRF,
+        antiCSRFMode,
         userContext,
     });
 
@@ -272,9 +272,9 @@ export async function refreshSessionInRequest({
     }
     let disableAntiCsrf = requestTransferMethod === "header";
     const antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
-    const antiCSRF = await config.antiCsrf(req, userContext);
+    const antiCSRFMode = await config.antiCsrf(req, userContext);
 
-    if (antiCSRF === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
+    if (antiCSRFMode === "VIA_CUSTOM_HEADER" && !disableAntiCsrf) {
         if (getRidFromHeader(req) === undefined) {
             logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new SessionError({
@@ -290,12 +290,12 @@ export async function refreshSessionInRequest({
 
     let session;
     try {
-        const antiCSRF = await config.antiCsrf(req, userContext);
+        const antiCSRFMode = await config.antiCsrf(req, userContext);
         session = await recipeInterfaceImpl.refreshSession({
             refreshToken: refreshToken,
             antiCsrfToken,
             disableAntiCsrf,
-            antiCSRF,
+            antiCSRFMode,
             userContext,
         });
     } catch (ex) {
@@ -424,13 +424,13 @@ export async function createNewSessionInRequest({
         );
     }
     const disableAntiCsrf = outputTransferMethod === "header";
-    const antiCSRF = await config.antiCsrf(req, userContext);
+    const antiCSRFMode = await config.antiCsrf(req, userContext);
     const session = await recipeInstance.recipeInterfaceImpl.createNewSession({
         userId,
         accessTokenPayload: finalAccessTokenPayload,
         sessionDataInDatabase,
         disableAntiCsrf,
-        antiCSRF,
+        antiCSRFMode,
         userContext,
     });
 

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {
+import type {
     TypeInput,
     TypeNormalisedInput,
     ClaimValidationError,
@@ -7,6 +7,8 @@ import {
     SessionContainerInterface,
     VerifySessionOptions,
     TokenTransferMethod,
+    CookieSameSiteType,
+    AntiCsrfType,
 } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
@@ -43,7 +45,7 @@ export declare function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput;
-export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
+export declare function normaliseSameSiteOrThrowError(sameSite: string): CookieSameSiteType;
 export declare function setAccessTokenInResponse(
     req: BaseRequest,
     res: BaseResponse,
@@ -68,3 +70,7 @@ export declare function validateClaimsInPayload(
         reason: import("../../types").JSONValue;
     }[]
 >;
+export declare function checkAntiCsrfOrThrowError(
+    antiCSRF: AntiCsrfType | undefined,
+    userContext: any
+): Promise<AntiCsrfType>;

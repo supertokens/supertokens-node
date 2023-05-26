@@ -28,14 +28,14 @@ import {
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
-import { getRequiredClaimValidators } from "./utils";
+import { getRequiredClaimValidators, checkAntiCsrfOrThrowError } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 import { BaseRequest } from "../../framework";
 // For Express
 export default class SessionWrapper {
     static init = Recipe.init;
 
-    static STError = SuperTokensError;
+    static Error = SuperTokensError;
 
     static async createNewSession(
         req: any,
@@ -67,14 +67,17 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
-        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined = undefined,
+        antiCSRFMode: AntiCsrfType | undefined = undefined,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const claimsAddedByOtherRecipes = recipeInstance.getClaimsAddedByOtherRecipes();
         const appInfo = recipeInstance.getAppInfo();
         if (appInfo.initialAPIDomainType !== "string") {
-            throw new Error("Can not create new session with provided api domain");
+            throw new SuperTokensError({
+                type: "INVALID_INPUT",
+                message: "To use this function, value of apiDomain should be typeof string",
+            });
         }
         const apiDomain = await appInfo.apiDomain({} as BaseRequest, userContext);
         const issuer = apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
@@ -92,20 +95,14 @@ export default class SessionWrapper {
             };
         }
 
-        if (antiCSRF === undefined) {
-            if (appInfo.initialOriginType === "string") {
-                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
-            } else {
-                throw new Error("Can not get value of antiCSRF"); // better
-            }
-        }
+        antiCSRFMode = await checkAntiCsrfOrThrowError(antiCSRFMode, userContext);
 
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             userId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             disableAntiCsrf,
-            antiCSRF,
+            antiCSRFMode,
             userContext,
         });
     }
@@ -274,46 +271,38 @@ export default class SessionWrapper {
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired?: true },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions & { sessionRequired: false },
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static async getSessionWithoutRequestResponse(
         accessToken: string,
         antiCsrfToken?: string,
         options?: VerifySessionOptions,
-        antiCSRF?: AntiCsrfType,
+        antiCSRFMode?: AntiCsrfType,
         userContext: any = {}
     ): Promise<SessionContainer | undefined> {
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        const appInfo = recipeInstance.getAppInfo();
 
-        if (antiCSRF === undefined) {
-            if (appInfo.initialOriginType === "string") {
-                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
-            } else {
-                throw new Error("Can not get value of antiCSRF"); // better
-            }
-        }
+        antiCSRFMode = await checkAntiCsrfOrThrowError(antiCSRFMode, userContext);
         const session = await recipeInterfaceImpl.getSession({
             accessToken,
             antiCsrfToken,
             options,
-            antiCSRF,
+            antiCSRFMode,
             userContext,
         });
 
@@ -336,36 +325,27 @@ export default class SessionWrapper {
         });
     }
 
-    static async refreshSession(req: any, res: any, userContext: any = {}) {
+    static refreshSession(req: any, res: any, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const config = recipeInstance.config;
         const recipeInterfaceImpl = recipeInstance.recipeInterfaceImpl;
 
-        return await refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
+        return refreshSessionInRequest({ res, req, userContext, config, recipeInterfaceImpl });
     }
 
     static async refreshSessionWithoutRequestResponse(
         refreshToken: string,
         disableAntiCsrf: boolean = false,
         antiCsrfToken?: string,
-        antiCSRF: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" | undefined = undefined,
+        antiCSRFMode: AntiCsrfType | undefined = undefined,
         userContext: any = {}
     ) {
-        const recipeInstance = Recipe.getInstanceOrThrowError();
-        const appInfo = recipeInstance.getAppInfo();
-
-        if (antiCSRF === undefined) {
-            if (appInfo.initialOriginType === "string") {
-                antiCSRF = await recipeInstance.config.antiCsrf({} as BaseRequest, userContext);
-            } else {
-                throw new Error("Can not get value of antiCSRF"); // better
-            }
-        }
+        antiCSRFMode = await checkAntiCsrfOrThrowError(antiCSRFMode, userContext);
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({
             refreshToken,
             disableAntiCsrf,
             antiCsrfToken,
-            antiCSRF,
+            antiCSRFMode,
             userContext,
         });
     }
@@ -480,7 +460,6 @@ export default class SessionWrapper {
         });
     }
 }
-
 export let init = SessionWrapper.init;
 
 export let createNewSession = SessionWrapper.createNewSession;
@@ -513,7 +492,7 @@ export let removeClaim = SessionWrapper.removeClaim;
 export let validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload;
 export let validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle;
 
-export let STError = SessionWrapper.STError;
+export let Error = SessionWrapper.Error;
 
 // JWT Functions
 export let createJWT = SessionWrapper.createJWT;

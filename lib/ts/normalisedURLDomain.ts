@@ -32,6 +32,7 @@ function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): 
     input = input.trim().toLowerCase();
 
     try {
+        // The following check is to check if the input string includes a protocol
         if (!input.includes("://")) {
             throw new Error("converting to proper URL");
         }

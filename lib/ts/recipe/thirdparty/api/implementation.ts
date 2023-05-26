@@ -194,6 +194,7 @@ export default function getAPIInterface(): APIInterface {
         },
 
         appleRedirectHandlerPOST: async function ({ code, state, options }): Promise<void> {
+            // TODO- iresh: get origin and apidomain values from state param
             // const redirectURL =
             //     options.appInfo.websiteDomain.getAsStringDangerous() +
             //     options.appInfo.websiteBasePath.getAsStringDangerous() +
