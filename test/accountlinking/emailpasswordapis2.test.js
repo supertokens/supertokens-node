@@ -1393,6 +1393,317 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(sendEmailToUserId === tpUser.user.id);
         });
 
-        // TODO: more tests for generatePasswordResetTokenPOST
+        it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and email is verified in one of those methods, and email password user existing, account linking enabled, email verification required should send email, for primary user", async function () {
+            await startST();
+            let sendEmailToUserId = undefined;
+            let sendEmailToUserEmail = undefined;
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        emailDelivery: {
+                            override: (oI) => {
+                                return {
+                                    ...oI,
+                                    sendEmail: async function (input) {
+                                        sendEmailToUserId = input.user.id;
+                                        sendEmailToUserEmail = input.user.email;
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(tpUser.user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let epUser2 = await EmailPassword.signUp("test2@example.com", "password1234", {
+                doNotLink: true,
+            });
+            assert(epUser2.user.isPrimaryUser === false);
+            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.user.id);
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+                doNotLink: true,
+            });
+            assert(epUser.user.isPrimaryUser === false);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/password/reset/token")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "OK");
+            assert(sendEmailToUserEmail === "test@example.com");
+            assert(sendEmailToUserId === tpUser.user.id);
+        });
+
+        it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and email right is not verified in the login methods, and email password user existing, account linking enabled, email verification required should say not allowed", async function () {
+            await startST();
+            let sendEmailToUserId = undefined;
+            let sendEmailToUserEmail = undefined;
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        emailDelivery: {
+                            override: (oI) => {
+                                return {
+                                    ...oI,
+                                    sendEmail: async function (input) {
+                                        sendEmailToUserId = input.user.id;
+                                        sendEmailToUserEmail = input.user.email;
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let epUser2 = await EmailPassword.signUp("test2@example.com", "password1234", {
+                doNotLink: true,
+            });
+            assert(epUser2.user.isPrimaryUser === false);
+            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(epUser2.user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+                doNotLink: true,
+            });
+            assert(epUser.user.isPrimaryUser === false);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/password/reset/token")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "PASSWORD_RESET_NOT_ALLOWED");
+            assert(
+                res.body.reason ===
+                    "Token generation was not done because of account take over risk. Please contact support."
+            );
+            assert(sendEmailToUserId === undefined);
+            assert(sendEmailToUserEmail === undefined);
+        });
+
+        it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and all of them having the same email, but none are verified, and email password user existing, account linking enabled, email verification required should send email with primary user", async function () {
+            await startST();
+            let sendEmailToUserId = undefined;
+            let sendEmailToUserEmail = undefined;
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        emailDelivery: {
+                            override: (oI) => {
+                                return {
+                                    ...oI,
+                                    sendEmail: async function (input) {
+                                        sendEmailToUserId = input.user.id;
+                                        sendEmailToUserEmail = input.user.email;
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let tpUser2 = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            await AccountLinking.linkAccounts(supertokens.convertToRecipeUserId(tpUser2.user.id), tpUser.user.id);
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+                doNotLink: true,
+            });
+            assert(epUser.user.isPrimaryUser === false);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/password/reset/token")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "OK");
+            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserEmail === "test@example.com");
+        });
     });
 });
