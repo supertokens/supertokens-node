@@ -375,6 +375,11 @@ export default class Recipe extends RecipeModule {
                 }
                 if (!thisIterationIsVerified) {
                     // even if one of the users is not verified, we do not allow sign up.
+                    // sure allows attackers to create email password accounts with an email
+                    // to block actual users from signing up, but that's ok, since those
+                    // users will just see an email already exists error and then will try another
+                    // login method. They can also still just go through the password reset flow
+                    // and then gain access to their email password account (which can then be verified).
                     shouldAllow = false;
                     break;
                 }
