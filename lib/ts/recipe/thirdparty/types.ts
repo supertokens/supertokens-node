@@ -41,7 +41,7 @@ export type TypeProvider = {
         redirectURI: string | undefined,
         authCodeFromRequest: string | undefined,
         userContext: any
-    ) => TypeProviderGetResponse;
+    ) => TypeProviderGetResponse | Promise<TypeProviderGetResponse>;
     isDefault?: boolean; // if not present, we treat it as false
 };
 

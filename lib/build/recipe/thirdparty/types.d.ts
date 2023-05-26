@@ -34,7 +34,7 @@ export declare type TypeProvider = {
         redirectURI: string | undefined,
         authCodeFromRequest: string | undefined,
         userContext: any
-    ) => TypeProviderGetResponse;
+    ) => TypeProviderGetResponse | Promise<TypeProviderGetResponse>;
     isDefault?: boolean;
 };
 export declare type User = {

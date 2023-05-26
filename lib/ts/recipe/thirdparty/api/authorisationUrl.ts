@@ -36,7 +36,7 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    let provider = findRightProvider(options.providers, thirdPartyId, undefined);
+    let provider = await findRightProvider(options.providers, thirdPartyId, undefined);
     if (provider === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,

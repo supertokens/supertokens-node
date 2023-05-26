@@ -32,32 +32,35 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
     };
 }
 
-export function findRightProvider(
+export async function findRightProvider(
     providers: TypeProvider[],
     thirdPartyId: string,
     clientId?: string
-): TypeProvider | undefined {
-    return providers.find((p) => {
+): Promise<TypeProvider | undefined> {
+    for (const p of providers) {
         let id = p.id;
         if (id !== thirdPartyId) {
-            return false;
+            continue;
         }
 
         // first if there is only one provider with thirdPartyId in the providers array,
         let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
         if (otherProvidersWithSameId.length === 0) {
             // they we always return that.
-            return true;
+            return p;
         }
 
         // otherwise, we look for the isDefault provider if clientId is missing
-        if (clientId === undefined) {
-            return p.isDefault === true;
+        if (clientId === undefined && p.isDefault === true) {
+            return p;
         }
 
         // otherwise, we return a provider that matches based on client ID as well.
-        return p.get(undefined, undefined, {}).getClientId({}) === clientId;
-    });
+        if ((await p.get(undefined, undefined, {})).getClientId({}) === clientId) {
+            return p;
+        }
+    }
+    return undefined;
 }
 
 function validateAndNormaliseSignInAndUpConfig(

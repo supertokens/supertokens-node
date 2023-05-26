@@ -10,4 +10,4 @@ export declare function findRightProvider(
     providers: TypeProvider[],
     thirdPartyId: string,
     clientId?: string
-): TypeProvider | undefined;
+): Promise<TypeProvider | undefined>;
