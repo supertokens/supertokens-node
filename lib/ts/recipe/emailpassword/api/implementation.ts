@@ -408,8 +408,6 @@ export default function getAPIImplementation(): APIInterface {
 
             // But first, this only matters it the user cares about checking for email verification status..
 
-            // ........................TESTING REMAINING OF THE BELOW CODE........................
-
             if (!shouldDoAccountLinkingResponse.shouldAutomaticallyLink) {
                 // here we will go ahead with the token generation cause
                 // even when the token is consumed, we will not be linking the accounts
@@ -424,7 +422,7 @@ export default function getAPIImplementation(): APIInterface {
                 // the checks below are related to email verification, and if the user
                 // does not care about that, then we should just continue with token generation
                 return await generateAndSendPasswordResetToken(
-                    emailPasswordAccount.recipeUserId.getAsString(),
+                    primaryUserAssociatedWithEmail.id,
                     emailPasswordAccount.recipeUserId
                 );
             }
@@ -434,7 +432,7 @@ export default function getAPIImplementation(): APIInterface {
             // cause then there is no scope for account takeover
             if (primaryUserAssociatedWithEmail.loginMethods.length === 1) {
                 return await generateAndSendPasswordResetToken(
-                    emailPasswordAccount.recipeUserId.getAsString(),
+                    primaryUserAssociatedWithEmail.id,
                     emailPasswordAccount.recipeUserId
                 );
             }
@@ -449,7 +447,7 @@ export default function getAPIImplementation(): APIInterface {
 
             if (emailVerified) {
                 return await generateAndSendPasswordResetToken(
-                    emailPasswordAccount.recipeUserId.getAsString(),
+                    primaryUserAssociatedWithEmail.id,
                     emailPasswordAccount.recipeUserId
                 );
             }
@@ -472,7 +470,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             } else {
                 return await generateAndSendPasswordResetToken(
-                    emailPasswordAccount.recipeUserId.getAsString(),
+                    primaryUserAssociatedWithEmail.id,
                     emailPasswordAccount.recipeUserId
                 );
             }
