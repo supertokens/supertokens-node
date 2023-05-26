@@ -1706,4 +1706,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(sendEmailToUserEmail === "test@example.com");
         });
     });
+
+    // TODO: for password consume tests, we take all the tests above (which sendemail), and the follow them with
+    // calling the password consume APIs and check that linking happened correctly or not.
 });
