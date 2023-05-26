@@ -749,6 +749,50 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(isAllowed);
         });
 
+        it("calling isSignUpAllowed returns true if user exists with same email, but is not a primary user, and email verification is not required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+
+            let isAllowed = await AccountLinking.isSignUpAllowed(
+                {
+                    email: "test@example.com",
+                },
+                false
+            );
+
+            assert(isAllowed);
+        });
+
         it("calling isSignUpAllowed returns false if user exists with same email, but is not a primary user, and email verification is required", async function () {
             await startST();
             supertokens.init({
@@ -791,9 +835,86 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
 
             assert(!isAllowed);
+            assert(
+                ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS) !==
+                    undefined
+            );
         });
 
-        it("calling isSignUpAllowed returns false if user exists with same email, but linking is not allowed", async function () {
+        it("calling isSignUpAllowed returns false if 2 users exists with same email, are not primary users, one of them has email verified, and one of them not, and email verification is required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+            assert(!epUser.user.isPrimaryUser);
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(epUser.user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token, {
+                doNotLink: true,
+            });
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                doNotLink: true,
+            });
+            assert(!tpUser.user.isPrimaryUser);
+
+            let isAllowed = await AccountLinking.isSignUpAllowed(
+                {
+                    email: "test@example.com",
+                },
+                false
+            );
+
+            assert(!isAllowed);
+            assert(
+                ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS) !==
+                    undefined
+            );
+        });
+
+        it("calling isSignUpAllowed returns false if user exists with same email, but primary user's email is not verified", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -833,7 +954,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(!isAllowed);
         });
 
-        it("calling isSignUpAllowed returns true if user exists with same email, but linking is not allowed, but automatic account linking is disabled", async function () {
+        it("calling isSignUpAllowed returns true if user exists with same email, and primary user's email is not verified, but automatic account linking is disabled", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -872,7 +993,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(isAllowed);
         });
 
-        it("calling isSignUpAllowed returns false if linking is allowed, and email is not verified", async function () {
+        it("calling isSignUpAllowed returns true if primary user's email is verified", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -886,6 +1007,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
                             return {
@@ -899,8 +1023,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             let pUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(pUser.loginMethods[0].recipeUserId);
+
             pUser = await supertokens.getUser(pUser.id);
             assert(pUser.isPrimaryUser);
+            let token = await EmailVerification.createEmailVerificationToken(pUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(token.token);
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
                 {
@@ -909,10 +1036,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 true
             );
 
-            assert(!isAllowed);
+            assert(isAllowed);
         });
 
-        it("calling isSignUpAllowed returns true if linking is allowed, and email is verified", async function () {
+        it("calling isSignUpAllowed returns true if primary user's email is verified and other recipe user's email is not verified, with the same email", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -926,6 +1053,16 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
                     EmailVerification.init({
                         mode: "OPTIONAL",
                     }),

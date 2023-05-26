@@ -379,6 +379,7 @@ export default class Recipe extends RecipeModule {
                     break;
                 }
             }
+            ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS);
             return shouldAllow;
         } else {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
@@ -414,6 +415,14 @@ export default class Recipe extends RecipeModule {
             // we check for even if one is verified as opposed to all being unverified cause
             // even if one is verified, we know that the email / phone number is owned by the
             // primary account holder.
+
+            // we only check this for primary user and not other users in the users array cause
+            // they are all recipe users. The reason why we ignore them is cause, in normal
+            // situations, they should not exist cause:
+            // - if primary user was created first, then the recipe user creation would not
+            // be allowed via unverified means of login method (like email password).
+            // - if recipe user was created first, and is unverified, then the primary user
+            // sign up should not be possible either.
             for (let i = 0; i < primaryUser.loginMethods.length; i++) {
                 let lM = primaryUser.loginMethods[i];
                 if (lM.email !== undefined) {
