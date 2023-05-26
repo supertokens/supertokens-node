@@ -303,7 +303,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
     });
 
     describe("update email or password tests", function () {
-        it("update email which belongs to other primary account should not work", async function () {
+        it("update email which belongs to other primary account, and current user is also a primary user should not work", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -343,6 +343,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.user.id));
 
             let response = await EmailPassword.signUp("test2@example.com", "password123");
+            assert(response.user.isPrimaryUser);
             assert(response.status === "OK");
 
             response = await EmailPassword.updateEmailOrPassword({
@@ -461,6 +462,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             await EmailVerification.verifyEmailUsingToken(tokenResp.token);
 
             let response = await EmailPassword.signUp("test2@example.com", "password123");
+            assert(response.user.isPrimaryUser === false);
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
@@ -501,7 +503,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: false,
@@ -520,7 +527,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             );
             await EmailVerification.verifyEmailUsingToken(tokenResp.token);
 
-            let response = await EmailPassword.signUp("test2@example.com", "password123");
+            let response = await EmailPassword.signUp("test2@example.com", "password123", {
+                doNotLink: true,
+            });
+            assert(response.user.isPrimaryUser === false);
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
