@@ -602,6 +602,12 @@ export default function getAPIImplementation(): APIInterface {
                         // the primary user ID is used for token generation is if the email password
                         // user did not exist - in which case the value of emailPasswordUserExists will
                         // resolve to false anyway, and that's what we want.
+
+                        // there is an edge case where if the email password recipe user was created
+                        // after the password reset token generation, and it was linked to the
+                        // primary user id (userIdForWhomTokenWasGenerated), in this case,
+                        // we still don't allow password update, cause the user should try again
+                        // and the token should be regenerated for the right recipe user.
                         return (
                             lm.recipeUserId.getAsString() === userIdForWhomTokenWasGenerated &&
                             lm.recipeId === "emailpassword"
@@ -622,6 +628,10 @@ export default function getAPIImplementation(): APIInterface {
 
                     // NOTE: We do not ask the dev if we should do account linking or not here
                     // cause we already have asked them this when generating an password reset token.
+                    // In the edge case that the dev changes account linking allowance from true to false
+                    // when it comes here, only a new recipe user id will be created and not linked
+                    // cause createPrimaryUserIdOrLinkAccounts will disallow linking. This doesn't
+                    // really cause any security issue.
 
                     let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
                         email: tokenConsumptionResponse.email,
