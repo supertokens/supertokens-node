@@ -1841,6 +1841,141 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(userPostPasswordReset.id === epUser.user.id);
         });
 
+        it("calling passwordResetPOST with bad password returns a PASSWORD_POLICY_VIOLATED_ERROR", async function () {
+            await startST();
+            let sendEmailToUserId = undefined;
+            let token = undefined;
+            let userPostPasswordReset = undefined;
+            let emailPostPasswordReset = undefined;
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        override: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    passwordResetPOST: async (input) => {
+                                        let response = await oI.passwordResetPOST(input);
+                                        if (response.status === "OK") {
+                                            emailPostPasswordReset = response.email;
+                                            userPostPasswordReset = response.user;
+                                        }
+                                        return response;
+                                    },
+                                };
+                            },
+                        },
+                        emailDelivery: {
+                            override: (oI) => {
+                                return {
+                                    ...oI,
+                                    sendEmail: async function (input) {
+                                        sendEmailToUserId = input.user.id;
+                                        token = input.passwordResetLink.split("?")[1].split("&")[0].split("=")[1];
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/password/reset/token")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "OK");
+            assert(sendEmailToUserId === epUser.user.id);
+
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/password/reset")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "valid",
+                            },
+                        ],
+                        token,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(res2 !== undefined);
+            assert.deepStrictEqual(res2, {
+                status: "FIELD_ERROR",
+                formFields: [
+                    {
+                        error: "Password must contain at least 8 characters, including a number",
+                        id: "password",
+                    },
+                ],
+            });
+        });
+
         it("calling passwordResetPOST with primary user existing, and no email password user, and email is in unverified state of primary user, and email verification is NOT required, should create an email password user and link to the existing primary user.", async function () {
             await startST();
             let sendEmailToUserId = undefined;
