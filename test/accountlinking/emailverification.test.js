@@ -1,0 +1,99 @@
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+let supertokens = require("../../");
+let Session = require("../../recipe/session");
+let assert = require("assert");
+let { ProcessState } = require("../../lib/build/processState");
+let EmailPassword = require("../../recipe/emailpassword");
+let ThirdParty = require("../../recipe/thirdparty");
+let AccountLinking = require("../../recipe/accountlinking");
+let EmailVerification = require("../../recipe/emailverification");
+
+describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverification.test.js]")}`, function () {
+    beforeEach(async function () {
+        await killAllST();
+        await setupST();
+        ProcessState.getInstance().reset();
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
+    describe("verifyEmailUsingToken tests", function () {
+        it("verifyEmailUsingToken links account if required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+            }
+
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token);
+            assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === true);
+                assert(user.id === tpUser.user.id);
+            }
+        });
+    });
+});
