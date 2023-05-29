@@ -16,7 +16,7 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
-import { sendNon200ResponseWithMessage } from "../../utils";
+import { normaliseEmail, sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
     SEARCH_TAGS_API,
@@ -69,7 +69,7 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     let admins: string[] = [];
 
     if (config?.admins !== undefined) {
-        admins = config.admins;
+        admins = config.admins.map((email) => normaliseEmail(email));
     }
 
     return {

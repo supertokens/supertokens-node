@@ -16,3 +16,4 @@ export declare function makeDefaultUserContextFromAPI(request: BaseRequest): any
 export declare function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest): any;
 export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function getFromObjectCaseInsensitive<T>(key: string, object: Record<string, T>): T | undefined;
+export declare function normaliseEmail(email: string): string;
