@@ -3,6 +3,7 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import AccountLinking from "../accountlinking";
 import RecipeUserId from "../../recipeUserId";
+import { mockGetEmailVerificationTokenInfo, mockCreateEmailVerificationToken } from "./mockCore";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
@@ -19,20 +20,29 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
               }
             | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
         > {
-            // userId can be either recipeUserId or primaryUserId
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
-                userId: recipeUserId.getAsString(),
-                email,
-            });
-            if (response.status === "OK") {
-                return {
-                    status: "OK",
-                    token: response.token,
-                };
+            if (process.env.MOCK !== "true") {
+                let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
+                    userId: recipeUserId.getAsString(),
+                    email,
+                });
+                if (response.status === "OK") {
+                    return {
+                        status: "OK",
+                        token: response.token,
+                    };
+                } else {
+                    return {
+                        status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                    };
+                }
             } else {
-                return {
-                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
-                };
+                return mockCreateEmailVerificationToken(
+                    {
+                        recipeUserId,
+                        email,
+                    },
+                    querier
+                );
             }
         },
 
@@ -41,11 +51,17 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         }: {
             token: string;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/token"), {
-                method: "token",
-                token,
-            });
-            return response;
+            if (process.env.MOCK !== "true") {
+                let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/token"), {
+                    method: "token",
+                    token,
+                });
+                return response;
+            } else {
+                return mockGetEmailVerificationTokenInfo({
+                    token,
+                });
+            }
         },
 
         verifyEmailUsingToken: async function ({

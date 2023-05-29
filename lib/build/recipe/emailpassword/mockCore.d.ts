@@ -2,6 +2,18 @@
 import type { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
+export declare function mockGetPasswordResetInfo(
+    token: string
+): Promise<
+    | {
+          status: "OK";
+          userId: string;
+          email: string;
+      }
+    | {
+          status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+      }
+>;
 export declare function mockCreatePasswordResetToken(
     email: string,
     userId: string
