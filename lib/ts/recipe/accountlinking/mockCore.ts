@@ -887,6 +887,9 @@ export async function mockDeleteUser({
         });
 
         let existingUsers = primaryUserMap.get(primaryUser.id)!;
+        if (existingUsers === undefined) {
+            existingUsers = [];
+        }
         existingUsers = existingUsers.filter((u) => u.getAsString() !== allRecipeIdsToDelete[i]);
         if (existingUsers.length === 0) {
             primaryUserMap.delete(primaryUser.id);
