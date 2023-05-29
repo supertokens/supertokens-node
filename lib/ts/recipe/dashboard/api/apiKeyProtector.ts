@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import RecipeError from "../error";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIFunction, APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess } from "../utils";
@@ -21,11 +22,25 @@ export default async function apiKeyProtector(
     options: APIOptions,
     apiFunction: APIFunction
 ): Promise<boolean> {
-    const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
-        req: options.req,
-        config: options.config,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+    let shouldAllowAccess = false;
+
+    try {
+        shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
+            req: options.req,
+            config: options.config,
+            userContext: makeDefaultUserContextFromAPI(options.req),
+        });
+    } catch (e) {
+        if (RecipeError.isErrorFromSuperTokens(e) && e.type === RecipeError.OPERATION_NOT_ALLOWED) {
+            options.res.setStatusCode(403);
+            options.res.sendJSONResponse({
+                message: e.message,
+            });
+            return true;
+        }
+
+        throw e;
+    }
 
     if (!shouldAllowAccess) {
         sendUnauthorisedAccess(options.res);
