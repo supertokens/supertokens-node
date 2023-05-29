@@ -40,7 +40,6 @@ export default function getRecipeImplementation(): RecipeInterface {
                     }
                 );
 
-                console.log(sessionVerificationResponse);
                 if (sessionVerificationResponse.status !== "OK") {
                     return false;
                 }
