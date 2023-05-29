@@ -247,5 +247,96 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(payloadAfter["st-ev"]["v"] === true);
             assert(payloadAfter["sub"] === payloadBefore["sub"]);
         });
+
+        it("updateSessionIfRequiredPostEmailVerification creates a new session if the user is linked to another user", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let token = (await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId))
+                .token;
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            let payloadBefore = session.getAccessTokenPayload();
+            assert(payloadBefore["st-ev"]["v"] === false);
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            await AccountLinking.linkAccounts(epUser.loginMethods[0].recipeUserId, tpUser.user.id);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .send({
+                        method: "token",
+                        token,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            let tokens = extractInfoFromResponse(response);
+            let accessToken = tokens.accessTokenFromHeader;
+
+            let sessionAfter = await Session.getSessionWithoutRequestResponse(accessToken);
+            let payloadAfter = sessionAfter.getAccessTokenPayload();
+            assert(payloadAfter["st-ev"]["v"] === true);
+            assert(sessionAfter.getUserId() === tpUser.user.id);
+            assert(sessionAfter.getRecipeUserId().getAsString() === epUser.id);
+
+            // check that old session is revoked
+            let sessionInformation = await Session.getSessionInformation(session.getHandle());
+            assert(sessionInformation === undefined);
+        });
     });
 });
