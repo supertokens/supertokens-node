@@ -14,6 +14,7 @@ import {
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
+import { BaseRequest } from "../../framework";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -153,6 +154,7 @@ export default class SessionWrapper {
         userContext?: any
     ): Promise<boolean>;
     static createJWT(
+        req: BaseRequest,
         payload?: any,
         validitySeconds?: number,
         useStaticSigningKey?: boolean,

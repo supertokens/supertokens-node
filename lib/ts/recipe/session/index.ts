@@ -391,8 +391,15 @@ export default class SessionWrapper {
         });
     }
 
-    static createJWT(payload?: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext: any = {}) {
+    static createJWT(
+        req: BaseRequest,
+        payload?: any,
+        validitySeconds?: number,
+        useStaticSigningKey?: boolean,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().openIdRecipe.recipeImplementation.createJWT({
+            req,
             payload,
             validitySeconds,
             useStaticSigningKey,

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { RecipeInterface, TypeNormalisedInput } from "./types";
+import { APIOptions, RecipeInterface, TypeNormalisedInput } from "./types";
 import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_JWKS_API } from "../jwt/constants";
@@ -24,17 +24,17 @@ export default function getRecipeInterface(
 ): RecipeInterface {
     return {
         getOpenIdDiscoveryConfiguration: async function ({
-            req,
+            options,
             userContext,
         }: {
-            req: BaseRequest;
+            options: APIOptions;
             userContext: any;
         }): Promise<{
             status: "OK";
             issuer: string;
             jwks_uri: string;
         }> {
-            let issuerDomain = await config.issuerDomain(req, userContext);
+            let issuerDomain = await config.issuerDomain(options.req, userContext);
             let issuer = issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
             let jwks_uri =
                 issuerDomain.getAsStringDangerous() +

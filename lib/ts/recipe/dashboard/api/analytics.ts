@@ -66,9 +66,9 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
         };
     }
 
-    const { apiDomain: apiDOmainFunction, origin: originFunction, appName } = options.appInfo;
+    const { apiDomain: apiDomainFunction, origin: originFunction, appName } = options.appInfo;
     const origin = await originFunction(options.req, {});
-    const apiDomainVal = await apiDOmainFunction(options.req, {});
+    const apiDomainVal = await apiDomainFunction(options.req, {});
     const data = {
         websiteDomain: origin.getAsStringDangerous(),
         apiDomain: apiDomainVal.getAsStringDangerous(),

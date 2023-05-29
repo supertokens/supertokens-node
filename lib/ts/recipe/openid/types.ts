@@ -97,6 +97,7 @@ export type RecipeInterface = {
         jwks_uri: string;
     }>;
     createJWT(input: {
+        req: BaseRequest;
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
