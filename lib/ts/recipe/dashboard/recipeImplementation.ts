@@ -21,6 +21,7 @@ import { validateApiKey } from "./utils";
 import RecipeError from "./error";
 import { logDebugMessage } from "../../logger";
 import { DASHBOARD_ANALYTICS_API } from "./constants";
+import { normaliseHttpMethod } from "../../utils";
 
 export default function getRecipeImplementation(): RecipeInterface {
     return {
@@ -45,7 +46,7 @@ export default function getRecipeImplementation(): RecipeInterface {
                 }
 
                 // For all non GET requests we also want to check if the user is allowed to perform this operation
-                if (input.req.getMethod() !== "get") {
+                if (normaliseHttpMethod(input.req.getMethod()) !== "get") {
                     // We dont want to block the analytics API
                     if (input.req.getOriginalURL().endsWith(DASHBOARD_ANALYTICS_API)) {
                         return true;
@@ -62,9 +63,8 @@ export default function getRecipeImplementation(): RecipeInterface {
 
                     // This is possible if they are using an older core, in which case we log and fail
                     if (emailFromResponse === undefined) {
-                        // TODO NEMI: Should we provide a minimum supported version here?
                         logDebugMessage(
-                            "User Dashboard: You are using an older version of SuperTokens core, to use the 'admins' property when initialising the Dashboard recipe please upgrade to the latest SuperTokens core version."
+                            "User Dashboard: You are using an older version of SuperTokens core, to use the 'admins' property when initialising the Dashboard recipe please upgrade to a core version that is >= 6.0"
                         );
                         throw new RecipeError();
                     }
