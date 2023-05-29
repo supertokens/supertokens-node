@@ -454,5 +454,80 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 2);
         });
+
+        it("updateSessionIfRequiredPostEmailVerification works fine if session does not exist for user", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let token = (await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId))
+                .token;
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/email/verify")
+                    .send({
+                        method: "token",
+                        token,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            let isVerified = await EmailVerification.isEmailVerified(epUser.loginMethods[0].recipeUserId);
+            assert(isVerified === true);
+            let tokens = extractInfoFromResponse(response);
+            let accessToken = tokens.accessTokenFromAny;
+            assert(accessToken === undefined);
+        });
     });
 });
