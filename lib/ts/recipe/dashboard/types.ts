@@ -19,6 +19,7 @@ import { NormalisedAppinfo } from "../../types";
 
 export type TypeInput = {
     apiKey?: string;
+    admins?: string[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -30,6 +31,7 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     apiKey?: string;
+    admins: string[];
     authMode: AuthMode;
     override: {
         functions: (

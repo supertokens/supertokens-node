@@ -16,7 +16,7 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
-import { sendNon200ResponseWithMessage } from "../../utils";
+import { normaliseEmail, sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
     SEARCH_TAGS_API,
@@ -53,6 +53,7 @@ import ThirdPartyEmailPassword from "../thirdpartyemailpassword";
 import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
 import ThirdPartyPasswordless from "../thirdpartypasswordless";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
+import { logDebugMessage } from "../../logger";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
@@ -61,10 +62,21 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
         ...(config === undefined ? {} : config.override),
     };
 
+    if (config?.apiKey !== undefined && config?.admins !== undefined) {
+        logDebugMessage("User Dashboard: Providing 'admins' has no effect when using an apiKey.");
+    }
+
+    let admins: string[] = [];
+
+    if (config?.admins !== undefined) {
+        admins = config.admins.map((email) => normaliseEmail(email));
+    }
+
     return {
         ...config,
         override,
         authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
+        admins,
     };
 }
 

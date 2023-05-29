@@ -178,3 +178,10 @@ export function getFromObjectCaseInsensitive<T>(key: string, object: Record<stri
 
     return object[matchedKeys[0]];
 }
+
+export function normaliseEmail(email: string): string {
+    email = email.trim();
+    email = email.toLowerCase();
+
+    return email;
+}

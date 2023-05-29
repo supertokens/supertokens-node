@@ -18,6 +18,10 @@ import { Querier } from "../../querier";
 import { dashboardVersion } from "../../version";
 import { RecipeInterface } from "./types";
 import { validateApiKey } from "./utils";
+import RecipeError from "./error";
+import { logDebugMessage } from "../../logger";
+import { DASHBOARD_ANALYTICS_API } from "./constants";
+import { normaliseHttpMethod } from "../../utils";
 
 export default function getRecipeImplementation(): RecipeInterface {
     return {
@@ -36,7 +40,42 @@ export default function getRecipeImplementation(): RecipeInterface {
                         sessionId: authHeaderValue,
                     }
                 );
-                return sessionVerificationResponse.status === "OK";
+
+                if (sessionVerificationResponse.status !== "OK") {
+                    return false;
+                }
+
+                // For all non GET requests we also want to check if the user is allowed to perform this operation
+                if (normaliseHttpMethod(input.req.getMethod()) !== "get") {
+                    // We dont want to block the analytics API
+                    if (input.req.getOriginalURL().endsWith(DASHBOARD_ANALYTICS_API)) {
+                        return true;
+                    }
+
+                    const admins = input.config.admins;
+
+                    // If the user has provided no admins, allow
+                    if (admins.length === 0) {
+                        return true;
+                    }
+
+                    const emailFromResponse = sessionVerificationResponse.email;
+
+                    // This is possible if they are using an older core, in which case we log and fail
+                    if (emailFromResponse === undefined) {
+                        logDebugMessage(
+                            "User Dashboard: You are using an older version of SuperTokens core, to use the 'admins' property when initialising the Dashboard recipe please upgrade to a core version that is >= 6.0"
+                        );
+                        throw new RecipeError();
+                    }
+
+                    // Allow only if the email is present in the admin list
+                    if (!admins.includes(emailFromResponse)) {
+                        throw new RecipeError();
+                    }
+                }
+
+                return true;
             }
             return await validateApiKey(input);
         },
