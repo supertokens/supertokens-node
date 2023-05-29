@@ -338,5 +338,121 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             let sessionInformation = await Session.getSessionInformation(session.getHandle());
             assert(sessionInformation === undefined);
         });
+
+        it("updateSessionIfRequiredPostEmailVerification removes account linking claim post verification", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+
+            {
+                let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+                await EmailVerification.verifyEmailUsingToken(token.token);
+            }
+
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            let payloadBefore = session.getAccessTokenPayload();
+            assert(payloadBefore["st-ev"]["v"] === true);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/link-account")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test2@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password123",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
+
+            let tokens = extractInfoFromResponse(res);
+            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            let claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
+            let newUser = await supertokens.getUser(claimValue);
+            assert(newUser.emails[0] === "test2@example.com");
+            assert(newUser.emails.length === 1);
+
+            let pUser = await supertokens.getUser(epUser.id);
+            assert(pUser.loginMethods.length === 1);
+
+            let token = (
+                await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(claimValue))
+            ).token;
+
+            let response2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + tokens.accessTokenFromAny])
+                    .send({
+                        method: "token",
+                        token,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            tokens = extractInfoFromResponse(response2);
+            newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
+            assert(claimValue === undefined);
+            assert(newSession.getUserId() === pUser.id);
+
+            pUser = await supertokens.getUser(epUser.id);
+            assert(pUser.loginMethods.length === 2);
+        });
     });
 });
