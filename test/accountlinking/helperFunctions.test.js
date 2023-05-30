@@ -1320,6 +1320,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
             assert(response.description === "Account linking not allowed by the developer for existing user.");
             assert(numberOfTimesCallbackCalled === 0);
+
+            let users = await supertokens.listUsersByAccountInfo({
+                email: "test@example.com",
+            });
+
+            assert(users.length === 1);
+            assert(users[0].loginMethods.length === 1);
         });
 
         it("calling linkAccountWithUserFromSession throws email verification claim failure if the session user's email is not verified and we are trying to make it a primary user", async function () {
@@ -1414,6 +1421,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             }
 
             assert(numberOfTimesCallbackCalled === 0);
+
+            let users = await supertokens.listUsersByAccountInfo({
+                email: "test@example.com",
+            });
+
+            assert(users.length === 1);
+            assert(users[0].loginMethods.length === 1);
         });
 
         it("calling linkAccountWithUserFromSession links correctly when the session's recipe user id is a primary user id and email verification is not required", async function () {
@@ -1927,6 +1941,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 response.description ===
                     "No account can be linked to the session account cause the session account is not a primary account and the account info is already associated with another primary account, so we cannot make this a primary account either. Please contact support."
             );
+
+            let users = await supertokens.listUsersByAccountInfo({
+                email: "test3@example.com",
+            });
+
+            assert(users.length === 0);
         });
 
         it("calling linkAccountWithUserFromSession fails if should do automatic account linking is set to false.", async function () {
@@ -1997,6 +2017,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
             assert(response.description === "Account linking not allowed by the developer for new account.");
+
+            let users = await supertokens.listUsersByAccountInfo({
+                email: "test@example.com",
+            });
+
+            assert(users.length === 1);
+            assert(users[0].loginMethods.length === 1);
         });
 
         it("calling linkAccountWithUserFromSession should fail if it will cause two primary users with the same email (when creating a new recipe user).", async function () {
@@ -2080,6 +2107,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 response.description ===
                     "Not allowed because it will lead to two primary user id having same account info."
             );
+
+            let users = await supertokens.listUsersByAccountInfo({
+                email: "test2@example.com",
+            });
+
+            assert(users.length === 1);
+            assert(users[0].loginMethods.length === 1);
         });
 
         it("calling linkAccountWithUserFromSession fails if recipe user ID already existed and we give it wrong credentials", async function () {
