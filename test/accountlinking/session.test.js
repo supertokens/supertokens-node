@@ -271,6 +271,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
     });
 
     describe("getSessionWithoutRequestResponse tests", function () {
+        // TODO: with check db as well..
         it("getSessionWithoutRequestResponse with no linked accounts should have same user id and recipe id", async function () {
             await startST();
             supertokens.init({
@@ -596,5 +597,92 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             assert(info.userId === info.recipeUserId.getAsString());
             assert(session.userId === "random");
         });
+    });
+
+    describe("refreshSessionWithoutRequestResponse tests", function () {
+        it("refreshSessionWithoutRequestResponse with no linked accounts should have same user id and recipe id", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            session = await Session.refreshSessionWithoutRequestResponse(
+                session.getAllSessionTokensDangerously().refreshToken
+            );
+
+            assert(session.getUserId() === session.getRecipeUserId().getAsString());
+        });
+
+        it("refreshSessionWithoutRequestResponse with linked accounts should have different user id and recipe id", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+
+            session = await Session.refreshSessionWithoutRequestResponse(
+                session.getAllSessionTokensDangerously().refreshToken
+            );
+
+            assert(session.getUserId() !== session.getRecipeUserId().getAsString());
+            assert(session.getUserId() === epUser.id);
+            assert(session.getRecipeUserId().getAsString() === epUser2.id);
+        });
+
+        it("refreshSessionWithoutRequestResponse with no linked and no auth recipe accounts should have same user id and recipe id", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                supertokens.convertToRecipeUserId("random")
+            );
+
+            session = await Session.refreshSessionWithoutRequestResponse(
+                session.getAllSessionTokensDangerously().refreshToken
+            );
+
+            assert(session.getUserId() === session.getRecipeUserId().getAsString());
+            assert(session.getUserId() === "random");
+        });
+
+        // TODO: token theft detected as well with user id and recipe user id not matching..
     });
 });

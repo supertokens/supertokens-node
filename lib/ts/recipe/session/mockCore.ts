@@ -10,12 +10,22 @@ let sessionHandles: {
 export async function mockGetRefreshAPIResponse(requestBody: any, querier: any) {
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
     if (response.status === "OK") {
-        response.session.recipeUserId = response.session.userId;
+        for (let i = 0; i < sessionHandles.length; i++) {
+            if (response.session.handle === sessionHandles[i].sessionHandle) {
+                response.session.userId = sessionHandles[i].primaryUserId;
+                response.session.recipeUserId = sessionHandles[i].recipeUserId;
+            }
+        }
         return response;
     } else if (response.status === "UNAUTHORISED") {
         return response;
     } else {
-        response.session.recipeUserId = response.session.userId;
+        for (let i = 0; i < sessionHandles.length; i++) {
+            if (response.session.handle === sessionHandles[i].sessionHandle) {
+                response.session.userId = sessionHandles[i].primaryUserId;
+                response.session.recipeUserId = sessionHandles[i].recipeUserId;
+            }
+        }
         return response;
     }
 }
@@ -59,7 +69,7 @@ export async function mockGetSession(requestBody: any, querier: any) {
     if (response.status === "OK") {
         for (let i = 0; i < sessionHandles.length; i++) {
             if (response.session.sessionHandle === sessionHandles[i].sessionHandle) {
-                response.session.sub = sessionHandles[i].primaryUserId;
+                response.session.userId = sessionHandles[i].primaryUserId;
                 response.session.recipeUserId = sessionHandles[i].recipeUserId;
             }
         }
