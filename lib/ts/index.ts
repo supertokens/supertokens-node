@@ -117,6 +117,10 @@ export default class SuperTokensWrapper {
     static convertToRecipeUserId(recipeUserId: string): RecipeUserId {
         return new RecipeUserId(recipeUserId);
     }
+
+    static getRequestFromUserContext(userContext: any | undefined) {
+        return SuperTokens.getInstanceOrThrowError().getRequestFromUserContext(userContext);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -144,5 +148,7 @@ export let getUser = SuperTokensWrapper.getUser;
 export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
 
 export let convertToRecipeUserId = SuperTokensWrapper.convertToRecipeUserId;
+
+export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserContext;
 
 export let Error = SuperTokensWrapper.Error;

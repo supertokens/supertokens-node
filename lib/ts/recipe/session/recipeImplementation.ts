@@ -182,6 +182,9 @@ export default function getRecipeInterface(
                     );
                     return undefined;
                 }
+                logDebugMessage(
+                    "getSession: UNAUTHORISED because the accessToken couldn't be parsed or had an invalid structure"
+                );
                 throw new SessionError({
                     message: "Token parsing failed",
                     type: "UNAUTHORISED",

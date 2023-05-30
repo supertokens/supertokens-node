@@ -85,6 +85,7 @@ export default class SuperTokensWrapper {
         status: "OK";
     }>;
     static convertToRecipeUserId(recipeUserId: string): RecipeUserId;
+    static getRequestFromUserContext(userContext: any | undefined): import("./framework").BaseRequest | undefined;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
@@ -99,4 +100,5 @@ export declare let updateOrDeleteUserIdMappingInfo: typeof SuperTokensWrapper.up
 export declare let getUser: typeof SuperTokensWrapper.getUser;
 export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersByAccountInfo;
 export declare let convertToRecipeUserId: typeof SuperTokensWrapper.convertToRecipeUserId;
+export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getRequestFromUserContext;
 export declare let Error: typeof SuperTokensError;
