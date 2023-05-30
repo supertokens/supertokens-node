@@ -27,6 +27,7 @@ import {
     mockCreateNewSession,
     mockGetSession,
     mockGetAllSessionHandlesForUser,
+    mockGetSessionInformation,
     mockRevokeAllSessionsForUser,
 } from "./mockCore";
 
@@ -267,10 +268,14 @@ export async function getSessionInformation(
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");
     }
-
-    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
-        sessionHandle,
-    });
+    let response;
+    if (process.env.MOCK !== "true") {
+        response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
+            sessionHandle,
+        });
+    } else {
+        response = await mockGetSessionInformation(sessionHandle, helpers.querier);
+    }
 
     if (response.status === "OK") {
         // Change keys to make them more readable
@@ -279,6 +284,8 @@ export async function getSessionInformation(
 
         delete response.userDataInDatabase;
         delete response.userDataInJWT;
+
+        response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
         return response;
     } else {

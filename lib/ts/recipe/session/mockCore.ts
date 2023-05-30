@@ -69,6 +69,23 @@ export async function mockGetSession(requestBody: any, querier: any) {
     }
 }
 
+export async function mockGetSessionInformation(sessionHandle: string, querier: any) {
+    let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
+        sessionHandle,
+    });
+    if (response.status === "OK") {
+        for (let i = 0; i < sessionHandles.length; i++) {
+            if (response.sessionHandle === sessionHandle) {
+                response.userId = sessionHandles[i].primaryUserId;
+                response.recipeUserId = sessionHandles[i].recipeUserId;
+            }
+        }
+        return response;
+    } else {
+        return response;
+    }
+}
+
 export async function mockRegenerateSession(accessToken: string, newAccessTokenPayload: any, querier: any) {
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
         accessToken: accessToken,
