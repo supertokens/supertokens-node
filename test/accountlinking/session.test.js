@@ -865,4 +865,8 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             assert(session.getRecipeUserId().getAsString() === epUser2.id);
         });
     });
+
+    describe("revokeAllSessionsForUser test", function () {
+        // TODO:..
+    });
 });
