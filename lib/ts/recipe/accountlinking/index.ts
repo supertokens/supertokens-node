@@ -67,8 +67,8 @@ export default class Wrapper {
         });
     }
 
-    static async canCreatePrimaryUserId(recipeUserId: RecipeUserId, userContext?: any) {
-        return await Recipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUserId({
+    static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext?: any) {
+        return await Recipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUser({
             recipeUserId,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -170,7 +170,7 @@ export default class Wrapper {
 }
 
 export const init = Wrapper.init;
-export const canCreatePrimaryUserId = Wrapper.canCreatePrimaryUserId;
+export const canCreatePrimaryUser = Wrapper.canCreatePrimaryUser;
 export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;

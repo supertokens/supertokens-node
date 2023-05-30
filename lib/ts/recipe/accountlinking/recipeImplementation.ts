@@ -79,7 +79,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 });
             }
         },
-        canCreatePrimaryUserId: async function (
+        canCreatePrimaryUser: async function (
             this: RecipeInterface,
             {
                 recipeUserId,

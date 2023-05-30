@@ -63,7 +63,7 @@ export declare type RecipeInterface = {
         users: User[];
         nextPaginationToken?: string;
     }>;
-    canCreatePrimaryUserId: (input: {
+    canCreatePrimaryUser: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<

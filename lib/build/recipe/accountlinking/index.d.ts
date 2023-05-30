@@ -35,7 +35,7 @@ export default class Wrapper {
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }): Promise<import("../emailpassword").User | undefined>;
-    static canCreatePrimaryUserId(
+    static canCreatePrimaryUser(
         recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<
@@ -185,7 +185,7 @@ export default class Wrapper {
     static isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any): Promise<boolean>;
 }
 export declare const init: typeof Recipe.init;
-export declare const canCreatePrimaryUserId: typeof Wrapper.canCreatePrimaryUserId;
+export declare const canCreatePrimaryUser: typeof Wrapper.canCreatePrimaryUser;
 export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
