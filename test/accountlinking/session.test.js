@@ -804,4 +804,65 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             }
         });
     });
+
+    describe("refreshSession tests", function () {
+        it("refreshSession with linked accounts should have different user id and recipe id", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.post("/refreshsession", async (req, res) => {
+                let session = await Session.refreshSession(req, res);
+                userId = session.getUserId();
+                recipeUserId = session.getRecipeUserId().getAsString();
+                res.status(200).send("");
+            });
+
+            app.use(errorHandler());
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/refreshsession")
+                    .set("Cookie", ["sRefreshToken=" + session.getAllSessionTokensDangerously().refreshToken])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            session = await Session.refreshSessionWithoutRequestResponse(
+                session.getAllSessionTokensDangerously().refreshToken
+            );
+
+            assert(session.getUserId() !== session.getRecipeUserId().getAsString());
+            assert(session.getUserId() === epUser.id);
+            assert(session.getRecipeUserId().getAsString() === epUser2.id);
+        });
+    });
 });
