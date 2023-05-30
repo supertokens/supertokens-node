@@ -68,7 +68,7 @@ export async function mockGetSession(requestBody: any, querier: any) {
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
         for (let i = 0; i < sessionHandles.length; i++) {
-            if (response.session.sessionHandle === sessionHandles[i].sessionHandle) {
+            if (response.session.handle === sessionHandles[i].sessionHandle) {
                 response.session.userId = sessionHandles[i].primaryUserId;
                 response.session.recipeUserId = sessionHandles[i].recipeUserId;
             }
