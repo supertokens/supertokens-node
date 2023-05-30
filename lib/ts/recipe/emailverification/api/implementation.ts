@@ -118,7 +118,10 @@ export default function getAPIInterface(): APIInterface {
                     // cause in this case we are checking for the session's user and not
                     // account to link user (which has nothing to do with the email verification claim)
 
-                    if (recipeUserIdForWhomToGenerateToken === session.getRecipeUserId()) {
+                    if (
+                        recipeUserIdForWhomToGenerateToken === session.getRecipeUserId() &&
+                        (await session.getClaimValue(EmailVerificationClaim)) !== false
+                    ) {
                         await session.setClaimValue(EmailVerificationClaim, false, userContext);
                     }
 

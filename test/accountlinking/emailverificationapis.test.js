@@ -530,4 +530,664 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(accessToken === undefined);
         });
     });
+
+    describe("isEmailVerifiedGET tests", function () {
+        it("calling isEmailVerifiedGET without AccountLinkingClaim gives false for currently logged in user if email is not verified, and does not update session", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === false);
+
+            let tokens = extractInfoFromResponse(response);
+            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
+            assert(tokens.accessTokenFromHeader === undefined);
+        });
+
+        it("calling isEmailVerifiedGET without AccountLinkingClaim gives true for currently logged in user if email is verified, and does not update session", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === true);
+
+            let tokens = extractInfoFromResponse(response);
+            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
+            assert(tokens.accessTokenFromHeader === undefined);
+        });
+
+        it("calling isEmailVerifiedGET without AccountLinkingClaim gives false for currently logged in user if email is not verified, and updates session if needed", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            await EmailVerification.unverifyEmail(epUser.loginMethods[0].recipeUserId);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === false);
+
+            let tokens = extractInfoFromResponse(response);
+            assert(tokens.accessToken !== undefined);
+            assert(tokens.accessTokenFromAny !== undefined);
+            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            let claimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
+            assert(claimValue === false);
+        });
+
+        it("calling isEmailVerifiedGET without AccountLinkingClaim gives true for currently logged in user if email is not verified, and updates session if needed", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === true);
+
+            let tokens = extractInfoFromResponse(response);
+            assert(tokens.accessToken !== undefined);
+            assert(tokens.accessTokenFromAny !== undefined);
+            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            let claimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
+            assert(claimValue === true);
+        });
+
+        it("calling isEmailVerifiedGET with AccountLinkingClaim gives false for to link user if email is not verified, and does not update session", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let t = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(t.token);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/link-account")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test2@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password123",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let tokens = extractInfoFromResponse(res);
+
+            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === false);
+
+            tokens = extractInfoFromResponse(response);
+            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
+            assert(tokens.accessTokenFromHeader === undefined);
+        });
+
+        it("calling isEmailVerifiedGET with AccountLinkingClaim gives true for to link user if email is verified, and updates session even if not linked", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let t = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(t.token);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/link-account")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test2@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password123",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let tokens = extractInfoFromResponse(res);
+
+            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+
+            // we unverify the session recipe's email just cause to make it mismatch from the
+            // to link account's email
+            await EmailVerification.unverifyEmail(epUser.loginMethods[0].recipeUserId);
+
+            let toLinkUserId = await session.getClaimValue(AccountLinking.AccountLinkingClaim);
+            let t2 = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(toLinkUserId)
+            );
+            await EmailVerification.verifyEmailUsingToken(t2.token, {
+                doNotLink: true,
+            });
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === true);
+
+            tokens = extractInfoFromResponse(response);
+            assert(tokens.accessToken !== undefined);
+            assert(tokens.accessTokenFromAny !== undefined);
+            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            let linkingClaimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
+            assert(linkingClaimValue === undefined);
+            let evClaimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
+            assert(evClaimValue === true); // even though we marked the email as unverified, this hasn't changed.
+        });
+
+        it("calling isEmailVerifiedGET with AccountLinkingClaim removes it if already linked and gives verification status of main session's recipe user id", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let t = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(t.token);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            const app = express();
+
+            app.use(middleware());
+
+            app.use(errorHandler());
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/link-account")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test2@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password123",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let tokens = extractInfoFromResponse(res);
+
+            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+
+            // we unverify the session recipe's email just cause to make it mismatch from the
+            // to link account's email
+            await EmailVerification.unverifyEmail(epUser.loginMethods[0].recipeUserId);
+
+            let toLinkUserId = await session.getClaimValue(AccountLinking.AccountLinkingClaim);
+            let t2 = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(toLinkUserId)
+            );
+            await EmailVerification.verifyEmailUsingToken(t2.token);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === false);
+
+            tokens = extractInfoFromResponse(response);
+            assert(tokens.accessToken !== undefined);
+            assert(tokens.accessTokenFromAny !== undefined);
+            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            let linkingClaimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
+            assert(linkingClaimValue === undefined);
+            let evClaimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
+            assert(evClaimValue === false);
+        });
+    });
 });
