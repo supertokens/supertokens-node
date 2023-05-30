@@ -7,21 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Added:
+## [14.1.1] - 2023-05-24
 
--   Account-Linking Recipe added
--   Functions `getUserForRecipeId`, `getUserByAccountInfo`, `listUsersByAccountInfo` and `getUser` added
+### Added
 
-### Changed:
+-   Adds additional debug logs whenever the SDK throws a `TRY_REFRESH_TOKEN` or `UNAUTHORISED` error to make debugging easier
 
--   Type of `User` object returned by get users function
--   Functions `deleteuser`, `getUsersNewestFirst` and `getUsersOldestFirst` are now based on account linking recipe
--   Function `deleteuser` takes a new parameter `removeAllLinkedAccounts` which will be `true` by default
--   Generate Password Reset Token API logic updated
+## [14.1.0] - 2023-05-23
 
-### Removed:
+### Changes
 
--   For EmailPassword recipe input, resetPasswordUsingTokenFeature user input removed
+-   Added a new `getRequestFromUserContext` function that can be used to read the original network request from the user context in overridden APIs and recipe functions
 
 ## [14.0.2] - 2023-05-11
 

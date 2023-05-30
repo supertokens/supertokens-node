@@ -93,6 +93,9 @@ export default function getAPIInterface(): APIInterface {
                     // email was opened on the original browser itself.
                     let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
                     if (user === undefined) {
+                        logDebugMessage(
+                            "verifyEmailPOST: Returning UNAUTHORISED because the user id provided is unknown"
+                        );
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
                             message: "Unknown User ID provided",
@@ -187,6 +190,9 @@ export default function getAPIInterface(): APIInterface {
 
                 let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
                 if (user === undefined) {
+                    logDebugMessage(
+                        "isEmailVerifiedGET: Returning UNAUTHORISED because the user id provided is unknown"
+                    );
                     throw new SessionError({
                         type: SessionError.UNAUTHORISED,
                         message: "Unknown User ID provided",
@@ -277,6 +283,9 @@ export default function getAPIInterface(): APIInterface {
                 // happen if the current session's user ID is not an auth user,
                 // or if it belong to a recipe user ID that got deleted. Either way,
                 // we logout the user.
+                logDebugMessage(
+                    "generateEmailVerifyTokenPOST: Returning UNAUTHORISED because the user id provided is unknown"
+                );
                 throw new SessionError({ type: SessionError.UNAUTHORISED, message: "Unknown User ID provided" });
             }
         },

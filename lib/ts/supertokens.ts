@@ -357,4 +357,24 @@ export default class SuperTokens {
         }
         throw err;
     };
+
+    getRequestFromUserContext = (userContext: any | undefined): BaseRequest | undefined => {
+        if (userContext === undefined) {
+            return undefined;
+        }
+
+        if (typeof userContext !== "object") {
+            return undefined;
+        }
+
+        if (userContext._default === undefined) {
+            return undefined;
+        }
+
+        if (userContext._default.request === undefined) {
+            return undefined;
+        }
+
+        return userContext._default.request;
+    };
 }

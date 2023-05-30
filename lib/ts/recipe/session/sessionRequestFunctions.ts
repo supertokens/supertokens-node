@@ -49,6 +49,7 @@ export async function getSessionFromRequest({
 
     // This token isn't handled by getToken to limit the scope of this legacy/migration code
     if (req.getCookieValue(LEGACY_ID_REFRESH_TOKEN_COOKIE_NAME) !== undefined) {
+        logDebugMessage("getSession: Throwing TRY_REFRESH_TOKEN because the request is using a legacy session");
         // This could create a spike on refresh calls during the update of the backend SDK
         throw new SessionError({
             message: "using legacy session, please call the refresh API",
