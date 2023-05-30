@@ -1590,7 +1590,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let sessionTokens = extractInfoFromResponse(res);
             let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
             assert(session.getUserId() === tpUser.user.id);
-            assert(session.getUserId() !== session.getRecipeUserId());
+            assert(session.getUserId() !== session.getRecipeUserId().getAsString());
             let didAsserts = false;
             for (let i = 0; i < epUser.loginMethods.length; i++) {
                 if (epUser.loginMethods[i].recipeId === "emailpassword") {
