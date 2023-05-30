@@ -58,6 +58,7 @@ export async function createNewSession(
         response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
     } else {
         response = await mockCreateNewSession(requestBody, helpers.querier);
+        response.session.recipeUserId = new RecipeUserId(response.session.recipeUserId);
     }
     delete response.status;
     return response;
