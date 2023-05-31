@@ -227,6 +227,21 @@ export default class Recipe extends RecipeModule {
         };
     };
 
+    getPrimaryUserIdForRecipeUser = async (recipeUserId: RecipeUserId, userContext: any) => {
+        // We extract this into its own function like this cause we want to make sure that
+        // this recipe does not get the email of the user ID from the getUser function.
+        // In fact, there is a test "email verification recipe uses getUser function only in getEmailForRecipeUserId"
+        // which makes sure that this function is only called in 2 places in this recipe:
+        // - this function
+        // - getEmailForRecipeUserId function (above)
+        // We want to isolate the result of calling this function as much as possible
+        // so that the consumer of the getUser function does not read the email
+        // from the primaryUser. Hence, this function only returns the string ID
+        // and nothing else from the primaryUser.
+        let primaryUser = await getUser(recipeUserId.getAsString(), userContext);
+        return primaryUser?.id;
+    };
+
     updateSessionIfRequiredPostEmailVerification = async (input: {
         req: BaseRequest;
         res: BaseResponse;
@@ -234,8 +249,11 @@ export default class Recipe extends RecipeModule {
         recipeUserIdWhoseEmailGotVerified: RecipeUserId;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined> => {
-        let primaryUser = await getUser(input.recipeUserIdWhoseEmailGotVerified.getAsString(), input.userContext);
-        if (primaryUser === undefined) {
+        let primaryUserId = await this.getPrimaryUserIdForRecipeUser(
+            input.recipeUserIdWhoseEmailGotVerified,
+            input.userContext
+        );
+        if (primaryUserId === undefined) {
             if (input.session === undefined) {
                 return undefined;
             }
@@ -270,7 +288,7 @@ export default class Recipe extends RecipeModule {
                 // one that just got verified and that we are NOT doing post login
                 // account linking. So this is only for (Case 1) and (Case 2)
 
-                if (input.session.getUserId() === primaryUser.id) {
+                if (input.session.getUserId() === primaryUserId) {
                     // if the session's primary user ID is equal to the
                     // primary user ID that the account was linked to, then
                     // this means that the new account became a primary user (Case 1)

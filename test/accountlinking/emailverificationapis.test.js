@@ -2039,5 +2039,64 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             let user = (await EmailVerification.getEmailVerificationTokenInfo(token.token)).user;
             assert(user.email === "random@example.com");
         });
+
+        it("calling getEmailForRecipeUserId with recipe user id that has many other linked recipe user ids returns the right email", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                        getEmailForRecipeUserId: async function (recipeUserId) {
+                            return {
+                                status: "UNKNOWN_USER_ID_ERROR",
+                            };
+                        },
+                    }),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = await EmailPassword.signUp("random@example.com", "password1234");
+            await AccountLinking.createPrimaryUser(epUser.user.loginMethods[0].recipeUserId);
+
+            let epUser2 = await EmailPassword.signUp("random2@example.com", "password1234");
+            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, epUser.user.id);
+
+            let pUser = await supertokens.getUser(epUser.user.id);
+            assert(pUser.isPrimaryUser === true);
+            assert(pUser.loginMethods.length === 2);
+            assert(pUser.id === epUser.user.id);
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser2.user.loginMethods[0].recipeUserId);
+
+            let user = (await EmailVerification.getEmailVerificationTokenInfo(token.token)).user;
+            assert(user.email === "random2@example.com");
+        });
+    });
+
+    it("email verification recipe uses getUser function only in getEmailForRecipeUserId", async function () {
+        // TODO:
     });
 });
