@@ -34,6 +34,8 @@ let EmailVerificationRecipe = require("../../lib/build/recipe/emailverification/
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
+let fs = require("fs");
+let path = require("path");
 
 describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailverificationapi.test.js]")}`, function () {
     beforeEach(async function () {
@@ -2097,6 +2099,338 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
     });
 
     it("email verification recipe uses getUser function only in getEmailForRecipeUserId", async function () {
-        // TODO:
+        // search through all files in directory for a string
+        let files = await new Promise((resolve, reject) => {
+            recursive("./lib/ts/recipe/emailverification", (err, files) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(files);
+            });
+        });
+        let getUserCount = 0;
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
+            let content = fs.readFileSync(file).toString();
+            let count = content.split("getUser(").length - 1;
+            getUserCount += count;
+        }
+        assert(getUserCount === 2);
+
+        let listUsersCount = 0;
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
+            let content = fs.readFileSync(file).toString();
+            let count = content.split("listUsersByAccountInfo(").length - 1;
+            listUsersCount += count;
+        }
+        assert(listUsersCount === 0);
+
+        // define recursive function used above
+        function recursive(dir, done) {
+            let results = [];
+            fs.readdir(dir, function (err, list) {
+                if (err) return done(err);
+                let pending = list.length;
+                if (!pending) return done(null, results);
+                list.forEach(function (file) {
+                    file = path.resolve(dir, file);
+                    fs.stat(file, function (err, stat) {
+                        if (stat && stat.isDirectory()) {
+                            recursive(file, function (err, res) {
+                                results = results.concat(res);
+                                if (!--pending) done(null, results);
+                            });
+                        } else {
+                            results.push(file);
+                            if (!--pending) done(null, results);
+                        }
+                    });
+                });
+            });
+        }
+    });
+
+    it("email and session flow work with random user ID", async function () {
+        await startST();
+        let token = undefined;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({
+                    mode: "REQUIRED",
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async function (input) {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
+                    },
+                    getEmailForRecipeUserId: async function (recipeUserId) {
+                        if (recipeUserId.getAsString() === "random") {
+                            return {
+                                status: "OK",
+                                email: "test@example.com",
+                            };
+                        } else {
+                            return {
+                                status: "UNKNOWN_USER_ID_ERROR",
+                            };
+                        }
+                    },
+                }),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let session = await Session.createNewSessionWithoutRequestResponse(supertokens.convertToRecipeUserId("random"));
+
+        // now we check if the email is verified or not
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === false);
+        }
+
+        // we generate an email verification token
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/email/verify/token")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(token !== undefined);
+        }
+
+        // now we verify the token
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/email/verify")
+                    .send({
+                        method: "token",
+                        token,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(JSON.parse(response.text).status === "OK");
+        }
+
+        // now we check if the email is verified or not
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === true);
+        }
+    });
+
+    it("email and session flow work with random user ID, with session during verify email", async function () {
+        await startST();
+        let token = undefined;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({
+                    mode: "REQUIRED",
+                    emailDelivery: {
+                        override: (oI) => {
+                            return {
+                                ...oI,
+                                sendEmail: async function (input) {
+                                    token = input.emailVerifyLink.split("?token=")[1].split("&rid=")[0];
+                                },
+                            };
+                        },
+                    },
+                    getEmailForRecipeUserId: async function (recipeUserId) {
+                        if (recipeUserId.getAsString() === "random") {
+                            return {
+                                status: "OK",
+                                email: "test@example.com",
+                            };
+                        } else {
+                            return {
+                                status: "UNKNOWN_USER_ID_ERROR",
+                            };
+                        }
+                    },
+                }),
+                Session.init(),
+                AccountLinking.init({
+                    shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                        return {
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        };
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let session = await Session.createNewSessionWithoutRequestResponse(supertokens.convertToRecipeUserId("random"));
+
+        // now we check if the email is verified or not
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === false);
+        }
+
+        // we generate an email verification token
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/email/verify/token")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(token !== undefined);
+        }
+
+        // now we verify the token
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .send({
+                        method: "token",
+                        token,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(JSON.parse(response.text).status === "OK");
+        }
+
+        // now we check if the email is verified or not
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/user/email/verify")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(response !== undefined);
+            assert(response.body.status === "OK");
+            assert(response.body.isVerified === true);
+        }
     });
 });

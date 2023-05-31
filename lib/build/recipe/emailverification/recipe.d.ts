@@ -42,7 +42,7 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc;
-    getPrimaryUserIdForRecipeUser: (recipeUserId: RecipeUserId, userContext: any) => Promise<string | undefined>;
+    getPrimaryUserIdForRecipeUser: (recipeUserId: RecipeUserId, userContext: any) => Promise<string>;
     updateSessionIfRequiredPostEmailVerification: (input: {
         req: BaseRequest;
         res: BaseResponse;

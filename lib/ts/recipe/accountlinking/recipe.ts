@@ -142,7 +142,10 @@ export default class Recipe extends RecipeModule {
     }): Promise<string> => {
         let recipeUser = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
         if (recipeUser === undefined) {
-            throw Error("Race condition error. It means that the input recipeUserId was deleted");
+            // This can come here if the user is using session + email verification
+            // recipe with a user ID that is not known to supertokens. In this case,
+            // we do not allow linking for such users.
+            return recipeUserId.getAsString();
         }
 
         if (recipeUser.isPrimaryUser) {
