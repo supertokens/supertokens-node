@@ -1414,6 +1414,32 @@ Supertokens.init({
     recipeList: [JWT.init()],
 });
 
+Supertokens.init({
+    recipeList: [],
+    appInfo: {
+        appName: "..",
+        apiDomain: "..",
+        origin: async (req, user_context) => {
+            const whitelist = ["https://example.com", "https://john.example.com"];
+            const originHeader = req.getHeaderValue("Origin");
+            if (originHeader === undefined) {
+                throw new SuperTokensError({
+                    type: "FORBIDDEN",
+                    message: "origin header not found",
+                });
+            }
+            if (whitelist.includes(originHeader)) {
+                return originHeader;
+            } else {
+                throw new SuperTokensError({
+                    type: "FORBIDDEN",
+                    message: "Request origin not allowed",
+                });
+            }
+        },
+    },
+});
+
 app.post("/create-anonymous-session", async (req, res) => {
     let token = await JWT.createJWT(
         {
