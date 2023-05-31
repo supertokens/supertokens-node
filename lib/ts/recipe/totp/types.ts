@@ -36,7 +36,7 @@ export type TypeNormalisedInput = {
     issuer: string;
     defaultSkew: number;
     defaultPeriod: number;
-    allowUnverifiedDevice: boolean;
+    allowUnverifiedDevices: boolean;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -109,7 +109,7 @@ export type APIInterface = {
         skew: number;
         options: APIOptions;
         userContext: any;
-    }) => Promise<{ status: "OK"; qr: string } | { status: "DEVICE_ALREADY_EXISTS_ERROR" }>;
+    }) => Promise<{ status: "OK"; qr: string } | { status: "DEVICE_ALREADY_EXISTS_ERROR" }>; // TODO: Consider seperately mentioning templates vars used in qr (issuerName, secret, provisioner, etc)
     verifyCodePOST?: (input: {
         session: SessionContainer;
         totp: string;

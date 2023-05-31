@@ -27,7 +27,7 @@ export default async function createDevice(apiImplementation: APIInterface, opti
 
     let session = await Session.getSession(options.req, options.res);
 
-    const { deviceName, period, skew } = await options.req.getJSONBody();
+    let { deviceName, period, skew } = await options.req.getJSONBody();
 
     if (deviceName === undefined) {
         throw new STError({
@@ -35,6 +35,9 @@ export default async function createDevice(apiImplementation: APIInterface, opti
             message: "Please provide deviceName",
         });
     }
+
+    period = period ?? options.config.defaultPeriod;
+    skew = skew ?? options.config.defaultSkew;
 
     const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.createDevicePOST({

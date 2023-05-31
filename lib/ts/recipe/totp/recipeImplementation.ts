@@ -56,11 +56,11 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         },
 
         verifyCode: async function (input) {
-            let allowUnverifiedDevice = config.allowUnverifiedDevice;
+            let allowUnverifiedDevices = config.allowUnverifiedDevices;
 
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath("/recipe/totp/verify"),
-                copyAndRemoveUserContext({ ...input, allowUnverifiedDevice })
+                copyAndRemoveUserContext({ ...input, allowUnverifiedDevices })
             );
 
             return response;

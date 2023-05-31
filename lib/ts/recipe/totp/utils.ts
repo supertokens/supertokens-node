@@ -31,7 +31,7 @@ export function validateAndNormaliseUserInput(_: Recipe, config: TypeInput): Typ
         issuer: config.issuer,
         defaultPeriod: config.defaultPeriod ?? 30,
         defaultSkew: config.defaultSkew ?? 1,
-        allowUnverifiedDevice: config.allowUnverifiedDevice ?? false,
+        allowUnverifiedDevices: config.allowUnverifiedDevice ?? false,
         override,
     };
 }
