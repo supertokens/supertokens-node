@@ -49,11 +49,7 @@ export declare type TypeInput = {
         userContext: any;
     }) => TokenTransferMethod | "any";
     errorHandlers?: ErrorHandlers;
-    antiCsrf?:
-        | "VIA_TOKEN"
-        | "VIA_CUSTOM_HEADER"
-        | "NONE"
-        | ((req: BaseRequest, userContext: any) => Promise<AntiCsrfType>);
+    antiCsrf?: AntiCsrfType | ((req: BaseRequest, userContext: any) => Promise<AntiCsrfType>);
     exposeAccessTokenToFrontendInCookieBasedAuth?: boolean;
     override?: {
         functions?: (
