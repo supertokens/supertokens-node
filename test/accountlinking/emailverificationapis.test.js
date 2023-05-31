@@ -1944,4 +1944,100 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(userInCallback.recipeUserId.getAsString() === epUser.loginMethods[0].recipeUserId.getAsString());
         });
     });
+
+    describe("getEmailForRecipeUserId tests", function () {
+        it("calling getEmailForRecipeUserId returns email provided from the config", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                        getEmailForRecipeUserId: async function (recipeUserId) {
+                            return {
+                                status: "OK",
+                                email: "random@example.com",
+                            };
+                        },
+                    }),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = await EmailPassword.signUp("random2@example.com", "password1234");
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.user.loginMethods[0].recipeUserId);
+
+            let user = (await EmailVerification.getEmailVerificationTokenInfo(token.token)).user;
+
+            assert(user.email === "random@example.com");
+        });
+
+        it("calling getEmailForRecipeUserId falls back on default method of getting email if UNKNOWN_USER_ID_ERROR is returned", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                        getEmailForRecipeUserId: async function (recipeUserId) {
+                            return {
+                                status: "UNKNOWN_USER_ID_ERROR",
+                            };
+                        },
+                    }),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = await EmailPassword.signUp("random@example.com", "password1234");
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.user.loginMethods[0].recipeUserId);
+
+            let user = (await EmailVerification.getEmailVerificationTokenInfo(token.token)).user;
+            assert(user.email === "random@example.com");
+        });
+    });
 });
