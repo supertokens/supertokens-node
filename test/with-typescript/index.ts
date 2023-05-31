@@ -1441,6 +1441,17 @@ Supertokens.init({
     },
 });
 
+Supertokens.init({
+    appInfo: {
+        appName: "..",
+        origin: "..",
+        apiDomain: async (req, userContext) => {
+            return "https://emaple.com";
+        },
+    },
+    recipeList: [],
+});
+
 app.post("/create-anonymous-session", async (req, res) => {
     let request = new ExpressRequest(req);
     let token = await JWT.createJWT(
