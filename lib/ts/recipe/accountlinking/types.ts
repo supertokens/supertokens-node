@@ -67,18 +67,6 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getRecipeUserIdsForPrimaryUserIds: (input: {
-        primaryUserIds: string[];
-        userContext: any;
-    }) => Promise<{
-        [primaryUserId: string]: RecipeUserId[]; // recipeUserIds. If input primary user ID doesn't exists, those ids will not be part of the output set.
-    }>;
-    getPrimaryUserIdsForRecipeUserIds: (input: {
-        recipeUserIds: RecipeUserId[];
-        userContext: any;
-    }) => Promise<{
-        [recipeUserId: string]: string | null; // if recipeUserId doesn't have a primaryUserId, then it will be mapped to `null`. If the input recipeUserId doesn't exist, then it won't be a part of the map
-    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
@@ -90,7 +78,7 @@ export type RecipeInterface = {
         users: User[];
         nextPaginationToken?: string;
     }>;
-    canCreatePrimaryUserId: (input: {
+    canCreatePrimaryUser: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<
@@ -163,19 +151,13 @@ export type RecipeInterface = {
               description: string;
           }
     >;
-    unlinkAccounts: (input: {
+    unlinkAccount: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              wasRecipeUserDeleted: boolean;
-          }
-        | {
-              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
-              description: string;
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        wasRecipeUserDeleted: boolean;
+    }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: { accountInfo: AccountInfo; userContext: any }) => Promise<User[]>;
     deleteUser: (input: {
@@ -201,6 +183,7 @@ export type RecipeInterface = {
     }) => Promise<
         | { status: "OK"; didInsertNewRow: boolean }
         | { status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"; primaryUserId: string }
+        | { status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR" }
     >;
 };
 

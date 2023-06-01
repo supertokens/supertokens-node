@@ -20,7 +20,7 @@ type Response =
 
 export const userGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const recipeUserId = options.req.getKeyValueFromQuery("recipeUserId"); // TODO: this needs to change to just be user ID
-    const recipeId = options.req.getKeyValueFromQuery("recipeId");
+    const recipeId = options.req.getKeyValueFromQuery("recipeId"); // TODO: remove recipeId
 
     if (recipeUserId === undefined) {
         throw new STError({

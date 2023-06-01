@@ -5,9 +5,6 @@ declare type Response =
           status: "OK";
       }
     | {
-          status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
-      }
-    | {
           status: "INVALID_PASSWORD_ERROR";
           error: string;
       };

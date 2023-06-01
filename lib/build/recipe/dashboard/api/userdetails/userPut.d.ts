@@ -20,7 +20,7 @@ declare type Response =
       }
     | {
           status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
-          reason: string;
+          error: string;
       };
 export declare const userPut: (_: APIInterface, options: APIOptions) => Promise<Response>;
 export {};

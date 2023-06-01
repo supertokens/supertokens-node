@@ -28,6 +28,7 @@ import SuperTokensError from "../../error";
 import SessionError from "../session/error";
 import supertokens from "../../supertokens";
 import RecipeUserId from "../../recipeUserId";
+import { ProcessState, PROCESS_STATE } from "../../processState";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -141,7 +142,10 @@ export default class Recipe extends RecipeModule {
     }): Promise<string> => {
         let recipeUser = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
         if (recipeUser === undefined) {
-            throw Error("Race condition error. It means that the input recipeUserId was deleted");
+            // This can come here if the user is using session + email verification
+            // recipe with a user ID that is not known to supertokens. In this case,
+            // we do not allow linking for such users.
+            return recipeUserId.getAsString();
         }
 
         if (recipeUser.isPrimaryUser) {
@@ -301,61 +305,13 @@ export default class Recipe extends RecipeModule {
         return users.find((u) => u.isPrimaryUser);
     };
 
-    transformUserInfoIntoVerifiedAndUnverifiedBucket = (user: User) => {
-        let identities: {
-            verified: {
-                emails: string[];
-                phoneNumbers: string[];
-            };
-            unverified: {
-                emails: string[];
-                phoneNumbers: string[];
-            };
-        } = {
-            verified: {
-                emails: [],
-                phoneNumbers: [],
-            },
-            unverified: {
-                emails: [],
-                phoneNumbers: [],
-            },
-        };
-        for (let i = 0; i < user.loginMethods.length; i++) {
-            let loginMethod = user.loginMethods[i];
-            if (loginMethod.email !== undefined) {
-                if (loginMethod.verified) {
-                    identities.verified.emails.push(loginMethod.email);
-                } else {
-                    identities.unverified.emails.push(loginMethod.email);
-                }
-            }
-            if (loginMethod.phoneNumber !== undefined) {
-                if (loginMethod.verified) {
-                    identities.verified.phoneNumbers.push(loginMethod.phoneNumber);
-                } else {
-                    identities.unverified.phoneNumbers.push(loginMethod.phoneNumber);
-                }
-            }
-        }
-
-        // we remove duplicate emails / phone numbers from the above arrays.
-        identities.verified.emails = Array.from(new Set(identities.verified.emails));
-        identities.unverified.emails = Array.from(new Set(identities.unverified.emails));
-        identities.verified.phoneNumbers = Array.from(new Set(identities.verified.phoneNumbers));
-        identities.unverified.phoneNumbers = Array.from(new Set(identities.unverified.phoneNumbers));
-        // Note that we do not need to filter out thirdParty info based on uniqueness, cause
-        // one user can only have one unique thirdPart login.
-        return identities;
-    };
-
     isSignUpAllowed = async ({
         newUser,
-        allowLinking,
+        isVerified,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
-        allowLinking: boolean;
+        isVerified: boolean;
         userContext: any;
     }): Promise<boolean> => {
         // we find other accounts based on the email / phone number.
@@ -371,54 +327,126 @@ export default class Recipe extends RecipeModule {
         // now we check if there exists some primary user with the same email / phone number
         // such that that info is not verified for that account. In this case, we do not allow
         // sign up cause we cannot link this new account to that primary account yet (since
-        // the email / phone is unverified), and we can't make this a primary user either (since
+        // the email / phone is unverified - this is to prevent an attack where an attacker
+        // might have access to the unverified account's primary user and we do not want to
+        // link this account to that one), and we can't make this a primary user either (since
         // then there would be two primary users with the same email / phone number - which is
         // not allowed..)
         let primaryUser = users.find((u) => u.isPrimaryUser);
         if (primaryUser === undefined) {
-            // since there is no primary user, we allow the sign up..
-            return true;
-        }
+            // since there is no primary user, it means that this user, if signed up, will end up
+            // being the primary user. In this case, we check if any of the non primary user's
+            // are in an unverified state having the same account info, and if they are, then we
+            // disallow this sign up, cause if the user becomes the primary user, and then the other
+            // account which is unverified sends an email verification email, the legit user might
+            // click on the link and that account (which was unverified and could have been controlled
+            // by an attacker), will end up getting linked to this account.
 
-        let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
-            newUser,
-            primaryUser,
-            undefined,
-            userContext
-        );
-        if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
-            return true;
-        }
-        if (!shouldDoAccountLinking.shouldRequireVerification) {
-            // the dev says they do not care about verification before account linking
-            // so we can link this new user to the primary user post recipe user creation
-            // even if that user's email / phone number is not verified.
-            return true;
-        }
+            let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                newUser,
+                undefined,
+                undefined,
+                userContext
+            );
+            if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                return true;
+            }
+            if (!shouldDoAccountLinking.shouldRequireVerification) {
+                // the dev says they do not care about verification before account linking
+                // so we are OK with the risk mentioned above.
+                return true;
+            }
 
-        if (!allowLinking) {
-            // this will exist early with a false here cause it means that
-            // if we come here, the newUser will be linked to the primary user.
+            let shouldAllow = true;
+            for (let i = 0; i < users.length; i++) {
+                let currUser = users[i]; // all these are not primary users, so we can use
+                // loginMethods[0] to get the account info.
+                let thisIterationIsVerified = false;
+                if (newUser.email !== undefined) {
+                    if (currUser.loginMethods[0].hasSameEmailAs(newUser.email) && currUser.loginMethods[0].verified) {
+                        thisIterationIsVerified = true;
+                    }
+                }
 
-            // We also do this AFTER calling shouldDoAutomaticAccountLinking cause
-            // in case email verification is not required, then linking should not be
-            // an issue anyway.
+                if (newUser.phoneNumber !== undefined) {
+                    if (
+                        currUser.loginMethods[0].hasSamePhoneNumberAs(newUser.phoneNumber) &&
+                        currUser.loginMethods[0].verified
+                    ) {
+                        thisIterationIsVerified = true;
+                    }
+                }
+                if (!thisIterationIsVerified) {
+                    // even if one of the users is not verified, we do not allow sign up.
+                    // sure allows attackers to create email password accounts with an email
+                    // to block actual users from signing up, but that's ok, since those
+                    // users will just see an email already exists error and then will try another
+                    // login method. They can also still just go through the password reset flow
+                    // and then gain access to their email password account (which can then be verified).
+                    shouldAllow = false;
+                    break;
+                }
+            }
+            ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS);
+            return shouldAllow;
+        } else {
+            let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                newUser,
+                primaryUser,
+                undefined,
+                userContext
+            );
+            if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                return true;
+            }
+            if (!shouldDoAccountLinking.shouldRequireVerification) {
+                // the dev says they do not care about verification before account linking
+                // so we can link this new user to the primary user post recipe user creation
+                // even if that user's email / phone number is not verified.
+                return true;
+            }
+
+            if (!isVerified) {
+                // this will exist early with a false here cause it means that
+                // if we come here, the newUser will be linked to the primary user post email
+                // verification. Whilst this seems OK, there is a risk that the actual user might
+                // click on the email verification link thinking that they it's for their existing
+                // (legit) account, and then the attacker (who signed up with email password maybe)
+                // will have access to the account - cause email verification will cause account linking.
+
+                // We do this AFTER calling shouldDoAutomaticAccountLinking cause
+                // in case email verification is not required, then linking should not be
+                // an issue anyway.
+                return false;
+            }
+
+            // we check for even if one is verified as opposed to all being unverified cause
+            // even if one is verified, we know that the email / phone number is owned by the
+            // primary account holder.
+
+            // we only check this for primary user and not other users in the users array cause
+            // they are all recipe users. The reason why we ignore them is cause, in normal
+            // situations, they should not exist cause:
+            // - if primary user was created first, then the recipe user creation would not
+            // be allowed via unverified means of login method (like email password).
+            // - if recipe user was created first, and is unverified, then the primary user
+            // sign up should not be possible either.
+            for (let i = 0; i < primaryUser.loginMethods.length; i++) {
+                let lM = primaryUser.loginMethods[i];
+                if (lM.email !== undefined) {
+                    if (lM.hasSameEmailAs(newUser.email) && lM.verified) {
+                        return true;
+                    }
+                }
+
+                if (lM.phoneNumber !== undefined) {
+                    if (lM.hasSamePhoneNumberAs(newUser.phoneNumber) && lM.verified) {
+                        return true;
+                    }
+                }
+            }
             return false;
         }
-
-        let identitiesForPrimaryUser = this.transformUserInfoIntoVerifiedAndUnverifiedBucket(primaryUser);
-
-        // we check the verified array and not the
-        // unverfied array cause we allow signing up
-        // even if one of the recipe accounts has the
-        // email / phone numbers as verified for the primary account.
-        if (newUser.email !== undefined) {
-            return identitiesForPrimaryUser.verified.emails.includes(newUser.email);
-        }
-        if (newUser.phoneNumber !== undefined) {
-            return identitiesForPrimaryUser.verified.phoneNumbers.includes(newUser.phoneNumber);
-        }
-        return false;
     };
 
     linkAccountWithUserFromSession = async <T>({
@@ -476,32 +504,13 @@ export default class Recipe extends RecipeModule {
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 description:
-                    "We cannot link accounts since the session belongs to a user ID that does not exist in SuperTokens.",
+                    "Accounts cannot be linked because the session belongs to a user ID that does not exist in SuperTokens.",
             };
         }
 
         if (!existingUser.isPrimaryUser) {
-            // we will try and make the existing user a primary user. But before that, we must ask the
-            // dev if they want to allow for that.
-
-            // we ask the dev if the new user should be a candidate for account linking.
-            const shouldDoAccountLinkingOfNewUser = await this.config.shouldDoAutomaticAccountLinking(
-                newUser,
-                undefined,
-                session,
-                userContext
-            );
-
-            if (!shouldDoAccountLinkingOfNewUser.shouldAutomaticallyLink) {
-                return {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "Account linking not allowed by the developer for new user.",
-                };
-            }
-            // we do not care about the new user's verification status here cause we are in the process of making the session user a primary user first.
-
-            // Now we ask the user if the existing login method can be linked to anything
-            // (since it's not a primary user)
+            // we will try and make the existing user a primary user. But before that, we must ask
+            // the dev if they want to allow for that.
 
             // here we can use the index of 0 cause the existingUser is not a primary user,
             // therefore it will only have one login method in the loginMethods' array.
@@ -549,7 +558,7 @@ export default class Recipe extends RecipeModule {
                             reason: { message: "wrong value", expectedValue: true, actualValue: false },
                         },
                     ],
-                    message: "invalid claim",
+                    message: "INVALID_CLAIMS",
                 });
             }
 
@@ -604,7 +613,7 @@ export default class Recipe extends RecipeModule {
         if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "Account linking not allowed by the developer for new user.",
+                description: "Account linking not allowed by the developer for new account.",
             };
         }
 
@@ -641,7 +650,7 @@ export default class Recipe extends RecipeModule {
             if (otherPrimaryUser !== undefined && otherPrimaryUser.id !== existingUser.id) {
                 return {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "Not allowed because it will lead to two primary user id having same account info",
+                    description: "Not allowed because it will lead to two primary user id having same account info.",
                 };
             }
 
@@ -670,6 +679,11 @@ export default class Recipe extends RecipeModule {
         // a primary user or not, and if it is, then it means that our newUser
         // is already linked so we can return early.
 
+        // we do this even though it will be checked later during linkAccounts function
+        // call cause we do not want to do the email verification check that's below this block,
+        // in case this block errors out so that we do not make the user go through the email
+        // verification flow unnecessarily.
+
         if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.isPrimaryUser) {
             if (userObjThatHasSameAccountInfoAndRecipeIdAsNewUser.id === existingUser.id) {
                 // this means that the accounts we want to link are already linked.
@@ -680,7 +694,7 @@ export default class Recipe extends RecipeModule {
             } else {
                 return {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "New user is already linked to another account",
+                    description: "New user is already linked to another account or is a primary user.",
                 };
             }
         }
@@ -723,15 +737,18 @@ export default class Recipe extends RecipeModule {
             // so we can't link it to the existing user.
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "New user is already linked to another account",
+                description: "New user is already linked to another account or is a primary user.",
             };
         } else {
             // status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
             // this means that the account info of the newUser already belongs to some other primary user ID.
             // So we cannot link it to existing user.
+            ProcessState.getInstance().addState(
+                PROCESS_STATE.ACCOUNT_LINKING_NOT_ALLOWED_ERROR_END_OF_linkAccountWithUserFromSession_FUNCTION
+            );
             return {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "Not allowed because it will lead to two primary user id having same account info",
+                description: "Not allowed because it will lead to two primary user id having same account info.",
             };
         }
     };

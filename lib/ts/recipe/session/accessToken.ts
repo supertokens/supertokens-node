@@ -18,6 +18,7 @@ import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import RecipeUserId from "../../recipeUserId";
+import { mockAccessTokenPayload } from "./mockCore";
 import { logDebugMessage } from "../../logger";
 
 export async function getInfoFromAccessToken(
@@ -40,6 +41,9 @@ export async function getInfoFromAccessToken(
         let payload = undefined;
         try {
             payload = (await jose.jwtVerify(jwtInfo.rawTokenString, jwks)).payload;
+            if (process.env.MOCK === "true") {
+                payload = mockAccessTokenPayload(payload);
+            }
         } catch (error) {
             // We only want to opt-into this for V2 access tokens
             if (jwtInfo.version === 2 && error?.code === "ERR_JWKS_MULTIPLE_MATCHING_KEYS") {
@@ -116,7 +120,21 @@ export async function getInfoFromAccessToken(
 }
 
 export function validateAccessTokenStructure(payload: any, version: number) {
-    if (version >= 3) {
+    if (version >= 4) {
+        if (
+            typeof payload.sub !== "string" ||
+            typeof payload.exp !== "number" ||
+            typeof payload.iat !== "number" ||
+            typeof payload.sessionHandle !== "string" ||
+            typeof payload.refreshTokenHash1 !== "string" ||
+            typeof payload.recipeUserId !== "string"
+        ) {
+            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
+            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            // it would come here if we change the structure of the JWT.
+            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        }
+    } else if (version >= 3) {
         if (
             typeof payload.sub !== "string" ||
             typeof payload.exp !== "number" ||

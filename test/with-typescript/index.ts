@@ -1264,6 +1264,7 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
+        recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
 });
 ThirdPartyEmailPassword.sendEmail({
@@ -1272,6 +1273,7 @@ ThirdPartyEmailPassword.sendEmail({
     user: {
         email: "",
         id: "",
+        recipeUserId: Supertokens.convertToRecipeUserId(""),
     },
     userContext: {},
 });

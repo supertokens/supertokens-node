@@ -136,10 +136,7 @@ export default class Wrapper {
               recipeUserId: RecipeUserId;
           }
         | {
-              status: "CUSTOM_RESPONSE";
-              resp: {
-                  status: "WRONG_CREDENTIALS_ERROR";
-              };
+              status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
 }

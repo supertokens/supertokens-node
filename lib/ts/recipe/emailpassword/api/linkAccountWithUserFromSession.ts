@@ -27,11 +27,13 @@ export default async function linkAccountToExistingAccountAPI(
         return false;
     }
 
+    // We do sign in form field validation here, but if a new recipe user is being
+    // created, then we do sign up form field validation in the api implementation.
     let formFields: {
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
-        options.config.signUpFeature.formFields,
+        options.config.signInFeature.formFields,
         (await options.req.getJSONBody()).formFields
     );
 

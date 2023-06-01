@@ -31,6 +31,7 @@ import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
+import linkAccountWithUserFromSessionAPI from "./api/linkAccountWithUserFromSession";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import RecipeImplementation from "./recipeImplementation";
@@ -188,6 +189,8 @@ export default class Recipe extends RecipeModule {
             return await passwordResetAPI(this.apiImpl, options);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this.apiImpl, options);
+        } else if (id === LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API) {
+            return await linkAccountWithUserFromSessionAPI(this.apiImpl, options);
         }
         return false;
     };

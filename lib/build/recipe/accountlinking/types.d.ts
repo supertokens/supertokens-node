@@ -50,18 +50,6 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getRecipeUserIdsForPrimaryUserIds: (input: {
-        primaryUserIds: string[];
-        userContext: any;
-    }) => Promise<{
-        [primaryUserId: string]: RecipeUserId[];
-    }>;
-    getPrimaryUserIdsForRecipeUserIds: (input: {
-        recipeUserIds: RecipeUserId[];
-        userContext: any;
-    }) => Promise<{
-        [recipeUserId: string]: string | null;
-    }>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
@@ -75,7 +63,7 @@ export declare type RecipeInterface = {
         users: User[];
         nextPaginationToken?: string;
     }>;
-    canCreatePrimaryUserId: (input: {
+    canCreatePrimaryUser: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<
@@ -148,19 +136,13 @@ export declare type RecipeInterface = {
               description: string;
           }
     >;
-    unlinkAccounts: (input: {
+    unlinkAccount: (input: {
         recipeUserId: RecipeUserId;
         userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              wasRecipeUserDeleted: boolean;
-          }
-        | {
-              status: "PRIMARY_USER_NOT_FOUND_ERROR" | "RECIPE_USER_NOT_FOUND_ERROR";
-              description: string;
-          }
-    >;
+    }) => Promise<{
+        status: "OK";
+        wasRecipeUserDeleted: boolean;
+    }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: { accountInfo: AccountInfo; userContext: any }) => Promise<User[]>;
     deleteUser: (input: {
@@ -186,6 +168,9 @@ export declare type RecipeInterface = {
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
+          }
+        | {
+              status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
           }
     >;
 };

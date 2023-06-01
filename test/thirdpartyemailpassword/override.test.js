@@ -145,7 +145,6 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
-        signUpResponse.body.user.normalizedInputMap = {}; // we do this cause the sign up request will have the map for user@test.com, but the user object won't since it comes from the getUser override
         assert.deepStrictEqual(signUpResponse.body.user, user);
 
         user = undefined;
@@ -177,7 +176,6 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         );
 
         assert.notStrictEqual(user, undefined);
-        signInResponse.user.normalizedInputMap = {}; // we do this cause the sign up request will have the map for user@test.com, but the user object won't since it comes from the getUser override
         assert.deepStrictEqual(signInResponse.user, user);
 
         user = undefined;

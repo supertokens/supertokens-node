@@ -41,6 +41,7 @@ export const protectedProps = [
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
     "antiCsrfToken",
+    "recipeUserId",
 ];
 
 export default function getRecipeInterface(
