@@ -23,7 +23,6 @@ export type TypeInput = {
     issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
-    allowUnverifiedDevice?: boolean;
     getEmailOrPhoneForRecipeUserId?: GetEmailOrPhoneForRecipeUserIdFunc;
     override?: {
         functions?: (
@@ -38,7 +37,6 @@ export type TypeNormalisedInput = {
     issuer: string;
     defaultSkew: number;
     defaultPeriod: number;
-    allowUnverifiedDevices: boolean;
     getEmailOrPhoneForRecipeUserId?: GetEmailOrPhoneForRecipeUserIdFunc;
     override: {
         functions: (
