@@ -164,6 +164,9 @@ export default function getAPIImplementation(): APIInterface {
                         await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
                             type: "EMAIL_VERIFICATION",
                             user: {
+                                // we send the session's user ID here cause
+                                // we will be linking this user ID and the result.recipeUserId
+                                // eventually.
                                 id: session.getUserId(),
                                 recipeUserId: result.recipeUserId,
                                 email,

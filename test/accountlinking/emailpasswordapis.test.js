@@ -435,7 +435,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(pUser.loginMethods.length === 1);
         });
 
-        it("calling linkAccountWithUserFromSessionPOST fails to link new account when email verification is required", async function () {
+        it("calling linkAccountWithUserFromSessionPOST fails with a 500 if email verification is required and new account is not verified, and email verification recipe is not initialized", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -449,6 +449,90 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+            app.use((err, req, res, next) => {
+                res.status(500).send(err.message);
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/link-account")
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test2@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password123",
+                            },
+                        ],
+                    })
+                    .expect(500)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert(
+                res.text ===
+                    "Developer configuration error - email verification is required, but the email verification recipe has not been initialized."
+            );
+        });
+
+        it("calling linkAccountWithUserFromSessionPOST fails to link new account when email verification is required", async function () {
+            await startST();
+            let userInCallback = undefined;
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                        emailDelivery: {
+                            override: (oI) => {
+                                return {
+                                    ...oI,
+                                    sendEmail: async function (input) {
+                                        userInCallback = input.user;
+                                    },
+                                };
+                            },
+                        },
+                    }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async () => {
                             return {
@@ -499,14 +583,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
 
             tokens = extractInfoFromResponse(res);
-            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            let claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            let newUser = await supertokens.getUser(claimValue);
-            assert(newUser.emails[0] === "test2@example.com");
-            assert(newUser.emails.length === 1);
+            assert(tokens.accessTokenFromAny === undefined);
+            assert(userInCallback.id === epUser.id);
 
-            let pUser = await supertokens.getUser(epUser.id);
-            assert(pUser.loginMethods.length === 1);
+            let newEpUser = await supertokens.listUsersByAccountInfo({
+                email: "test2@example.com",
+            });
+            assert(userInCallback.recipeUserId.getAsString() === newEpUser[0].id);
+            assert(userInCallback.email === "test2@example.com");
         });
 
         it("calling linkAccountWithUserFromSessionPOST fails to link new account when current user is not a primary user and its email is not verified", async function () {
