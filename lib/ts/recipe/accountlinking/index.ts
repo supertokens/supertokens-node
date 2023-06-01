@@ -17,11 +17,9 @@ import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
-import { AccountLinkingClaim } from "./accountLinkingClaim";
+
 export default class Wrapper {
     static init = Recipe.init;
-
-    static AccountLinkingClaim = AccountLinkingClaim;
 
     /**
      * This is a function which is a combination of createPrimaryUser and
@@ -183,5 +181,3 @@ export const linkAccountsWithUserFromSession = Wrapper.linkAccountsWithUserFromS
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 
 export type { RecipeInterface };
-
-export { AccountLinkingClaim } from "./accountLinkingClaim";
