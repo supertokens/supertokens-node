@@ -25,10 +25,10 @@ const {
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
-let { AccountLinkingClaim } = require("../../recipe/accountlinking");
 let AccountLinking = require("../../recipe/accountlinking").default;
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
+let EmailVerification = require("../../recipe/emailverification");
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -1356,6 +1356,53 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             assert(userIdInCallback === epUser.id);
             assert(recipeUserIdInCallback.getAsString() === epUser2.loginMethods[0].recipeUserId.getAsString());
+        });
+    });
+
+    describe("validateClaimsForSessionHandle tests", function () {
+        it("validateClaimsForSessionHandle uses the correct recipeUserId and userId", async function () {
+            await startST();
+
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "REQUIRED",
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+
+            let resp = await Session.validateClaimsForSessionHandle(session.getHandle());
+
+            assert(resp.status === "OK");
+            assert(resp.invalidClaims.length === 1);
+            assert(resp.invalidClaims[0].id === "st-ev");
+            assert.deepStrictEqual(resp.invalidClaims[0].reason, {
+                message: "wrong value",
+                expectedValue: true,
+                actualValue: false,
+            });
         });
     });
 });
