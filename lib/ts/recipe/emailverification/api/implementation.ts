@@ -7,7 +7,6 @@ import SessionError from "../../session/error";
 import { getEmailVerifyLink } from "../utils";
 import { AccountLinkingClaim } from "../../accountlinking/accountLinkingClaim";
 import { SessionContainerInterface } from "../../session/types";
-import { getUser } from "../../..";
 import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIInterface(): APIInterface {
@@ -91,16 +90,6 @@ export default function getAPIInterface(): APIInterface {
                     // whilst the first browser is polling this API - in this case,
                     // we want to have the same effect to the session as if the
                     // email was opened on the original browser itself.
-                    let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
-                    if (user === undefined) {
-                        logDebugMessage(
-                            "verifyEmailPOST: Returning UNAUTHORISED because the user id provided is unknown"
-                        );
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Unknown User ID provided",
-                        });
-                    }
                     let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                         {
                             req: options.req,
@@ -187,18 +176,6 @@ export default function getAPIInterface(): APIInterface {
                 );
                 // this can happen if the user ID was found, but it has no email. In this
                 // case, we treat it as a success case.
-
-                let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
-                if (user === undefined) {
-                    logDebugMessage(
-                        "isEmailVerifiedGET: Returning UNAUTHORISED because the user id provided is unknown"
-                    );
-                    throw new SessionError({
-                        type: SessionError.UNAUTHORISED,
-                        message: "Unknown User ID provided",
-                    });
-                }
-
                 let newSession = await EmailVerificationRecipe.getInstanceOrThrowError().updateSessionIfRequiredPostEmailVerification(
                     {
                         req: options.req,
@@ -220,13 +197,6 @@ export default function getAPIInterface(): APIInterface {
                 });
 
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-                    let user = await getUser(recipeUserIdForWhomToGenerateToken.getAsString(), userContext);
-                    if (user === undefined) {
-                        throw new SessionError({
-                            type: SessionError.UNAUTHORISED,
-                            message: "Unknown User ID provided",
-                        });
-                    }
                     logDebugMessage(
                         `Email verification email not sent to user ${recipeUserIdForWhomToGenerateToken} because it is already verified.`
                     );
