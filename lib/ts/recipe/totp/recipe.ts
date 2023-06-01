@@ -27,7 +27,13 @@ import {
     REMOVE_DEVICE_API,
     IS_TOTP_ENABLED_API,
 } from "./constants";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    GetEmailOrPhoneForRecipeUserIdFunc,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STError from "./error";
 import { Querier } from "../../querier";
@@ -39,6 +45,7 @@ import removeDeviceAPI from "./api/removeDevice";
 import listDevicesAPI from "./api/listDevices";
 import { sendNon200ResponseWithMessage } from "../../utils";
 import TotpError from "./error";
+import { getUser } from "../..";
 
 export default class TotpRecipe extends RecipeModule {
     private static instance: TotpRecipe | undefined = undefined;
@@ -76,10 +83,10 @@ export default class TotpRecipe extends RecipeModule {
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init or totp.init function?");
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (TotpRecipe.instance === undefined) {
-                TotpRecipe.instance = new TotpRecipe(TotpRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                TotpRecipe.instance = new TotpRecipe(TotpRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config ?? {});
                 return TotpRecipe.instance;
             } else {
                 throw new Error("TOTP recipe has already been initialised. Please check your code for bugs.");
@@ -183,5 +190,54 @@ export default class TotpRecipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === TotpRecipe.RECIPE_ID;
+    };
+
+    getEmailOrPhoneForRecipeUserId: GetEmailOrPhoneForRecipeUserIdFunc = async (recipeUserId, userContext) => {
+        if (this.config.getEmailOrPhoneForRecipeUserId !== undefined) {
+            const userRes = await this.config.getEmailOrPhoneForRecipeUserId(recipeUserId, userContext);
+            if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
+                return userRes;
+            }
+        }
+
+        let user = await getUser(recipeUserId.getAsString(), userContext);
+
+        if (user === undefined) {
+            return {
+                status: "UNKNOWN_USER_ID_ERROR",
+            };
+        }
+
+        const primaryLoginMethod = user.loginMethods.find((method) => method.recipeUserId.getAsString() === user!.id);
+
+        if (primaryLoginMethod === undefined) {
+            return {
+                status: "UNKNOWN_USER_ID_ERROR",
+            };
+        }
+
+        if (primaryLoginMethod.email !== undefined) {
+            return {
+                info: primaryLoginMethod.email,
+                status: "OK",
+            };
+        } else if (primaryLoginMethod.phoneNumber !== undefined) {
+            return {
+                info: primaryLoginMethod.phoneNumber,
+                status: "OK",
+            };
+        } else {
+            // fallback on trying the first email or phone number
+            if (user.emails.length > 0) {
+                return { info: user.emails[0], status: "OK" };
+            }
+            if (user.phoneNumbers.length > 0) {
+                return { info: user.phoneNumbers[0], status: "OK" };
+            }
+
+            return {
+                status: "EMAIL_AND_PHONE_DO_NOT_EXIST_ERROR",
+            };
+        }
     };
 }

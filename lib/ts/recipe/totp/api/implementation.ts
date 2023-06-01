@@ -15,12 +15,21 @@
 
 import { APIInterface } from "../types";
 import STError from "../error";
+import TotpRecipe from "../recipe";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         createDevicePOST: async function (input) {
             const { session, options, ...rest } = input;
-            const args = { ...rest, userId: session.getUserId() };
+            let userIdentifierInfo = undefined;
+            const emailOrPhoneInfo = await TotpRecipe.getInstanceOrThrowError().getEmailOrPhoneForRecipeUserId(
+                session.getRecipeUserId(),
+                input.userContext
+            );
+            if (emailOrPhoneInfo.status === "OK") {
+                userIdentifierInfo = emailOrPhoneInfo.info;
+            }
+            const args = { ...rest, userId: session.getUserId(), userIdentifierInfo };
             let response = await input.options.recipeImplementation.createDevice(args);
 
             return response;

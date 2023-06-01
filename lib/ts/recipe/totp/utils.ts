@@ -33,6 +33,7 @@ export function validateAndNormaliseUserInput(
         defaultPeriod: config.defaultPeriod ?? 30,
         defaultSkew: config.defaultSkew ?? 1,
         allowUnverifiedDevices: config.allowUnverifiedDevice ?? false,
+        getEmailOrPhoneForRecipeUserId: config.getEmailOrPhoneForRecipeUserId,
         override,
     };
 }

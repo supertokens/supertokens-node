@@ -37,14 +37,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             }
 
             let issuerName = config.issuer;
-            let userIdentifier = undefined;
+            let userIdentifier = input.userIdentifierInfo;
             return {
                 status: "OK",
                 issuerName,
                 userIdentifier,
                 secret: response.secret,
                 qrCode: encodeURI(
-                    `otpauth://totp/${issuerName}:${userIdentifier}?secret=${response.secret}&issuer=${issuerName}`
+                    `otpauth://totp/${issuerName}${userIdentifier ? ":" + userIdentifier : ""}` +
+                        `?secret=${response.secret}&issuer=${issuerName}`
                 ),
             };
         },

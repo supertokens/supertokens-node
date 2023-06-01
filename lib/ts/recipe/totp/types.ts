@@ -15,6 +15,7 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
+import RecipeUserId from "../../recipeUserId";
 import { NormalisedAppinfo } from "../../types";
 import type { SessionContainer } from "../session";
 
@@ -23,6 +24,7 @@ export type TypeInput = {
     defaultSkew?: number;
     defaultPeriod?: number;
     allowUnverifiedDevice?: boolean;
+    getEmailOrPhoneForRecipeUserId?: GetEmailOrPhoneForRecipeUserIdFunc;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -37,6 +39,7 @@ export type TypeNormalisedInput = {
     defaultSkew: number;
     defaultPeriod: number;
     allowUnverifiedDevices: boolean;
+    getEmailOrPhoneForRecipeUserId?: GetEmailOrPhoneForRecipeUserIdFunc;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -52,6 +55,7 @@ export type RecipeInterface = {
         deviceName: string;
         skew?: number;
         period?: number;
+        userIdentifierInfo?: string;
         userContext: any;
     }) => Promise<
         | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCode: string }
@@ -153,3 +157,14 @@ export type APIInterface = {
         userContext: any;
     }) => Promise<{ status: "OK"; isEnabled: boolean }>;
 };
+
+export type GetEmailOrPhoneForRecipeUserIdFunc = (
+    recipeUserId: RecipeUserId,
+    userContext: any
+) => Promise<
+    | {
+          status: "OK";
+          info: string;
+      }
+    | { status: "EMAIL_AND_PHONE_DO_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
+>;
