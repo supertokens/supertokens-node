@@ -133,9 +133,14 @@ export async function mockRevokeAllSessionsForUser(input: {
     revokeSessionsForLinkedAccounts: boolean;
     querier: Querier;
 }): Promise<string[]> {
-    let usersToRevokeSessionFor = [input.userId];
-    let sessionHandlesRevoked: string[] = [];
+    let usersToRevokeSessionFor = [];
     if (input.revokeSessionsForLinkedAccounts) {
+        // we import this way cause of cyclic dependency issues
+        let { mockGetUser } = require("../accountlinking/mockCore");
+        let user = await mockGetUser({ userId: input.userId });
+        if (user !== undefined) {
+            input.userId = user.id;
+        }
         for (let i = 0; i < sessionHandles.length; i++) {
             if (input.revokeSessionsForLinkedAccounts) {
                 if (
@@ -146,7 +151,10 @@ export async function mockRevokeAllSessionsForUser(input: {
                 }
             }
         }
+    } else {
+        usersToRevokeSessionFor = [input.userId];
     }
+    let sessionHandlesRevoked: string[] = [];
     for (let i = 0; i < usersToRevokeSessionFor.length; i++) {
         let response = await input.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
             userId: usersToRevokeSessionFor[i],
