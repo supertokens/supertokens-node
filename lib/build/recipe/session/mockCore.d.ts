@@ -19,3 +19,8 @@ export declare function mockRevokeAllSessionsForUser(input: {
     revokeSessionsForLinkedAccounts: boolean;
     querier: Querier;
 }): Promise<string[]>;
+export declare function mockUpdateAccessTokenPayload(
+    sessionHandle: string,
+    newAccessTokenPayload: any,
+    querier: Querier
+): Promise<boolean>;

@@ -32,6 +32,7 @@ let EmailPassword = require("../../recipe/emailpassword");
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
+let { protectedProps } = require("../../lib/build/recipe/session/recipeImplementation");
 
 describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1081,6 +1082,137 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             assert(result.length === 1);
 
             assert(result[0] === epuser1session.getHandle());
+        });
+    });
+
+    describe("protected props tests", function () {
+        it("mergeIntoAccessTokenPayload should not allow recipeUserID since it's a protected claim", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                supertokens.convertToRecipeUserId("random")
+            );
+
+            try {
+                await session.mergeIntoAccessTokenPayload({
+                    sessionHandle: "new string",
+                });
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
+                );
+            }
+
+            try {
+                await session.mergeIntoAccessTokenPayload({
+                    recipeUserId: "new string",
+                });
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
+                );
+            }
+        });
+
+        it("mergeIntoAccessTokenPayload with session handle not allow recipeUserID since it's a protected claim", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                supertokens.convertToRecipeUserId("random")
+            );
+
+            try {
+                await Session.mergeIntoAccessTokenPayload(session.getHandle(), {
+                    sessionHandle: "new string",
+                });
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "SuperTokens core threw an error for a PUT request to path: '/recipe/jwt/data' with status code: 400 and message: The user payload contains protected field\n"
+                );
+            }
+
+            try {
+                await Session.mergeIntoAccessTokenPayload(session.getHandle(), {
+                    recipeUserId: "new string",
+                });
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "SuperTokens core threw an error for a PUT request to path: '/recipe/jwt/data' with status code: 400 and message: The user payload contains protected field\n"
+                );
+            }
+        });
+
+        it("protected props contains recipeUserId", async function () {
+            assert(protectedProps.indexOf("recipeUserId") !== -1);
+        });
+
+        it("createNewSession should not allow recipeUserID since it's a protected claim", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            try {
+                await Session.createNewSessionWithoutRequestResponse(supertokens.convertToRecipeUserId("random"), {
+                    sessionHandle: "new string",
+                });
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "SuperTokens core threw an error for a POST request to path: '/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
+                );
+            }
+
+            try {
+                await Session.createNewSessionWithoutRequestResponse(supertokens.convertToRecipeUserId("random"), {
+                    recipeUserId: "new string",
+                });
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "SuperTokens core threw an error for a POST request to path: '/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
+                );
+            }
         });
     });
 });

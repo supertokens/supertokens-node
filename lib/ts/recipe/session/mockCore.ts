@@ -31,6 +31,11 @@ export async function mockGetRefreshAPIResponse(requestBody: any, querier: any) 
 }
 
 export async function mockCreateNewSession(requestBody: any, querier: any) {
+    if (requestBody.userDataInJWT.recipeUserId !== undefined) {
+        throw new Error(
+            "SuperTokens core threw an error for a POST request to path: '/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
+        );
+    }
     let ogRecipeUserId = requestBody.recipeUserId;
     let ogUserId = requestBody.userId;
     requestBody.userId = requestBody.recipeUserId;
@@ -97,6 +102,11 @@ export async function mockGetSessionInformation(sessionHandle: string, querier: 
 }
 
 export async function mockRegenerateSession(accessToken: string, newAccessTokenPayload: any, querier: any) {
+    if (newAccessTokenPayload.recipeUserId !== undefined) {
+        throw new Error(
+            "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
+        );
+    }
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
         accessToken: accessToken,
         userDataInJWT: newAccessTokenPayload,
@@ -172,4 +182,24 @@ export async function mockRevokeAllSessionsForUser(input: {
     sessionHandles = sessionHandles.filter((v) => !sessionHandlesRevoked.includes(v.sessionHandle));
 
     return sessionHandlesRevoked;
+}
+
+export async function mockUpdateAccessTokenPayload(
+    sessionHandle: string,
+    newAccessTokenPayload: any,
+    querier: Querier
+) {
+    if (newAccessTokenPayload.recipeUserId !== undefined) {
+        throw new Error(
+            "SuperTokens core threw an error for a PUT request to path: '/recipe/jwt/data' with status code: 400 and message: The user payload contains protected field\n"
+        );
+    }
+    let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+        sessionHandle,
+        userDataInJWT: newAccessTokenPayload,
+    });
+    if (response.status === "UNAUTHORISED") {
+        return false;
+    }
+    return true;
 }

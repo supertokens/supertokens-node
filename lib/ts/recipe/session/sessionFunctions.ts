@@ -29,6 +29,7 @@ import {
     mockGetAllSessionHandlesForUser,
     mockGetSessionInformation,
     mockRevokeAllSessionsForUser,
+    mockUpdateAccessTokenPayload,
 } from "./mockCore";
 
 /**
@@ -445,12 +446,16 @@ export async function updateAccessTokenPayload(
 ): Promise<boolean> {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
-        sessionHandle,
-        userDataInJWT: newAccessTokenPayload,
-    });
-    if (response.status === "UNAUTHORISED") {
-        return false;
+    if (process.env.MOCK !== "true") {
+        let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+            sessionHandle,
+            userDataInJWT: newAccessTokenPayload,
+        });
+        if (response.status === "UNAUTHORISED") {
+            return false;
+        }
+        return true;
+    } else {
+        return await mockUpdateAccessTokenPayload(sessionHandle, newAccessTokenPayload, helpers.querier);
     }
-    return true;
 }
