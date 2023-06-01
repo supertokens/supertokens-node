@@ -22,3 +22,5 @@ export const VERIFY_DEVICE_API = "/totp/device/verify";
 export const REMOVE_DEVICE_API = "/totp/device/remove";
 
 export const LIST_DEVICE_API = "/totp/device/list";
+
+export const IS_TOTP_ENABLED_API = "/totp/is-enabled";

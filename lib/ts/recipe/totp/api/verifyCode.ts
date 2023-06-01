@@ -36,14 +36,13 @@ export default async function verifyCode(apiImplementation: APIInterface, option
     }
 
     const userContext = makeDefaultUserContextFromAPI(options.req);
+
     let result = await apiImplementation.verifyCodePOST({
         session,
         totp,
         options,
         userContext,
     });
-
-    // TODO: Session changes?
 
     send200Response(options.res, result);
     return true;

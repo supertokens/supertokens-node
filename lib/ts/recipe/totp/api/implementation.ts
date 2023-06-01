@@ -14,6 +14,7 @@
  */
 
 import { APIInterface } from "../types";
+import STError from "../error";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -21,6 +22,7 @@ export default function getAPIImplementation(): APIInterface {
             const { session, options, ...rest } = input;
             const args = { ...rest, userId: session.getUserId() };
             let response = await input.options.recipeImplementation.createDevice(args);
+
             return response;
         },
 
@@ -28,6 +30,13 @@ export default function getAPIImplementation(): APIInterface {
             const { session, options, ...rest } = input;
             const args = { ...rest, userId: session.getUserId() };
             let response = await input.options.recipeImplementation.verifyCode(args);
+
+            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
+                throw new STError({
+                    type: "TOTP_NOT_ENABLED_ERROR",
+                    message: "TOTP is not enabled for this user",
+                });
+            }
             return response;
         },
 
@@ -35,6 +44,14 @@ export default function getAPIImplementation(): APIInterface {
             const { session, options, ...rest } = input;
             const args = { ...rest, userId: session.getUserId() };
             let response = await input.options.recipeImplementation.verifyDevice(args);
+
+            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
+                throw new STError({
+                    type: STError.TOTP_NOT_ENABLED_ERROR,
+                    message: "TOTP is not enabled for this user",
+                });
+            }
+
             return response;
         },
 
@@ -42,6 +59,14 @@ export default function getAPIImplementation(): APIInterface {
             const { session, options, ...rest } = input;
             const args = { ...rest, userId: session.getUserId() };
             let response = await input.options.recipeImplementation.removeDevice(args);
+
+            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
+                throw new STError({
+                    type: "TOTP_NOT_ENABLED_ERROR",
+                    message: "TOTP is not enabled for this user",
+                });
+            }
+
             return response;
         },
 
@@ -49,7 +74,27 @@ export default function getAPIImplementation(): APIInterface {
             const { session, options, ...rest } = input;
             const args = { ...rest, userId: session.getUserId() };
             let response = await input.options.recipeImplementation.listDevices(args);
+
+            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
+                throw new STError({
+                    type: "TOTP_NOT_ENABLED_ERROR",
+                    message: "TOTP is not enabled for this user",
+                });
+            }
+
             return response;
+        },
+
+        isTotpEnabledGET: async function (input) {
+            const { session, options, ...rest } = input;
+            const args = { ...rest, userId: session.getUserId() };
+            let response = await input.options.recipeImplementation.listDevices(args);
+
+            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
+                return { status: "OK", isEnabled: false };
+            }
+
+            return { status: "OK", isEnabled: true };
         },
     };
 }

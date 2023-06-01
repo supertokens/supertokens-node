@@ -51,8 +51,6 @@ export default async function verifyDevice(apiImplementation: APIInterface, opti
         userContext,
     });
 
-    // TODO: Session changes?
-
     send200Response(options.res, result);
     return true;
 }

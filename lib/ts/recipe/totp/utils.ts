@@ -13,14 +13,15 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
+import { NormalisedAppinfo } from "../../types";
+import TotpRecipe from "./recipe";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
-export function validateAndNormaliseUserInput(_: Recipe, config: TypeInput): TypeNormalisedInput {
-    if (config.issuer === undefined) {
-        throw new Error("Please pass ther issuer name (app name to show in the authenticator app)");
-    }
-
+export function validateAndNormaliseUserInput(
+    _: TotpRecipe,
+    appInfo: NormalisedAppinfo,
+    config: TypeInput
+): TypeNormalisedInput {
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -28,7 +29,7 @@ export function validateAndNormaliseUserInput(_: Recipe, config: TypeInput): Typ
     };
 
     return {
-        issuer: config.issuer,
+        issuer: config.issuer ?? appInfo.appName,
         defaultPeriod: config.defaultPeriod ?? 30,
         defaultSkew: config.defaultSkew ?? 1,
         allowUnverifiedDevices: config.allowUnverifiedDevice ?? false,

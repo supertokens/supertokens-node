@@ -16,10 +16,10 @@
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
-import { SessionContainer } from "../session";
+import type { SessionContainer } from "../session";
 
 export type TypeInput = {
-    issuer: string;
+    issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
     allowUnverifiedDevice?: boolean;
@@ -53,13 +53,17 @@ export type RecipeInterface = {
         skew?: number;
         period?: number;
         userContext: any;
-    }) => Promise<{ status: "OK"; qr: string } | { status: "DEVICE_ALREADY_EXISTS_ERROR" }>;
+    }) => Promise<
+        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCode: string }
+        | { status: "DEVICE_ALREADY_EXISTS_ERROR" }
+    >;
     verifyCode: (input: {
         userId: string;
         totp: string;
         userContext: any;
     }) => Promise<
-        | { status: "OK" | "INVALID_TOTP_ERROR" | "TOTP_NOT_ENABLED_ERROR" }
+        | { status: "OK" | "INVALID_TOTP_ERROR" }
+        | { status: "TOTP_NOT_ENABLED_ERROR" }
         | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }
     >;
     verifyDevice: (input: {
@@ -68,7 +72,9 @@ export type RecipeInterface = {
         totp: string;
         userContext: any;
     }) => Promise<
-        | { status: "OK" | "INVALID_TOTP_ERROR" | "TOTP_NOT_ENABLED_ERROR" | "UNKNOWN_DEVICE_ERROR" }
+        | { status: "OK"; wasAlreadyVerified: boolean }
+        | { status: "TOTP_NOT_ENABLED_ERROR" }
+        | { status: "INVALID_TOTP_ERROR" | "UNKNOWN_DEVICE_ERROR" }
         | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }
     >;
     updateDevice: (input: {
@@ -81,7 +87,7 @@ export type RecipeInterface = {
         userId: string;
         deviceName: string;
         userContext: any;
-    }) => Promise<{ status: "OK" | "TOTP_NOT_ENABLED_ERROR" }>;
+    }) => Promise<{ status: "OK"; didDeviceExist: boolean } | { status: "TOTP_NOT_ENABLED_ERROR" }>;
     listDevices: (input: {
         userId: string;
         userContext: any;
@@ -105,20 +111,20 @@ export type APIInterface = {
     createDevicePOST?: (input: {
         session: SessionContainer;
         deviceName: string;
-        period: number;
-        skew: number;
+        period?: number;
+        skew?: number;
         options: APIOptions;
         userContext: any;
-    }) => Promise<{ status: "OK"; qr: string } | { status: "DEVICE_ALREADY_EXISTS_ERROR" }>; // TODO: Consider seperately mentioning templates vars used in qr (issuerName, secret, provisioner, etc)
+    }) => Promise<
+        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCode: string }
+        | { status: "DEVICE_ALREADY_EXISTS_ERROR" }
+    >;
     verifyCodePOST?: (input: {
         session: SessionContainer;
         totp: string;
         options: APIOptions;
         userContext: any;
-    }) => Promise<
-        | { status: "OK" | "INVALID_TOTP_ERROR" | "TOTP_NOT_ENABLED_ERROR" }
-        | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }
-    >;
+    }) => Promise<{ status: "OK" | "INVALID_TOTP_ERROR" } | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }>;
     verifyDevicePOST?: (input: {
         session: SessionContainer;
         deviceName: string;
@@ -126,7 +132,8 @@ export type APIInterface = {
         options: APIOptions;
         userContext: any;
     }) => Promise<
-        | { status: "OK" | "INVALID_TOTP_ERROR" | "TOTP_NOT_ENABLED_ERROR" | "UNKNOWN_DEVICE_ERROR" }
+        | { status: "OK"; wasAlreadyVerified: boolean }
+        | { status: "INVALID_TOTP_ERROR" | "UNKNOWN_DEVICE_ERROR" }
         | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }
     >;
     removeDevicePOST?: (input: {
@@ -134,10 +141,15 @@ export type APIInterface = {
         deviceName: string;
         options: APIOptions;
         userContext: any;
-    }) => Promise<{ status: "OK" | "TOTP_NOT_ENABLED_ERROR" }>;
+    }) => Promise<{ status: "OK"; didDeviceExist: boolean }>;
     listDevicesGET?: (input: {
         session: SessionContainer;
         options: APIOptions;
         userContext: any;
-    }) => Promise<{ status: "OK" | "TOTP_NOT_ENABLED_ERROR" }>;
+    }) => Promise<{ status: "OK"; devices: { name: string; period: number; skew: number; verified: boolean }[] }>;
+    isTotpEnabledGET?: (input: {
+        session: SessionContainer;
+        options: APIOptions;
+        userContext: any;
+    }) => Promise<{ status: "OK"; isEnabled: boolean }>;
 };

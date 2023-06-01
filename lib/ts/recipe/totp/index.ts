@@ -13,51 +13,51 @@
  * under the License.
  */
 
-import Recipe from "./recipe";
+import TotpRecipe from "./recipe";
 import SuperTokensError from "./error";
 
 export default class Wrapper {
-    static init = Recipe.init;
+    static init = TotpRecipe.init;
 
     static Error = SuperTokensError;
 
     static createDevice(input: { userId: string; deviceName: string; skew: number; period: number }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
+        return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
             userContext: {},
             ...input,
         });
     }
 
     static verifyDevice(input: { userId: string; deviceName: string; totp: string }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyDevice({
+        return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyDevice({
             userContext: {},
             ...input,
         });
     }
 
     static verifyCode(input: { userId: string; totp: string }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCode({
+        return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCode({
             userContext: {},
             ...input,
         });
     }
 
     static updateDevice(input: { userId: string; existingDeviceName: string; newDeviceName: string }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
+        return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
             userContext: {},
             ...input,
         });
     }
 
     static removeDevice(input: { userId: string; deviceName: string }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeDevice({
+        return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.removeDevice({
             userContext: {},
             ...input,
         });
     }
 
     static listDevices(input: { userId: string }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
+        return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
             userContext: {},
             ...input,
         });

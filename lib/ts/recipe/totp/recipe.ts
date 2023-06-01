@@ -19,7 +19,14 @@ import RecipeModule from "../../recipeModule";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
-import { CREATE_DEVICE_API, VERIFY_CODE_API, VERIFY_DEVICE_API, LIST_DEVICE_API, REMOVE_DEVICE_API } from "./constants";
+import {
+    CREATE_DEVICE_API,
+    VERIFY_CODE_API,
+    VERIFY_DEVICE_API,
+    LIST_DEVICE_API,
+    REMOVE_DEVICE_API,
+    IS_TOTP_ENABLED_API,
+} from "./constants";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STError from "./error";
@@ -30,9 +37,11 @@ import verifyDeviceAPI from "./api/verifyDevice";
 import verifyCodeAPI from "./api/verifyCode";
 import removeDeviceAPI from "./api/removeDevice";
 import listDevicesAPI from "./api/listDevices";
+import { sendNon200ResponseWithMessage } from "../../utils";
+import TotpError from "./error";
 
-export default class Recipe extends RecipeModule {
-    private static instance: Recipe | undefined = undefined;
+export default class TotpRecipe extends RecipeModule {
+    private static instance: TotpRecipe | undefined = undefined;
     static RECIPE_ID = "totp";
 
     config: TypeNormalisedInput;
@@ -46,7 +55,7 @@ export default class Recipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
-        this.config = validateAndNormaliseUserInput(this, config);
+        this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         {
             let builder = new OverrideableBuilder(
@@ -60,20 +69,20 @@ export default class Recipe extends RecipeModule {
         }
     }
 
-    static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance !== undefined) {
-            return Recipe.instance;
+    static getInstanceOrThrowError(): TotpRecipe {
+        if (TotpRecipe.instance !== undefined) {
+            return TotpRecipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init or totp.init function?");
     }
 
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
-            if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
-                return Recipe.instance;
+            if (TotpRecipe.instance === undefined) {
+                TotpRecipe.instance = new TotpRecipe(TotpRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                return TotpRecipe.instance;
             } else {
-                throw new Error("Passwordless recipe has already been initialised. Please check your code for bugs.");
+                throw new Error("TOTP recipe has already been initialised. Please check your code for bugs.");
             }
         };
     }
@@ -82,7 +91,7 @@ export default class Recipe extends RecipeModule {
         if (process.env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
-        Recipe.instance = undefined;
+        TotpRecipe.instance = undefined;
     }
 
     // abstract instance functions below...............
@@ -97,27 +106,33 @@ export default class Recipe extends RecipeModule {
             },
             {
                 id: VERIFY_DEVICE_API,
-                disabled: this.apiImpl.createDevicePOST === undefined,
+                disabled: this.apiImpl.verifyDevicePOST === undefined,
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(VERIFY_DEVICE_API),
             },
             {
                 id: VERIFY_CODE_API,
-                disabled: this.apiImpl.createDevicePOST === undefined,
+                disabled: this.apiImpl.verifyCodePOST === undefined,
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(VERIFY_CODE_API),
             },
             {
                 id: REMOVE_DEVICE_API,
-                disabled: this.apiImpl.createDevicePOST === undefined,
+                disabled: this.apiImpl.removeDevicePOST === undefined,
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(REMOVE_DEVICE_API),
             },
             {
                 id: LIST_DEVICE_API,
-                disabled: this.apiImpl.createDevicePOST === undefined,
+                disabled: this.apiImpl.listDevicesGET === undefined,
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(LIST_DEVICE_API),
+            },
+            {
+                id: IS_TOTP_ENABLED_API,
+                disabled: this.apiImpl.isTotpEnabledGET === undefined,
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(IS_TOTP_ENABLED_API),
             },
         ];
     };
@@ -153,7 +168,12 @@ export default class Recipe extends RecipeModule {
         return false;
     };
 
-    handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {
+    handleError = async (err: STError, _: BaseRequest, res: BaseResponse): Promise<void> => {
+        if (err.fromRecipe === TotpRecipe.RECIPE_ID) {
+            if (err.type === TotpError.TOTP_NOT_ENABLED_ERROR) {
+                sendNon200ResponseWithMessage(res, "TOTP is not enabled for the user", 400); // bad req
+            }
+        }
         throw err;
     };
 
@@ -162,6 +182,6 @@ export default class Recipe extends RecipeModule {
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === TotpRecipe.RECIPE_ID;
     };
 }

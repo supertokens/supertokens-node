@@ -37,10 +37,13 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             }
 
             let issuerName = config.issuer;
-            let userIdentifier = "user@example.com"; // TODO: Fetch this based on first factor?
+            let userIdentifier = undefined;
             return {
                 status: "OK",
-                qr: encodeURI(
+                issuerName,
+                userIdentifier,
+                secret: response.secret,
+                qrCode: encodeURI(
                     `otpauth://totp/${issuerName}:${userIdentifier}?secret=${response.secret}&issuer=${issuerName}`
                 ),
             };

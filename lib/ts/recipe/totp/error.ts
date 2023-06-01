@@ -16,7 +16,9 @@
 import STError from "../../error";
 
 export default class TotpError extends STError {
-    constructor(options: { type: "BAD_INPUT_ERROR"; message: string }) {
+    static TOTP_NOT_ENABLED_ERROR: "TOTP_NOT_ENABLED_ERROR" = "TOTP_NOT_ENABLED_ERROR";
+
+    constructor(options: { type: "BAD_INPUT_ERROR" | "TOTP_NOT_ENABLED_ERROR"; message: string }) {
         super({
             ...options,
         });
