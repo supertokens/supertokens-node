@@ -975,4 +975,112 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             assert((await Session.getSessionInformation(epuser1session.getHandle())) === undefined);
         });
     });
+
+    describe("getAllSessionHandlesForUser test", function () {
+        it("getAllSessionHandlesForUser with linked accounts should return all the sessions if fetchSessionsForAllLinkedAccounts is true", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                epUser2.loginMethods[0].recipeUserId
+            );
+
+            let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                epUser.loginMethods[0].recipeUserId
+            );
+
+            let result = await Session.getAllSessionHandlesForUser(epUser2.id);
+            assert(result.length === 2);
+
+            assert(result[0] === epuser2session.getHandle());
+            assert(result[1] === epuser1session.getHandle());
+        });
+
+        it("getAllSessionHandlesForUser with linked accounts should return only specific account's sessions if fetchSessionsForAllLinkedAccounts is false", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                epUser2.loginMethods[0].recipeUserId
+            );
+
+            let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                epUser.loginMethods[0].recipeUserId
+            );
+
+            let result = await Session.getAllSessionHandlesForUser(epUser2.id, false);
+            assert(result.length === 1);
+
+            assert(result[0] === epuser2session.getHandle());
+        });
+
+        it("getAllSessionHandlesForUser with linked accounts should return only the primary user's session if that id is passed and if fetchSessionsForAllLinkedAccounts is false", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                epUser2.loginMethods[0].recipeUserId
+            );
+
+            let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                epUser.loginMethods[0].recipeUserId
+            );
+
+            let result = await Session.getAllSessionHandlesForUser(epUser.id, false);
+            assert(result.length === 1);
+
+            assert(result[0] === epuser1session.getHandle());
+        });
+    });
 });

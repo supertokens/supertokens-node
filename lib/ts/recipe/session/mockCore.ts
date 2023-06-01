@@ -116,6 +116,11 @@ export async function mockGetAllSessionHandlesForUser(input: {
     let result = [];
     for (let i = 0; i < sessionHandles.length; i++) {
         if (input.fetchSessionsForAllLinkedAccounts) {
+            let { mockGetUser } = require("../accountlinking/mockCore");
+            let user = await mockGetUser({ userId: input.userId });
+            if (user !== undefined) {
+                input.userId = user.id;
+            }
             if (sessionHandles[i].primaryUserId === input.userId || sessionHandles[i].recipeUserId === input.userId) {
                 result.push(sessionHandles[i].sessionHandle);
             }
