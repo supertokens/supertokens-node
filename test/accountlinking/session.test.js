@@ -33,6 +33,7 @@ const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
 let { protectedProps } = require("../../lib/build/recipe/session/recipeImplementation");
+let { PrimitiveClaim } = require("../../lib/build/recipe/session/claimBaseClasses/primitiveClaim");
 
 describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, function () {
     beforeEach(async function () {
@@ -1213,6 +1214,148 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                         "SuperTokens core threw an error for a POST request to path: '/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
                 );
             }
+        });
+    });
+
+    describe("fetch claim function tests", function () {
+        it("fetch callback in claim gets right recipeUserId and userId when using fetch and set claim with session object", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let userIdInCallback;
+            let recipeUserIdInCallback;
+
+            let primitiveClaim = new PrimitiveClaim({
+                key: "some-key",
+                fetchValue: async (userId, recipeUserId) => {
+                    userIdInCallback = userId;
+                    recipeUserIdInCallback = recipeUserId;
+                    return undefined;
+                },
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+
+            await session.fetchAndSetClaim(primitiveClaim);
+
+            assert(userIdInCallback === epUser.id);
+            assert(recipeUserIdInCallback.getAsString() === epUser2.loginMethods[0].recipeUserId.getAsString());
+        });
+
+        it("fetch callback in claim gets right recipeUserId and userId when using fetch and set claim with session handle", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let userIdInCallback;
+            let recipeUserIdInCallback;
+
+            let primitiveClaim = new PrimitiveClaim({
+                key: "some-key",
+                fetchValue: async (userId, recipeUserId) => {
+                    userIdInCallback = userId;
+                    recipeUserIdInCallback = recipeUserId;
+                    return undefined;
+                },
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+
+            await Session.fetchAndSetClaim(session.getHandle(), primitiveClaim);
+
+            assert(userIdInCallback === epUser.id);
+            assert(recipeUserIdInCallback.getAsString() === epUser2.loginMethods[0].recipeUserId.getAsString());
+        });
+
+        it("fetch callback in claim gets right recipeUserId and userId when creating a new session", async function () {
+            await startST();
+
+            let userIdInCallback;
+            let recipeUserIdInCallback;
+
+            let primitiveClaim = new PrimitiveClaim({
+                key: "some-key",
+                fetchValue: async (userId, recipeUserId) => {
+                    userIdInCallback = userId;
+                    recipeUserIdInCallback = recipeUserId;
+                    return undefined;
+                },
+            });
+
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        override: {
+                            functions: (oI) => {
+                                return {
+                                    ...oI,
+                                    createNewSession: async (input) => {
+                                        input.accessTokenPayload = {
+                                            ...input.accessTokenPayload,
+                                            ...primitiveClaim.build(input.userId, input.recipeUserId),
+                                        };
+                                        return oI.createNewSession(input);
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
+
+            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+
+            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+
+            assert(userIdInCallback === epUser.id);
+            assert(recipeUserIdInCallback.getAsString() === epUser2.loginMethods[0].recipeUserId.getAsString());
         });
     });
 });
