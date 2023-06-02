@@ -341,7 +341,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(sessionInformation === undefined);
         });
 
-        it("updateSessionIfRequiredPostEmailVerification removes account linking claim post verification", async function () {
+        it("updateSessionIfRequiredPostEmailVerification does nothing to the session post verification if linking another account to the current session", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -415,10 +415,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(res !== undefined);
             assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
 
-            let tokens = extractInfoFromResponse(res);
-            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            let claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            let newUser = await supertokens.getUser(claimValue);
+            let newUser = await supertokens.getUser(res.body.recipeUserId);
             assert(newUser.emails[0] === "test2@example.com");
             assert(newUser.emails.length === 1);
 
@@ -426,13 +423,15 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(pUser.loginMethods.length === 1);
 
             let token = (
-                await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(claimValue))
+                await EmailVerification.createEmailVerificationToken(
+                    supertokens.convertToRecipeUserId(res.body.recipeUserId)
+                )
             ).token;
 
             let response2 = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/user/email/verify")
-                    .set("Cookie", ["sAccessToken=" + tokens.accessTokenFromAny])
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                     .send({
                         method: "token",
                         token,
@@ -447,11 +446,8 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     })
             );
 
-            tokens = extractInfoFromResponse(response2);
-            newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            assert(claimValue === undefined);
-            assert(newSession.getUserId() === pUser.id);
+            let tokens = extractInfoFromResponse(response2);
+            assert(tokens.accessTokenFromAny === undefined);
 
             pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 2);
