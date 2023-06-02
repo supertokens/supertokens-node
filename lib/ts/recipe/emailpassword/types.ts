@@ -308,6 +308,7 @@ export type APIInterface = {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
                     description: string;
                     recipeUserId: string;
+                    email: string;
                 }
               | GeneralErrorResponse
           >);
