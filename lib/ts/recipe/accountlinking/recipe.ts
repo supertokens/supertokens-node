@@ -29,6 +29,7 @@ import SessionError from "../session/error";
 import supertokens from "../../supertokens";
 import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
+import { logDebugMessage } from "../../logger";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -320,6 +321,7 @@ export default class Recipe extends RecipeModule {
             userContext,
         });
         if (users.length === 0) {
+            logDebugMessage("isSignUpAllowed returning true because no user with given account info");
             // this is a brand new email / phone number, so we allow sign up.
             return true;
         }
@@ -334,6 +336,7 @@ export default class Recipe extends RecipeModule {
         // not allowed..)
         let primaryUser = users.find((u) => u.isPrimaryUser);
         if (primaryUser === undefined) {
+            logDebugMessage("isSignUpAllowed no primary user exists");
             // since there is no primary user, it means that this user, if signed up, will end up
             // being the primary user. In this case, we check if any of the non primary user's
             // are in an unverified state having the same account info, and if they are, then we
@@ -349,9 +352,11 @@ export default class Recipe extends RecipeModule {
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                logDebugMessage("isSignUpAllowed returning true because account linking is disabled");
                 return true;
             }
             if (!shouldDoAccountLinking.shouldRequireVerification) {
+                logDebugMessage("isSignUpAllowed returning true because dec does not require email verification");
                 // the dev says they do not care about verification before account linking
                 // so we are OK with the risk mentioned above.
                 return true;
@@ -364,6 +369,7 @@ export default class Recipe extends RecipeModule {
                 let thisIterationIsVerified = false;
                 if (newUser.email !== undefined) {
                     if (currUser.loginMethods[0].hasSameEmailAs(newUser.email) && currUser.loginMethods[0].verified) {
+                        logDebugMessage("isSignUpAllowed found same email for another user and verified");
                         thisIterationIsVerified = true;
                     }
                 }
@@ -373,6 +379,7 @@ export default class Recipe extends RecipeModule {
                         currUser.loginMethods[0].hasSamePhoneNumberAs(newUser.phoneNumber) &&
                         currUser.loginMethods[0].verified
                     ) {
+                        logDebugMessage("isSignUpAllowed found same phone number for another user and verified");
                         thisIterationIsVerified = true;
                     }
                 }
@@ -383,13 +390,18 @@ export default class Recipe extends RecipeModule {
                     // users will just see an email already exists error and then will try another
                     // login method. They can also still just go through the password reset flow
                     // and then gain access to their email password account (which can then be verified).
+                    logDebugMessage(
+                        "isSignUpAllowed returning false cause one of the other recipe level users is not verified"
+                    );
                     shouldAllow = false;
                     break;
                 }
             }
             ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS);
+            logDebugMessage("isSignUpAllowed returning " + shouldAllow);
             return shouldAllow;
         } else {
+            logDebugMessage("isSignUpAllowed primary user found");
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 newUser,
                 primaryUser,
@@ -397,9 +409,11 @@ export default class Recipe extends RecipeModule {
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                logDebugMessage("isSignUpAllowed returning true because account linking is disabled");
                 return true;
             }
             if (!shouldDoAccountLinking.shouldRequireVerification) {
+                logDebugMessage("isSignUpAllowed returning true because dec does not require email verification");
                 // the dev says they do not care about verification before account linking
                 // so we can link this new user to the primary user post recipe user creation
                 // even if that user's email / phone number is not verified.
@@ -407,6 +421,9 @@ export default class Recipe extends RecipeModule {
             }
 
             if (!isVerified) {
+                logDebugMessage(
+                    "isSignUpAllowed returning false because new user's email is not verified, and primary user with the same email was found."
+                );
                 // this will exist early with a false here cause it means that
                 // if we come here, the newUser will be linked to the primary user post email
                 // verification. Whilst this seems OK, there is a risk that the actual user might
@@ -435,16 +452,25 @@ export default class Recipe extends RecipeModule {
                 let lM = primaryUser.loginMethods[i];
                 if (lM.email !== undefined) {
                     if (lM.hasSameEmailAs(newUser.email) && lM.verified) {
+                        logDebugMessage(
+                            "isSignUpAllowed returning true cause found same email for primary user and verified"
+                        );
                         return true;
                     }
                 }
 
                 if (lM.phoneNumber !== undefined) {
                     if (lM.hasSamePhoneNumberAs(newUser.phoneNumber) && lM.verified) {
+                        logDebugMessage(
+                            "isSignUpAllowed returning true cause found same phone number for primary user and verified"
+                        );
                         return true;
                     }
                 }
             }
+            logDebugMessage(
+                "isSignUpAllowed returning false cause primary user does not have the same email or phone number that is verified"
+            );
             return false;
         }
     };
