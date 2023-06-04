@@ -640,7 +640,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await SessionFunctions.revokeSession(s.helpers, res.session.handle);
         assert(res2 === true);
 
-        let res3 = await SessionFunctions.getAllSessionHandlesForUser(s.helpers, "someUniqueUserId");
+        let res3 = await SessionFunctions.getAllSessionHandlesForUser(s.helpers, "someUniqueUserId", true);
         assert(res3.length === 0);
 
         //create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions

@@ -70,7 +70,8 @@ export declare function revokeAllSessionsForUser(
 export declare function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
-    fetchSessionsForAllLinkedAccounts: boolean
+    fetchSessionsForAllLinkedAccounts: boolean,
+    userContext: any
 ): Promise<string[]>;
 /**
  * @description call to destroy one session

@@ -143,6 +143,15 @@ export async function mockGetAllSessionHandlesForUser(input: {
     return result;
 }
 
+export async function mockRevokeSession(sessionHandle: string, querier: Querier) {
+    sessionHandles = sessionHandles.filter((sh) => sh.sessionHandle !== sessionHandle);
+
+    let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+        sessionHandles: [sessionHandle],
+    });
+    return response.sessionHandlesRevoked.length === 1;
+}
+
 export async function mockRevokeAllSessionsForUser(input: {
     userId: string;
     revokeSessionsForLinkedAccounts: boolean;

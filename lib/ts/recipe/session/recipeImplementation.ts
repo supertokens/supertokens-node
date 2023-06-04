@@ -391,11 +391,18 @@ export default function getRecipeInterface(
         getAllSessionHandlesForUser: function ({
             userId,
             fetchSessionsForAllLinkedAccounts,
+            userContext,
         }: {
             userId: string;
             fetchSessionsForAllLinkedAccounts: boolean;
+            userContext: any;
         }): Promise<string[]> {
-            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, fetchSessionsForAllLinkedAccounts);
+            return SessionFunctions.getAllSessionHandlesForUser(
+                helpers,
+                userId,
+                fetchSessionsForAllLinkedAccounts,
+                userContext
+            );
         },
 
         revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
