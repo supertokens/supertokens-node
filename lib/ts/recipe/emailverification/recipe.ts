@@ -35,7 +35,6 @@ import { EmailVerificationClaim } from "./emailVerificationClaim";
 import { SessionContainerInterface } from "../session/types";
 import SessionError from "../session/error";
 import Session from "../session";
-import { AccountLinkingClaim } from "../accountlinking/accountLinkingClaim";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 
@@ -345,10 +344,7 @@ export default class Recipe extends RecipeModule {
                 // In both case 3 and case 4, we do not want to change anything in the
                 // current session in terms of user ID or email verification claim (since
                 // both of these refer to the current logged in user and not the newly
-                // linked user's account). Instead, we just want to remove the
-                // account linking claim from the session.
-
-                await input.session.removeClaim(AccountLinkingClaim, input.userContext);
+                // linked user's account).
 
                 return undefined;
             }

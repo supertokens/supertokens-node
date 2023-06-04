@@ -14,6 +14,7 @@ export declare function mockGetAllSessionHandlesForUser(input: {
     userId: string;
     fetchSessionsForAllLinkedAccounts: boolean;
 }): Promise<string[]>;
+export declare function mockRevokeSession(sessionHandle: string, querier: Querier): Promise<boolean>;
 export declare function mockRevokeAllSessionsForUser(input: {
     userId: string;
     revokeSessionsForLinkedAccounts: boolean;

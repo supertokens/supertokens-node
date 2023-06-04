@@ -1120,6 +1120,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, but account linking is disabled should send email, but for email password user", async function () {
             await startST();
             let sendEmailToUserId = undefined;
+            let sendEmailToRecipeUserId = undefined;
             let sendEmailToUserEmail = undefined;
             supertokens.init({
                 supertokens: {
@@ -1139,6 +1140,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                                     sendEmail: async function (input) {
                                         sendEmailToUserId = input.user.id;
                                         sendEmailToUserEmail = input.user.email;
+                                        sendEmailToRecipeUserId = input.user.recipeUserId;
                                     },
                                 };
                             },
@@ -1206,7 +1208,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === epUser.user.id);
+            assert(sendEmailToRecipeUserId.getAsString() === epUser.user.id);
+            assert(sendEmailToUserId === tpUser.user.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, account linking enabled, but email verification not required should send email, for primary user", async function () {

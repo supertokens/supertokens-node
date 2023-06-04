@@ -341,7 +341,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(sessionInformation === undefined);
         });
 
-        it("updateSessionIfRequiredPostEmailVerification removes account linking claim post verification", async function () {
+        it("updateSessionIfRequiredPostEmailVerification does nothing to the session post verification if linking another account to the current session", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -415,10 +415,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(res !== undefined);
             assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
 
-            let tokens = extractInfoFromResponse(res);
-            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            let claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            let newUser = await supertokens.getUser(claimValue);
+            let newUser = await supertokens.getUser(res.body.recipeUserId);
             assert(newUser.emails[0] === "test2@example.com");
             assert(newUser.emails.length === 1);
 
@@ -426,13 +423,15 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(pUser.loginMethods.length === 1);
 
             let token = (
-                await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(claimValue))
+                await EmailVerification.createEmailVerificationToken(
+                    supertokens.convertToRecipeUserId(res.body.recipeUserId)
+                )
             ).token;
 
             let response2 = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/user/email/verify")
-                    .set("Cookie", ["sAccessToken=" + tokens.accessTokenFromAny])
+                    .set("Cookie", ["sAccessToken=" + session.getAccessToken()])
                     .send({
                         method: "token",
                         token,
@@ -447,11 +446,8 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     })
             );
 
-            tokens = extractInfoFromResponse(response2);
-            newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            claimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            assert(claimValue === undefined);
-            assert(newSession.getUserId() === pUser.id);
+            let tokens = extractInfoFromResponse(response2);
+            assert(tokens.accessTokenFromAny === undefined);
 
             pUser = await supertokens.getUser(epUser.id);
             assert(pUser.loginMethods.length === 2);
@@ -534,7 +530,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
     });
 
     describe("isEmailVerifiedGET tests", function () {
-        it("calling isEmailVerifiedGET without AccountLinkingClaim gives false for currently logged in user if email is not verified, and does not update session", async function () {
+        it("calling isEmailVerifiedGET  gives false for currently logged in user if email is not verified, and does not update session", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -606,7 +602,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(tokens.accessTokenFromHeader === undefined);
         });
 
-        it("calling isEmailVerifiedGET without AccountLinkingClaim gives true for currently logged in user if email is verified, and does not update session", async function () {
+        it("calling isEmailVerifiedGET gives true for currently logged in user if email is verified, and does not update session", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -681,7 +677,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(tokens.accessTokenFromHeader === undefined);
         });
 
-        it("calling isEmailVerifiedGET without AccountLinkingClaim gives false for currently logged in user if email is not verified, and updates session if needed", async function () {
+        it("calling isEmailVerifiedGET gives false for currently logged in user if email is not verified, and updates session if needed", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -760,7 +756,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(claimValue === false);
         });
 
-        it("calling isEmailVerifiedGET without AccountLinkingClaim gives true for currently logged in user if email is verified, and updates session if needed", async function () {
+        it("calling isEmailVerifiedGET gives true for currently logged in user if email is verified, and updates session if needed", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -837,7 +833,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(claimValue === true);
         });
 
-        it("calling isEmailVerifiedGET with AccountLinkingClaim gives false for to link user if email is not verified, and does not update session", async function () {
+        it("calling isEmailVerifiedGET with post login account linking gives true for logged in user even if to link user is false, and does not update session", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -916,8 +912,9 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             );
 
             let tokens = extractInfoFromResponse(res);
+            assert(tokens.accessTokenFromAny === undefined);
 
-            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
             let response = await new Promise((resolve) =>
                 request(app)
@@ -934,7 +931,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             );
             assert(response !== undefined);
             assert(response.body.status === "OK");
-            assert(response.body.isVerified === false);
+            assert(response.body.isVerified === true);
 
             tokens = extractInfoFromResponse(response);
             assert(tokens.accessToken === undefined);
@@ -942,7 +939,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(tokens.accessTokenFromHeader === undefined);
         });
 
-        it("calling isEmailVerifiedGET with AccountLinkingClaim gives true for to link user if email is verified, and updates session even if not linked", async function () {
+        it("calling isEmailVerifiedGET with account linking post login gives false for logged in user, even if to link user if email is verified, and updates session", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -1026,14 +1023,16 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             );
 
             let tokens = extractInfoFromResponse(res);
+            assert(tokens.accessTokenFromAny === undefined);
 
-            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
             // we unverify the session recipe's email just cause to make it mismatch from the
             // to link account's email
             await EmailVerification.unverifyEmail(epUser.loginMethods[0].recipeUserId);
 
-            let toLinkUserId = await session.getClaimValue(AccountLinking.AccountLinkingClaim);
+            assert(res.body.email === "test2@example.com");
+            let toLinkUserId = res.body.recipeUserId;
             let t2 = await EmailVerification.createEmailVerificationToken(
                 supertokens.convertToRecipeUserId(toLinkUserId)
             );
@@ -1056,19 +1055,17 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             );
             assert(response !== undefined);
             assert(response.body.status === "OK");
-            assert(response.body.isVerified === true);
+            assert(response.body.isVerified === false);
 
             tokens = extractInfoFromResponse(response);
             assert(tokens.accessToken !== undefined);
             assert(tokens.accessTokenFromAny !== undefined);
             let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            let linkingClaimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            assert(linkingClaimValue === undefined);
             let evClaimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
-            assert(evClaimValue === true); // even though we marked the email as unverified, this hasn't changed.
+            assert(evClaimValue === false);
         });
 
-        it("calling isEmailVerifiedGET with AccountLinkingClaim removes it if already linked and gives verification status of main session's recipe user id", async function () {
+        it("calling isEmailVerifiedGET with post login account linking has no effect on the session if already linked and gives verification status of main session's recipe user id", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -1153,13 +1150,13 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
             let tokens = extractInfoFromResponse(res);
 
-            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
             // we unverify the session recipe's email just cause to make it mismatch from the
             // to link account's email
             await EmailVerification.unverifyEmail(epUser.loginMethods[0].recipeUserId);
 
-            let toLinkUserId = await session.getClaimValue(AccountLinking.AccountLinkingClaim);
+            let toLinkUserId = res.body.recipeUserId;
             let t2 = await EmailVerification.createEmailVerificationToken(
                 supertokens.convertToRecipeUserId(toLinkUserId)
             );
@@ -1186,15 +1183,13 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(tokens.accessToken !== undefined);
             assert(tokens.accessTokenFromAny !== undefined);
             let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            let linkingClaimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            assert(linkingClaimValue === undefined);
             let evClaimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
             assert(evClaimValue === false);
         });
     });
 
     describe("generateEmailVerifyTokenPOST tests", function () {
-        it("calling generateEmailVerifyTokenPOST without AccountLinkingClaim generates for currently logged in user if email is not verified, and does not update session", async function () {
+        it("calling generateEmailVerifyTokenPOST generates for currently logged in user if email is not verified, and does not update session", async function () {
             await startST();
             let userInCallback = undefined;
             supertokens.init({
@@ -1280,7 +1275,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(userInCallback.recipeUserId.getAsString() === epUser.loginMethods[0].recipeUserId.getAsString());
         });
 
-        it("calling generateEmailVerifyTokenPOST without AccountLinkingClaim gives already verified for currently logged in user if email is verified, and does not update session", async function () {
+        it("calling generateEmailVerifyTokenPOST gives already verified for currently logged in user if email is verified, and does not update session", async function () {
             await startST();
             let userInCallback = undefined;
             supertokens.init({
@@ -1367,7 +1362,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(userInCallback === undefined);
         });
 
-        it("calling generateEmailVerifyTokenPOST without AccountLinkingClaim sends email for currently logged in user if email is not verified, and updates session if needed", async function () {
+        it("calling generateEmailVerifyTokenPOST sends email for currently logged in user if email is not verified, and updates session if needed", async function () {
             await startST();
             let userInCallback = undefined;
             supertokens.init({
@@ -1460,7 +1455,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(userInCallback.recipeUserId.getAsString() === epUser.loginMethods[0].recipeUserId.getAsString());
         });
 
-        it("calling generateEmailVerifyTokenPOST without AccountLinkingClaim gives email already verified for currently logged in user if email is verified, and updates session if needed", async function () {
+        it("calling generateEmailVerifyTokenPOST gives email already verified for currently logged in user if email is verified, and updates session if needed", async function () {
             await startST();
             let userInCallback = undefined;
             supertokens.init({
@@ -1549,7 +1544,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(userInCallback === undefined);
         });
 
-        it("calling generateEmailVerifyTokenPOST with AccountLinkingClaim sends email for to link user if email is not verified, and does not update session", async function () {
+        it("calling generateEmailVerifyTokenPOST with post login account linking returns email already verified for logged in user even if new account is not verified", async function () {
             await startST();
             let userInCallback = undefined;
             supertokens.init({
@@ -1640,9 +1635,9 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
             let tokens = extractInfoFromResponse(res);
 
-            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
-            let toLinkUser = await session.getClaimValue(AccountLinking.AccountLinkingClaim);
+            let toLinkUser = res.body.recipeUserId;
 
             let response = await new Promise((resolve) =>
                 request(app)
@@ -1658,19 +1653,15 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     })
             );
             assert(response !== undefined);
-            assert(response.body.status === "OK");
+            assert(response.body.status === "EMAIL_ALREADY_VERIFIED_ERROR");
 
             tokens = extractInfoFromResponse(response);
             assert(tokens.accessToken === undefined);
             assert(tokens.accessTokenFromAny === undefined);
             assert(tokens.accessTokenFromHeader === undefined);
-
-            assert(userInCallback.id === epUser.id);
-            assert(userInCallback.email === "test2@example.com");
-            assert(userInCallback.recipeUserId.getAsString() === toLinkUser);
         });
 
-        it("calling generateEmailVerifyTokenPOST with AccountLinkingClaim gives already verfied for to link user if email is verified, and updates session even if not linked", async function () {
+        it("calling generateEmailVerifyTokenPOST with post login account linking sends email verification email for logged in user even if to link account is verified, and modifies session.", async function () {
             await startST();
             let userInCallback = undefined;
             supertokens.init({
@@ -1766,13 +1757,13 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
             let tokens = extractInfoFromResponse(res);
 
-            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
             // we unverify the session recipe's email just cause to make it mismatch from the
             // to link account's email
             await EmailVerification.unverifyEmail(epUser.loginMethods[0].recipeUserId);
 
-            let toLinkUserId = await session.getClaimValue(AccountLinking.AccountLinkingClaim);
+            let toLinkUserId = res.body.recipeUserId;
             let t2 = await EmailVerification.createEmailVerificationToken(
                 supertokens.convertToRecipeUserId(toLinkUserId)
             );
@@ -1794,21 +1785,21 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     })
             );
             assert(response !== undefined);
-            assert(response.body.status === "EMAIL_ALREADY_VERIFIED_ERROR");
+            assert(response.body.status === "OK");
 
             tokens = extractInfoFromResponse(response);
             assert(tokens.accessToken !== undefined);
             assert(tokens.accessTokenFromAny !== undefined);
             let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            let linkingClaimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            assert(linkingClaimValue === undefined);
             let evClaimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
-            assert(evClaimValue === true); // even though we marked the email as unverified, this hasn't changed.
+            assert(evClaimValue === false);
 
-            assert(userInCallback === undefined);
+            assert(userInCallback.id === epUser.id);
+            assert(userInCallback.email === "test@example.com");
+            assert(userInCallback.recipeUserId.getAsString() === epUser.loginMethods[0].recipeUserId.getAsString());
         });
 
-        it("calling generateEmailVerifyTokenPOST with AccountLinkingClaim removes it if already linked and sends email to main session's recipe user id", async function () {
+        it("calling generateEmailVerifyTokenPOST with post login account linking has no effect on session if accounts already linked.", async function () {
             await startST();
             let userInCallback = undefined;
             supertokens.init({
@@ -1902,15 +1893,13 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     })
             );
 
+            userInCallback = undefined; // we do this cause the above API sends an email verification email.
+
             let tokens = extractInfoFromResponse(res);
 
-            session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
-            // we unverify the session recipe's email just cause to make it mismatch from the
-            // to link account's email
-            await EmailVerification.unverifyEmail(epUser.loginMethods[0].recipeUserId);
-
-            let toLinkUserId = await session.getClaimValue(AccountLinking.AccountLinkingClaim);
+            let toLinkUserId = res.body.recipeUserId;
             let t2 = await EmailVerification.createEmailVerificationToken(
                 supertokens.convertToRecipeUserId(toLinkUserId)
             );
@@ -1930,20 +1919,13 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     })
             );
             assert(response !== undefined);
-            assert(response.body.status === "OK");
+            assert(response.body.status === "EMAIL_ALREADY_VERIFIED_ERROR");
 
             tokens = extractInfoFromResponse(response);
-            assert(tokens.accessToken !== undefined);
-            assert(tokens.accessTokenFromAny !== undefined);
-            let newSession = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            let linkingClaimValue = await newSession.getClaimValue(AccountLinking.AccountLinkingClaim);
-            assert(linkingClaimValue === undefined);
-            let evClaimValue = await newSession.getClaimValue(EmailVerification.EmailVerificationClaim);
-            assert(evClaimValue === false);
+            assert(tokens.accessToken === undefined);
+            assert(tokens.accessTokenFromAny === undefined);
 
-            assert(userInCallback.id === epUser.id);
-            assert(userInCallback.email === "test@example.com");
-            assert(userInCallback.recipeUserId.getAsString() === epUser.loginMethods[0].recipeUserId.getAsString());
+            assert(userInCallback === undefined);
         });
     });
 

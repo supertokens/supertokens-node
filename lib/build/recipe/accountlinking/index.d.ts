@@ -5,7 +5,6 @@ import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static AccountLinkingClaim: import("./accountLinkingClaim").AccountLinkingClaimClass;
     /**
      * This is a function which is a combination of createPrimaryUser and
      * linkAccounts where the input recipeUserID is either linked to a user that it can be
@@ -197,4 +196,3 @@ export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapp
 export declare const linkAccountsWithUserFromSession: typeof Wrapper.linkAccountsWithUserFromSession;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export type { RecipeInterface };
-export { AccountLinkingClaim } from "./accountLinkingClaim";

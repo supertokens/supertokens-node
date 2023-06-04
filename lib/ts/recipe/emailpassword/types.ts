@@ -298,11 +298,17 @@ export type APIInterface = {
                     wereAccountsAlreadyLinked: boolean;
                 }
               | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                     description: string;
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
+                }
+              | {
+                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                    description: string;
+                    recipeUserId: string;
+                    email: string;
                 }
               | GeneralErrorResponse
           >);
