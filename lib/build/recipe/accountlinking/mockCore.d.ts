@@ -17,6 +17,7 @@ declare type UserWithoutHelperFunctions = {
         verified: boolean;
     })[];
 };
+export declare function mockReset(): Promise<void>;
 export declare function mockCanLinkAccounts({
     recipeUserId,
     primaryUserId,

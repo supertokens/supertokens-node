@@ -26,6 +26,11 @@ let primaryUserMap: Map<string, RecipeUserId[]> = new Map(); // primary user id 
 
 let accountToLink: Map<string, string> = new Map(); // recipe user id -> primary user id
 
+export async function mockReset() {
+    primaryUserMap = new Map();
+    accountToLink = new Map();
+}
+
 export async function mockCanLinkAccounts({
     recipeUserId,
     primaryUserId,

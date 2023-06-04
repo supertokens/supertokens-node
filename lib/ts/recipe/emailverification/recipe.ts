@@ -37,6 +37,7 @@ import SessionError from "../session/error";
 import Session from "../session";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
+import { mockReset } from "./mockCore";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -126,6 +127,7 @@ export default class Recipe extends RecipeModule {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;
+        mockReset();
     }
 
     // abstract instance functions below...............

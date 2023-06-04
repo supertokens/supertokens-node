@@ -41,6 +41,7 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { mockReset } from "./mockCore";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -117,6 +118,7 @@ export default class Recipe extends RecipeModule {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;
+        mockReset();
     }
 
     // abstract instance functions below...............

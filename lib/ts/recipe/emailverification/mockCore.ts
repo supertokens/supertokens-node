@@ -5,6 +5,10 @@ import NormalisedURLPath from "../../normalisedURLPath";
 
 let tokenMap: { [key: string]: User } = {};
 
+export async function mockReset() {
+    tokenMap = {};
+}
+
 export async function mockGetEmailVerificationTokenInfo({
     token,
 }: {

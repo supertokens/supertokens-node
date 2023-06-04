@@ -7,6 +7,10 @@ let sessionHandles: {
     sessionHandle: string;
 }[] = [];
 
+export async function mockReset() {
+    sessionHandles = [];
+}
+
 export async function mockGetRefreshAPIResponse(requestBody: any, querier: any) {
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
     if (response.status === "OK") {

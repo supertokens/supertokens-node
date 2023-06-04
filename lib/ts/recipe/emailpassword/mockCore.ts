@@ -8,6 +8,10 @@ import AccountLinking from "../accountlinking/recipe";
 
 let passwordResetTokens: { [key: string]: { userId: string; email: string } } = {};
 
+export async function mockReset() {
+    passwordResetTokens = {};
+}
+
 export async function mockGetPasswordResetInfo(
     token: string
 ): Promise<
