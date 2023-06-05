@@ -76,13 +76,32 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-
     signInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         userContext: any;
-    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: User }
+        | {
+              status: "SIGN_IN_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
+
+    createNewOrUpdateEmailOfRecipeUser(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: string;
+        userContext: any;
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: User }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
 };
 
 export type APIOptions = {
@@ -98,81 +117,80 @@ export type APIOptions = {
 
 export type APIInterface = {
     authorisationUrlGET:
-    | undefined
-    | ((input: {
-        provider: TypeProvider;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            url: string;
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
 
     signInUpPOST:
-    | undefined
-    | ((input: {
-        provider: TypeProvider;
-        code: string;
-        redirectURI: string;
-        authCodeResponse?: any;
-        clientId?: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            createdNewUser: boolean;
-            user: User;
-            session: SessionContainerInterface;
-            authCodeResponse: any;
-        }
-        | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-        | {
-            status: "SIGNUP_NOT_ALLOWED";
-            reason: string;
-        }
-        | {
-            status: "SIGNIN_NOT_ALLOWED";
-            description: string;
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              authCodeResponse?: any;
+              clientId?: string;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    createdNewUser: boolean;
+                    user: User;
+                    session: SessionContainerInterface;
+                    authCodeResponse: any;
+                }
+              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+              | {
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | GeneralErrorResponse
+          >);
 
     linkAccountWithUserFromSessionPOST:
-    | undefined
-    | ((input: {
-        provider: TypeProvider;
-        code: string;
-        redirectURI: string;
-        authCodeResponse?: any;
-        clientId?: string;
-        session: SessionContainerInterface;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<
-        | {
-            status: "OK";
-            wereAccountsAlreadyLinked: boolean;
-            authCodeResponse: any;
-        }
-        | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-        | {
-            status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-            description: string;
-        }
-        | {
-            status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-            description: string;
-            recipeUserId: string;
-            email: string;
-        }
-        | GeneralErrorResponse
-    >);
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              authCodeResponse?: any;
+              clientId?: string;
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    wereAccountsAlreadyLinked: boolean;
+                    authCodeResponse: any;
+                }
+              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+              | {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+                    description: string;
+                }
+              | {
+                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+                    description: string;
+                    recipeUserId: string;
+                    email: string;
+                }
+              | GeneralErrorResponse
+          >);
 
     appleRedirectHandlerPOST:
-    | undefined
-    | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
+        | undefined
+        | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };

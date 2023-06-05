@@ -16,15 +16,36 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "./providers";
-import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
+import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static async signInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
+    static async signInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        isVerified: boolean,
+        userContext: any = {}
+    ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+            thirdPartyId,
+            thirdPartyUserId,
+            email,
+            isVerified,
+            userContext,
+        });
+    }
+
+    static async createNewOrUpdateEmailOfRecipeUser(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewOrUpdateEmailOfRecipeUser({
             thirdPartyId,
             thirdPartyUserId,
             email,
@@ -59,6 +80,8 @@ export let Error = Wrapper.Error;
 
 export let signInUp = Wrapper.signInUp;
 
+export let createNewOrUpdateEmailOfRecipeUser = Wrapper.createNewOrUpdateEmailOfRecipeUser;
+
 export let Google = Wrapper.Google;
 
 export let Github = Wrapper.Github;
@@ -79,4 +102,4 @@ export let GitLab = Wrapper.GitLab;
 
 // export let ActiveDirectory = Wrapper.ActiveDirectory;
 
-export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };
+export type { RecipeInterface, APIInterface, APIOptions, TypeProvider };

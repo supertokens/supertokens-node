@@ -1,4 +1,4 @@
-import { APIInterface, APIOptions, User, TypeProvider } from "../";
+import { APIInterface, APIOptions, TypeProvider } from "../";
 import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
@@ -6,7 +6,10 @@ import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import EmailVerification from "../../emailverification/recipe";
-import RecipeUserId from "../../../recipeUserId";
+import { User } from "../../../types";
+import type { RecipeLevelUser } from "../../accountlinking/types";
+import AccountLinking from "../../accountlinking/recipe";
+import { listUsersByAccountInfo } from "../../..";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -22,29 +25,19 @@ export default function getAPIInterface(): APIInterface {
         }): Promise<
             | {
                   status: "OK";
-                  user: User;
-                  session: SessionContainerInterface;
                   wereAccountsAlreadyLinked: boolean;
                   authCodeResponse: any;
               }
-            | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
+            | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
             | {
                   status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                   description: string;
               }
             | {
-                  status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                  isNotVerifiedAccountFromInputSession: boolean;
+                  status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
                   description: string;
+                  recipeUserId: string;
+                  email: string;
               }
             | GeneralErrorResponse
         > {
@@ -140,16 +133,15 @@ export default function getAPIInterface(): APIInterface {
               }
             | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
             | {
-                  status: "SIGNUP_NOT_ALLOWED";
+                  status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
               }
             | {
-                  status: "SIGNIN_NOT_ALLOWED";
-                  primaryUserId: string;
-                  description: string;
+                  status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
             | GeneralErrorResponse
         > {
+            // first we query the provider to get info from it.
             let userInfo;
             let accessTokenAPIResponse: any;
 
@@ -201,12 +193,60 @@ export default function getAPIInterface(): APIInterface {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER",
                 };
             }
+
+            // start of process to talk to the core below.
+
+            let existingUser = await listUsersByAccountInfo({
+                thirdParty: {
+                    id: provider.id,
+                    userId: userInfo.id,
+                },
+            });
+
+            if (existingUser.length > 0) {
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                    newUser: {
+                        recipeId: "thirdparty",
+                        email: emailInfo.id,
+                    },
+                    isVerified: emailInfo.isVerified,
+                    userContext,
+                });
+
+                if (!isSignUpAllowed) {
+                    return {
+                        status: "EMAIL_ALREADY_EXISTS_ERROR",
+                    };
+                }
+            }
+
             let response = await options.recipeImplementation.signInUp({
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.id,
                 email: emailInfo.id,
+                isVerified: emailInfo.isVerified,
                 userContext,
             });
+
+            if (response.status === "SIGN_IN_NOT_ALLOWED") {
+                return response;
+            }
+
+            let loginMethod: RecipeLevelUser | undefined = undefined;
+            for (let i = 0; i < response.user.loginMethods.length; i++) {
+                if (
+                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
+                        id: provider.id,
+                        userId: userInfo.id,
+                    })
+                ) {
+                    loginMethod = response.user.loginMethods[i];
+                }
+            }
+
+            if (loginMethod === undefined) {
+                throw new Error("Should never come here");
+            }
 
             // we set the email as verified if already verified by the OAuth provider.
             // This block was added because of https://github.com/supertokens/supertokens-core/issues/295
@@ -215,8 +255,8 @@ export default function getAPIInterface(): APIInterface {
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            recipeUserId: new RecipeUserId(response.user.id), // TODO: change to recipeUserId
-                            email: response.user.email,
+                            recipeUserId: loginMethod.recipeUserId,
+                            email: loginMethod.email!,
                             userContext,
                         }
                     );
@@ -233,7 +273,7 @@ export default function getAPIInterface(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                new RecipeUserId(response.user.id), // TODO: change to recipeUserId
+                loginMethod.recipeUserId,
                 {},
                 {},
                 userContext
