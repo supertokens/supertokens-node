@@ -45,7 +45,6 @@ export default function getRecipeInterface(
                 // we can use index 0 cause this is a new recipe user
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
-                isVerified: false,
                 userContext,
             });
 

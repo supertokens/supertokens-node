@@ -72,7 +72,7 @@ export default function getAPIImplementation(): APIInterface {
             const verifyCredentialsFunc = async (
                 userContext: any
             ): Promise<
-                | { status: "OK" }
+                | { status: "OK"; isEmailOrPhoneVerified: boolean }
                 | {
                       status: "CUSTOM_RESPONSE";
                       resp: {
@@ -87,7 +87,22 @@ export default function getAPIImplementation(): APIInterface {
                 });
 
                 if (signInResult.status === "OK") {
-                    return { status: "OK" };
+                    let loginMethod: (RecipeLevelUser & { verified: boolean }) | undefined = undefined;
+                    for (let i = 0; i < signInResult.user.loginMethods.length; i++) {
+                        if (
+                            signInResult.user.loginMethods[i].recipeId === "emailpassword" &&
+                            signInResult.user.loginMethods[i].hasSameEmailAs(email)
+                        ) {
+                            loginMethod = signInResult.user.loginMethods[i];
+                            break;
+                        }
+                    }
+
+                    if (loginMethod === undefined) {
+                        throw new Error("Should never come here");
+                    }
+
+                    return { status: "OK", isEmailOrPhoneVerified: loginMethod.verified };
                 } else {
                     return {
                         status: "CUSTOM_RESPONSE",
@@ -96,7 +111,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
             };
 
-            let accountLinkingInstance = await AccountLinking.getInstance();
+            let accountLinkingInstance = AccountLinking.getInstance();
             let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
                 status: "WRONG_CREDENTIALS_ERROR";
             }>({
@@ -572,6 +587,9 @@ export default function getAPIImplementation(): APIInterface {
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             token: tokenResponse.token,
+                            attemptAccountLinking: false, // we pass false here cause
+                            // we anyway do account linking in this API after this function is
+                            // called.
                             userContext,
                         });
                     }
@@ -720,7 +738,6 @@ export default function getAPIImplementation(): APIInterface {
                         // email is shared.
                         let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                             recipeUserId: createUserResponse.user.loginMethods[0].recipeUserId,
-                            isVerified: true,
                             checkAccountsToLinkTableAsWell: true,
                             userContext,
                         });

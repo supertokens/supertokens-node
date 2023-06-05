@@ -32,13 +32,11 @@ export default class Wrapper {
      */
     static async createPrimaryUserIdOrLinkAccounts(input: {
         recipeUserId: RecipeUserId;
-        isVerified: boolean;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }) {
         return await Recipe.getInstance().createPrimaryUserIdOrLinkAccounts({
             recipeUserId: input.recipeUserId,
-            isVerified: input.isVerified,
             checkAccountsToLinkTableAsWell: input.checkAccountsToLinkTableAsWell ?? true,
             userContext: input.userContext === undefined ? {} : input.userContext,
         });

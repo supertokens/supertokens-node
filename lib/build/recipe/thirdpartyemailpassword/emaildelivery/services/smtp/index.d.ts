@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";

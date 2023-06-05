@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { User } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";

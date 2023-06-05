@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ServiceInterface, TypeInput } from "../../../../../ingredients/smsdelivery/services/twilio";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";

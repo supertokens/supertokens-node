@@ -29,6 +29,8 @@ export default function getAPIImplementation(): APIInterface {
             let user = response.user;
 
             if (user.email !== undefined) {
+                // TODO: this goes in the recipe implementation file. before we attempt
+                // account linking.
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
@@ -42,6 +44,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             token: tokenResponse.token,
+                            attemptAccountLinking: false,
                             userContext: input.userContext,
                         });
                     }

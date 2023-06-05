@@ -48,7 +48,6 @@ import ThirdPartyRecipe from "../thirdparty/recipe";
 import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
-import ThirdParty from "../thirdparty";
 import Passwordless from "../passwordless";
 import ThirdPartyPasswordless from "../thirdpartypasswordless";
 import RecipeUserId from "../../recipeUserId";
@@ -258,15 +257,17 @@ async function _getUserForRecipeId(
         }
     } else if (recipeId === ThirdPartyRecipe.RECIPE_ID) {
         try {
-            const userResponse = await ThirdParty.getUserById(recipeUserId.getAsString());
-
-            if (userResponse !== undefined) {
-                user = {
-                    ...userResponse,
-                    recipeUserId: new RecipeUserId(userResponse.id),
-                    recipeId: "thirdparty",
-                };
-                recipe = "thirdparty";
+            ThirdPartyRecipe.getInstanceOrThrowError();
+            if (globalUser !== undefined) {
+                let loginMethod = globalUser.loginMethods.find(
+                    (u) => u.recipeId === "thirdparty" && u.recipeUserId.getAsString() === recipeUserId.getAsString()
+                );
+                if (loginMethod !== undefined) {
+                    user = {
+                        ...loginMethod,
+                    };
+                    recipe = "thirdparty";
+                }
             }
         } catch (e) {
             // No - op

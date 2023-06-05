@@ -126,6 +126,7 @@ export default class Wrapper {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
               recipeUserId: RecipeUserId;
+              email: string;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
@@ -181,6 +182,14 @@ export default class Wrapper {
         });
         if (response.status === "CUSTOM_RESPONSE") {
             return response.resp;
+        }
+        if (response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+            return {
+                status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                primaryUserId: response.primaryUserId,
+                recipeUserId: response.recipeUserId,
+                email: input.newUserEmail,
+            };
         }
         return response;
     }

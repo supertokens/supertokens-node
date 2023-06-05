@@ -1,4 +1,3 @@
-// @ts-nocheck
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,

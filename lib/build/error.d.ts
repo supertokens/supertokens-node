@@ -1,4 +1,3 @@
-// @ts-nocheck
 export default class SuperTokensError extends Error {
     private static errMagic;
     static BAD_INPUT_ERROR: "BAD_INPUT_ERROR";

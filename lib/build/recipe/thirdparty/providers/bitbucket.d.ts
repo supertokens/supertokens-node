@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TypeProvider } from "../types";
 declare type TypeThirdPartyProviderBitbucketConfig = {
     clientId: string;

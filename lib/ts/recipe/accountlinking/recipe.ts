@@ -19,7 +19,13 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import type { SessionContainerInterface } from "../session/types";
-import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
+import type {
+    TypeNormalisedInput,
+    RecipeInterface,
+    TypeInput,
+    AccountInfoWithRecipeId,
+    RecipeLevelUser,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
@@ -134,12 +140,10 @@ export default class Recipe extends RecipeModule {
     // this function returns the user ID for which the session will be created.
     createPrimaryUserIdOrLinkAccounts = async ({
         recipeUserId,
-        isVerified,
         checkAccountsToLinkTableAsWell,
         userContext,
     }: {
         recipeUserId: RecipeUserId;
-        isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }): Promise<string> => {
@@ -153,6 +157,18 @@ export default class Recipe extends RecipeModule {
 
         if (recipeUser.isPrimaryUser) {
             return recipeUser.id;
+        }
+
+        let loginMethod: (RecipeLevelUser & { verified: boolean }) | undefined = undefined;
+        for (let i = 0; i < recipeUser.loginMethods.length; i++) {
+            if (recipeUser.loginMethods[i].recipeUserId.getAsString() === recipeUserId.getAsString()) {
+                loginMethod = recipeUser.loginMethods[i];
+                break;
+            }
+        }
+
+        if (loginMethod === undefined) {
+            throw new Error("Should never come here");
         }
 
         // now we try and find a linking candidate.
@@ -178,7 +194,7 @@ export default class Recipe extends RecipeModule {
                 return recipeUserId.getAsString();
             }
 
-            if (shouldDoAccountLinking.shouldRequireVerification && !isVerified) {
+            if (shouldDoAccountLinking.shouldRequireVerification && !loginMethod.verified) {
                 return recipeUserId.getAsString();
             }
 
@@ -200,7 +216,6 @@ export default class Recipe extends RecipeModule {
             // So we do recursion here to try again.
             return await this.createPrimaryUserIdOrLinkAccounts({
                 recipeUserId,
-                isVerified,
                 checkAccountsToLinkTableAsWell,
                 userContext,
             });
@@ -220,7 +235,7 @@ export default class Recipe extends RecipeModule {
                 return recipeUserId.getAsString();
             }
 
-            if (shouldDoAccountLinking.shouldRequireVerification && !isVerified) {
+            if (shouldDoAccountLinking.shouldRequireVerification && !loginMethod.verified) {
                 return recipeUserId.getAsString();
             }
 
@@ -258,7 +273,6 @@ export default class Recipe extends RecipeModule {
                 // the accounts to link table (cause they we will end up in an infinite recursion).
                 return await this.createPrimaryUserIdOrLinkAccounts({
                     recipeUserId,
-                    isVerified,
                     checkAccountsToLinkTableAsWell: false,
                     userContext,
                 });

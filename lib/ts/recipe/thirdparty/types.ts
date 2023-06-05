@@ -167,6 +167,12 @@ export type APIInterface = {
               redirectURI: string;
               authCodeResponse?: any;
               clientId?: string;
+              fromProvider:
+                  | {
+                        userInfo: UserInfo;
+                        authCodeResponse: any;
+                    }
+                  | undefined;
               session: SessionContainerInterface;
               options: APIOptions;
               userContext: any;
@@ -177,6 +183,10 @@ export type APIInterface = {
                     authCodeResponse: any;
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+              | {
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
+                }
               | {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                     description: string;

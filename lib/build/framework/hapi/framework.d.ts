@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Request, ResponseToolkit, Plugin, ResponseObject } from "@hapi/hapi";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";

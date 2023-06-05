@@ -1,4 +1,3 @@
-// @ts-nocheck
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 export declare class Querier {

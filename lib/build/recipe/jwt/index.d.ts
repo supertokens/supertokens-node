@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 export default class Wrapper {

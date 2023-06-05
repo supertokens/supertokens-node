@@ -1,4 +1,3 @@
-// @ts-nocheck
 import STError from "../../error";
 export default class SessionError extends STError {
     static FIELD_ERROR: "FIELD_ERROR";

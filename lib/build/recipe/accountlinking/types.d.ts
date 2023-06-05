@@ -1,4 +1,3 @@
-// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import type { User } from "../../types";
 import { SessionContainerInterface } from "../session/types";

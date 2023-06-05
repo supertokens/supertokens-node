@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
@@ -134,6 +133,7 @@ export default class Wrapper {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
               recipeUserId: RecipeUserId;
+              email: string;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";

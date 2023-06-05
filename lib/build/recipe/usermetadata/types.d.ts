@@ -1,4 +1,3 @@
-// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import { JSONObject } from "../../types";
 export declare type TypeInput = {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
 export default class SupertokensService implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {

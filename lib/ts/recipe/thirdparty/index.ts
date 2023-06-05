@@ -17,6 +17,10 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "./providers";
 import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
+import RecipeUserId from "../../recipeUserId";
+import { SessionContainerInterface } from "../session/types";
+import EmailVerification from "../emailverification/recipe";
+import { linkAccountsWithUserFromSession } from "../accountlinking";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -39,18 +43,141 @@ export default class Wrapper {
         });
     }
 
-    static async createNewOrUpdateEmailOfRecipeUser(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: string,
-        userContext: any = {}
-    ) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewOrUpdateEmailOfRecipeUser({
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-            userContext,
+    /**
+     * This function is similar to linkAccounts, but it specifically
+     * works for when trying to link accounts with a user that you are already logged
+     * into. This can be used to implement, for example, connecting social accounts to your *
+     * existing email password account.
+     *
+     * This function also creates a new recipe user for the newUser if required.
+     */
+    static async linkThirdPartyAccountWithUserFromSession(input: {
+        session: SessionContainerInterface;
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: string;
+        isVerified: boolean;
+        userContext?: any;
+    }): Promise<
+        | {
+              status: "OK";
+              wereAccountsAlreadyLinked: boolean;
+          }
+        | {
+              status: "SIGN_IN_NOT_ALLOWED";
+              reason: string;
+          }
+        | {
+              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+              description: string;
+          }
+        | {
+              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+              primaryUserId: string;
+              recipeUserId: RecipeUserId;
+              email: string;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    > {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const createRecipeUserFunc = async (userContext: any): Promise<void> => {
+            let resp = await recipeInstance.recipeInterfaceImpl.createNewOrUpdateEmailOfRecipeUser({
+                thirdPartyId: input.thirdPartyId,
+                thirdPartyUserId: input.thirdPartyUserId,
+                email: input.email,
+                userContext,
+            });
+
+            if (resp.status === "OK") {
+                if (resp.createdNewUser) {
+                    if (input.isVerified) {
+                        const emailVerificationInstance = EmailVerification.getInstance();
+                        if (emailVerificationInstance) {
+                            const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                                {
+                                    recipeUserId: resp.user.loginMethods[0].recipeUserId,
+                                    email: input.email,
+                                    userContext,
+                                }
+                            );
+
+                            if (tokenResponse.status === "OK") {
+                                await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                    token: tokenResponse.token,
+                                    attemptAccountLinking: false, // we pass this cause in this API, we
+                                    // already try and do account linking.
+                                    userContext,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            // the other status type of EMAIL_CHANGE_NOT_ALLOWED_ERROR should not happen
+            // cause that is only possible when signing in, and here we only try and create
+            // a new user.
+        };
+
+        const verifyCredentialsFunc = async (
+            userContext: any
+        ): Promise<
+            | { status: "OK" }
+            | {
+                  status: "CUSTOM_RESPONSE";
+                  resp: {
+                      status: "SIGN_IN_NOT_ALLOWED";
+                      reason: string;
+                  };
+              }
+        > => {
+            let resp = await recipeInstance.recipeInterfaceImpl.createNewOrUpdateEmailOfRecipeUser({
+                thirdPartyId: input.thirdPartyId,
+                thirdPartyUserId: input.thirdPartyUserId,
+                email: input.email,
+                userContext,
+            });
+            if (resp.status === "OK") {
+                return {
+                    status: "OK",
+                };
+            }
+            return {
+                status: "CUSTOM_RESPONSE",
+                resp: {
+                    status: "SIGN_IN_NOT_ALLOWED",
+                    reason: resp.reason,
+                },
+            };
+        };
+
+        let response = await linkAccountsWithUserFromSession({
+            session: input.session,
+            newUser: {
+                recipeId: "thirdparty",
+                email: input.email,
+                thirdParty: {
+                    id: input.thirdPartyId,
+                    userId: input.thirdPartyUserId,
+                },
+            },
+            createRecipeUserFunc,
+            verifyCredentialsFunc,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
+        if (response.status === "CUSTOM_RESPONSE") {
+            return response.resp;
+        }
+        if (response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+            return {
+                status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                primaryUserId: response.primaryUserId,
+                recipeUserId: response.recipeUserId,
+                email: input.email,
+            };
+        }
+        return response;
     }
 
     static Google = thirdPartyProviders.Google;
@@ -80,7 +207,7 @@ export let Error = Wrapper.Error;
 
 export let signInUp = Wrapper.signInUp;
 
-export let createNewOrUpdateEmailOfRecipeUser = Wrapper.createNewOrUpdateEmailOfRecipeUser;
+export let linkThirdPartyAccountWithUserFromSession = Wrapper.linkThirdPartyAccountWithUserFromSession;
 
 export let Google = Wrapper.Google;
 

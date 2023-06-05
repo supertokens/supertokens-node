@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
@@ -22,6 +21,7 @@ export default class Wrapper {
     >;
     static verifyEmailUsingToken(
         token: string,
+        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {

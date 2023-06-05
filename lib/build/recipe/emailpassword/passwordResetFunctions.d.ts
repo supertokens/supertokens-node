@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NormalisedAppinfo } from "../../types";
 export declare function createAndSendCustomEmail(
     appInfo: NormalisedAppinfo

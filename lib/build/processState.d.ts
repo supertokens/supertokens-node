@@ -1,4 +1,3 @@
-// @ts-nocheck
 export declare enum PROCESS_STATE {
     CALLING_SERVICE_IN_VERIFY = 0,
     CALLING_SERVICE_IN_GET_API_VERSION = 1,

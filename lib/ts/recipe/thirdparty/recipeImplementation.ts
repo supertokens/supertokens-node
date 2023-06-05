@@ -4,6 +4,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { User } from "../../types";
 import AccountLinking from "../accountlinking/recipe";
 import { getUser } from "../..";
+import EmailVerification from "../emailverification/recipe";
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
     return {
@@ -67,11 +68,31 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             }
 
             if (response.createdNewUser) {
+                if (isVerified) {
+                    const emailVerificationInstance = EmailVerification.getInstance();
+                    if (emailVerificationInstance) {
+                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                recipeUserId: response.user.loginMethods[0].recipeUserId,
+                                email,
+                                userContext,
+                            }
+                        );
+
+                        if (tokenResponse.status === "OK") {
+                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                token: tokenResponse.token,
+                                attemptAccountLinking: false, // cause we will attempt it right below anyway..
+                                userContext,
+                            });
+                        }
+                    }
+                }
+
                 let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     // we can use index 0 cause this is a new recipe user
                     recipeUserId: response.user.loginMethods[0].recipeUserId,
                     checkAccountsToLinkTableAsWell: true,
-                    isVerified,
                     userContext,
                 });
 

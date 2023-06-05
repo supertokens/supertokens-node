@@ -1,4 +1,3 @@
-// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";

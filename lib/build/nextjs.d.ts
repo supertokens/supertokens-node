@@ -1,4 +1,3 @@
-// @ts-nocheck
 export default class NextJS {
     static superTokensNextWrapper<T>(
         middleware: (next: (middlewareError?: any) => void) => Promise<T>,

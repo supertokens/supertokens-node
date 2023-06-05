@@ -1,4 +1,3 @@
-// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 export declare type EmailDeliveryInterface<T> = {
     sendEmail: (

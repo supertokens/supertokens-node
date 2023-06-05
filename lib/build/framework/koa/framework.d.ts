@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Context, Next } from "koa";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";

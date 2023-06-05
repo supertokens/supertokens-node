@@ -63,9 +63,10 @@ export default class Wrapper {
         });
     }
 
-    static async verifyEmailUsingToken(token: string, userContext?: any) {
+    static async verifyEmailUsingToken(token: string, attemptAccountLinking: boolean = true, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
             token,
+            attemptAccountLinking,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

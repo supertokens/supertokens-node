@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import { SessionContainerInterface } from "../session/types";
@@ -16,7 +15,6 @@ export default class Wrapper {
      */
     static createPrimaryUserIdOrLinkAccounts(input: {
         recipeUserId: RecipeUserId;
-        isVerified: boolean;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }): Promise<string>;

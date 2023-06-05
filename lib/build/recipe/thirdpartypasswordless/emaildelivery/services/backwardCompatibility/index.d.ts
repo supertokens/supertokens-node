@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../types";
 import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";

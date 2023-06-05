@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { JSONObject } from "../../types";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";

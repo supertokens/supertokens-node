@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import {
@@ -77,6 +76,7 @@ export declare type RecipeInterface = {
     >;
     verifyEmailUsingToken(input: {
         token: string;
+        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {

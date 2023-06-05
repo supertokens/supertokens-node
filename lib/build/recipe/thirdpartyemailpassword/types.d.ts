@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, UserInfo } from "../thirdparty/types";
 import {
     NormalisedFormField,
     TypeInputFormField,
@@ -15,16 +14,6 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import { GeneralErrorResponse, User as GlobalUser } from "../../types";
 import RecipeUserId from "../../recipeUserId";
-export declare type User = {
-    id: string;
-    recipeUserId: string;
-    timeJoined: number;
-    email: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
-};
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
 };
@@ -59,21 +48,39 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getUserByThirdPartyInfo(input: {
-        thirdPartyId: string;
-        thirdPartyUserId: string;
-        userContext: any;
-    }): Promise<User | undefined>;
     thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: GlobalUser;
+          }
+        | {
+              status: "SIGN_IN_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
+    createNewOrUpdateEmailOfThirdPartyRecipeUser(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: GlobalUser;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
     emailPasswordSignUp(input: {
         email: string;
         password: string;
@@ -183,35 +190,37 @@ export declare type APIInterface = {
               redirectURI: string;
               authCodeResponse?: any;
               clientId?: string;
+              fromProvider:
+                  | {
+                        userInfo: UserInfo;
+                        authCodeResponse: any;
+                    }
+                  | undefined;
               session: SessionContainerInterface;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
-                    session: SessionContainerInterface;
                     wereAccountsAlreadyLinked: boolean;
                     authCodeResponse: any;
                 }
               | {
-                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
               | {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
+                    status: "SIGN_IN_NOT_ALLOWED";
+                    reason: string;
                 }
               | {
                     status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
                     description: string;
                 }
               | {
-                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                    isNotVerifiedAccountFromInputSession: boolean;
+                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
                     description: string;
+                    recipeUserId: string;
+                    email: string;
                 }
               | GeneralErrorResponse
           >);
@@ -299,23 +308,21 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     createdNewUser: boolean;
-                    user: User;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
               | {
-                    status: "SIGNUP_NOT_ALLOWED";
+                    status: "SIGN_IN_NOT_ALLOWED";
                     reason: string;
                 }
               | {
-                    status: "SIGNIN_NOT_ALLOWED";
-                    primaryUserId: string;
-                    description: string;
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     linkEmailPasswordAccountWithUserFromSessionPOST:
         | undefined

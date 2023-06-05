@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";
 import { RecipeInterface as EmailPasswordRecipeInterface } from "../../../../emailpassword";
 import { NormalisedAppinfo } from "../../../../../types";

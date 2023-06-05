@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TypeProvider } from "../types";
 declare type TypeThirdPartyProviderGitLabConfig = {
     clientId: string;

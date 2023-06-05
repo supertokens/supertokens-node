@@ -1,7 +1,6 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
+import { RecipeInterface, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 import RecipeUserId from "../../recipeUserId";
@@ -12,17 +11,19 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        isVerified: boolean,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-    }>;
-    static getUserByThirdPartyInfo(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        userContext?: any
-    ): Promise<User | undefined>;
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: import("../emailpassword").User;
+          }
+        | {
+              status: "SIGN_IN_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
     static emailPasswordSignUp(
         email: string,
         password: string,
@@ -126,7 +127,6 @@ export declare let Error: typeof SuperTokensError;
 export declare let emailPasswordSignUp: typeof Wrapper.emailPasswordSignUp;
 export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
 export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
-export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
@@ -139,5 +139,5 @@ export declare let Discord: typeof import("../thirdparty/providers/discord").def
 export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
 export declare let Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
 export declare let GitLab: typeof import("../thirdparty/providers/gitlab").default;
-export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+export type { RecipeInterface, TypeProvider, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;

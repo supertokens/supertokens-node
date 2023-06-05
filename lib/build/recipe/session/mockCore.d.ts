@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Querier } from "../../querier";
 export declare function mockReset(): Promise<void>;
 export declare function mockGetRefreshAPIResponse(requestBody: any, querier: any): Promise<any>;

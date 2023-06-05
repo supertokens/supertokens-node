@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
 import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
