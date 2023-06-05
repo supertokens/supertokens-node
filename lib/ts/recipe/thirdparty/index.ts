@@ -32,22 +32,6 @@ export default class Wrapper {
         });
     }
 
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
-
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
-
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
-            userContext,
-        });
-    }
-
     static Google = thirdPartyProviders.Google;
 
     static Github = thirdPartyProviders.Github;
@@ -74,12 +58,6 @@ export let init = Wrapper.init;
 export let Error = Wrapper.Error;
 
 export let signInUp = Wrapper.signInUp;
-
-export let getUserById = Wrapper.getUserById;
-
-export let getUsersByEmail = Wrapper.getUsersByEmail;
-
-export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
 
 export let Google = Wrapper.Google;
 
