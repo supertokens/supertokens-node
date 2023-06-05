@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";

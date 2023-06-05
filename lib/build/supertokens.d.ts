@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";

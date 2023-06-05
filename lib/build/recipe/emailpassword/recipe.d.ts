@@ -1,3 +1,4 @@
+// @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, HTTPMethod, RecipeListFunction } from "../../types";

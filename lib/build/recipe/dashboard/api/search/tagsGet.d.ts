@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { APIInterface, APIOptions } from "../../types";
 declare type TagsResponse = {
     status: "OK";

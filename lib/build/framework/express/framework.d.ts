@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Request, Response, NextFunction } from "express";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";

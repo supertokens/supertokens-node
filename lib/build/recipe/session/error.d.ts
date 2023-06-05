@@ -1,3 +1,4 @@
+// @ts-nocheck
 import STError from "../../error";
 import RecipeUserId from "../../recipeUserId";
 import { ClaimValidationError } from "./types";

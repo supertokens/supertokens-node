@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Recipe from "./recipe";
 import { VerifySessionOptions, RecipeInterface, TypeNormalisedInput, SessionContainerInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";

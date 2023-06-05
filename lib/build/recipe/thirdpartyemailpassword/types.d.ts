@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, UserInfo } from "../thirdparty/types";
 import {
     NormalisedFormField,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
@@ -80,9 +81,6 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserById(input: { userId: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByEmail(input: { email: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
     static updateUser(input: {
         userId: string;
         email?: string | null;
@@ -164,9 +162,6 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let createCode: typeof Wrapper.createCode;
 export declare let consumeCode: typeof Wrapper.consumeCode;
-export declare let getUserByEmail: typeof Wrapper.getUserByEmail;
-export declare let getUserById: typeof Wrapper.getUserById;
-export declare let getUserByPhoneNumber: typeof Wrapper.getUserByPhoneNumber;
 export declare let listCodesByDeviceId: typeof Wrapper.listCodesByDeviceId;
 export declare let listCodesByEmail: typeof Wrapper.listCodesByEmail;
 export declare let listCodesByPhoneNumber: typeof Wrapper.listCodesByPhoneNumber;

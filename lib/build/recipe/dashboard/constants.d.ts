@@ -1,3 +1,4 @@
+// @ts-nocheck
 export declare const DASHBOARD_API = "/dashboard";
 export declare const SIGN_IN_API = "/api/signin";
 export declare const SIGN_OUT_API = "/api/signout";

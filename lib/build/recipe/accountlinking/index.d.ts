@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import { SessionContainerInterface } from "../session/types";

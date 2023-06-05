@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
 import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";

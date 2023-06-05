@@ -244,10 +244,6 @@ export type RecipeInterface = {
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
-    getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>;
-    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
-
     updateUser: (input: {
         userId: string; // the id can be either recipeUserId or primaryUserId
         email?: string | null;

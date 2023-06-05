@@ -69,18 +69,6 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input });
     }
 
-    static getUserById(input: { userId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userContext: {}, ...input });
-    }
-
-    static getUserByEmail(input: { email: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ userContext: {}, ...input });
-    }
-
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({ userContext: {}, ...input });
-    }
-
     static updateUser(input: {
         userId: string;
         email?: string | null;
@@ -180,12 +168,6 @@ export let Error = Wrapper.Error;
 export let createCode = Wrapper.createCode;
 
 export let consumeCode = Wrapper.consumeCode;
-
-export let getUserByEmail = Wrapper.getUserByEmail;
-
-export let getUserById = Wrapper.getUserById;
-
-export let getUserByPhoneNumber = Wrapper.getUserByPhoneNumber;
 
 export let listCodesByDeviceId = Wrapper.listCodesByDeviceId;
 

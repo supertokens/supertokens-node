@@ -33,36 +33,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             );
             return response;
         },
-        getUserByEmail: async function (input) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/user"),
-                copyAndRemoveUserContext(input)
-            );
-            if (response.status === "OK") {
-                return response.user;
-            }
-            return undefined;
-        },
-        getUserById: async function (input) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/user"),
-                copyAndRemoveUserContext(input)
-            );
-            if (response.status === "OK") {
-                return response.user;
-            }
-            return undefined;
-        },
-        getUserByPhoneNumber: async function (input) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/user"),
-                copyAndRemoveUserContext(input)
-            );
-            if (response.status === "OK") {
-                return response.user;
-            }
-            return undefined;
-        },
         listCodesByDeviceId: async function (input) {
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath("/recipe/signinup/codes"),

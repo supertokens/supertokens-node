@@ -3,6 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
 import RecipeUserId from "../../../recipeUserId";
+import { listUsersByAccountInfo } from "../../..";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -146,24 +147,28 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         emailExistsGET: async function (input) {
-            let response = await input.options.recipeImplementation.getUserByEmail({
-                userContext: input.userContext,
-                email: input.email,
-            });
+            let users = await listUsersByAccountInfo(
+                {
+                    email: input.email,
+                },
+                input.userContext
+            );
 
             return {
-                exists: response !== undefined,
+                exists: users.length > 0,
                 status: "OK",
             };
         },
         phoneNumberExistsGET: async function (input) {
-            let response = await input.options.recipeImplementation.getUserByPhoneNumber({
-                userContext: input.userContext,
-                phoneNumber: input.phoneNumber,
-            });
+            let users = await listUsersByAccountInfo(
+                {
+                    phoneNumber: input.phoneNumber,
+                },
+                input.userContext
+            );
 
             return {
-                exists: response !== undefined,
+                exists: users.length > 0,
                 status: "OK",
             };
         },

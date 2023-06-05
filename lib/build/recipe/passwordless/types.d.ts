@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
@@ -195,9 +196,6 @@ export declare type RecipeInterface = {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>;
-    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
     updateUser: (input: {
         userId: string;
         email?: string | null;

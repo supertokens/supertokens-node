@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RecipeInterface } from "../types";
 import { Querier } from "../../../querier";
 import { TypeNormalisedInput } from "../../emailpassword/types";

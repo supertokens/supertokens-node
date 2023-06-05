@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
 import type { BaseRequest, BaseResponse } from "./framework";
 export declare function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined;

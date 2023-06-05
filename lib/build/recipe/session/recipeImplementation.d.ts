@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { JWTVerifyGetKey } from "jose";
 import { RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import OpenIdRecipe from "./recipe";
 export default class OpenIdRecipeWrapper {
     static init: typeof OpenIdRecipe.init;
