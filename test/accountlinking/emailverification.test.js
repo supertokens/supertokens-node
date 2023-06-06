@@ -73,7 +73,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
@@ -190,7 +191,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
@@ -309,14 +311,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
-            {
-                let token = await EmailVerification.createEmailVerificationToken(
-                    supertokens.convertToRecipeUserId(tpUser.user.id)
-                );
-                await EmailVerification.verifyEmailUsingToken(token.token);
-            }
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", true);
+            assert(tpUser.user.isPrimaryUser === true);
             let epUser = (await EmailPassword.signUp("test2@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
@@ -376,14 +372,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
-            {
-                let token = await EmailVerification.createEmailVerificationToken(
-                    supertokens.convertToRecipeUserId(tpUser.user.id)
-                );
-                await EmailVerification.verifyEmailUsingToken(token.token);
-            }
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", true);
+            assert(tpUser.user.isPrimaryUser === true);
 
             let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
