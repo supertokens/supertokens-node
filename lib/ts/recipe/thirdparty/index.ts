@@ -34,6 +34,9 @@ export default class Wrapper {
         isVerified: boolean,
         userContext: any = {}
     ) {
+        if (typeof isVerified !== "boolean") {
+            throw new global.Error("please change test");
+        }
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
             thirdPartyId,
             thirdPartyUserId,

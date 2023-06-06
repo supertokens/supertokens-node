@@ -5,6 +5,7 @@ import { User } from "../../types";
 import AccountLinking from "../accountlinking/recipe";
 import { getUser } from "../..";
 import EmailVerification from "../emailverification/recipe";
+import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
     return {
@@ -19,17 +20,21 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                   reason: string;
               }
         > {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
-                thirdPartyId,
-                thirdPartyUserId,
-                email: { id: email },
-            });
+            if (process.env.MOCK !== "true") {
+                let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+                    thirdPartyId,
+                    thirdPartyUserId,
+                    email: { id: email },
+                });
 
-            return {
-                status: "OK",
-                createdNewUser: response.createdNewUser,
-                user: response.user,
-            };
+                return {
+                    status: "OK",
+                    createdNewUser: response.createdNewUser,
+                    user: response.user,
+                };
+            } else {
+                return mockCreateNewOrUpdateEmailOfRecipeUser(thirdPartyId, thirdPartyUserId, email, querier);
+            }
         },
         signInUp: async function (
             this: RecipeInterface,
