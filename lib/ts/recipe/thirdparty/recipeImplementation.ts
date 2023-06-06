@@ -72,6 +72,8 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 };
             }
 
+            let userId = response.user.id;
+
             if (response.createdNewUser) {
                 if (isVerified) {
                     const emailVerificationInstance = EmailVerification.getInstance();
@@ -94,23 +96,23 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     }
                 }
 
-                let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     // we can use index 0 cause this is a new recipe user
                     recipeUserId: response.user.loginMethods[0].recipeUserId,
                     checkAccountsToLinkTableAsWell: true,
                     userContext,
                 });
+            }
 
-                let updatedUser = await getUser(userId, userContext);
+            let updatedUser = await getUser(userId, userContext);
 
-                if (updatedUser === undefined) {
-                    throw new Error("Should never come here.");
-                }
+            if (updatedUser === undefined) {
+                throw new Error("Should never come here.");
             }
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
-                user: response.user,
+                user: updatedUser,
             };
         },
     };

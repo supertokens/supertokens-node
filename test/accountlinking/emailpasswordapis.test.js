@@ -1155,7 +1155,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let res = await new Promise((resolve) =>
@@ -1214,7 +1214,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            await ThirdParty.signInUp("google", "abc", "test@example.com");
+            await ThirdParty.signInUp("google", "abc", "test@example.com", false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1275,11 +1275,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
-            let token = await EmailVerification.createEmailVerificationToken(
-                supertokens.convertToRecipeUserId(tpUser.user.id)
-            );
-            await EmailVerification.verifyEmailUsingToken(token.token);
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", true);
+            assert(tpUser.user.isPrimaryUser === true);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1345,13 +1342,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
-            let token = await EmailVerification.createEmailVerificationToken(
-                supertokens.convertToRecipeUserId(tpUser.user.id)
-            );
-            await EmailVerification.verifyEmailUsingToken(token.token, {
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", true, {
                 doNotLink: true,
             });
+            assert(tpUser.user.isPrimaryUser === false);
+            assert(tpUser.user.loginMethods[0].verified === true);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1409,8 +1404,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === true);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1454,7 +1449,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async () => {
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: false,
@@ -1468,7 +1468,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
+                doNotLink: true,
+            });
+            assert(tpUser.user.isPrimaryUser === false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1525,7 +1528,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let res = await new Promise((resolve) =>
@@ -1583,7 +1586,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            await ThirdParty.signInUp("google", "abc", "test@example.com");
+            await ThirdParty.signInUp("google", "abc", "test@example.com", false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2002,7 +2005,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let res = await new Promise((resolve) =>
@@ -2088,11 +2091,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
-            let token = await EmailVerification.createEmailVerificationToken(tpUser.user.id);
-            await EmailVerification.verifyEmailUsingToken(token.token, {
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", true, {
                 doNotLink: true,
             });
+            assert(tpUser.user.isPrimaryUser === false);
+            assert(tpUser.user.loginMethods[0].verified === true);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2177,7 +2180,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2262,9 +2265,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
-            let token = await EmailVerification.createEmailVerificationToken(tpUser.user.id);
-            await EmailVerification.verifyEmailUsingToken(token.token);
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", true);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2341,8 +2342,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === true);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2416,7 +2417,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async () => {
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: false,
@@ -2430,7 +2436,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
+                doNotLink: true,
+            });
+            assert(tpUser.user.isPrimaryUser === false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2506,7 +2515,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let res = await new Promise((resolve) =>
@@ -2583,7 +2592,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -3140,7 +3149,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
@@ -3229,7 +3238,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
 
             let epUser = await EmailPassword.signUp("test@example.com", "password1234");
 
