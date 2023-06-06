@@ -627,11 +627,14 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
     if (accountInfo.phoneNumber !== undefined) {
         // passwordless
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?phoneNumber=${accountInfo.phoneNumber}`, {
-                headers: {
-                    rid: "passwordless",
-                },
-            });
+            let response = await axios.get(
+                `http://localhost:8080/recipe/user?phoneNumber=${encodeURIComponent(accountInfo.phoneNumber)}`,
+                {
+                    headers: {
+                        rid: "passwordless",
+                    },
+                }
+            );
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
                 let userAlreadyAdded = false;
