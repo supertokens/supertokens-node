@@ -19,9 +19,7 @@ const Session = require("../../recipe/session");
 const sinon = require("sinon");
 const request = require("http");
 
-describe(`Session handling functions without modifying response: ${printPath(
-    "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
-)}`, function () {
+describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, function () {
     let requestMock;
     let clock;
     beforeEach(async function () {
