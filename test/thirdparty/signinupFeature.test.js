@@ -269,9 +269,11 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -306,9 +308,11 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
         assert.strictEqual(response2.body.createdNewUser, false);
-        assert.strictEqual(response2.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response2.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response2.body.user.email, "email@test.com");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
 
         let cookies2 = extractInfoFromResponse(response2);
         assert.notStrictEqual(cookies2.accessToken, undefined);
@@ -416,9 +420,11 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -457,9 +463,11 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
         assert.strictEqual(response2.body.createdNewUser, false);
-        assert.strictEqual(response2.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response2.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response2.body.user.email, "email@test.com");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.id, "custom");
+        assert.strictEqual(response2.body.user.loginMethods[0].thirdParty.userId, "user");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
 
         let cookies2 = extractInfoFromResponse(response2);
         assert.notStrictEqual(cookies2.accessToken, undefined);
