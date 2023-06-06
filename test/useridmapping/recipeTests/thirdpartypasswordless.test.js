@@ -77,10 +77,10 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
 
                 // retrieve the user info using the externalId, the id in the response should be the externalId
                 {
-                    let response = await ThirdPartyPasswordlessRecipe.getUserById(superTokensUserId);
+                    let response = await STExpress.getUser(superTokensUserId);
                     assert.ok(response !== undefined);
                     assert.strictEqual(response.id, externalId);
-                    assert.strictEqual(response.email, email);
+                    assert.strictEqual(response.emails[0], email);
                 }
             }
 
@@ -111,7 +111,7 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 });
 
                 // retrieve the user info using the externalId, the id in the response should be the externalId
-                let response = await ThirdPartyPasswordlessRecipe.getUserById(externalId);
+                let response = await STExpress.getUser(externalId);
                 assert.ok(response !== undefined);
                 assert.strictEqual(response.id, externalId);
             }
