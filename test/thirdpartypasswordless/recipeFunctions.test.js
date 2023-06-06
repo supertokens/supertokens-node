@@ -193,9 +193,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         {
-            let user = await ThirdPartyPasswordless.getUserById({
-                userId: "random",
-            });
+            let user = await STExpress.getUser("random");
 
             assert(user === undefined);
 
@@ -206,17 +204,17 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             ).user;
 
             let userId = user.id;
-            let result = await ThirdPartyPasswordless.getUserById(userId);
+            let result = await STExpress.getUser(userId);
 
             assert(result.id === user.id);
-            assert(result.email !== undefined && user.email === result.email);
-            assert(result.phoneNumber === undefined);
+            assert(result.emails[0] === user.email);
+            assert(result.phoneNumbers.length === 0);
             assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 3);
+            assert(Object.keys(result).length === 8);
         }
 
         {
-            let users = await ThirdPartyPasswordless.getUsersByEmail({
+            let users = await STExpress.listUsersByAccountInfo({
                 email: "random",
             });
 
@@ -228,25 +226,27 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 })
             ).user;
 
-            let result = await ThirdPartyPasswordless.getUsersByEmail(user.email);
+            let result = await STExpress.listUsersByAccountInfo({
+                email: user.email,
+            });
 
             assert(result.length === 1);
 
             let userInfo = result[0];
 
             assert(userInfo.id === user.id);
-            assert(userInfo.email === user.email);
-            assert(userInfo.phoneNumber === undefined);
+            assert(userInfo.emails[0] === user.email);
+            assert(userInfo.phoneNumbers.length === 0);
             assert(typeof userInfo.timeJoined === "number");
-            assert(Object.keys(userInfo).length === 3);
+            assert(Object.keys(userInfo).length === 8);
         }
 
         {
-            let user = await ThirdPartyPasswordless.getUserByPhoneNumber({
+            let user = await STExpress.listUsersByAccountInfo({
                 phoneNumber: "random",
             });
 
-            assert(user === undefined);
+            assert(user.length === 0);
 
             user = (
                 await ThirdPartyPasswordless.passwordlessSignInUp({
@@ -254,14 +254,14 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 })
             ).user;
 
-            let result = await ThirdPartyPasswordless.getUserByPhoneNumber({
+            let result = await STExpress.listUsersByAccountInfo({
                 phoneNumber: user.phoneNumber,
             });
-            assert(result.id === user.id);
-            assert(result.phoneNumber !== undefined && user.phoneNumber === result.phoneNumber);
-            assert(result.email === undefined);
-            assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 3);
+            assert(result[0].id === user.id);
+            assert(result[0].phoneNumbers[0] === user.phoneNumber);
+            assert(result[0].emails.length === 0);
+            assert(typeof result[0].timeJoined === "number");
+            assert(Object.keys(result[0]).length === 8);
         }
     });
 
@@ -603,9 +603,9 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             });
             assert(response.status === "OK");
 
-            let result = await ThirdPartyPasswordless.getUserById(userInfo.user.id);
+            let result = await STExpress.getUser(userInfo.user.id);
 
-            assert(result.email === "test2@example.com");
+            assert(result.emails[0] === "test2@example.com");
         }
         {
             // update user with invalid userId
@@ -676,9 +676,9 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             });
             assert(response.status === "OK");
 
-            let result = await ThirdPartyPasswordless.getUserById(userInfo.user.id);
+            let result = await STExpress.getUser(userInfo.user.id);
 
-            assert(result.phoneNumber === phoneNumber_2);
+            assert(result.phoneNumbers[0] === phoneNumber_2);
         }
         {
             // update user with a phoneNumber that already exists
