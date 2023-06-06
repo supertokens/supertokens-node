@@ -247,10 +247,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
+
+            assert(primaryUser.isPrimaryUser === false);
 
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(primaryUser.id));
 
@@ -310,7 +312,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -379,7 +381,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -437,7 +439,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.signInUp("google", "abc", "test2@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test2@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -488,7 +490,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -539,7 +541,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -604,7 +606,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let primaryUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -895,7 +897,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", {
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                 doNotLink: true,
             });
             assert(!tpUser.user.isPrimaryUser);
@@ -1200,7 +1202,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1295,7 +1297,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1388,7 +1390,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1483,7 +1485,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1570,7 +1572,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1650,7 +1652,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1725,7 +1727,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1733,7 +1735,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
 
             let thirdPartyUser2 = (
-                await ThirdParty.signInUp("google", "abc1", "test2@example.com", {
+                await ThirdParty.signInUp("google", "abc1", "test2@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1822,7 +1824,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1830,7 +1832,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(thirdPartyUser.id));
 
             let thirdPartyUser2 = (
-                await ThirdParty.signInUp("google", "abc1", "test2@example.com", {
+                await ThirdParty.signInUp("google", "abc1", "test2@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1912,7 +1914,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -1996,7 +1998,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // first we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2074,7 +2076,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // we create the first primary user
             let pUser = (
-                await ThirdParty.signInUp("google", "abc1", "test2@example.com", {
+                await ThirdParty.signInUp("google", "abc1", "test2@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2083,7 +2085,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // then we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2169,7 +2171,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // then we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2249,7 +2251,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // then we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2329,7 +2331,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // then we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2414,7 +2416,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // then we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2427,7 +2429,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
 
             // we create another primary user and link the recipe account to it
-            let newPrimaryUser = (await ThirdParty.signInUp("google", "abc1", "test2@example.com")).user;
+            let newPrimaryUser = (
+                await ThirdParty.signInUp("google", "abc1", "test2@example.com", false, {
+                    doNotLink: true,
+                })
+            ).user;
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(newPrimaryUser.id));
             let epUser = (await EmailPassword.signUp("test2@example.com", "password123")).user;
             assert(epUser.isPrimaryUser);
@@ -2497,7 +2503,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // then we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2577,7 +2583,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // we create the first primary user
             let pUser = (
-                await ThirdParty.signInUp("google", "abc1", "test2@example.com", {
+                await ThirdParty.signInUp("google", "abc1", "test2@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
@@ -2586,7 +2592,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             // then we create a recipe user with third party
             let thirdPartyUser = (
-                await ThirdParty.signInUp("google", "abc", "test@example.com", {
+                await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                     doNotLink: true,
                 })
             ).user;
