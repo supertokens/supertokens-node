@@ -415,6 +415,12 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             );
             assert(res !== undefined);
             assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
+            assert(res.body.primaryUserId === epUser.id);
+            let newEpUser = await supertokens.listUsersByAccountInfo({
+                email: "test2@example.com",
+            });
+            assert(res.body.recipeUserId === newEpUser[0].id);
+            assert(res.body.email === "test2@example.com");
 
             let newUser = await supertokens.getUser(res.body.recipeUserId);
             assert(newUser.emails[0] === "test2@example.com");
