@@ -40,7 +40,7 @@ const { default: DashboardRaw } = require("../../lib/build/recipe/dashboard/reci
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
-let { startST, killAllST, setupST, cleanST, customAuth0Provider } = require("./utils");
+let { startST, killAllST, setupST, cleanST, customAuth0Provider, stopST } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
