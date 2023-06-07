@@ -98,7 +98,9 @@ export default class SessionRecipe extends RecipeModule {
         if (SessionRecipe.instance !== undefined) {
             return SessionRecipe.instance;
         }
-        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
+        throw new Error(
+            "Initialisation not done. Did you forget to call the SuperTokens.init or Session.init function?"
+        );
     }
 
     static init(config?: TypeInput): RecipeListFunction {

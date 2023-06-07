@@ -46,17 +46,30 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init()],
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                ],
             });
 
             let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
 
             assert(user.isPrimaryUser === false);
 
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
             await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            user = await supertokens.getUser(user.id);
+            assert(user.isPrimaryUser === true);
+            assert(user.loginMethods[0].verified === true);
 
             let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                isVerified: true,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
             });
@@ -78,6 +91,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
                             if (userContext.doNotLink) {
@@ -100,10 +116,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 })
             ).user;
 
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token, false);
+
+            user = await supertokens.getUser(user.id);
             assert(user.isPrimaryUser === false);
 
             let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                isVerified: true,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
             });
@@ -129,6 +150,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
                             return {
@@ -145,10 +169,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 })
             ).user;
 
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token, false);
+            user = await supertokens.getUser(user.id);
+
             assert(user.isPrimaryUser === false);
 
             let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                isVerified: true,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
             });
@@ -192,9 +221,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             ).user;
 
             assert(user.isPrimaryUser === false);
+            assert(user.loginMethods[0].verified === false);
 
             let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                isVerified: false,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
             });
@@ -220,6 +249,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
                             if (userContext.doNotLink) {
@@ -262,10 +294,16 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 })
             ).user;
 
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token, false);
+            user = await supertokens.getUser(user.id);
+
             assert(user.isPrimaryUser === false);
+            assert(user.loginMethods[0].verified === true);
 
             let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                isVerified: true,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
             });
@@ -291,6 +329,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
                             return {
@@ -325,10 +366,16 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 })
             ).user;
 
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token, false);
+            user = await supertokens.getUser(user.id);
+
             assert(user.isPrimaryUser === false);
+            assert(user.loginMethods[0].verified === true);
 
             let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                isVerified: true,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
             });
@@ -395,9 +442,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             ).user;
 
             assert(user.isPrimaryUser === false);
+            assert(user.loginMethods[0].verified === false);
 
             let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                isVerified: false,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
             });
