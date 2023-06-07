@@ -13,6 +13,8 @@
  * under the License.
  */
 
+import { logDebugMessage } from "../../logger";
+
 const HEADERS = new Set([
     Buffer.from(
         JSON.stringify({
@@ -54,12 +56,20 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
     if (!HEADERS.has(splittedInput[0])) {
         const parsedHeader = JSON.parse(Buffer.from(splittedInput[0], "base64").toString());
 
-        // We have to ensure version is a string, otherwise Number.parseInt can have unexpected results
-        if (typeof parsedHeader.version !== "string") {
-            throw new Error("JWT header mismatch");
-        }
+        if (parsedHeader.version !== undefined) {
+            // We have to ensure version is a string, otherwise Number.parseInt can have unexpected results
+            if (typeof parsedHeader.version !== "string") {
+                throw new Error("JWT header mismatch");
+            }
 
-        version = Number.parseInt(parsedHeader.version);
+            version = Number.parseInt(parsedHeader.version);
+            logDebugMessage("parseJWTWithoutSignatureVerification: version from header: " + version);
+        } else {
+            logDebugMessage(
+                "parseJWTWithoutSignatureVerification: assuming latest version (3) because version header is missing"
+            );
+            version = 3;
+        }
         kid = parsedHeader.kid;
 
         // Number.isInteger returns false for Number.NaN (if it fails to parse the version)
