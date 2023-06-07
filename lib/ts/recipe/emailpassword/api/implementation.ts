@@ -47,6 +47,7 @@ export default function getAPIImplementation(): APIInterface {
                   description: string;
                   recipeUserId: string;
                   email: string;
+                  primaryUserId: string;
               }
             | GeneralErrorResponse
         > {
@@ -200,6 +201,7 @@ export default function getAPIImplementation(): APIInterface {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
                     recipeUserId: result.recipeUserId.getAsString(),
                     email,
+                    primaryUserId: result.primaryUserId,
                     description:
                         "Before accounts can be linked, the new account must be verified, and an email verification email has been sent already.",
                 };

@@ -581,14 +581,19 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
+            assert(res.body.primaryUserId === epUser.id);
+
+            let newEpUser = await supertokens.listUsersByAccountInfo({
+                email: "test2@example.com",
+            });
+
+            assert(res.body.recipeUserId === newEpUser[0].id);
+            assert(res.body.email === "test2@example.com");
 
             tokens = extractInfoFromResponse(res);
             assert(tokens.accessTokenFromAny === undefined);
             assert(userInCallback.id === epUser.id);
 
-            let newEpUser = await supertokens.listUsersByAccountInfo({
-                email: "test2@example.com",
-            });
             assert(userInCallback.recipeUserId.getAsString() === newEpUser[0].id);
             assert(userInCallback.email === "test2@example.com");
         });
@@ -809,14 +814,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
+            assert(res.body.primaryUserId === epUser.id);
+            let newEpUser = await supertokens.listUsersByAccountInfo({
+                email: "test2@example.com",
+            });
+            assert(res.body.recipeUserId === newEpUser[0].id);
+            assert(res.body.email === "test2@example.com");
 
             tokens = extractInfoFromResponse(res);
             assert(tokens.accessTokenFromAny === undefined);
             assert(userInCallback.id === epUser.id);
 
-            let newEpUser = await supertokens.listUsersByAccountInfo({
-                email: "test2@example.com",
-            });
             assert(userInCallback.recipeUserId.getAsString() === newEpUser[0].id);
             assert(userInCallback.email === "test2@example.com");
 

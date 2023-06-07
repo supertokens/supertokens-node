@@ -302,6 +302,7 @@ export declare type APIInterface = {
                     description: string;
                     recipeUserId: string;
                     email: string;
+                    primaryUserId: string;
                 }
               | GeneralErrorResponse
           >);
