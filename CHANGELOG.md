@@ -7,13 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [14.1.3] - 2023-06-07
-
-### Changes
-
--   Update email templates to fix an issue with styling on some email clients
-
 ## [14.1.2] - 2023-06-07
+
+### Fixes
+
+-   Fixed email templates to fix an issue with styling on some email clients
 
 ### Changes
 
