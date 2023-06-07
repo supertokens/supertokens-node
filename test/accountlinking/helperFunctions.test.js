@@ -1640,6 +1640,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
             assert(response.primaryUserId === thirdPartyUser.id);
+            assert(response.email === "test2@example.com");
             let recipeUsers = await supertokens.listUsersByAccountInfo({
                 email: "test2@example.com",
             });
@@ -1902,6 +1903,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // same email as an already linked account (test2@example.com third party account)
             assert(response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
             assert(response.primaryUserId === thirdPartyUser.id);
+            assert(response.email === "test3@example.com");
             let recipeUsers = await supertokens.listUsersByAccountInfo({
                 email: "test3@example.com",
             });
