@@ -919,6 +919,7 @@ export function getEmailVerifyEmailHTML(appName: string, email: string, verifica
 
 
                                                                     <p
+                                                                        id="meant-for"
                                                                         style="font-family: 'Helvetica', sans-serif; font-size: 16px; line-height: 26px; font-weight:400; text-align: center; color: #808080">
                                                                         This email is meant for <a
                                                                             style="font-family: 'Helvetica', sans-serif; text-align: center; word-break: break-all; font-weight: 400; font-size: 16px; line-height: 26px; color: #808080 !important;"
