@@ -1266,4 +1266,18 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         assert.equal(data.test, 1);
     });
+
+    it("invalid connectionURI should not cause init to throw", () => {
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:0000",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+    });
 });
