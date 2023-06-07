@@ -72,7 +72,7 @@ export default function getAPIImplementation(): APIInterface {
             const verifyCredentialsFunc = async (
                 userContext: any
             ): Promise<
-                | { status: "OK"; isEmailOrPhoneVerified: boolean }
+                | { status: "OK" }
                 | {
                       status: "CUSTOM_RESPONSE";
                       resp: {
@@ -87,22 +87,7 @@ export default function getAPIImplementation(): APIInterface {
                 });
 
                 if (signInResult.status === "OK") {
-                    let loginMethod: (RecipeLevelUser & { verified: boolean }) | undefined = undefined;
-                    for (let i = 0; i < signInResult.user.loginMethods.length; i++) {
-                        if (
-                            signInResult.user.loginMethods[i].recipeId === "emailpassword" &&
-                            signInResult.user.loginMethods[i].hasSameEmailAs(email)
-                        ) {
-                            loginMethod = signInResult.user.loginMethods[i];
-                            break;
-                        }
-                    }
-
-                    if (loginMethod === undefined) {
-                        throw new Error("Should never come here");
-                    }
-
-                    return { status: "OK", isEmailOrPhoneVerified: loginMethod.verified };
+                    return { status: "OK" };
                 } else {
                     return {
                         status: "CUSTOM_RESPONSE",
