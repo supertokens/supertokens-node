@@ -1043,9 +1043,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             let t2 = await EmailVerification.createEmailVerificationToken(
                 supertokens.convertToRecipeUserId(toLinkUserId)
             );
-            await EmailVerification.verifyEmailUsingToken(t2.token, {
-                doNotLink: true,
-            });
+            await EmailVerification.verifyEmailUsingToken(t2.token, false);
+            {
+                let user = await supertokens.getUser(toLinkUserId);
+                assert(user.isPrimaryUser === false);
+            }
 
             let response = await new Promise((resolve) =>
                 request(app)
@@ -1774,9 +1776,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             let t2 = await EmailVerification.createEmailVerificationToken(
                 supertokens.convertToRecipeUserId(toLinkUserId)
             );
-            await EmailVerification.verifyEmailUsingToken(t2.token, {
-                doNotLink: true,
-            });
+            await EmailVerification.verifyEmailUsingToken(t2.token, false);
+            {
+                let user = await supertokens.getUser(toLinkUserId);
+                assert(user.isPrimaryUser === false);
+            }
 
             let response = await new Promise((resolve) =>
                 request(app)

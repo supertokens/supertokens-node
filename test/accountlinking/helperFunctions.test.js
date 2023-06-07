@@ -940,9 +940,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let token = await EmailVerification.createEmailVerificationToken(
                 supertokens.convertToRecipeUserId(epUser.user.id)
             );
-            await EmailVerification.verifyEmailUsingToken(token.token, {
-                doNotLink: true,
-            });
+            await EmailVerification.verifyEmailUsingToken(token.token, false);
+            {
+                let user = await supertokens.getUser(epUser.user.id);
+                assert(user.isPrimaryUser === false);
+            }
 
             let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
                 doNotLink: true,
