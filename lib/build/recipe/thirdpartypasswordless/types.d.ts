@@ -373,7 +373,7 @@ export declare type APIInterface = {
                     reason: string;
                 }
               | {
-                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                    status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT";
                 }
               | GeneralErrorResponse
           >);

@@ -380,7 +380,7 @@ export default function getAPIInterface(): APIInterface {
                   reason: string;
               }
             | {
-                  status: "EMAIL_ALREADY_EXISTS_ERROR";
+                  status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT";
               }
             | GeneralErrorResponse
         > {
@@ -418,8 +418,10 @@ export default function getAPIInterface(): APIInterface {
                 });
 
                 if (!isSignUpAllowed) {
+                    // On the frontend, this should show a UI of asking the user
+                    // to login using a different method.
                     return {
-                        status: "EMAIL_ALREADY_EXISTS_ERROR",
+                        status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT",
                     };
                 }
             }
