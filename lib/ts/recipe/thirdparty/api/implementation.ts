@@ -407,7 +407,7 @@ export default function getAPIInterface(): APIInterface {
                 },
             });
 
-            if (existingUser.length > 0) {
+            if (existingUser.length === 0) {
                 let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "thirdparty",

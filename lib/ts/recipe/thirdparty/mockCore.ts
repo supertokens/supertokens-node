@@ -1,7 +1,8 @@
 import type { User } from "../../types";
-import { mockGetUser } from "../accountlinking/mockCore";
+import { mockGetUser, mockListUsersByAccountInfo } from "../accountlinking/mockCore";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import assert from "assert";
 
 export async function mockCreateNewOrUpdateEmailOfRecipeUser(
     thirdPartyId: string,
@@ -15,6 +16,35 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
           reason: string;
       }
 > {
+    let thirdPartyUser = await mockListUsersByAccountInfo({
+        accountInfo: {
+            thirdParty: {
+                id: thirdPartyId,
+                userId: thirdPartyUserId,
+            },
+        },
+    });
+
+    if (thirdPartyUser.length > 0) {
+        assert(thirdPartyUser.length === 1);
+        if (thirdPartyUser[0].isPrimaryUser === true) {
+            let userBasedOnEmail = await mockListUsersByAccountInfo({
+                accountInfo: {
+                    email,
+                },
+            });
+
+            for (let i = 0; i < userBasedOnEmail.length; i++) {
+                if (userBasedOnEmail[i].isPrimaryUser && userBasedOnEmail[i].id !== thirdPartyUser[0].id) {
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        reason: "Email already associated with another primary user.",
+                    };
+                }
+            }
+        }
+    }
+
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
         thirdPartyId,
         thirdPartyUserId,
