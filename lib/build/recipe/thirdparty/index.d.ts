@@ -58,9 +58,6 @@ export default class Wrapper {
               recipeUserId: RecipeUserId;
               email: string;
           }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
     >;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;

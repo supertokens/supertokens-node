@@ -80,9 +80,6 @@ export default class Wrapper {
               recipeUserId: RecipeUserId;
               email: string;
           }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
     > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const createRecipeUserFunc = async (userContext: any): Promise<void> => {
@@ -146,6 +143,14 @@ export default class Wrapper {
                     status: "OK",
                 };
             }
+
+            // this can really only come in here if the input user info is already
+            // linked to the session user. This is because if the input user info
+            // was linked to another user, then the linkAccountsWithUserFromSession
+            // function would return early with a ACCOUNT_LINKING_NOT_ALLOWED_ERROR
+            // error. And if the input user info is not a primary user, nor is it a
+            // linked user, then the createNewOrUpdateEmailOfRecipeUser would not return
+            // this status.
             return {
                 status: "CUSTOM_RESPONSE",
                 resp: {
