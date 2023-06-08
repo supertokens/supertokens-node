@@ -485,6 +485,351 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             }
         });
 
+        it("sign up in does not create primary user during sign in", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user1 = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+            assert(user1.isPrimaryUser === false);
+
+            user1 = (await ThirdParty.signInUp("google", "abcd", "test@example.com", true)).user;
+            assert(user1.isPrimaryUser === false);
+        });
+
+        it("sign up in does not link accounts during sign in", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === true);
+
+            let user1 = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+            assert(user1.isPrimaryUser === false);
+
+            user1 = (await ThirdParty.signInUp("google", "abcd", "test@example.com", true)).user;
+            assert(user1.isPrimaryUser === false);
+        });
+
+        it("sign up in links accounts during sign up with another third party account", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === true);
+
+            let user1 = (await ThirdParty.signInUp("google", "abcd", "test@example.com", true)).user;
+            assert(user1.isPrimaryUser === true);
+            assert(user1.id === user.id);
+            assert(user1.loginMethods.length === 2);
+            assert(user1.loginMethods[0].thirdParty.id === "github");
+            assert(user1.loginMethods[1].thirdParty.id === "google");
+        });
+
+        it("sign up creates primary user only if verified and verification is required and marks email as verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === true);
+
+            let isVerified = await EmailVerification.isEmailVerified(user.loginMethods[0].recipeUserId);
+            assert(isVerified === true);
+        });
+
+        it("sign up does not creates primary user if not verified and verification is required and does not mark email as verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", false)).user;
+            assert(user.isPrimaryUser === false);
+
+            let isVerified = await EmailVerification.isEmailVerified(user.loginMethods[0].recipeUserId);
+            assert(isVerified === false);
+        });
+
+        it("sign up creates primary user if not verified and verification is not required and does not mark email as verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", false)).user;
+            assert(user.isPrimaryUser === true);
+
+            let isVerified = await EmailVerification.isEmailVerified(user.loginMethods[0].recipeUserId);
+            assert(isVerified === false);
+        });
+
+        it("sign up does not crash if is verified boolean is true, but email verification recipe is not initialised, and does not create primary user", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === false);
+        });
+
+        it("sign up does not crash if is verified boolean is true, but email verification recipe is not initialised, and creates primary user if verification not required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === true);
+        });
+
         // it("sign up with account linking makes primary user if email verification is not require", async function () {
         //     await startST();
         //     supertokens.init({
