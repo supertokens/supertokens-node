@@ -743,7 +743,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             } catch (err) {
                 assert(
                     err.message ===
-                        "When signing up a passwordless user, please use exactly one of email or phone number to sign up, and not both."
+                        "For passwordless users, please use exactly one of email or phone number to sign up, and not both."
                 );
             }
 
@@ -761,10 +761,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 );
                 assert(false);
             } catch (err) {
-                assert(
-                    err.message ===
-                        "When signing up a third party user, please only pass in email to the isSignUpAllowed function."
-                );
+                assert(err.message === "For third party users, please only pass in their email.");
             }
         });
 
