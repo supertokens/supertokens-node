@@ -359,10 +359,15 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         userContext: any;
     }): Promise<boolean> => {
+        if (newUser.recipeId === "passwordless" && newUser.email !== undefined && newUser.phoneNumber !== undefined) {
+            throw new Error("Please use exactly one of email or phone number to sign up, and not both.");
+        }
+
         // we find other accounts based on the email / phone number.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo: newUser,
-            doUnionOfAccountInfo: true,
+            doUnionOfAccountInfo: true, // this doesn't matter much cause we
+            // are enforcing above that newUser just has one identifying info
             userContext,
         });
         if (users.length === 0) {
@@ -379,12 +384,8 @@ export default class Recipe extends RecipeModule {
         // link this account to that one), and we can't make this a primary user either (since
         // then there would be two primary users with the same email / phone number - which is
         // not allowed..)
-        let primaryUsers = users.filter((u) => u.isPrimaryUser);
-        if (primaryUsers.length > 1) {
-            logDebugMessage("isSignUpAllowed returning false cause new user can be linked to multiple primary users.");
-            return false;
-        }
-        if (primaryUsers.length === 0) {
+        const primaryUser = users.find((u) => u.isPrimaryUser);
+        if (primaryUser === undefined) {
             logDebugMessage("isSignUpAllowed no primary user exists");
             // since there is no primary user, it means that this user, if signed up, will end up
             // being the primary user. In this case, we check if any of the non primary user's
@@ -450,7 +451,6 @@ export default class Recipe extends RecipeModule {
             logDebugMessage("isSignUpAllowed returning " + shouldAllow);
             return shouldAllow;
         } else {
-            let primaryUser = primaryUsers[0];
             logDebugMessage("isSignUpAllowed primary user found");
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 newUser,
