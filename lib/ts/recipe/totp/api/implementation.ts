@@ -22,8 +22,8 @@ export default function getAPIImplementation(): APIInterface {
         createDevicePOST: async function (input) {
             const { session, options, ...rest } = input;
             let userIdentifierInfo = undefined;
-            const emailOrPhoneInfo = await TotpRecipe.getInstanceOrThrowError().getEmailOrPhoneForRecipeUserId(
-                session.getRecipeUserId(),
+            const emailOrPhoneInfo = await TotpRecipe.getInstanceOrThrowError().getUserIdentifierInfoForUserId(
+                session.getUserId(),
                 input.userContext
             );
             if (emailOrPhoneInfo.status === "OK") {
@@ -92,18 +92,6 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             return response;
-        },
-
-        isTotpEnabledGET: async function (input) {
-            const { session, options, ...rest } = input;
-            const args = { ...rest, userId: session.getUserId() };
-            let response = await input.options.recipeImplementation.listDevices(args);
-
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                return { status: "OK", isEnabled: false };
-            }
-
-            return { status: "OK", isEnabled: true };
         },
     };
 }

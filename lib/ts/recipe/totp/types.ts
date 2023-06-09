@@ -15,7 +15,6 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
-import RecipeUserId from "../../recipeUserId";
 import { NormalisedAppinfo } from "../../types";
 import type { SessionContainer } from "../session";
 
@@ -23,7 +22,7 @@ export type TypeInput = {
     issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
-    getEmailOrPhoneForRecipeUserId?: GetEmailOrPhoneForRecipeUserIdFunc;
+    getEmailOrPhoneForRecipeUserId?: GetUserIdentifierInfoForUserIdFunc;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -37,7 +36,7 @@ export type TypeNormalisedInput = {
     issuer: string;
     defaultSkew: number;
     defaultPeriod: number;
-    getEmailOrPhoneForRecipeUserId?: GetEmailOrPhoneForRecipeUserIdFunc;
+    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -56,7 +55,7 @@ export type RecipeInterface = {
         userIdentifierInfo?: string;
         userContext: any;
     }) => Promise<
-        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCode: string }
+        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCodeString: string }
         | { status: "DEVICE_ALREADY_EXISTS_ERROR" }
     >;
     verifyCode: (input: {
@@ -113,12 +112,12 @@ export type APIInterface = {
     createDevicePOST?: (input: {
         session: SessionContainer;
         deviceName: string;
-        period?: number;
         skew?: number;
+        period?: number;
         options: APIOptions;
         userContext: any;
     }) => Promise<
-        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCode: string }
+        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCodeString: string }
         | { status: "DEVICE_ALREADY_EXISTS_ERROR" }
     >;
     verifyCodePOST?: (input: {
@@ -149,20 +148,15 @@ export type APIInterface = {
         options: APIOptions;
         userContext: any;
     }) => Promise<{ status: "OK"; devices: { name: string; period: number; skew: number; verified: boolean }[] }>;
-    isTotpEnabledGET?: (input: {
-        session: SessionContainer;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{ status: "OK"; isEnabled: boolean }>;
 };
 
-export type GetEmailOrPhoneForRecipeUserIdFunc = (
-    recipeUserId: RecipeUserId,
+export type GetUserIdentifierInfoForUserIdFunc = (
+    userId: string,
     userContext: any
 ) => Promise<
     | {
           status: "OK";
           info: string;
       }
-    | { status: "EMAIL_AND_PHONE_DO_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
+    | { status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR" }
 >;

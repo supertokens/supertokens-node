@@ -32,7 +32,7 @@ export function validateAndNormaliseUserInput(
         issuer: config.issuer ?? appInfo.appName,
         defaultPeriod: config.defaultPeriod ?? 30,
         defaultSkew: config.defaultSkew ?? 1,
-        getEmailOrPhoneForRecipeUserId: config.getEmailOrPhoneForRecipeUserId,
+        getUserIdentifierInfoForUserId: config.getEmailOrPhoneForRecipeUserId,
         override,
     };
 }

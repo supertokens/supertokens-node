@@ -28,22 +28,24 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
     return {
         createDevice: async function (input) {
-            let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/totp/device"),
-                copyAndRemoveUserContext(input)
-            );
+            const { userContext, userIdentifierInfo, ...rest } = input;
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/totp/device"), {
+                ...rest,
+                skew: input.skew ?? config.defaultSkew,
+                period: input.period ?? config.defaultPeriod,
+            });
             if (response.status !== "OK") {
                 return response;
             }
 
             let issuerName = config.issuer;
-            let userIdentifier = input.userIdentifierInfo;
+            let userIdentifier = userIdentifierInfo;
             return {
                 status: "OK",
                 issuerName,
                 userIdentifier,
                 secret: response.secret,
-                qrCode: encodeURI(
+                qrCodeString: encodeURI(
                     `otpauth://totp/${issuerName}${userIdentifier ? ":" + userIdentifier : ""}` +
                         `?secret=${response.secret}&issuer=${issuerName}`
                 ),

@@ -19,20 +19,13 @@ import RecipeModule from "../../recipeModule";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
-import {
-    CREATE_DEVICE_API,
-    VERIFY_CODE_API,
-    VERIFY_DEVICE_API,
-    LIST_DEVICE_API,
-    REMOVE_DEVICE_API,
-    IS_TOTP_ENABLED_API,
-} from "./constants";
+import { CREATE_DEVICE_API, VERIFY_CODE_API, VERIFY_DEVICE_API, LIST_DEVICE_API, REMOVE_DEVICE_API } from "./constants";
 import {
     TypeInput,
     TypeNormalisedInput,
     RecipeInterface,
     APIInterface,
-    GetEmailOrPhoneForRecipeUserIdFunc,
+    GetUserIdentifierInfoForUserIdFunc,
 } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STError from "./error";
@@ -135,12 +128,6 @@ export default class TotpRecipe extends RecipeModule {
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(LIST_DEVICE_API),
             },
-            {
-                id: IS_TOTP_ENABLED_API,
-                disabled: this.apiImpl.isTotpEnabledGET === undefined,
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(IS_TOTP_ENABLED_API),
-            },
         ];
     };
 
@@ -178,7 +165,7 @@ export default class TotpRecipe extends RecipeModule {
     handleError = async (err: STError, _: BaseRequest, res: BaseResponse): Promise<void> => {
         if (err.fromRecipe === TotpRecipe.RECIPE_ID) {
             if (err.type === TotpError.TOTP_NOT_ENABLED_ERROR) {
-                sendNon200ResponseWithMessage(res, "TOTP is not enabled for the user", 400); // bad req
+                sendNon200ResponseWithMessage(res, "TOTP is not enabled for the user", 403); // bad req
             }
         }
         throw err;
@@ -192,15 +179,15 @@ export default class TotpRecipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === TotpRecipe.RECIPE_ID;
     };
 
-    getEmailOrPhoneForRecipeUserId: GetEmailOrPhoneForRecipeUserIdFunc = async (recipeUserId, userContext) => {
-        if (this.config.getEmailOrPhoneForRecipeUserId !== undefined) {
-            const userRes = await this.config.getEmailOrPhoneForRecipeUserId(recipeUserId, userContext);
+    getUserIdentifierInfoForUserId: GetUserIdentifierInfoForUserIdFunc = async (userId, userContext) => {
+        if (this.config.getUserIdentifierInfoForUserId !== undefined) {
+            const userRes = await this.config.getUserIdentifierInfoForUserId(userId, userContext);
             if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
                 return userRes;
             }
         }
 
-        let user = await getUser(recipeUserId.getAsString(), userContext);
+        let user = await getUser(userId, userContext);
 
         if (user === undefined) {
             return {
@@ -221,23 +208,20 @@ export default class TotpRecipe extends RecipeModule {
                 info: primaryLoginMethod.email,
                 status: "OK",
             };
+        } else if (user.emails.length > 0) {
+            // fallback on trying the first email
+            return { info: user.emails[0], status: "OK" };
         } else if (primaryLoginMethod.phoneNumber !== undefined) {
             return {
                 info: primaryLoginMethod.phoneNumber,
                 status: "OK",
             };
-        } else {
-            // fallback on trying the first email or phone number
-            if (user.emails.length > 0) {
-                return { info: user.emails[0], status: "OK" };
-            }
-            if (user.phoneNumbers.length > 0) {
-                return { info: user.phoneNumbers[0], status: "OK" };
-            }
-
-            return {
-                status: "EMAIL_AND_PHONE_DO_NOT_EXIST_ERROR",
-            };
+        } else if (user.phoneNumbers.length > 0) {
+            return { info: user.phoneNumbers[0], status: "OK" };
         }
+
+        return {
+            status: "USER_IDENTIFIER_INFO_DOES_NOT_EXIST_ERROR",
+        };
     };
 }
