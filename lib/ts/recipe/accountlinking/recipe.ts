@@ -359,7 +359,16 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         userContext: any;
     }): Promise<boolean> => {
+        if (newUser.email !== undefined && newUser.phoneNumber !== undefined) {
+            // we do this check cause below when we call listUsersByAccountInfo,
+            // we only pass in one of email or phone number
+            throw new Error("Please pass one of email or phone number, not both");
+        }
+
         // we find other accounts based on the email / phone number.
+        // we do not pass in third party info, or both email or phone
+        // cause we want to guarantee that the output array contains just one
+        // primary user.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo:
                 newUser.email !== undefined
@@ -566,6 +575,12 @@ export default class Recipe extends RecipeModule {
               resp: T;
           }
     > => {
+        if (newUser.email !== undefined && newUser.phoneNumber !== undefined) {
+            // we do this check cause below when we call listUsersByAccountInfo,
+            // we only pass in one of email or phone number
+            throw new Error("Please pass one of email or phone number, not both");
+        }
+
         // In order to link the newUser to the session user,
         // we need to first make sure that the session user
         // is a primary user (or make them one if they are not).
@@ -696,6 +711,9 @@ export default class Recipe extends RecipeModule {
         }
 
         // in order to link accounts, we need to have the recipe user ID of the new account.
+        // we do not pass in third party info, or both email or phone
+        // cause we want to guarantee that the output array contains just one
+        // primary user.
         let usersArrayThatHaveSameAccountInfoAsNewUser = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo:
                 newUser.email !== undefined
