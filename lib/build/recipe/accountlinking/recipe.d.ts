@@ -102,4 +102,3 @@ export default class Recipe extends RecipeModule {
           }
     >;
 }
-export declare function assertNewUserInfoPassedContainsTheRightFields(newUser: AccountInfoWithRecipeId): void;

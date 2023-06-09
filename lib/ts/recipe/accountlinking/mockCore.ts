@@ -564,6 +564,13 @@ export async function mockListUsersByAccountInfo({
     accountInfo: AccountInfo;
     doUnionOfAccountInfo: boolean;
 }): Promise<User[]> {
+    if (
+        accountInfo.email === undefined &&
+        accountInfo.phoneNumber === undefined &&
+        accountInfo.thirdParty === undefined
+    ) {
+        throw new Error("Please pass at least one account info field");
+    }
     let users: User[] = [];
     if (accountInfo.email !== undefined) {
         // email password

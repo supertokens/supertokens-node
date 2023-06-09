@@ -165,6 +165,10 @@ export default class Wrapper {
             newUser: {
                 recipeId: "thirdparty",
                 email: input.email,
+                thirdParty: {
+                    id: input.thirdPartyId,
+                    userId: input.thirdPartyUserId,
+                },
             },
             createRecipeUserFunc,
             verifyCredentialsFunc,
