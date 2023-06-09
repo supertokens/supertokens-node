@@ -716,6 +716,58 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(isAllowed);
         });
 
+        it("calling isSignUpAllowed throws an error if more than one identifying info is used", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            try {
+                await AccountLinking.isSignUpAllowed(
+                    {
+                        recipeId: "passwordless",
+                        email: "test@example.com",
+                        phoneNumber: "",
+                    },
+                    true
+                );
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "When signing up a passwordless user, please use exactly one of email or phone number to sign up, and not both."
+                );
+            }
+
+            try {
+                await AccountLinking.isSignUpAllowed(
+                    {
+                        recipeId: "thirdparty",
+                        email: "test@example.com",
+                        thirdParty: {
+                            id: "",
+                            userId: "",
+                        },
+                    },
+                    true
+                );
+                assert(false);
+            } catch (err) {
+                assert(
+                    err.message ===
+                        "When signing up a third party user, please only pass in email to the isSignUpAllowed function."
+                );
+            }
+        });
+
         it("calling isSignUpAllowed returns true if user exists with same email, but is not a primary user, and email verification not required", async function () {
             await startST();
             supertokens.init({

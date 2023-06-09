@@ -360,7 +360,14 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }): Promise<boolean> => {
         if (newUser.recipeId === "passwordless" && newUser.email !== undefined && newUser.phoneNumber !== undefined) {
-            throw new Error("Please use exactly one of email or phone number to sign up, and not both.");
+            throw new Error(
+                "When signing up a passwordless user, please use exactly one of email or phone number to sign up, and not both."
+            );
+        }
+        if (newUser.recipeId === "thirdparty" && newUser.thirdParty !== undefined) {
+            throw new Error(
+                "When signing up a third party user, please only pass in email to the isSignUpAllowed function."
+            );
         }
 
         // we find other accounts based on the email / phone number.
