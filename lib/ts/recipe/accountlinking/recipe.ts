@@ -383,6 +383,10 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
+        if (users.filter((u) => u.isPrimaryUser).length > 1) {
+            throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
+        }
+
         // now we check if there exists some primary user with the same email / phone number
         // such that that info is not verified for that account. In this case, we do not allow
         // sign up cause we cannot link this new account to that primary account yet (since
