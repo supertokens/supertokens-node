@@ -408,7 +408,6 @@ export async function mockGetUsers(
     users: User[];
     nextPaginationToken?: string;
 }> {
-    // TODO: needs to take into account primaryUserMap table.
     let includeRecipeIdsStr = undefined;
     if (input.includeRecipeIds !== undefined) {
         includeRecipeIdsStr = input.includeRecipeIds.join(",");
@@ -560,11 +559,11 @@ async function isEmailVerified(userId: string, email: string | undefined): Promi
 
 export async function mockListUsersByAccountInfo({
     accountInfo,
+    doUnionOfAccountInfo,
 }: {
     accountInfo: AccountInfo;
     doUnionOfAccountInfo: boolean;
 }): Promise<User[]> {
-    // TODO:...
     let users: User[] = [];
     if (accountInfo.email !== undefined) {
         // email password
@@ -688,6 +687,32 @@ export async function mockListUsersByAccountInfo({
                 }
             }
         }
+    }
+
+    if (!doUnionOfAccountInfo) {
+        users = users.filter((u) => {
+            let pass = true;
+            if (accountInfo.email !== undefined) {
+                if (u.emails.find((e) => e === accountInfo.email) === undefined) {
+                    pass = false;
+                }
+            }
+            if (accountInfo.phoneNumber !== undefined) {
+                if (u.phoneNumbers.find((p) => p === accountInfo.phoneNumber) === undefined) {
+                    pass = false;
+                }
+            }
+            if (accountInfo.thirdParty !== undefined) {
+                if (
+                    u.thirdParty.find(
+                        (t) => t.id === accountInfo.thirdParty?.id && t.userId === accountInfo.thirdParty?.userId
+                    ) === undefined
+                ) {
+                    pass = false;
+                }
+            }
+            return pass;
+        });
     }
 
     return users;

@@ -111,6 +111,7 @@ export declare function mockGetUsers(
 export declare function createUserObject(input: UserWithoutHelperFunctions): User;
 export declare function mockListUsersByAccountInfo({
     accountInfo,
+    doUnionOfAccountInfo,
 }: {
     accountInfo: AccountInfo;
     doUnionOfAccountInfo: boolean;
