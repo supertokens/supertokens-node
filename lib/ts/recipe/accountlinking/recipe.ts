@@ -327,6 +327,24 @@ export default class Recipe extends RecipeModule {
             // if we return one of them, it won't be able to be linked anyway
             // cause if we did, it would mean 2 primary users would have the
             // same account info. So we return undefined
+
+            /**
+             * this being said, with the current set of auth recipes, it should
+             * never come here - cause:
+             * ----> If the recipeuserid is a passwordless user, then it can have either a phone
+             * email or both. If it has just one of them, then anyway 2 primary users can't
+             * exist with the same phone number / email. If it has both, then the only way
+             * that it can have multiple primary users returned is if there is another passwordless
+             * primary user with the same phone number - which is not possible, cause phone
+             * numbers are unique across passwordless users.
+             *
+             * ----> If the input is a third party user, then it has third party info and an email. Now there can be able to primary user with the same email, but
+             * there can't be another thirdparty user with the same third party info (since that is unique).
+             * Nor can there an email password primary user with the same email along with another
+             * thirdparty primary user with the same email (since emails can't be the same across primary users).
+             *
+             * ----> If the input is an email password user, then it has an email. There can't be multiple primary users with the same email anyway.
+             */
             return undefined;
         }
         return pUsers.length === 0 ? undefined : pUsers[0];
