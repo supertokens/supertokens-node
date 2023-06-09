@@ -359,16 +359,9 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         userContext: any;
     }): Promise<boolean> => {
-        if (newUser.recipeId === "passwordless" && newUser.email !== undefined && newUser.phoneNumber !== undefined) {
-            throw new Error(
-                "When signing up a passwordless user, please use exactly one of email or phone number to sign up, and not both."
-            );
-        }
-        if (newUser.recipeId === "thirdparty" && newUser.thirdParty !== undefined) {
-            throw new Error(
-                "When signing up a third party user, please only pass in email to the isSignUpAllowed function."
-            );
-        }
+        // we do the checks below to enforce that listUsersByAccountInfo only returns a
+        // single primary user id in the set of users it returns.
+        assertNewUserInfoPassedContainsTheRightFields(newUser);
 
         // we find other accounts based on the email / phone number.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
@@ -575,6 +568,10 @@ export default class Recipe extends RecipeModule {
               resp: T;
           }
     > => {
+        // we do the checks below to enforce that listUsersByAccountInfo only returns a
+        // single primary user id in the set of users it returns.
+        assertNewUserInfoPassedContainsTheRightFields(newUser);
+
         // In order to link the newUser to the session user,
         // we need to first make sure that the session user
         // is a primary user (or make them one if they are not).
@@ -707,10 +704,14 @@ export default class Recipe extends RecipeModule {
         // in order to link accounts, we need to have the recipe user ID of the new account.
         let usersArrayThatHaveSameAccountInfoAsNewUser = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo: newUser,
-            doUnionOfAccountInfo: true, // we pass true here cause newUser can exist from
-            // before and have email and phone number (in case of passwordless for example)
+            doUnionOfAccountInfo: true, // this doesn't matter much cause we
+            // are enforcing above that newUser just has one identifying info
             userContext,
         });
+
+        if (usersArrayThatHaveSameAccountInfoAsNewUser.filter((u) => u.isPrimaryUser).length > 1) {
+            throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
+        }
 
         const userObjThatHasSameAccountInfoAndRecipeIdAsNewUser = usersArrayThatHaveSameAccountInfoAsNewUser.find(
             (u) =>
@@ -735,15 +736,12 @@ export default class Recipe extends RecipeModule {
             recipe user will not be a candidate for automatic account linking in the future
             */
 
-            let otherPrimaryUsers = usersArrayThatHaveSameAccountInfoAsNewUser.filter((u) => u.isPrimaryUser);
-            for (let i = 0; i < otherPrimaryUsers.length; i++) {
-                if (otherPrimaryUsers[i].id !== existingUser.id) {
-                    return {
-                        status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                        description:
-                            "Not allowed because it will lead to two primary user id having same account info.",
-                    };
-                }
+            let otherPrimaryUser = usersArrayThatHaveSameAccountInfoAsNewUser.find((u) => u.isPrimaryUser);
+            if (otherPrimaryUser !== undefined && otherPrimaryUser.id !== existingUser.id) {
+                return {
+                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
+                    description: "Not allowed because it will lead to two primary user id having same account info.",
+                };
             }
 
             // we create the new recipe user
@@ -844,4 +842,42 @@ export default class Recipe extends RecipeModule {
             };
         }
     };
+}
+
+export function assertNewUserInfoPassedContainsTheRightFields(newUser: AccountInfoWithRecipeId) {
+    if (newUser.recipeId === undefined) {
+        throw new Error("Please pass in a recipeId in the input");
+    }
+    if (newUser.recipeId === "passwordless") {
+        if (newUser.email !== undefined && newUser.phoneNumber !== undefined) {
+            throw new Error(
+                "For passwordless users, please use exactly one of email or phone number to sign up, and not both."
+            );
+        }
+        if (newUser.email === undefined && newUser.phoneNumber === undefined) {
+            throw new Error("For passwordless users, please use exactly one of email or phone number.");
+        }
+
+        if (newUser.thirdParty !== undefined) {
+            throw new Error("For passwordless users, please do not pass in thirdparty info");
+        }
+    }
+
+    if (newUser.recipeId === "thirdparty") {
+        if (newUser.thirdParty !== undefined || newUser.phoneNumber !== undefined) {
+            throw new Error("For third party users, please only pass in their email.");
+        }
+        if (newUser.email === undefined) {
+            throw new Error("For third party users, please pass in their email.");
+        }
+    }
+
+    if (newUser.recipeId === "emailpassword") {
+        if (newUser.thirdParty !== undefined || newUser.phoneNumber !== undefined) {
+            throw new Error("For email password users, please only pass in the email");
+        }
+        if (newUser.email === undefined) {
+            throw new Error("For third party users, please pass in their email");
+        }
+    }
 }
