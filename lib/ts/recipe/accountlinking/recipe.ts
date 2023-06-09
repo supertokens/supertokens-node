@@ -317,10 +317,19 @@ export default class Recipe extends RecipeModule {
         // the email / phone number / third party ID.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo: user.loginMethods[0],
-            doUnionOfAccountInfo: false,
+            doUnionOfAccountInfo: true,
             userContext,
         });
-        return users.find((u) => u.isPrimaryUser);
+        let pUsers = users.filter((u) => u.isPrimaryUser);
+        if (pUsers.length > 1) {
+            // this means that the new user has account info such that it's
+            // spread across multiple primary user IDs. In this case, even
+            // if we return one of them, it won't be able to be linked anyway
+            // cause if we did, it would mean 2 primary users would have the
+            // same account info. So we return undefined
+            return undefined;
+        }
+        return pUsers.length === 0 ? undefined : pUsers[0];
     };
 
     isSignUpAllowed = async ({
