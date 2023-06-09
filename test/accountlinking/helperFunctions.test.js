@@ -2695,10 +2695,35 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init()],
+                recipeList: [
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    Session.init(),
+                ],
             });
 
-            // TODO:..
+            await EmailPassword.signUp("test@example.com", "password123");
+
+            await ThirdParty.signInUp("google", "abc", "test@example.com", false);
+
+            let users = await supertokens.listUsersByAccountInfo({
+                email: "test@example.com",
+                thirdParty: {
+                    id: "google",
+                    userId: "abc",
+                },
+            });
+
+            assert(users.length === 1);
         });
 
         it("listUsersByAccountInfo does OR properly", async function () {
@@ -2713,10 +2738,38 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init()],
+                recipeList: [
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    Session.init(),
+                ],
             });
 
-            // TODO:..
+            await EmailPassword.signUp("test@example.com", "password123");
+
+            await ThirdParty.signInUp("google", "abc", "test@example.com", false);
+
+            let users = await supertokens.listUsersByAccountInfo(
+                {
+                    email: "test@example.com",
+                    thirdParty: {
+                        id: "google",
+                        userId: "abc",
+                    },
+                },
+                true
+            );
+
+            assert(users.length === 2);
         });
     });
 });
