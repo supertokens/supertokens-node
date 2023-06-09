@@ -345,7 +345,7 @@ export default class Recipe extends RecipeModule {
              *
              * ----> If the input is an email password user, then it has an email. There can't be multiple primary users with the same email anyway.
              */
-            return undefined;
+            throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
         }
         return pUsers.length === 0 ? undefined : pUsers[0];
     };
@@ -376,10 +376,6 @@ export default class Recipe extends RecipeModule {
             logDebugMessage("isSignUpAllowed returning true because no user with given account info");
             // this is a brand new email / phone number, so we allow sign up.
             return true;
-        }
-
-        if (users.filter((u) => u.isPrimaryUser).length > 1) {
-            throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
         }
 
         // now we check if there exists some primary user with the same email / phone number
@@ -712,10 +708,6 @@ export default class Recipe extends RecipeModule {
             doUnionOfAccountInfo: false, // this doesn't matter since we are passing just one search field
             userContext,
         });
-
-        if (usersArrayThatHaveSameAccountInfoAsNewUser.filter((u) => u.isPrimaryUser).length > 1) {
-            throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
-        }
 
         const userObjThatHasSameAccountInfoAndRecipeIdAsNewUser = usersArrayThatHaveSameAccountInfoAsNewUser.find(
             (u) =>
