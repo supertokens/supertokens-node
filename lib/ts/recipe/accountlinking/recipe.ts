@@ -317,6 +317,7 @@ export default class Recipe extends RecipeModule {
         // the email / phone number / third party ID.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo: user.loginMethods[0],
+            doUnionOfAccountInfo: false,
             userContext,
         });
         return users.find((u) => u.isPrimaryUser);
@@ -334,6 +335,7 @@ export default class Recipe extends RecipeModule {
         // we find other accounts based on the email / phone number.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo: newUser,
+            doUnionOfAccountInfo: true,
             userContext,
         });
         if (users.length === 0) {
@@ -350,8 +352,12 @@ export default class Recipe extends RecipeModule {
         // link this account to that one), and we can't make this a primary user either (since
         // then there would be two primary users with the same email / phone number - which is
         // not allowed..)
-        let primaryUser = users.find((u) => u.isPrimaryUser);
-        if (primaryUser === undefined) {
+        let primaryUsers = users.filter((u) => u.isPrimaryUser);
+        if (primaryUsers.length > 1) {
+            logDebugMessage("isSignUpAllowed returning false cause new user can be linked to multiple primary users.");
+            return false;
+        }
+        if (primaryUsers.length === 0) {
             logDebugMessage("isSignUpAllowed no primary user exists");
             // since there is no primary user, it means that this user, if signed up, will end up
             // being the primary user. In this case, we check if any of the non primary user's
@@ -417,6 +423,7 @@ export default class Recipe extends RecipeModule {
             logDebugMessage("isSignUpAllowed returning " + shouldAllow);
             return shouldAllow;
         } else {
+            let primaryUser = primaryUsers[0];
             logDebugMessage("isSignUpAllowed primary user found");
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 newUser,
@@ -662,6 +669,8 @@ export default class Recipe extends RecipeModule {
         // in order to link accounts, we need to have the recipe user ID of the new account.
         let usersArrayThatHaveSameAccountInfoAsNewUser = await this.recipeInterfaceImpl.listUsersByAccountInfo({
             accountInfo: newUser,
+            doUnionOfAccountInfo: true, // we pass true here cause newUser can exist from
+            // before and have email and phone number (in case of passwordless for example)
             userContext,
         });
 
@@ -688,12 +697,15 @@ export default class Recipe extends RecipeModule {
             recipe user will not be a candidate for automatic account linking in the future
             */
 
-            let otherPrimaryUser = usersArrayThatHaveSameAccountInfoAsNewUser.find((u) => u.isPrimaryUser);
-            if (otherPrimaryUser !== undefined && otherPrimaryUser.id !== existingUser.id) {
-                return {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "Not allowed because it will lead to two primary user id having same account info.",
-                };
+            let otherPrimaryUsers = usersArrayThatHaveSameAccountInfoAsNewUser.filter((u) => u.isPrimaryUser);
+            for (let i = 0; i < otherPrimaryUsers.length; i++) {
+                if (otherPrimaryUsers[i].id !== existingUser.id) {
+                    return {
+                        status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
+                        description:
+                            "Not allowed because it will lead to two primary user id having same account info.",
+                    };
+                }
             }
 
             // we create the new recipe user

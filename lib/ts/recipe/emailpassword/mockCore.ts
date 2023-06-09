@@ -219,6 +219,7 @@ export async function mockUpdateEmailOrPassword(input: {
                     accountInfo: {
                         email: input.email,
                     },
+                    doUnionOfAccountInfo: false,
                     userContext: {},
                 }
             );

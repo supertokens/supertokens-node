@@ -86,6 +86,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 email,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -110,6 +111,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 phoneNumber,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -134,6 +136,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 thirdParty,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -298,6 +301,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 email,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -316,6 +320,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 phoneNumber,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -334,6 +339,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 thirdParty,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -552,7 +558,13 @@ async function isEmailVerified(userId: string, email: string | undefined): Promi
     return response.data.status === "OK" && response.data.isVerified;
 }
 
-export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]> {
+export async function mockListUsersByAccountInfo({
+    accountInfo,
+}: {
+    accountInfo: AccountInfo;
+    doUnionOfAccountInfo: boolean;
+}): Promise<User[]> {
+    // TODO:...
     let users: User[] = [];
     if (accountInfo.email !== undefined) {
         // email password

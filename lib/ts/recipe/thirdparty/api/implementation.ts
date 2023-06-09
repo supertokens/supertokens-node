@@ -400,12 +400,16 @@ export default function getAPIInterface(): APIInterface {
                 };
             }
 
-            let existingUser = await listUsersByAccountInfo({
-                thirdParty: {
-                    id: provider.id,
-                    userId: userInfo.id,
+            let existingUser = await listUsersByAccountInfo(
+                {
+                    thirdParty: {
+                        id: provider.id,
+                        userId: userInfo.id,
+                    },
                 },
-            });
+                false,
+                userContext
+            );
 
             if (existingUser.length === 0) {
                 let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({

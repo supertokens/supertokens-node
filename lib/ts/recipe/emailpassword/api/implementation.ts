@@ -251,9 +251,12 @@ export default function getAPIImplementation(): APIInterface {
             // even if the above returns true, we still need to check if there
             // exists an email password user with the same email cause the function
             // above does not check for that.
-            let users = await listUsersByAccountInfo({
-                email,
-            });
+            let users = await listUsersByAccountInfo(
+                {
+                    email,
+                },
+                false
+            );
             let emailPasswordUserExists =
                 users.find((u) => {
                     return (
@@ -344,9 +347,12 @@ export default function getAPIImplementation(): APIInterface {
             /**
              * check if primaryUserId is linked with this email
              */
-            let users = await listUsersByAccountInfo({
-                email,
-            });
+            let users = await listUsersByAccountInfo(
+                {
+                    email,
+                },
+                false
+            );
 
             // we find the recipe user ID of the email password account from the user's list
             // for later use.

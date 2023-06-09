@@ -288,7 +288,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
 
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
-            { accountInfo }: { accountInfo: AccountInfo }
+            { accountInfo, doUnionOfAccountInfo }: { accountInfo: AccountInfo; doUnionOfAccountInfo: boolean }
         ): Promise<User[]> {
             if (process.env.MOCK !== "true") {
                 let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
@@ -296,7 +296,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 });
                 return result.users;
             } else {
-                return mockListUsersByAccountInfo({ accountInfo });
+                return mockListUsersByAccountInfo({ accountInfo, doUnionOfAccountInfo });
             }
         },
 

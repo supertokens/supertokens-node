@@ -2681,4 +2681,42 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
         });
     });
+
+    describe("listUsersByAccountInfo tests", function () {
+        it("listUsersByAccountInfo does and properly", async function () {
+            await startST();
+
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            // TODO:..
+        });
+
+        it("listUsersByAccountInfo does OR properly", async function () {
+            await startST();
+
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            // TODO:..
+        });
+    });
 });

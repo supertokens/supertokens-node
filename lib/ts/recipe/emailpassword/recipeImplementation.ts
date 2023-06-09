@@ -212,6 +212,7 @@ export default function getRecipeInterface(
                             accountInfo: {
                                 email: input.email,
                             },
+                            doUnionOfAccountInfo: false,
                             userContext: input.userContext,
                         }
                     );

@@ -23,6 +23,7 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
                 userId: thirdPartyUserId,
             },
         },
+        doUnionOfAccountInfo: false,
     });
 
     if (thirdPartyUser.length > 0) {
@@ -32,6 +33,7 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
                 accountInfo: {
                     email,
                 },
+                doUnionOfAccountInfo: false,
             });
 
             for (let i = 0; i < userBasedOnEmail.length; i++) {

@@ -76,7 +76,11 @@ export default class SuperTokensWrapper {
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
     static getUser(userId: string, userContext?: any): Promise<User | undefined>;
-    static listUsersByAccountInfo(accountInfo: AccountInfo, userContext?: any): Promise<User[]>;
+    static listUsersByAccountInfo(
+        accountInfo: AccountInfo,
+        doUnionOfAccountInfo?: boolean,
+        userContext?: any
+    ): Promise<User[]>;
     static deleteUser(
         userId: string,
         removeAllLinkedAccounts?: boolean,
