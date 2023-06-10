@@ -402,7 +402,7 @@ export default function getAPIInterface(): APIInterface {
                 };
             }
 
-            let existingUser = await listUsersByAccountInfo(
+            let existingUsers = await listUsersByAccountInfo(
                 {
                     thirdParty: {
                         id: provider.id,
@@ -413,11 +413,15 @@ export default function getAPIInterface(): APIInterface {
                 userContext
             );
 
-            if (existingUser.length === 0) {
+            if (existingUsers.length === 0) {
                 let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
                     newUser: {
                         recipeId: "thirdparty",
                         email: emailInfo.id,
+                        thirdParty: {
+                            id: provider.id,
+                            userId: userInfo.id,
+                        },
                     },
                     isVerified: emailInfo.isVerified,
                     userContext,

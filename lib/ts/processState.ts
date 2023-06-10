@@ -23,6 +23,7 @@ export enum PROCESS_STATE {
     // linkAccountWithUserFromSession function during tests
     ACCOUNT_LINKING_NOT_ALLOWED_ERROR_END_OF_linkAccountWithUserFromSession_FUNCTION,
     IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS,
+    IS_SIGN_UP_ALLOWED_CALLED,
 }
 
 export class ProcessState {

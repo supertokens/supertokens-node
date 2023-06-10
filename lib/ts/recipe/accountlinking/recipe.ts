@@ -359,6 +359,7 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         userContext: any;
     }): Promise<boolean> => {
+        ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED);
         if (newUser.email !== undefined && newUser.phoneNumber !== undefined) {
             // we do this check cause below when we call listUsersByAccountInfo,
             // we only pass in one of email or phone number
