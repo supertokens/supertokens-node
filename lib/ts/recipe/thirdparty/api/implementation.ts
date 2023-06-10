@@ -66,6 +66,7 @@ export default function getAPIInterface(): APIInterface {
                   recipeUserId: string;
                   primaryUserId: string;
                   email: string;
+                  authCodeResponse: any;
               }
             | GeneralErrorResponse
         > {
@@ -274,6 +275,7 @@ export default function getAPIInterface(): APIInterface {
 
                 return {
                     status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+                    authCodeResponse: fromProvider.authCodeResponse,
                     recipeUserId: result.recipeUserId.getAsString(),
                     email: fromProvider.userInfo.email!.id,
                     primaryUserId: result.primaryUserId,

@@ -344,6 +344,7 @@ export declare type APIInterface = {
                     recipeUserId: string;
                     primaryUserId: string;
                     email: string;
+                    authCodeResponse: any;
                 }
               | GeneralErrorResponse
           >);

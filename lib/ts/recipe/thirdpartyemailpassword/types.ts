@@ -208,6 +208,7 @@ export type APIInterface = {
                     recipeUserId: string;
                     primaryUserId: string;
                     email: string;
+                    authCodeResponse: any;
                 }
               | GeneralErrorResponse
           >);
