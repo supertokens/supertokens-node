@@ -77,7 +77,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                             id: "user",
                             email: {
                                 id: "email@test.com",
-                                isVerified: true,
+                                isVerified: false,
                             },
                         };
                     },
@@ -239,6 +239,433 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
 
             assert(response.body.status === "OK");
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
+            );
+        });
+
+        it("signInUpPOST returns EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT if isSignUpAllowed returns false", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailNotVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
+            assert(tpUser.isPrimaryUser === true);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-no-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT");
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) !== undefined
+            );
+        });
+
+        it("signInUpPOST successfully links account and returns the session of the right recipe user if it's a sign up", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
+            assert(tpUser.isPrimaryUser === true);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "OK");
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) !== undefined
+            );
+            assert(response.body.createdNewUser === true);
+
+            let pUser = await supertokens.getUser(tpUser.id);
+            assert(pUser.isPrimaryUser === true);
+            assert(pUser.loginMethods.length === 2);
+            assert(pUser.loginMethods[1].thirdParty.id === "custom-ev");
+            assert(pUser.loginMethods[0].thirdParty.id === "google");
+
+            // checking session
+            tokens = extractInfoFromResponse(response);
+            let session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            assert(session.getUserId() === tpUser.id);
+            assert(session.getRecipeUserId().getAsString() === pUser.loginMethods[1].recipeUserId.getAsString());
+        });
+
+        it("signInUpPOST successfully does NOT links account and returns the session of the right recipe user if it's a sign in", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
+            assert(tpUser.isPrimaryUser === true);
+
+            let tpUser2 = (
+                await ThirdParty.signInUp("custom-ev", "user", "email@test.com", true, {
+                    doNotLink: true,
+                })
+            ).user;
+            assert(tpUser2.isPrimaryUser === false);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "OK");
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
+            );
+            assert(response.body.createdNewUser === false);
+
+            let pUser = await supertokens.getUser(tpUser.id);
+            assert(pUser.isPrimaryUser === true);
+            assert(pUser.loginMethods.length === 1);
+            assert(pUser.loginMethods[0].thirdParty.id === "google");
+
+            let recipeUser = await supertokens.getUser(tpUser2.id);
+            assert(recipeUser.isPrimaryUser === false);
+            assert(recipeUser.loginMethods.length === 1);
+            assert(recipeUser.loginMethods[0].thirdParty.id === "custom-ev");
+
+            // checking session
+            tokens = extractInfoFromResponse(response);
+            let session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+            assert(session.getUserId() === tpUser2.id);
+            assert(session.getRecipeUserId().getAsString() === recipeUser.loginMethods[0].recipeUserId.getAsString());
+        });
+
+        it("signInUpPOST gives the right user in the override on successful account linking", async function () {
+            await startST();
+            let userInCallback = undefined;
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        override: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    signInUpPOST: async function (input) {
+                                        let response = await oI.signInUpPOST(input);
+                                        if (response.status === "OK") {
+                                            userInCallback = response.user;
+                                        }
+                                        return response;
+                                    },
+                                };
+                            },
+                        },
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
+            assert(tpUser.isPrimaryUser === true);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "OK");
+
+            let pUser = await supertokens.getUser(tpUser.id);
+            assert(pUser.isPrimaryUser === true);
+            assert(pUser.loginMethods.length === 2);
+            assert(pUser.loginMethods[1].thirdParty.id === "custom-ev");
+            assert(pUser.loginMethods[0].thirdParty.id === "google");
+
+            assert(userInCallback !== undefined);
+            assert.equal(JSON.stringify(pUser), JSON.stringify(userInCallback));
+        });
+
+        it("signInUpPOST returns SIGN_IN_NOT_ALLOWED if the sign in user's email has changed to another primary user's email", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("custom-ev", "user", "email2@test.com", true)).user;
+            assert(tpUser.isPrimaryUser === true);
+
+            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            assert(tpUser2.isPrimaryUser === true);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "SIGN_IN_NOT_ALLOWED");
+            assert(response.body.reason === "Email already associated with another primary user.");
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
             );
