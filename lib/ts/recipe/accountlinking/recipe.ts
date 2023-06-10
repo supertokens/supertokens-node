@@ -445,8 +445,8 @@ export default class Recipe extends RecipeModule {
                     }
                 }
                 if (!thisIterationIsVerified) {
-                    // even if one of the users is not verified, we do not allow sign up.
-                    // sure allows attackers to create email password accounts with an email
+                    // even if one of the users is not verified, we do not allow sign up (see why above).
+                    // Sure, this allows attackers to create email password accounts with an email
                     // to block actual users from signing up, but that's ok, since those
                     // users will just see an email already exists error and then will try another
                     // login method. They can also still just go through the password reset flow
@@ -757,6 +757,31 @@ export default class Recipe extends RecipeModule {
                     description: "Not allowed because it will lead to two primary user id having same account info.",
                 };
             }
+
+            /**
+             * We do not call isSignUpAllowed because it returns false in the following cases:
+             *
+             * - There exists no primary user with the same email or phone number as the new user,
+             * but there exists other recipe users with the same email or phone number, and at least
+             * one of these recipe users have their info as unverified. See the comments in
+             * isSignUpAllowed for more info on why we prevented this. But we allow it here cause
+             * if we didn't and forced the user to verify the other recipe user, it may end
+             * up that that user becomes a primary user, in which case, linking to the existing
+             * session's account will not be possible.
+             *
+             * - There exists a primary user with the same email / phone number that is not verified.
+             * If the current session is that primary user, then we still allow linking cause
+             * they have logged into the current session as well (proving they have ownership
+             * of the account). If that current session is NOT that primary user, then it
+             * would have failed in the above check itself.
+             *
+             * - This email is not verified, and there exists a primary user for this email / phone
+             * number. The only way it can come here is if that primary user is the current session's
+             * user as well (else the above check would fail). So we are OK with linking even though
+             * the newUser is not verified cause they have logged into the primary user's account
+             * when calling this function proving ownership AND the emails are the same.
+             *
+             */
 
             // we create the new recipe user
             await createRecipeUserFunc(userContext);

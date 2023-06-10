@@ -716,6 +716,34 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(isAllowed);
         });
 
+        it("calling isSignUpAllowed throws an error if email and phone number is provided to it.", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            try {
+                await AccountLinking.isSignUpAllowed(
+                    {
+                        phoneNumber: "",
+                        email: "test@example.com",
+                    },
+                    true
+                );
+                assert(false);
+            } catch (err) {
+                assert(err.message === "Please pass one of email or phone number, not both");
+            }
+        });
+
         it("calling isSignUpAllowed returns true if user exists with same email, but is not a primary user, and email verification not required", async function () {
             await startST();
             supertokens.init({
@@ -1196,6 +1224,56 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 response.description ===
                     "Accounts cannot be linked because the session belongs to a user ID that does not exist in SuperTokens."
             );
+        });
+
+        it("calling linkAccountWithUserFromSession throws an error if email and phone number is provided to it", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                supertokens.convertToRecipeUserId("random")
+            );
+
+            try {
+                await AccountLinking.linkAccountsWithUserFromSession({
+                    session,
+                    newUser: {
+                        recipeId: "passwordless",
+                        email: "test@example.com",
+                        phoneNumber: "",
+                    },
+                    createRecipeUserFunc: () => {},
+                    verifyCredentialsFunc: () => {
+                        return {
+                            status: "OK",
+                        };
+                    },
+                });
+                assert(false);
+            } catch (err) {
+                assert(err.message === "Please pass one of email or phone number, not both");
+            }
         });
 
         it("calling linkAccountWithUserFromSession makes the session user a primary user and then links.", async function () {
