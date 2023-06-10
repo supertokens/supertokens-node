@@ -118,8 +118,8 @@ export default class Wrapper {
      */
     static linkEmailPasswordAccountsWithUserFromSession(input: {
         session: SessionContainerInterface;
-        newUserEmail: string;
-        newUserPassword: string;
+        email: string;
+        password: string;
         userContext?: any;
     }): Promise<
         | {

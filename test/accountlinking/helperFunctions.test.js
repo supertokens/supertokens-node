@@ -1348,8 +1348,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test@example.com",
-                newUserPassword: "password123",
+                email: "test@example.com",
+                password: "password123",
             });
 
             assert(response.status === "OK");
@@ -1439,8 +1439,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test@example.com",
-                newUserPassword: "password123",
+                email: "test@example.com",
+                password: "password123",
                 userContext: {
                     doNotLink2: true,
                 },
@@ -1533,8 +1533,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             try {
                 await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                     session,
-                    newUserEmail: "test@example.com",
-                    newUserPassword: "password123",
+                    email: "test@example.com",
+                    password: "password123",
                     userContext: {
                         doNotLink2: true,
                     },
@@ -1627,8 +1627,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             assert(response.status === "OK");
@@ -1714,8 +1714,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             assert(response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
@@ -1795,8 +1795,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test@example.com",
-                newUserPassword: "password123",
+                email: "test@example.com",
+                password: "password123",
             });
 
             assert(response.status === "OK");
@@ -1878,8 +1878,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             // this does not return email verification needed cause we are using the
@@ -1975,8 +1975,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test3@example.com",
-                newUserPassword: "password123",
+                email: "test3@example.com",
+                password: "password123",
             });
 
             // this does not return email verification needed cause we are using the
@@ -2063,8 +2063,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test3@example.com",
-                newUserPassword: "password123",
+                email: "test3@example.com",
+                password: "password123",
             });
 
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
@@ -2142,8 +2142,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test@example.com",
-                newUserPassword: "password123",
+                email: "test@example.com",
+                password: "password123",
             });
 
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
@@ -2229,8 +2229,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
@@ -2320,8 +2320,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking, but with wrong password.
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password",
+                email: "test2@example.com",
+                password: "password",
             });
 
             assert(response.status === "WRONG_CREDENTIALS_ERROR");
@@ -2400,8 +2400,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking, but with wrong password.
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             assert(response.status === "OK");
@@ -2484,8 +2484,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking, but with wrong password.
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
@@ -2571,8 +2571,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking, but with wrong password.
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");
@@ -2651,8 +2651,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking, but with wrong password.
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test@example.com",
-                newUserPassword: "password123",
+                email: "test@example.com",
+                password: "password123",
             });
 
             assert(response.status === "OK");
@@ -2743,8 +2743,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             // now we try and do the linking
             let response = await EmailPassword.linkEmailPasswordAccountsWithUserFromSession({
                 session,
-                newUserEmail: "test2@example.com",
-                newUserPassword: "password123",
+                email: "test2@example.com",
+                password: "password123",
             });
 
             assert(response.status === "ACCOUNT_LINKING_NOT_ALLOWED_ERROR");

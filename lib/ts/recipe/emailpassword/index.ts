@@ -110,8 +110,8 @@ export default class Wrapper {
      */
     static async linkEmailPasswordAccountsWithUserFromSession(input: {
         session: SessionContainerInterface;
-        newUserEmail: string;
-        newUserPassword: string;
+        email: string;
+        password: string;
         userContext?: any;
     }): Promise<
         | {
@@ -135,8 +135,8 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const createRecipeUserFunc = async (userContext: any): Promise<void> => {
             await recipeInstance.recipeInterfaceImpl.createNewRecipeUser({
-                email: input.newUserEmail,
-                password: input.newUserPassword,
+                email: input.email,
+                password: input.password,
                 userContext,
             });
             // we ignore the result from the above cause after this, function returns,
@@ -155,8 +155,8 @@ export default class Wrapper {
               }
         > => {
             const signInResult = await recipeInstance.recipeInterfaceImpl.signIn({
-                email: input.newUserEmail,
-                password: input.newUserPassword,
+                email: input.email,
+                password: input.password,
                 userContext,
             });
 
@@ -174,7 +174,7 @@ export default class Wrapper {
             session: input.session,
             newUser: {
                 recipeId: "emailpassword",
-                email: input.newUserEmail,
+                email: input.email,
             },
             createRecipeUserFunc,
             verifyCredentialsFunc,
@@ -188,7 +188,7 @@ export default class Wrapper {
                 status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
                 primaryUserId: response.primaryUserId,
                 recipeUserId: response.recipeUserId,
-                email: input.newUserEmail,
+                email: input.email,
             };
         }
         return response;
