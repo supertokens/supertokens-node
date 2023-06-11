@@ -1727,6 +1727,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 email: "test2@example.com",
             });
             assert(response.recipeUserId.getAsString() === recipeUsers[0].id);
+
+            // we also check that account to link has a mapping here
+            let toLink = await AccountLinking.fetchFromAccountToLinkTable(response.recipeUserId);
+            assert(toLink === response.primaryUserId);
         });
 
         it("calling linkAccountWithUserFromSession does linking when the session's recipe user id is a primary user id and email verification is required and same emails, even though email is not verified.", async function () {
@@ -1901,7 +1905,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(numberOfTimesCallbackCalled === 2);
         });
 
-        it("calling linkAccountWithUserFromSession links accounts correctly even though the session's recipe user id not the primary user id", async function () {
+        it("calling linkAccountWithUserFromSession returns verification needed even if session belongs to a linked recipe user and new user is not verified", async function () {
             await startST();
             let callbackUser = undefined;
             let callbackNewAccount = undefined;
@@ -1981,8 +1985,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 password: "password123",
             });
 
-            // this does not return email verification needed cause we are using the
-            // same email as an already linked account (test2@example.com third party account)
             assert(response.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR");
             assert(response.primaryUserId === thirdPartyUser.id);
             assert(response.email === "test3@example.com");
@@ -1990,6 +1992,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 email: "test3@example.com",
             });
             assert(response.recipeUserId.getAsString() === recipeUsers[0].id);
+
+            // we also check that account to link has a mapping here
+            let toLink = await AccountLinking.fetchFromAccountToLinkTable(response.recipeUserId);
+            assert(toLink === response.primaryUserId);
         });
 
         it("calling linkAccountWithUserFromSession fails if session user is not a primary user and there exists another primary user with the same account info", async function () {
