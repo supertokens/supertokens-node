@@ -32,29 +32,20 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
+    static thirdPartySignInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        isVerified: boolean,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
             thirdPartyId,
             thirdPartyUserId,
             email,
+            isVerified,
             userContext,
         });
-    }
-
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
-            userContext,
-        });
-    }
-
-    static getUserById(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
-    }
-
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
     }
 
     static createCode(
@@ -95,10 +86,6 @@ export default class Wrapper {
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input });
-    }
-
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({ userContext: {}, ...input });
     }
 
     static updatePasswordlessUser(input: {
@@ -224,17 +211,9 @@ export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
 
 export let passwordlessSignInUp = Wrapper.passwordlessSignInUp;
 
-export let getUserById = Wrapper.getUserById;
-
-export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
-
-export let getUsersByEmail = Wrapper.getUsersByEmail;
-
 export let createCode = Wrapper.createCode;
 
 export let consumeCode = Wrapper.consumeCode;
-
-export let getUserByPhoneNumber = Wrapper.getUserByPhoneNumber;
 
 export let listCodesByDeviceId = Wrapper.listCodesByDeviceId;
 

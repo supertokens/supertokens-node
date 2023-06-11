@@ -1,59 +1,253 @@
-import { APIInterface, APIOptions, User, TypeProvider } from "../";
+import { APIInterface, APIOptions, TypeProvider } from "../";
 import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
-import EmailVerification from "../../emailverification/recipe";
-import RecipeUserId from "../../../recipeUserId";
+import { User } from "../../../types";
+import type { RecipeLevelUser } from "../../accountlinking/types";
+import AccountLinking from "../../accountlinking/recipe";
+import { listUsersByAccountInfo } from "../../..";
+import { UserInfo } from "../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        linkAccountWithUserFromSessionPOST: async function (_input: {
-            provider: TypeProvider;
-            code: string;
-            redirectURI: string;
-            authCodeResponse?: any;
-            clientId?: string;
-            session: SessionContainerInterface;
-            options: APIOptions;
-            userContext: any;
-        }): Promise<
-            | {
-                  status: "OK";
-                  user: User;
-                  session: SessionContainerInterface;
-                  wereAccountsAlreadyLinked: boolean;
-                  authCodeResponse: any;
-              }
-            | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                  description: string;
-              }
-            | {
-                  status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                  isNotVerifiedAccountFromInputSession: boolean;
-                  description: string;
-              }
-            | GeneralErrorResponse
-        > {
-            return {
-                status: "ACCOUNT_NOT_VERIFIED_ERROR",
-                isNotVerifiedAccountFromInputSession: false,
-                description: "",
-            };
-        },
+        // This is commented out because we have decided to not add this feature for now,
+        // and add it at a later iteration in the project.
+        // linkAccountWithUserFromSessionPOST: async function (
+        //     this: APIInterface,
+        //     {
+        //         provider,
+        //         code,
+        //         redirectURI,
+        //         authCodeResponse,
+        //         clientId,
+        //         fromProvider,
+        //         session,
+        //         options,
+        //         userContext,
+        //     }: {
+        //         provider: TypeProvider;
+        //         code: string;
+        //         redirectURI: string;
+        //         authCodeResponse?: any;
+        //         clientId?: string;
+        //         fromProvider:
+        //         | {
+        //             userInfo: UserInfo;
+        //             authCodeResponse: any;
+        //         }
+        //         | undefined;
+        //         session: SessionContainerInterface;
+        //         options: APIOptions;
+        //         userContext: any;
+        //     }
+        // ): Promise<
+        //     | {
+        //         status: "OK";
+        //         wereAccountsAlreadyLinked: boolean;
+        //         authCodeResponse: any;
+        //     }
+        //     | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+        //     | {
+        //         status: "SIGN_IN_NOT_ALLOWED";
+        //         reason: string;
+        //     }
+        //     | {
+        //         status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+        //         description: string;
+        //     }
+        //     | {
+        //         status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+        //         description: string;
+        //         recipeUserId: string;
+        //         primaryUserId: string;
+        //         email: string;
+        //         authCodeResponse: any;
+        //     }
+        //     | GeneralErrorResponse
+        // > {
+        //     // we pass fromProvider as an input to this function cause in the logic below,
+        //     // we can do recursion as well, and in that case, we cannot re consume the auth code
+        //     // (since they are one time use only) - therefore, we pass the  previously
+        //     // fetched fromProvider when recursing and reuse that.
+        //     fromProvider =
+        //         fromProvider === undefined
+        //             ? await getUserInfoFromAuthCode(provider, code, redirectURI, authCodeResponse, userContext)
+        //             : fromProvider;
+
+        //     const emailInfo = fromProvider.userInfo.email;
+
+        //     if (emailInfo === undefined) {
+        //         return {
+        //             status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+        //         };
+        //     }
+
+        //     const createRecipeUserFunc = async (userContext: any): Promise<void> => {
+        //         let resp = await options.recipeImplementation.createNewOrUpdateEmailOfRecipeUser({
+        //             thirdPartyId: provider.id,
+        //             thirdPartyUserId: fromProvider!.userInfo.id,
+        //             email: emailInfo!.id,
+        //             userContext,
+        //         });
+
+        //         if (resp.status === "OK") {
+        //             if (resp.createdNewUser) {
+        //                 if (emailInfo.isVerified) {
+        //                     const emailVerificationInstance = EmailVerification.getInstance();
+        //                     if (emailVerificationInstance) {
+        //                         const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+        //                             {
+        //                                 recipeUserId: resp.user.loginMethods[0].recipeUserId,
+        //                                 email: emailInfo.id,
+        //                                 userContext,
+        //                             }
+        //                         );
+
+        //                         if (tokenResponse.status === "OK") {
+        //                             await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+        //                                 token: tokenResponse.token,
+        //                                 attemptAccountLinking: false, // we pass this cause in this API, we
+        //                                 // already try and do account linking.
+        //                                 userContext,
+        //                             });
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         // the other status type of EMAIL_CHANGE_NOT_ALLOWED_ERROR should not happen
+        //         // cause that is only possible when signing in, and here we only try and create
+        //         // a new user.
+        //     };
+
+        //     const verifyCredentialsFunc = async (
+        //         userContext: any
+        //     ): Promise<
+        //         | { status: "OK" }
+        //         | {
+        //             status: "CUSTOM_RESPONSE";
+        //             resp: {
+        //                 status: "SIGN_IN_NOT_ALLOWED";
+        //                 reason: string;
+        //             };
+        //         }
+        //     > => {
+        //         let resp = await options.recipeImplementation.createNewOrUpdateEmailOfRecipeUser({
+        //             thirdPartyId: provider.id,
+        //             thirdPartyUserId: fromProvider!.userInfo.id,
+        //             email: emailInfo!.id,
+        //             userContext,
+        //         });
+        //         if (resp.status === "OK") {
+        //             return {
+        //                 status: "OK",
+        //             };
+        //         }
+        //         return {
+        //             status: "CUSTOM_RESPONSE",
+        //             resp: {
+        //                 status: "SIGN_IN_NOT_ALLOWED",
+        //                 reason: resp.reason,
+        //             },
+        //         };
+        //     };
+
+        //     let accountLinkingInstance = AccountLinking.getInstance();
+        //     let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
+        //         status: "SIGN_IN_NOT_ALLOWED";
+        //         reason: string;
+        //     }>({
+        //         session,
+        //         newUser: {
+        //             email: emailInfo.id,
+        //             thirdParty: {
+        //                 id: provider.id,
+        //                 userId: fromProvider.userInfo.id,
+        //             },
+        //             recipeId: "thirdparty",
+        //         },
+        //         createRecipeUserFunc,
+        //         verifyCredentialsFunc,
+        //         userContext,
+        //     });
+        //     if (result.status === "CUSTOM_RESPONSE") {
+        //         return result.resp;
+        //     } else if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+        //         // we now send an email verification email to this user.
+        //         const emailVerificationInstance = EmailVerification.getInstance();
+        //         if (emailVerificationInstance) {
+        //             const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+        //                 {
+        //                     recipeUserId: result.recipeUserId,
+        //                     email: fromProvider.userInfo.email!.id,
+        //                     userContext,
+        //                 }
+        //             );
+
+        //             if (tokenResponse.status === "OK") {
+        //                 let emailVerifyLink = getEmailVerifyLink({
+        //                     appInfo: options.appInfo,
+        //                     token: tokenResponse.token,
+        //                     recipeId: options.recipeId,
+        //                 });
+
+        //                 logDebugMessage(`Sending email verification email to ${fromProvider.userInfo.email!.id}`);
+        //                 await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+        //                     type: "EMAIL_VERIFICATION",
+        //                     user: {
+        //                         // we send the session's user ID here cause
+        //                         // we will be linking this user ID and the result.recipeUserId
+        //                         // eventually.
+        //                         id: session.getUserId(),
+        //                         recipeUserId: result.recipeUserId,
+        //                         email: fromProvider.userInfo.email!.id,
+        //                     },
+        //                     emailVerifyLink,
+        //                     userContext,
+        //                 });
+        //             } else {
+        //                 // this means that the email is already verified. It can come here
+        //                 // cause of a race condition, so we just try again
+        //                 return this.linkAccountWithUserFromSessionPOST!({
+        //                     provider,
+        //                     code,
+        //                     redirectURI,
+        //                     authCodeResponse,
+        //                     clientId,
+        //                     fromProvider,
+        //                     session,
+        //                     options,
+        //                     userContext,
+        //                 });
+        //             }
+        //         } else {
+        //             throw new Error(
+        //                 "Developer configuration error - email verification is required, but the email verification recipe has not been initialized."
+        //             );
+        //         }
+
+        //         return {
+        //             status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+        //             authCodeResponse: fromProvider.authCodeResponse,
+        //             recipeUserId: result.recipeUserId.getAsString(),
+        //             email: fromProvider.userInfo.email!.id,
+        //             primaryUserId: result.primaryUserId,
+        //             description:
+        //                 "Before accounts can be linked, the new account must be verified, and an email verification email has been sent already.",
+        //         };
+        //     } else if (result.status === "OK") {
+        //         return {
+        //             authCodeResponse: fromProvider.authCodeResponse,
+        //             status: "OK",
+        //             wereAccountsAlreadyLinked: result.wereAccountsAlreadyLinked,
+        //         };
+        //     }
+        //     // status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
+        //     return result;
+        // },
         authorisationUrlGET: async function ({
             provider,
             options,
@@ -140,60 +334,22 @@ export default function getAPIInterface(): APIInterface {
               }
             | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
             | {
-                  status: "SIGNUP_NOT_ALLOWED";
+                  status: "SIGN_IN_NOT_ALLOWED";
                   reason: string;
               }
             | {
-                  status: "SIGNIN_NOT_ALLOWED";
-                  primaryUserId: string;
-                  description: string;
+                  status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT";
               }
             | GeneralErrorResponse
         > {
-            let userInfo;
-            let accessTokenAPIResponse: any;
-
-            {
-                let providerInfo = provider.get(undefined, undefined, userContext);
-                if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
-                    redirectURI = DEV_OAUTH_REDIRECT_URL;
-                } else if (providerInfo.getRedirectURI !== undefined) {
-                    // we overwrite the redirectURI provided by the frontend
-                    // since the backend wants to take charge of setting this.
-                    redirectURI = providerInfo.getRedirectURI(userContext);
-                }
-            }
-
-            let providerInfo = provider.get(redirectURI, code, userContext);
-
-            if (authCodeResponse !== undefined) {
-                accessTokenAPIResponse = {
-                    data: authCodeResponse,
-                };
-            } else {
-                // we should use code to get the authCodeResponse body
-                if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
-                    Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
-                        if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId(userContext)) {
-                            providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
-                                providerInfo.getClientId(userContext)
-                            );
-                        }
-                    });
-                }
-
-                accessTokenAPIResponse = await axios.default({
-                    method: "post",
-                    url: providerInfo.accessTokenAPI.url,
-                    data: qs.stringify(providerInfo.accessTokenAPI.params),
-                    headers: {
-                        "content-type": "application/x-www-form-urlencoded",
-                        accept: "application/json", // few providers like github don't send back json response by default
-                    },
-                });
-            }
-
-            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
+            const fromProvider = await getUserInfoFromAuthCode(
+                provider,
+                code,
+                redirectURI,
+                authCodeResponse,
+                userContext
+            );
+            const userInfo = fromProvider.userInfo;
 
             let emailInfo = userInfo.email;
             if (emailInfo === undefined) {
@@ -201,39 +357,73 @@ export default function getAPIInterface(): APIInterface {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER",
                 };
             }
+
+            let existingUsers = await listUsersByAccountInfo(
+                {
+                    thirdParty: {
+                        id: provider.id,
+                        userId: userInfo.id,
+                    },
+                },
+                false,
+                userContext
+            );
+
+            if (existingUsers.length === 0) {
+                let isSignUpAllowed = await AccountLinking.getInstance().isSignUpAllowed({
+                    newUser: {
+                        recipeId: "thirdparty",
+                        email: emailInfo.id,
+                        thirdParty: {
+                            id: provider.id,
+                            userId: userInfo.id,
+                        },
+                    },
+                    isVerified: emailInfo.isVerified,
+                    userContext,
+                });
+
+                if (!isSignUpAllowed) {
+                    // On the frontend, this should show a UI of asking the user
+                    // to login using a different method.
+                    return {
+                        status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT",
+                    };
+                }
+            }
+
             let response = await options.recipeImplementation.signInUp({
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.id,
                 email: emailInfo.id,
+                isVerified: emailInfo.isVerified,
                 userContext,
             });
 
-            // we set the email as verified if already verified by the OAuth provider.
-            // This block was added because of https://github.com/supertokens/supertokens-core/issues/295
-            if (emailInfo.isVerified) {
-                const emailVerificationInstance = EmailVerification.getInstance();
-                if (emailVerificationInstance) {
-                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                        {
-                            recipeUserId: new RecipeUserId(response.user.id), // TODO: change to recipeUserId
-                            email: response.user.email,
-                            userContext,
-                        }
-                    );
+            if (response.status === "SIGN_IN_NOT_ALLOWED") {
+                return response;
+            }
 
-                    if (tokenResponse.status === "OK") {
-                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                            token: tokenResponse.token,
-                            userContext,
-                        });
-                    }
+            let loginMethod: RecipeLevelUser | undefined = undefined;
+            for (let i = 0; i < response.user.loginMethods.length; i++) {
+                if (
+                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
+                        id: provider.id,
+                        userId: userInfo.id,
+                    })
+                ) {
+                    loginMethod = response.user.loginMethods[i];
                 }
+            }
+
+            if (loginMethod === undefined) {
+                throw new Error("Should never come here");
             }
 
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
-                new RecipeUserId(response.user.id), // TODO: change to recipeUserId
+                loginMethod.recipeUserId,
                 {},
                 {},
                 userContext
@@ -243,10 +433,9 @@ export default function getAPIInterface(): APIInterface {
                 createdNewUser: response.createdNewUser,
                 user: response.user,
                 session,
-                authCodeResponse: accessTokenAPIResponse.data,
+                authCodeResponse: fromProvider.authCodeResponse,
             };
         },
-
         appleRedirectHandlerPOST: async function ({ code, state, options }): Promise<void> {
             const redirectURL =
                 options.appInfo.websiteDomain.getAsStringDangerous() +
@@ -281,4 +470,63 @@ export function getActualClientIdFromDevelopmentClientId(client_id: string): str
         return client_id.split(DEV_KEY_IDENTIFIER)[1];
     }
     return client_id;
+}
+
+async function getUserInfoFromAuthCode(
+    provider: TypeProvider,
+    code: string,
+    redirectURI: string,
+    authCodeResponse: any | undefined,
+    userContext: any
+): Promise<{
+    userInfo: UserInfo;
+    authCodeResponse: any;
+}> {
+    // first we query the provider to get info from it.
+    let accessTokenAPIResponse: any;
+
+    {
+        let providerInfo = provider.get(undefined, undefined, userContext);
+        if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
+            redirectURI = DEV_OAUTH_REDIRECT_URL;
+        } else if (providerInfo.getRedirectURI !== undefined) {
+            // we overwrite the redirectURI provided by the frontend
+            // since the backend wants to take charge of setting this.
+            redirectURI = providerInfo.getRedirectURI(userContext);
+        }
+    }
+
+    let providerInfo = provider.get(redirectURI, code, userContext);
+
+    if (authCodeResponse !== undefined) {
+        accessTokenAPIResponse = {
+            data: authCodeResponse,
+        };
+    } else {
+        // we should use code to get the authCodeResponse body
+        if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
+            Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
+                if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId(userContext)) {
+                    providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
+                        providerInfo.getClientId(userContext)
+                    );
+                }
+            });
+        }
+
+        accessTokenAPIResponse = await axios.default({
+            method: "post",
+            url: providerInfo.accessTokenAPI.url,
+            data: qs.stringify(providerInfo.accessTokenAPI.params),
+            headers: {
+                "content-type": "application/x-www-form-urlencoded",
+                accept: "application/json", // few providers like github don't send back json response by default
+            },
+        });
+    }
+
+    return {
+        userInfo: await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext),
+        authCodeResponse: accessTokenAPIResponse.data,
+    };
 }

@@ -6,6 +6,7 @@ export declare enum PROCESS_STATE {
     MULTI_JWKS_VALIDATION = 3,
     ACCOUNT_LINKING_NOT_ALLOWED_ERROR_END_OF_linkAccountWithUserFromSession_FUNCTION = 4,
     IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS = 5,
+    IS_SIGN_UP_ALLOWED_CALLED = 6,
 }
 export declare class ProcessState {
     history: PROCESS_STATE[];

@@ -118,8 +118,8 @@ export default class Wrapper {
      */
     static linkEmailPasswordAccountsWithUserFromSession(input: {
         session: SessionContainerInterface;
-        newUserEmail: string;
-        newUserPassword: string;
+        email: string;
+        password: string;
         userContext?: any;
     }): Promise<
         | {
@@ -134,6 +134,7 @@ export default class Wrapper {
               status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
               primaryUserId: string;
               recipeUserId: RecipeUserId;
+              email: string;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";

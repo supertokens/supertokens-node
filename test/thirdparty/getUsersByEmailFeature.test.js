@@ -4,7 +4,6 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 const { signInUp } = require("../../lib/build/recipe/thirdparty");
-const { getUsersByEmail } = require("../../lib/build/recipe/thirdparty");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -59,7 +58,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
         // given there are no users
 
         // when
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await STExpress.listUsersByAccountInfo({ email: "john.doe@example.com" });
 
         // then
         assert.strictEqual(thirdPartyUsers.length, 0);
@@ -83,18 +82,19 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
             return;
         }
 
-        await signInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await signInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await signInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com", false);
+        await signInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com", false);
 
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await STExpress.listUsersByAccountInfo({ email: "john.doe@example.com" });
 
         assert.strictEqual(thirdPartyUsers.length, 2);
 
         thirdPartyUsers.forEach((user) => {
-            assert.notStrictEqual(user.thirdParty.id, undefined);
+            assert.notStrictEqual(user.loginMethods[0].thirdParty.id, undefined);
             assert.notStrictEqual(user.id, undefined);
-            assert.notStrictEqual(user.timeJoined, undefined);
-            assert.strictEqual(user.email, "john.doe@example.com");
+            assert.notStrictEqual(user.loginMethods[0].recipeUserId.getAsString(), undefined);
+            assert.notStrictEqual(user.loginMethods[0].timeJoined, undefined);
+            assert.strictEqual(user.loginMethods[0].email, "john.doe@example.com");
         });
     });
 });

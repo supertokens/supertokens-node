@@ -35,12 +35,10 @@ export default class Recipe extends RecipeModule {
     static reset(): void;
     createPrimaryUserIdOrLinkAccounts: ({
         recipeUserId,
-        isVerified,
         checkAccountsToLinkTableAsWell,
         userContext,
     }: {
         recipeUserId: RecipeUserId;
-        isVerified: boolean;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<string>;

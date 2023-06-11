@@ -277,9 +277,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         assert.strictEqual(
             await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
@@ -689,7 +689,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         let signUpUserInfo = response.body.user;
         let userInfo = await STExpress.getUser(signUpUserInfo.id);
 
-        assert.strictEqual(userInfo.emails[0], signUpUserInfo.email);
+        assert.strictEqual(userInfo.emails[0], signUpUserInfo.emails[0]);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
     });
 
@@ -715,7 +715,14 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(
+            (
+                await STExpress.listUsersByAccountInfo({
+                    thirdParty: { id: "custom", userId: "user" },
+                })
+            ).length,
+            0
+        );
 
         const app = express();
 
@@ -744,10 +751,12 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await STExpress.listUsersByAccountInfo({
+            thirdParty: { id: "custom", userId: "user" },
+        });
 
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
-        assert.strictEqual(userInfo.id, signUpUserInfo.id);
+        assert.strictEqual(userInfo[0].emails[0], signUpUserInfo.emails[0]);
+        assert.strictEqual(userInfo[0].id, signUpUserInfo.id);
     });
 
     it("test getUserCount and pagination works fine", async function () {
@@ -786,7 +795,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert((await STExpress.getUserCount(["emailpassword"])) === 1);
         assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 1);
 
-        await ThirdPartyEmailPassword.thirdPartySignInUp("google", "randomUserId", "test@example.com");
+        await ThirdPartyEmailPassword.thirdPartySignInUp("google", "randomUserId", "test@example.com", false);
 
         assert((await STExpress.getUserCount()) === 2);
         assert((await STExpress.getUserCount(["emailpassword"])) === 1);
@@ -854,7 +863,14 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(
+            (
+                await STExpress.listUsersByAccountInfo({
+                    thirdParty: { id: "custom", userId: "user" },
+                })
+            ).length,
+            0
+        );
 
         const app = express();
 
@@ -884,14 +900,16 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             assert.strictEqual(response.statusCode, 200);
 
             let signUpUserInfo = response.body.user;
-            let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
+            let userInfo = await STExpress.listUsersByAccountInfo({
+                thirdParty: { id: "custom", userId: "user" },
+            });
 
-            assert.strictEqual(userInfo.email, signUpUserInfo.email);
-            assert.strictEqual(userInfo.id, signUpUserInfo.id);
+            assert.strictEqual(userInfo[0].emails[0], signUpUserInfo.emails[0]);
+            assert.strictEqual(userInfo[0].id, signUpUserInfo.id);
 
             try {
                 await ThirdPartyEmailPassword.updateEmailOrPassword({
-                    recipeUserId: userInfo.id,
+                    recipeUserId: STExpress.convertToRecipeUserId(userInfo[0].id),
                     email: "test2@example.com",
                 });
                 throw new Error("test failed");

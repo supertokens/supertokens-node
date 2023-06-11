@@ -100,10 +100,6 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
             user: result.user,
             createdNewUser: result.createdNewUser,
         });
-    } else if (result.status === "NO_EMAIL_GIVEN_BY_PROVIDER") {
-        send200Response(options.res, {
-            status: "NO_EMAIL_GIVEN_BY_PROVIDER",
-        });
     } else {
         send200Response(options.res, result);
     }

@@ -236,6 +236,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                     ...originalPayload,
                     exp: undefined,
                     iat: undefined,
+                    tId: "public",
                 },
                 1234,
                 false

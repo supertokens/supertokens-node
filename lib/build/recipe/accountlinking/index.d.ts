@@ -16,7 +16,6 @@ export default class Wrapper {
      */
     static createPrimaryUserIdOrLinkAccounts(input: {
         recipeUserId: RecipeUserId;
-        isVerified: boolean;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }): Promise<string>;

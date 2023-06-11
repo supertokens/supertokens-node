@@ -18,19 +18,19 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        isVerified: boolean,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-    }>;
-    static getUserByThirdPartyInfo(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        userContext?: any
-    ): Promise<User | undefined>;
-    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: import("../emailpassword").User;
+          }
+        | {
+              status: "SIGN_IN_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
     static createCode(
         input: (
             | {
@@ -100,7 +100,6 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
     static updatePasswordlessUser(input: {
         userId: string;
         email?: string | null;
@@ -193,12 +192,8 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
 export declare let passwordlessSignInUp: typeof Wrapper.passwordlessSignInUp;
-export declare let getUserById: typeof Wrapper.getUserById;
-export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
-export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let createCode: typeof Wrapper.createCode;
 export declare let consumeCode: typeof Wrapper.consumeCode;
-export declare let getUserByPhoneNumber: typeof Wrapper.getUserByPhoneNumber;
 export declare let listCodesByDeviceId: typeof Wrapper.listCodesByDeviceId;
 export declare let listCodesByEmail: typeof Wrapper.listCodesByEmail;
 export declare let listCodesByPhoneNumber: typeof Wrapper.listCodesByPhoneNumber;

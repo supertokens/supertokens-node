@@ -282,36 +282,39 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    linkAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "WRONG_CREDENTIALS_ERROR";
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                    description: string;
-                    recipeUserId: string;
-                    email: string;
-                }
-              | GeneralErrorResponse
-          >);
+    // This is commented out because we have decided to not add this feature for now,
+    // and add it at a later iteration in the project.
+    // linkAccountWithUserFromSessionPOST:
+    //     | undefined
+    //     | ((input: {
+    //           formFields: {
+    //               id: string;
+    //               value: string;
+    //           }[];
+    //           session: SessionContainerInterface;
+    //           options: APIOptions;
+    //           userContext: any;
+    //       }) => Promise<
+    //           | {
+    //                 status: "OK";
+    //                 wereAccountsAlreadyLinked: boolean;
+    //             }
+    //           | {
+    //                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+    //                 description: string;
+    //             }
+    //           | {
+    //                 status: "WRONG_CREDENTIALS_ERROR";
+    //             }
+    //           | {
+    //                 status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+    //                 description: string;
+    //                 recipeUserId: string;
+    //                 email: string;
+    //                 primaryUserId: string;
+    //             }
+    //           | GeneralErrorResponse
+    //       >);
 };
 
 export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {

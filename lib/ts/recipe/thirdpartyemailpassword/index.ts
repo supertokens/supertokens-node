@@ -16,7 +16,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
-import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
+import { RecipeInterface, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 import RecipeUserId from "../../recipeUserId";
@@ -26,19 +26,18 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
+    static thirdPartySignInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        isVerified: boolean,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
             thirdPartyId,
             thirdPartyUserId,
             email,
-            userContext,
-        });
-    }
-
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
+            isVerified,
             userContext,
         });
     }
@@ -136,8 +135,6 @@ export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
 
 export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
 
-export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
-
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
 export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
@@ -166,6 +163,6 @@ export let GitLab = Wrapper.GitLab;
 
 // export let ActiveDirectory = Wrapper.ActiveDirectory;
 
-export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+export type { RecipeInterface, TypeProvider, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
 
 export let sendEmail = Wrapper.sendEmail;

@@ -118,16 +118,19 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await startST();
 
         try {
-            await SessionRecipe.getInstanceOrThrowError();
+            SessionRecipe.getInstanceOrThrowError();
             assert(false);
         } catch (err) {
-            if (err.message !== "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
+            if (
+                err.message !==
+                "Initialisation not done. Did you forget to call the SuperTokens.init or Session.init function?"
+            ) {
                 throw err;
             }
         }
 
         try {
-            await EmailPasswordRecipe.getInstanceOrThrowError();
+            EmailPasswordRecipe.getInstanceOrThrowError();
             assert(false);
         } catch (err) {
             if (err.message !== "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
@@ -149,8 +152,8 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 EmailPassword.init(),
             ],
         });
-        await SessionRecipe.getInstanceOrThrowError();
-        await EmailPasswordRecipe.getInstanceOrThrowError();
+        SessionRecipe.getInstanceOrThrowError();
+        EmailPasswordRecipe.getInstanceOrThrowError();
     });
 
     /* 

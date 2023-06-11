@@ -3,6 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
 import RecipeUserId from "../../../recipeUserId";
+import { listUsersByAccountInfo } from "../../..";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -29,6 +30,8 @@ export default function getAPIImplementation(): APIInterface {
             let user = response.user;
 
             if (user.email !== undefined) {
+                // TODO: this goes in the recipe implementation file. before we attempt
+                // account linking.
                 const emailVerificationInstance = EmailVerification.getInstance();
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
@@ -42,6 +45,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             token: tokenResponse.token,
+                            attemptAccountLinking: false,
                             userContext: input.userContext,
                         });
                     }
@@ -143,24 +147,28 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         emailExistsGET: async function (input) {
-            let response = await input.options.recipeImplementation.getUserByEmail({
-                userContext: input.userContext,
-                email: input.email,
-            });
+            let users = await listUsersByAccountInfo(
+                {
+                    email: input.email,
+                },
+                input.userContext
+            );
 
             return {
-                exists: response !== undefined,
+                exists: users.length > 0,
                 status: "OK",
             };
         },
         phoneNumberExistsGET: async function (input) {
-            let response = await input.options.recipeImplementation.getUserByPhoneNumber({
-                userContext: input.userContext,
-                phoneNumber: input.phoneNumber,
-            });
+            let users = await listUsersByAccountInfo(
+                {
+                    phoneNumber: input.phoneNumber,
+                },
+                input.userContext
+            );
 
             return {
-                exists: response !== undefined,
+                exists: users.length > 0,
                 status: "OK",
             };
         },
@@ -264,12 +272,6 @@ export default function getAPIImplementation(): APIInterface {
                     status: response.status,
                 };
             }
-        },
-        linkAccountWithUserFromSessionPOST: async function (_input) {
-            return {
-                status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                description: "",
-            };
         },
     };
 }

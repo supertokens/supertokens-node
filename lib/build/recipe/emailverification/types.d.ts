@@ -77,6 +77,7 @@ export declare type RecipeInterface = {
     >;
     verifyEmailUsingToken(input: {
         token: string;
+        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {

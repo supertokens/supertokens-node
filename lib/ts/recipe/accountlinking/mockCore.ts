@@ -86,6 +86,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 email,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -110,6 +111,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 phoneNumber,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -134,6 +136,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 thirdParty,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -298,6 +301,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 email,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -316,6 +320,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 phoneNumber,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -334,6 +339,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 thirdParty,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -402,7 +408,6 @@ export async function mockGetUsers(
     users: User[];
     nextPaginationToken?: string;
 }> {
-    // TODO: needs to take into account primaryUserMap table.
     let includeRecipeIdsStr = undefined;
     if (input.includeRecipeIds !== undefined) {
         includeRecipeIdsStr = input.includeRecipeIds.join(",");
@@ -552,16 +557,32 @@ async function isEmailVerified(userId: string, email: string | undefined): Promi
     return response.data.status === "OK" && response.data.isVerified;
 }
 
-export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]> {
+export async function mockListUsersByAccountInfo({
+    accountInfo,
+    doUnionOfAccountInfo,
+}: {
+    accountInfo: AccountInfo;
+    doUnionOfAccountInfo: boolean;
+}): Promise<User[]> {
+    if (
+        accountInfo.email === undefined &&
+        accountInfo.phoneNumber === undefined &&
+        accountInfo.thirdParty === undefined
+    ) {
+        throw new Error("Please pass at least one account info field");
+    }
     let users: User[] = [];
     if (accountInfo.email !== undefined) {
         // email password
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?email=${accountInfo.email}`, {
-                headers: {
-                    rid: "emailpassword",
-                },
-            });
+            let response = await axios.get(
+                `http://localhost:8080/recipe/user?email=${encodeURIComponent(accountInfo.email)}`,
+                {
+                    headers: {
+                        rid: "emailpassword",
+                    },
+                }
+            );
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
                 let userAlreadyAdded = false;
@@ -627,11 +648,14 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
     if (accountInfo.phoneNumber !== undefined) {
         // passwordless
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?phoneNumber=${accountInfo.phoneNumber}`, {
-                headers: {
-                    rid: "passwordless",
-                },
-            });
+            let response = await axios.get(
+                `http://localhost:8080/recipe/user?phoneNumber=${encodeURIComponent(accountInfo.phoneNumber)}`,
+                {
+                    headers: {
+                        rid: "passwordless",
+                    },
+                }
+            );
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
                 let userAlreadyAdded = false;
@@ -673,6 +697,40 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 }
             }
         }
+    }
+
+    if (!doUnionOfAccountInfo) {
+        users = users.filter((u) => {
+            let pass = true;
+            if (accountInfo.email !== undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSameEmailAs(accountInfo.email);
+                    }) === undefined
+                ) {
+                    pass = false;
+                }
+            }
+            if (accountInfo.phoneNumber !== undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSamePhoneNumberAs(accountInfo.phoneNumber);
+                    }) === undefined
+                ) {
+                    pass = false;
+                }
+            }
+            if (accountInfo.thirdParty !== undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSameThirdPartyInfoAs(accountInfo.thirdParty);
+                    }) === undefined
+                ) {
+                    pass = false;
+                }
+            }
+            return pass;
+        });
     }
 
     return users;
