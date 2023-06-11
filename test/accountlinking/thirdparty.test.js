@@ -1574,7 +1574,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             });
         });
 
-        it("linkThirdPartyAccountWithUserFromSession fails cause changed email already associated with another primary user when the user trying to sign in is linked with another user", async function () {
+        it("linkThirdPartyAccountWithUserFromSession fails cause changed email already associated with another primary user, when the user trying to sign in is linked with another user", async function () {
             await startST();
             supertokens.init({
                 supertokens: {

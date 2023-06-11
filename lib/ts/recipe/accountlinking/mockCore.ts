@@ -575,11 +575,14 @@ export async function mockListUsersByAccountInfo({
     if (accountInfo.email !== undefined) {
         // email password
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?email=${accountInfo.email}`, {
-                headers: {
-                    rid: "emailpassword",
-                },
-            });
+            let response = await axios.get(
+                `http://localhost:8080/recipe/user?email=${encodeURIComponent(accountInfo.email)}`,
+                {
+                    headers: {
+                        rid: "emailpassword",
+                    },
+                }
+            );
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
                 let userAlreadyAdded = false;
@@ -700,20 +703,28 @@ export async function mockListUsersByAccountInfo({
         users = users.filter((u) => {
             let pass = true;
             if (accountInfo.email !== undefined) {
-                if (u.emails.find((e) => e === accountInfo.email) === undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSameEmailAs(accountInfo.email);
+                    }) === undefined
+                ) {
                     pass = false;
                 }
             }
             if (accountInfo.phoneNumber !== undefined) {
-                if (u.phoneNumbers.find((p) => p === accountInfo.phoneNumber) === undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSamePhoneNumberAs(accountInfo.phoneNumber);
+                    }) === undefined
+                ) {
                     pass = false;
                 }
             }
             if (accountInfo.thirdParty !== undefined) {
                 if (
-                    u.thirdParty.find(
-                        (t) => t.id === accountInfo.thirdParty?.id && t.userId === accountInfo.thirdParty?.userId
-                    ) === undefined
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSameThirdPartyInfoAs(accountInfo.thirdParty);
+                    }) === undefined
                 ) {
                     pass = false;
                 }

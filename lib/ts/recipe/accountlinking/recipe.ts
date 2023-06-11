@@ -577,8 +577,8 @@ export default class Recipe extends RecipeModule {
           }
     > => {
         if (newUser.email !== undefined && newUser.phoneNumber !== undefined) {
-            // we do this check cause below when we call listUsersByAccountInfo,
-            // we only pass in one of email or phone number
+            // we do this check just to enforce that user's can't sign in / up
+            // with email and phone at the same time.
             throw new Error("Please pass one of email or phone number, not both");
         }
 
@@ -712,19 +712,10 @@ export default class Recipe extends RecipeModule {
         }
 
         // in order to link accounts, we need to have the recipe user ID of the new account.
-        // we do not pass in third party info, or both email or phone
-        // cause we want to guarantee that the output array contains just one
-        // primary user.
         let usersArrayThatHaveSameAccountInfoAsNewUser = await this.recipeInterfaceImpl.listUsersByAccountInfo({
-            accountInfo:
-                newUser.email !== undefined
-                    ? {
-                          email: newUser.email,
-                      }
-                    : {
-                          phoneNumber: newUser.phoneNumber,
-                      },
-            doUnionOfAccountInfo: false, // this doesn't matter since we are passing just one search field
+            accountInfo: newUser,
+            doUnionOfAccountInfo: true, // we pass in true so that we can get the max number of users
+            // that have this account info.
             userContext,
         });
 
@@ -751,12 +742,15 @@ export default class Recipe extends RecipeModule {
             recipe user will not be a candidate for automatic account linking in the future
             */
 
-            let otherPrimaryUser = usersArrayThatHaveSameAccountInfoAsNewUser.find((u) => u.isPrimaryUser);
-            if (otherPrimaryUser !== undefined && otherPrimaryUser.id !== existingUser.id) {
-                return {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                    description: "Not allowed because it will lead to two primary user id having same account info.",
-                };
+            let otherPrimaryUsers = usersArrayThatHaveSameAccountInfoAsNewUser.filter((u) => u.isPrimaryUser);
+            for (let i = 0; i < otherPrimaryUsers.length; i++) {
+                if (otherPrimaryUsers[i].id !== existingUser.id) {
+                    return {
+                        status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
+                        description:
+                            "Not allowed because it will lead to two primary user id having same account info.",
+                    };
+                }
             }
 
             /**
