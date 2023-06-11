@@ -70,6 +70,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         userContext: any;
     }): Promise<
         | {

@@ -232,10 +232,18 @@ export async function mockUpdateEmailOrPassword(input: {
                         }
                     });
                 } else {
-                    return {
-                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                        reason: "New email is associated with another primary user ID",
-                    };
+                    if (user.isPrimaryUser) {
+                        return {
+                            status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                            reason: "New email is associated with another primary user ID",
+                        };
+                    } else {
+                        return {
+                            status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                            reason:
+                                "New email is associated with primary user ID, this user is a recipe user and is not verified",
+                        };
+                    }
                 }
             }
         }

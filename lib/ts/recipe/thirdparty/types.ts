@@ -94,6 +94,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         userContext: any;
     }): Promise<
         | { status: "OK"; createdNewUser: boolean; user: User }

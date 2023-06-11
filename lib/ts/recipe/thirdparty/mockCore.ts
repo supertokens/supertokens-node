@@ -3,11 +3,14 @@ import { mockGetUser, mockListUsersByAccountInfo } from "../accountlinking/mockC
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import assert from "assert";
+import RecipeUserId from "../../recipeUserId";
 
 export async function mockCreateNewOrUpdateEmailOfRecipeUser(
     thirdPartyId: string,
     thirdPartyUserId: string,
     email: string,
+    isAccountLinkingEnabled: boolean,
+    isVerified: boolean,
     querier: Querier
 ): Promise<
     | { status: "OK"; createdNewUser: boolean; user: User }
@@ -16,6 +19,7 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
           reason: string;
       }
 > {
+    let shouldMarkInputEmailVerified = false;
     let thirdPartyUser = await mockListUsersByAccountInfo({
         accountInfo: {
             thirdParty: {
@@ -28,21 +32,38 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
 
     if (thirdPartyUser.length > 0) {
         assert(thirdPartyUser.length === 1);
+        let userBasedOnEmail = await mockListUsersByAccountInfo({
+            accountInfo: {
+                email,
+            },
+            doUnionOfAccountInfo: false,
+        });
         if (thirdPartyUser[0].isPrimaryUser === true) {
-            let userBasedOnEmail = await mockListUsersByAccountInfo({
-                accountInfo: {
-                    email,
-                },
-                doUnionOfAccountInfo: false,
-            });
-
             for (let i = 0; i < userBasedOnEmail.length; i++) {
-                if (userBasedOnEmail[i].isPrimaryUser && userBasedOnEmail[i].id !== thirdPartyUser[0].id) {
-                    return {
-                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                        reason: "Email already associated with another primary user.",
-                    };
+                if (userBasedOnEmail[i].isPrimaryUser) {
+                    if (userBasedOnEmail[i].id !== thirdPartyUser[0].id) {
+                        return {
+                            status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                            reason: "Email already associated with another primary user.",
+                        };
+                    } else if (!isVerified) {
+                        userBasedOnEmail[i].loginMethods.forEach((loginMethod) => {
+                            if (loginMethod.hasSameEmailAs(email) && loginMethod.verified) {
+                                shouldMarkInputEmailVerified = true;
+                            }
+                        });
+                    }
                 }
+            }
+        } else if (isAccountLinkingEnabled && !isVerified) {
+            // this means that we are signing in a recipe user id
+            let primaryUserForEmail = userBasedOnEmail.filter((u) => u.isPrimaryUser);
+            if (primaryUserForEmail.length === 1 && primaryUserForEmail[0].id !== thirdPartyUser[0].id) {
+                return {
+                    status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                    reason:
+                        "New email is associated with primary user ID, this user is a recipe user and is not verified",
+                };
             }
         }
     }
@@ -52,6 +73,46 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
         thirdPartyUserId,
         email: { id: email },
     });
+
+    if (response.status === "OK" && (shouldMarkInputEmailVerified || (response.createdNewUser && isVerified))) {
+        // We mark this user's email as verified if:
+        //  - This is a sign in, their email is unverified, but other linked accounts email is verified.
+        //  - This is a sign up, and the email is verified.
+
+        // These asserts are just there to detect bugs.
+        if (shouldMarkInputEmailVerified) {
+            assert(response.createdNewUser === false);
+            assert(!isVerified);
+        }
+
+        let recipeUserId: RecipeUserId | undefined = undefined;
+        let user = await mockGetUser({
+            userId: response.user.id,
+        });
+        user!.loginMethods.forEach((loginMethod) => {
+            if (
+                loginMethod.hasSameThirdPartyInfoAs({
+                    id: thirdPartyId,
+                    userId: thirdPartyUserId,
+                })
+            ) {
+                recipeUserId = loginMethod.recipeUserId;
+            }
+        });
+        let EmailVerification = require("../emailverification");
+        try {
+            let tokenResp = await EmailVerification.createEmailVerificationToken(recipeUserId!);
+            if (tokenResp.status === "OK") {
+                await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+            }
+        } catch (err) {
+            if (err.message === "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
+                // this means email verification is not enabled.. So we just ignore.
+            } else {
+                throw err;
+            }
+        }
+    }
 
     return {
         status: "OK",
