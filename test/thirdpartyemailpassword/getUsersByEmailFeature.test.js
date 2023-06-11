@@ -85,8 +85,8 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         }
 
         await emailPasswordSignUp("john.doe@example.com", "somePass");
-        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com", false);
+        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com", false);
 
         const thirdPartyUsers = await STExpress.listUsersByAccountInfo({
             email: "john.doe@example.com",

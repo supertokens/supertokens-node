@@ -72,7 +72,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         let response = await ThirdPartyPasswordless.thirdPartySignInUp(
             "customProvider",
             "verifiedUser",
-            "test@example.com"
+            "test@example.com",
+            false
         );
 
         // verify the user's email
@@ -89,7 +90,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         let response2 = await ThirdPartyPasswordless.thirdPartySignInUp(
             "customProvider2",
             "NotVerifiedUser",
-            "test@example.com"
+            "test@example.com",
+            false
         );
 
         assert(!(await EmailVerification.isEmailVerified(response2.user.id, response2.user.email)));

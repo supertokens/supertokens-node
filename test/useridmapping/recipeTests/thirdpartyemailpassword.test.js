@@ -83,7 +83,12 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 // create a new ThirdParty user
                 const email = "test2@example.com";
 
-                let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartySignInUp("google", "tpId", email);
+                let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartySignInUp(
+                    "google",
+                    "tpId",
+                    email,
+                    false
+                );
 
                 // map the users id
                 let user = signUpResponse.user;
