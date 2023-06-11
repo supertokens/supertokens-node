@@ -260,7 +260,8 @@ export async function mockUpdateEmailOrPassword(input: {
         try {
             let tokenResp = await EmailVerification.createEmailVerificationToken(input.recipeUserId);
             if (tokenResp.status === "OK") {
-                await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+                // cause we do not want to account link in this function
+                await EmailVerification.verifyEmailUsingToken(tokenResp.token, false);
             }
         } catch (err) {
             if (err.message === "Initialisation not done. Did you forget to call the SuperTokens.init function?") {

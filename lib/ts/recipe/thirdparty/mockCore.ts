@@ -19,6 +19,9 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
           reason: string;
       }
 > {
+    if (isAccountLinkingEnabled && isVerified) {
+        throw new Error("Bad request");
+    }
     let shouldMarkInputEmailVerified = false;
     let thirdPartyUser = await mockListUsersByAccountInfo({
         accountInfo: {
@@ -55,8 +58,11 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
                     }
                 }
             }
-        } else if (isAccountLinkingEnabled && !isVerified) {
+        } else if (isAccountLinkingEnabled) {
             // this means that we are signing in a recipe user id
+            // TODO: this part should not be here, and should actually be in the backend
+            // SDK - as a function like isEmailChangeAllowed and isSignUpAllowed which is
+            // only called during the sign in API.
             let primaryUserForEmail = userBasedOnEmail.filter((u) => u.isPrimaryUser);
             if (primaryUserForEmail.length === 1 && primaryUserForEmail[0].id !== thirdPartyUser[0].id) {
                 return {
@@ -74,10 +80,13 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
         email: { id: email },
     });
 
-    if (response.status === "OK" && (shouldMarkInputEmailVerified || (response.createdNewUser && isVerified))) {
+    if (response.status === "OK" && (shouldMarkInputEmailVerified || isVerified)) {
+        // TODO: this part should ideally be in the backend SDK and not in the core. In the
+        // backend SDK, this should be a part of the sign in recipe function, and createNewUser recipe function.
+
         // We mark this user's email as verified if:
         //  - This is a sign in, their email is unverified, but other linked accounts email is verified.
-        //  - This is a sign up, and the email is verified.
+        //  - This is a sign in or sign in up, and the email is verified from the provider.
 
         // These asserts are just there to detect bugs.
         if (shouldMarkInputEmailVerified) {
@@ -103,7 +112,8 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
         try {
             let tokenResp = await EmailVerification.createEmailVerificationToken(recipeUserId!);
             if (tokenResp.status === "OK") {
-                await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+                // cause we do not want to account link in this function
+                await EmailVerification.verifyEmailUsingToken(tokenResp.token, false);
             }
         } catch (err) {
             if (err.message === "Initialisation not done. Did you forget to call the SuperTokens.init function?") {

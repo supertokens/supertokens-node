@@ -14,6 +14,7 @@ import {
     mockGetPasswordResetInfo,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
+import EmailVerification from "../emailverification";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -191,7 +192,15 @@ export default function getRecipeInterface(
                 }
             }
             let isAccountLinkingEnabled = false;
-            if (input.email !== undefined) {
+
+            // TODO: maybe this all should not happen here at all, and should be exposed
+            // as another function in account linking recipe called isEmailChangeAllowed -
+            // cause this is a recipe level function and we want to let devs call this
+            // independently of the user calling it (via an API for example).
+
+            // we check for this cause maybe the new email is already verified.
+            let isVerified = await EmailVerification.isEmailVerified(input.recipeUserId, input.email);
+            if (input.email !== undefined && !isVerified) {
                 // we do all of this cause we need to know if the dev allows for
                 // account linking if we were to change the email of this user (since the
                 // core API requires this boolean). If the input user is already a primary

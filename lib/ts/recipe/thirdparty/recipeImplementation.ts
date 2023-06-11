@@ -5,6 +5,8 @@ import { User } from "../../types";
 import AccountLinking from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
+import EmailVerification from "../emailverification";
+import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
     return {
@@ -41,6 +43,27 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             }
 
             let isAccountLinkingEnabled = false;
+            if (users.length === 1 && !isVerified) {
+                // We do this check outside the if statement below cause we may
+                // end up changing the value of isVerified
+
+                // Even if the input isVerified is false, it's from the provider.
+                // Since this is a sign in, the user may have previously verified
+                // their email already with SuperTokens, and so we should set
+                // isVerified to true before proceeding.
+                let recipeUserId: RecipeUserId | undefined = undefined;
+                users[0].loginMethods.forEach((lM) => {
+                    if (
+                        lM.hasSameThirdPartyInfoAs({
+                            id: thirdPartyId,
+                            userId: thirdPartyUserId,
+                        })
+                    ) {
+                        recipeUserId = lM.recipeUserId;
+                    }
+                });
+                isVerified = await EmailVerification.isEmailVerified(recipeUserId!, email);
+            }
             if (users.length === 1 && !isVerified) {
                 // we do all of this cause we need to know if the dev allows for
                 // account linking if we were to change the email of this user (since the
