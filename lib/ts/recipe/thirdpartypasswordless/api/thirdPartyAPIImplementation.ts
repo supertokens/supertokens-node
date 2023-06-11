@@ -5,9 +5,6 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyPasswordless
     return {
         authorisationUrlGET: apiImplmentation.authorisationUrlGET?.bind(apiImplmentation),
         appleRedirectHandlerPOST: apiImplmentation.appleRedirectHandlerPOST?.bind(apiImplmentation),
-        linkAccountWithUserFromSessionPOST: apiImplmentation.linkThirdPartyAccountWithUserFromSessionPOST?.bind(
-            apiImplmentation
-        ),
         signInUpPOST: apiImplmentation.thirdPartySignInUpPOST?.bind(apiImplmentation),
     };
 }

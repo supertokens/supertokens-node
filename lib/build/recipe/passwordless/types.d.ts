@@ -325,52 +325,6 @@ export declare type APIInterface = {
               reason: string;
           }
     >;
-    linkAccountWithUserFromSessionPOST:
-        | undefined
-        | ((
-              input: (
-                  | {
-                        userInputCode: string;
-                        deviceId: string;
-                        preAuthSessionId: string;
-                    }
-                  | {
-                        linkCode: string;
-                        preAuthSessionId: string;
-                    }
-              ) & {
-                  session: SessionContainerInterface;
-                  options: APIOptions;
-                  userContext: any;
-              }
-          ) => Promise<
-              | {
-                    status: "OK";
-                    user: User;
-                    session: SessionContainerInterface;
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                    isNotVerifiedAccountFromInputSession: boolean;
-                    description: string;
-                }
-              | GeneralErrorResponse
-          >);
     emailExistsGET?: (input: {
         email: string;
         options: APIOptions;

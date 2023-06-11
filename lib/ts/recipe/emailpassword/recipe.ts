@@ -25,13 +25,11 @@ import {
     GENERATE_PASSWORD_RESET_TOKEN_API,
     PASSWORD_RESET_API,
     SIGNUP_EMAIL_EXISTS_API,
-    LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
-import linkAccountWithUserFromSessionAPI from "./api/linkAccountWithUserFromSession";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import RecipeImplementation from "./recipeImplementation";
@@ -155,12 +153,12 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
-            {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
-                id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
-                disabled: this.apiImpl.linkAccountWithUserFromSessionPOST === undefined,
-            },
+            // {
+            //     method: "post",
+            //     pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
+            //     id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
+            //     disabled: this.apiImpl.linkAccountWithUserFromSessionPOST === undefined,
+            // },
         ];
     };
 
@@ -191,9 +189,10 @@ export default class Recipe extends RecipeModule {
             return await passwordResetAPI(this.apiImpl, options);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this.apiImpl, options);
-        } else if (id === LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API) {
-            return await linkAccountWithUserFromSessionAPI(this.apiImpl, options);
         }
+        // else if (id === LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API) {
+        //     return await linkAccountWithUserFromSessionAPI(this.apiImpl, options);
+        // }
         return false;
     };
 

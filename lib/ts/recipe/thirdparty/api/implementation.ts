@@ -5,293 +5,249 @@ import * as axios from "axios";
 import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
-import EmailVerification from "../../emailverification/recipe";
 import { User } from "../../../types";
 import type { RecipeLevelUser } from "../../accountlinking/types";
 import AccountLinking from "../../accountlinking/recipe";
 import { listUsersByAccountInfo } from "../../..";
 import { UserInfo } from "../types";
-import { storeIntoAccountToLinkTable } from "../../accountlinking";
-import { getEmailVerifyLink } from "../../emailverification/utils";
-import { logDebugMessage } from "../../../logger";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        linkAccountWithUserFromSessionPOST: async function (
-            this: APIInterface,
-            {
-                provider,
-                code,
-                redirectURI,
-                authCodeResponse,
-                clientId,
-                fromProvider,
-                session,
-                options,
-                userContext,
-            }: {
-                provider: TypeProvider;
-                code: string;
-                redirectURI: string;
-                authCodeResponse?: any;
-                clientId?: string;
-                fromProvider:
-                    | {
-                          userInfo: UserInfo;
-                          authCodeResponse: any;
-                      }
-                    | undefined;
-                session: SessionContainerInterface;
-                options: APIOptions;
-                userContext: any;
-            }
-        ): Promise<
-            | {
-                  status: "OK";
-                  wereAccountsAlreadyLinked: boolean;
-                  authCodeResponse: any;
-              }
-            | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-            | {
-                  status: "SIGN_IN_NOT_ALLOWED";
-                  reason: string;
-              }
-            | {
-                  status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                  description: string;
-              }
-            | {
-                  status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                  description: string;
-                  recipeUserId: string;
-                  primaryUserId: string;
-                  email: string;
-                  authCodeResponse: any;
-              }
-            | GeneralErrorResponse
-        > {
-            // we pass fromProvider as an input to this function cause in the logic below,
-            // we can do recursion as well, and in that case, we cannot re consume the auth code
-            // (since they are one time use only) - therefore, we pass the  previously
-            // fetched fromProvider when recursing and reuse that.
-            fromProvider =
-                fromProvider === undefined
-                    ? await getUserInfoFromAuthCode(provider, code, redirectURI, authCodeResponse, userContext)
-                    : fromProvider;
+        // This is commented out because we have decided to not add this feature for now,
+        // and add it at a later iteration in the project.
+        // linkAccountWithUserFromSessionPOST: async function (
+        //     this: APIInterface,
+        //     {
+        //         provider,
+        //         code,
+        //         redirectURI,
+        //         authCodeResponse,
+        //         clientId,
+        //         fromProvider,
+        //         session,
+        //         options,
+        //         userContext,
+        //     }: {
+        //         provider: TypeProvider;
+        //         code: string;
+        //         redirectURI: string;
+        //         authCodeResponse?: any;
+        //         clientId?: string;
+        //         fromProvider:
+        //         | {
+        //             userInfo: UserInfo;
+        //             authCodeResponse: any;
+        //         }
+        //         | undefined;
+        //         session: SessionContainerInterface;
+        //         options: APIOptions;
+        //         userContext: any;
+        //     }
+        // ): Promise<
+        //     | {
+        //         status: "OK";
+        //         wereAccountsAlreadyLinked: boolean;
+        //         authCodeResponse: any;
+        //     }
+        //     | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+        //     | {
+        //         status: "SIGN_IN_NOT_ALLOWED";
+        //         reason: string;
+        //     }
+        //     | {
+        //         status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+        //         description: string;
+        //     }
+        //     | {
+        //         status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+        //         description: string;
+        //         recipeUserId: string;
+        //         primaryUserId: string;
+        //         email: string;
+        //         authCodeResponse: any;
+        //     }
+        //     | GeneralErrorResponse
+        // > {
+        //     // we pass fromProvider as an input to this function cause in the logic below,
+        //     // we can do recursion as well, and in that case, we cannot re consume the auth code
+        //     // (since they are one time use only) - therefore, we pass the  previously
+        //     // fetched fromProvider when recursing and reuse that.
+        //     fromProvider =
+        //         fromProvider === undefined
+        //             ? await getUserInfoFromAuthCode(provider, code, redirectURI, authCodeResponse, userContext)
+        //             : fromProvider;
 
-            const emailInfo = fromProvider.userInfo.email;
+        //     const emailInfo = fromProvider.userInfo.email;
 
-            if (emailInfo === undefined) {
-                return {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER",
-                };
-            }
+        //     if (emailInfo === undefined) {
+        //         return {
+        //             status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+        //         };
+        //     }
 
-            const createRecipeUserFunc = async (userContext: any): Promise<void> => {
-                let resp = await options.recipeImplementation.createNewOrUpdateEmailOfRecipeUser({
-                    thirdPartyId: provider.id,
-                    thirdPartyUserId: fromProvider!.userInfo.id,
-                    email: emailInfo!.id,
-                    userContext,
-                });
+        //     const createRecipeUserFunc = async (userContext: any): Promise<void> => {
+        //         let resp = await options.recipeImplementation.createNewOrUpdateEmailOfRecipeUser({
+        //             thirdPartyId: provider.id,
+        //             thirdPartyUserId: fromProvider!.userInfo.id,
+        //             email: emailInfo!.id,
+        //             userContext,
+        //         });
 
-                if (resp.status === "OK") {
-                    if (resp.createdNewUser) {
-                        if (emailInfo.isVerified) {
-                            const emailVerificationInstance = EmailVerification.getInstance();
-                            if (emailVerificationInstance) {
-                                const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                                    {
-                                        recipeUserId: resp.user.loginMethods[0].recipeUserId,
-                                        email: emailInfo.id,
-                                        userContext,
-                                    }
-                                );
+        //         if (resp.status === "OK") {
+        //             if (resp.createdNewUser) {
+        //                 if (emailInfo.isVerified) {
+        //                     const emailVerificationInstance = EmailVerification.getInstance();
+        //                     if (emailVerificationInstance) {
+        //                         const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+        //                             {
+        //                                 recipeUserId: resp.user.loginMethods[0].recipeUserId,
+        //                                 email: emailInfo.id,
+        //                                 userContext,
+        //                             }
+        //                         );
 
-                                if (tokenResponse.status === "OK") {
-                                    await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                                        token: tokenResponse.token,
-                                        attemptAccountLinking: false, // we pass this cause in this API, we
-                                        // already try and do account linking.
-                                        userContext,
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-                // the other status type of EMAIL_CHANGE_NOT_ALLOWED_ERROR should not happen
-                // cause that is only possible when signing in, and here we only try and create
-                // a new user.
-            };
+        //                         if (tokenResponse.status === "OK") {
+        //                             await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+        //                                 token: tokenResponse.token,
+        //                                 attemptAccountLinking: false, // we pass this cause in this API, we
+        //                                 // already try and do account linking.
+        //                                 userContext,
+        //                             });
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         // the other status type of EMAIL_CHANGE_NOT_ALLOWED_ERROR should not happen
+        //         // cause that is only possible when signing in, and here we only try and create
+        //         // a new user.
+        //     };
 
-            const verifyCredentialsFunc = async (
-                userContext: any
-            ): Promise<
-                | { status: "OK" }
-                | {
-                      status: "CUSTOM_RESPONSE";
-                      resp: {
-                          status: "SIGN_IN_NOT_ALLOWED";
-                          reason: string;
-                      };
-                  }
-            > => {
-                let resp = await options.recipeImplementation.createNewOrUpdateEmailOfRecipeUser({
-                    thirdPartyId: provider.id,
-                    thirdPartyUserId: fromProvider!.userInfo.id,
-                    email: emailInfo!.id,
-                    userContext,
-                });
-                if (resp.status === "OK") {
-                    return {
-                        status: "OK",
-                    };
-                }
-                return {
-                    status: "CUSTOM_RESPONSE",
-                    resp: {
-                        status: "SIGN_IN_NOT_ALLOWED",
-                        reason: resp.reason,
-                    },
-                };
-            };
+        //     const verifyCredentialsFunc = async (
+        //         userContext: any
+        //     ): Promise<
+        //         | { status: "OK" }
+        //         | {
+        //             status: "CUSTOM_RESPONSE";
+        //             resp: {
+        //                 status: "SIGN_IN_NOT_ALLOWED";
+        //                 reason: string;
+        //             };
+        //         }
+        //     > => {
+        //         let resp = await options.recipeImplementation.createNewOrUpdateEmailOfRecipeUser({
+        //             thirdPartyId: provider.id,
+        //             thirdPartyUserId: fromProvider!.userInfo.id,
+        //             email: emailInfo!.id,
+        //             userContext,
+        //         });
+        //         if (resp.status === "OK") {
+        //             return {
+        //                 status: "OK",
+        //             };
+        //         }
+        //         return {
+        //             status: "CUSTOM_RESPONSE",
+        //             resp: {
+        //                 status: "SIGN_IN_NOT_ALLOWED",
+        //                 reason: resp.reason,
+        //             },
+        //         };
+        //     };
 
-            let accountLinkingInstance = AccountLinking.getInstance();
-            let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
-                status: "SIGN_IN_NOT_ALLOWED";
-                reason: string;
-            }>({
-                session,
-                newUser: {
-                    email: emailInfo.id,
-                    thirdParty: {
-                        id: provider.id,
-                        userId: fromProvider.userInfo.id,
-                    },
-                    recipeId: "thirdparty",
-                },
-                createRecipeUserFunc,
-                verifyCredentialsFunc,
-                userContext,
-            });
-            if (result.status === "CUSTOM_RESPONSE") {
-                return result.resp;
-            } else if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
-                // this will store in the db that these need to be linked,
-                // and after verification, it will link these accounts.
-                let toLinkResult = await storeIntoAccountToLinkTable(
-                    result.recipeUserId,
-                    result.primaryUserId,
-                    userContext
-                );
-                if (toLinkResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-                    if (toLinkResult.primaryUserId === result.primaryUserId) {
-                        // this is some sort of a race condition issue, so we just ignore it
-                        // since we already linked to the session's account anyway...
-                        return {
-                            status: "OK",
-                            wereAccountsAlreadyLinked: true,
-                            authCodeResponse: fromProvider.authCodeResponse,
-                        };
-                    } else {
-                        return {
-                            status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                            description:
-                                "Input user is already linked to another account. Please try again or contact support.",
-                        };
-                    }
-                } else if (toLinkResult.status === "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR") {
-                    // this can happen due to a race condition wherein
-                    // by the time the code comes here, the input primary user is no more a
-                    // primary user. So we can do recursion and then linkAccountWithUserFromSession
-                    // will try and make the session user a primary user again
-                    return this.linkAccountWithUserFromSessionPOST!({
-                        provider,
-                        code,
-                        redirectURI,
-                        authCodeResponse,
-                        clientId,
-                        fromProvider,
-                        session,
-                        options,
-                        userContext,
-                    });
-                }
-                // status: "OK"
+        //     let accountLinkingInstance = AccountLinking.getInstance();
+        //     let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
+        //         status: "SIGN_IN_NOT_ALLOWED";
+        //         reason: string;
+        //     }>({
+        //         session,
+        //         newUser: {
+        //             email: emailInfo.id,
+        //             thirdParty: {
+        //                 id: provider.id,
+        //                 userId: fromProvider.userInfo.id,
+        //             },
+        //             recipeId: "thirdparty",
+        //         },
+        //         createRecipeUserFunc,
+        //         verifyCredentialsFunc,
+        //         userContext,
+        //     });
+        //     if (result.status === "CUSTOM_RESPONSE") {
+        //         return result.resp;
+        //     } else if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+        //         // we now send an email verification email to this user.
+        //         const emailVerificationInstance = EmailVerification.getInstance();
+        //         if (emailVerificationInstance) {
+        //             const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+        //                 {
+        //                     recipeUserId: result.recipeUserId,
+        //                     email: fromProvider.userInfo.email!.id,
+        //                     userContext,
+        //                 }
+        //             );
 
-                // we now send an email verification email to this user.
-                const emailVerificationInstance = EmailVerification.getInstance();
-                if (emailVerificationInstance) {
-                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                        {
-                            recipeUserId: result.recipeUserId,
-                            email: fromProvider.userInfo.email!.id,
-                            userContext,
-                        }
-                    );
+        //             if (tokenResponse.status === "OK") {
+        //                 let emailVerifyLink = getEmailVerifyLink({
+        //                     appInfo: options.appInfo,
+        //                     token: tokenResponse.token,
+        //                     recipeId: options.recipeId,
+        //                 });
 
-                    if (tokenResponse.status === "OK") {
-                        let emailVerifyLink = getEmailVerifyLink({
-                            appInfo: options.appInfo,
-                            token: tokenResponse.token,
-                            recipeId: options.recipeId,
-                        });
+        //                 logDebugMessage(`Sending email verification email to ${fromProvider.userInfo.email!.id}`);
+        //                 await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+        //                     type: "EMAIL_VERIFICATION",
+        //                     user: {
+        //                         // we send the session's user ID here cause
+        //                         // we will be linking this user ID and the result.recipeUserId
+        //                         // eventually.
+        //                         id: session.getUserId(),
+        //                         recipeUserId: result.recipeUserId,
+        //                         email: fromProvider.userInfo.email!.id,
+        //                     },
+        //                     emailVerifyLink,
+        //                     userContext,
+        //                 });
+        //             } else {
+        //                 // this means that the email is already verified. It can come here
+        //                 // cause of a race condition, so we just try again
+        //                 return this.linkAccountWithUserFromSessionPOST!({
+        //                     provider,
+        //                     code,
+        //                     redirectURI,
+        //                     authCodeResponse,
+        //                     clientId,
+        //                     fromProvider,
+        //                     session,
+        //                     options,
+        //                     userContext,
+        //                 });
+        //             }
+        //         } else {
+        //             throw new Error(
+        //                 "Developer configuration error - email verification is required, but the email verification recipe has not been initialized."
+        //             );
+        //         }
 
-                        logDebugMessage(`Sending email verification email to ${fromProvider.userInfo.email!.id}`);
-                        await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                            type: "EMAIL_VERIFICATION",
-                            user: {
-                                // we send the session's user ID here cause
-                                // we will be linking this user ID and the result.recipeUserId
-                                // eventually.
-                                id: session.getUserId(),
-                                recipeUserId: result.recipeUserId,
-                                email: fromProvider.userInfo.email!.id,
-                            },
-                            emailVerifyLink,
-                            userContext,
-                        });
-                    } else {
-                        // this means that the email is already verified. It can come here
-                        // cause of a race condition, so we just try again
-                        return this.linkAccountWithUserFromSessionPOST!({
-                            provider,
-                            code,
-                            redirectURI,
-                            authCodeResponse,
-                            clientId,
-                            fromProvider,
-                            session,
-                            options,
-                            userContext,
-                        });
-                    }
-                } else {
-                    throw new Error(
-                        "Developer configuration error - email verification is required, but the email verification recipe has not been initialized."
-                    );
-                }
-
-                return {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
-                    authCodeResponse: fromProvider.authCodeResponse,
-                    recipeUserId: result.recipeUserId.getAsString(),
-                    email: fromProvider.userInfo.email!.id,
-                    primaryUserId: result.primaryUserId,
-                    description:
-                        "Before accounts can be linked, the new account must be verified, and an email verification email has been sent already.",
-                };
-            } else if (result.status === "OK") {
-                return {
-                    authCodeResponse: fromProvider.authCodeResponse,
-                    status: "OK",
-                    wereAccountsAlreadyLinked: result.wereAccountsAlreadyLinked,
-                };
-            }
-            // status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
-            return result;
-        },
+        //         return {
+        //             status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+        //             authCodeResponse: fromProvider.authCodeResponse,
+        //             recipeUserId: result.recipeUserId.getAsString(),
+        //             email: fromProvider.userInfo.email!.id,
+        //             primaryUserId: result.primaryUserId,
+        //             description:
+        //                 "Before accounts can be linked, the new account must be verified, and an email verification email has been sent already.",
+        //         };
+        //     } else if (result.status === "OK") {
+        //         return {
+        //             authCodeResponse: fromProvider.authCodeResponse,
+        //             status: "OK",
+        //             wereAccountsAlreadyLinked: result.wereAccountsAlreadyLinked,
+        //         };
+        //     }
+        //     // status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
+        //     return result;
+        // },
         authorisationUrlGET: async function ({
             provider,
             options,

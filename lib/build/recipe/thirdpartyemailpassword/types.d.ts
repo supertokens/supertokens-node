@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, UserInfo } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import {
     NormalisedFormField,
     TypeInputFormField,
@@ -183,50 +183,6 @@ export declare type RecipeInterface = {
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export declare type APIInterface = {
-    linkThirdPartyAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              fromProvider:
-                  | {
-                        userInfo: UserInfo;
-                        authCodeResponse: any;
-                    }
-                  | undefined;
-              session: SessionContainerInterface;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                    authCodeResponse: any;
-                }
-              | {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-                }
-              | {
-                    status: "SIGN_IN_NOT_ALLOWED";
-                    reason: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                    description: string;
-                    recipeUserId: string;
-                    primaryUserId: string;
-                    email: string;
-                    authCodeResponse: any;
-                }
-              | GeneralErrorResponse
-          >);
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -324,37 +280,6 @@ export declare type APIInterface = {
                 }
               | {
                     status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT";
-                }
-              | GeneralErrorResponse
-          >);
-    linkEmailPasswordAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              session: SessionContainerInterface;
-              options: EmailPasswordAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "WRONG_CREDENTIALS_ERROR";
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                    description: string;
-                    recipeUserId: string;
-                    primaryUserId: string;
-                    email: string;
                 }
               | GeneralErrorResponse
           >);

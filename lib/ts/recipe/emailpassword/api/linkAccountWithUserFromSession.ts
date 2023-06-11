@@ -13,44 +13,46 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
-import { validateFormFieldsOrThrowError } from "./utils";
-import { APIInterface, APIOptions } from "..";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
-import Session from "../../session";
+// This is commented out because we have decided to not add this feature for now,
+// and add it at a later iteration in the project.
+// import { send200Response } from "../../../utils";
+// import { validateFormFieldsOrThrowError } from "./utils";
+// import { APIInterface, APIOptions } from "..";
+// import { makeDefaultUserContextFromAPI } from "../../../utils";
+// import Session from "../../session";
 
-export default async function linkAccountToExistingAccountAPI(
-    apiImplementation: APIInterface,
-    options: APIOptions
-): Promise<boolean> {
-    if (apiImplementation.linkAccountWithUserFromSessionPOST === undefined) {
-        return false;
-    }
+// export default async function linkAccountToExistingAccountAPI(
+//     apiImplementation: APIInterface,
+//     options: APIOptions
+// ): Promise<boolean> {
+//     if (apiImplementation.linkAccountWithUserFromSessionPOST === undefined) {
+//         return false;
+//     }
 
-    // We do sign in form field validation here, but if a new recipe user is being
-    // created, then we do sign up form field validation in the api implementation.
-    let formFields: {
-        id: string;
-        value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        options.config.signInFeature.formFields,
-        (await options.req.getJSONBody()).formFields
-    );
+//     // We do sign in form field validation here, but if a new recipe user is being
+//     // created, then we do sign up form field validation in the api implementation.
+//     let formFields: {
+//         id: string;
+//         value: string;
+//     }[] = await validateFormFieldsOrThrowError(
+//         options.config.signInFeature.formFields,
+//         (await options.req.getJSONBody()).formFields
+//     );
 
-    let userContext = makeDefaultUserContextFromAPI(options.req);
-    const session = await Session.getSession(
-        options.req,
-        options.res,
-        { overrideGlobalClaimValidators: () => [] },
-        userContext
-    );
-    let result = await apiImplementation.linkAccountWithUserFromSessionPOST({
-        formFields,
-        session: session,
-        options,
-        userContext,
-    });
-    // status: NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR | ACCOUNT_LINKING_NOT_ALLOWED_ERROR | WRONG_CREDENTIALS_ERROR | GENERAL_ERROR | "OK"
-    send200Response(options.res, result);
-    return true;
-}
+//     let userContext = makeDefaultUserContextFromAPI(options.req);
+//     const session = await Session.getSession(
+//         options.req,
+//         options.res,
+//         { overrideGlobalClaimValidators: () => [] },
+//         userContext
+//     );
+//     let result = await apiImplementation.linkAccountWithUserFromSessionPOST({
+//         formFields,
+//         session: session,
+//         options,
+//         userContext,
+//     });
+//     // status: NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR | ACCOUNT_LINKING_NOT_ALLOWED_ERROR | WRONG_CREDENTIALS_ERROR | GENERAL_ERROR | "OK"
+//     send200Response(options.res, result);
+//     return true;
+// }

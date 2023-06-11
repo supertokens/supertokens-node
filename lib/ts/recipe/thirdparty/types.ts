@@ -159,48 +159,50 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    linkAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              fromProvider:
-                  | {
-                        userInfo: UserInfo;
-                        authCodeResponse: any;
-                    }
-                  | undefined;
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                    authCodeResponse: any;
-                }
-              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-              | {
-                    status: "SIGN_IN_NOT_ALLOWED";
-                    reason: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                    description: string;
-                    recipeUserId: string;
-                    primaryUserId: string;
-                    email: string;
-                    authCodeResponse: any;
-                }
-              | GeneralErrorResponse
-          >);
+    // This is commented out because we have decided to not add this feature for now,
+    // and add it at a later iteration in the project.
+    // linkAccountWithUserFromSessionPOST:
+    //     | undefined
+    //     | ((input: {
+    //           provider: TypeProvider;
+    //           code: string;
+    //           redirectURI: string;
+    //           authCodeResponse?: any;
+    //           clientId?: string;
+    //           fromProvider:
+    //               | {
+    //                     userInfo: UserInfo;
+    //                     authCodeResponse: any;
+    //                 }
+    //               | undefined;
+    //           session: SessionContainerInterface;
+    //           options: APIOptions;
+    //           userContext: any;
+    //       }) => Promise<
+    //           | {
+    //                 status: "OK";
+    //                 wereAccountsAlreadyLinked: boolean;
+    //                 authCodeResponse: any;
+    //             }
+    //           | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+    //           | {
+    //                 status: "SIGN_IN_NOT_ALLOWED";
+    //                 reason: string;
+    //             }
+    //           | {
+    //                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+    //                 description: string;
+    //             }
+    //           | {
+    //                 status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+    //                 description: string;
+    //                 recipeUserId: string;
+    //                 primaryUserId: string;
+    //                 email: string;
+    //                 authCodeResponse: any;
+    //             }
+    //           | GeneralErrorResponse
+    //       >);
 
     appleRedirectHandlerPOST:
         | undefined

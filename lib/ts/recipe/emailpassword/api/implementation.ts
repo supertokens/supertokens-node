@@ -6,209 +6,172 @@ import { GeneralErrorResponse } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
-import { getEmailVerifyLink } from "../../emailverification/utils";
-import { storeIntoAccountToLinkTable } from "../../accountlinking";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
-import { validateFormFieldsOrThrowError } from "./utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        linkAccountWithUserFromSessionPOST: async function (
-            this: APIInterface,
-            {
-                formFields,
-                session,
-                options,
-                userContext,
-            }: {
-                formFields: {
-                    id: string;
-                    value: string;
-                }[];
-                session: SessionContainerInterface;
-                options: APIOptions;
-                userContext: any;
-            }
-        ): Promise<
-            | {
-                  status: "OK";
-                  wereAccountsAlreadyLinked: boolean;
-              }
-            | {
-                  status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                  description: string;
-              }
-            | {
-                  status: "WRONG_CREDENTIALS_ERROR";
-              }
-            | {
-                  status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                  description: string;
-                  recipeUserId: string;
-                  email: string;
-                  primaryUserId: string;
-              }
-            | GeneralErrorResponse
-        > {
-            const email = formFields.filter((f) => f.id === "email")[0].value;
-            const password = formFields.filter((f) => f.id === "password")[0].value;
+        // This is commented out because we have decided to not add this feature for now,
+        // and add it at a later iteration in the project.
+        // linkAccountWithUserFromSessionPOST: async function (
+        //     this: APIInterface,
+        //     {
+        //         formFields,
+        //         session,
+        //         options,
+        //         userContext,
+        //     }: {
+        //         formFields: {
+        //             id: string;
+        //             value: string;
+        //         }[];
+        //         session: SessionContainerInterface;
+        //         options: APIOptions;
+        //         userContext: any;
+        //     }
+        // ): Promise<
+        //     | {
+        //         status: "OK";
+        //         wereAccountsAlreadyLinked: boolean;
+        //     }
+        //     | {
+        //         status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+        //         description: string;
+        //     }
+        //     | {
+        //         status: "WRONG_CREDENTIALS_ERROR";
+        //     }
+        //     | {
+        //         status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+        //         description: string;
+        //         recipeUserId: string;
+        //         email: string;
+        //         primaryUserId: string;
+        //     }
+        //     | GeneralErrorResponse
+        // > {
+        //     const email = formFields.filter((f) => f.id === "email")[0].value;
+        //     const password = formFields.filter((f) => f.id === "password")[0].value;
 
-            const createRecipeUserFunc = async (userContext: any): Promise<void> => {
-                // this will throw and get caught by the supertokens error handler.
-                await validateFormFieldsOrThrowError(
-                    options.config.signUpFeature.formFields,
-                    (await options.req.getJSONBody()).formFields
-                );
+        //     const createRecipeUserFunc = async (userContext: any): Promise<void> => {
+        //         // this will throw and get caught by the supertokens error handler.
+        //         await validateFormFieldsOrThrowError(
+        //             options.config.signUpFeature.formFields,
+        //             (await options.req.getJSONBody()).formFields
+        //         );
 
-                await options.recipeImplementation.createNewRecipeUser({
-                    email,
-                    password,
-                    userContext,
-                });
-                // we ignore the result from the above cause after this, function returns,
-                // the linkAccountsWithUserFromSession anyway does recursion..
-            };
+        //         await options.recipeImplementation.createNewRecipeUser({
+        //             email,
+        //             password,
+        //             userContext,
+        //         });
+        //         // we ignore the result from the above cause after this, function returns,
+        //         // the linkAccountsWithUserFromSession anyway does recursion..
+        //     };
 
-            const verifyCredentialsFunc = async (
-                userContext: any
-            ): Promise<
-                | { status: "OK" }
-                | {
-                      status: "CUSTOM_RESPONSE";
-                      resp: {
-                          status: "WRONG_CREDENTIALS_ERROR";
-                      };
-                  }
-            > => {
-                const signInResult = await options.recipeImplementation.signIn({
-                    email,
-                    password,
-                    userContext,
-                });
+        //     const verifyCredentialsFunc = async (
+        //         userContext: any
+        //     ): Promise<
+        //         | { status: "OK" }
+        //         | {
+        //             status: "CUSTOM_RESPONSE";
+        //             resp: {
+        //                 status: "WRONG_CREDENTIALS_ERROR";
+        //             };
+        //         }
+        //     > => {
+        //         const signInResult = await options.recipeImplementation.signIn({
+        //             email,
+        //             password,
+        //             userContext,
+        //         });
 
-                if (signInResult.status === "OK") {
-                    return { status: "OK" };
-                } else {
-                    return {
-                        status: "CUSTOM_RESPONSE",
-                        resp: signInResult,
-                    };
-                }
-            };
+        //         if (signInResult.status === "OK") {
+        //             return { status: "OK" };
+        //         } else {
+        //             return {
+        //                 status: "CUSTOM_RESPONSE",
+        //                 resp: signInResult,
+        //             };
+        //         }
+        //     };
 
-            let accountLinkingInstance = AccountLinking.getInstance();
-            let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
-                status: "WRONG_CREDENTIALS_ERROR";
-            }>({
-                session,
-                newUser: {
-                    email,
-                    recipeId: "emailpassword",
-                },
-                createRecipeUserFunc,
-                verifyCredentialsFunc,
-                userContext,
-            });
-            if (result.status === "CUSTOM_RESPONSE") {
-                return result.resp;
-            } else if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
-                // this will store in the db that these need to be linked,
-                // and after verification, it will link these accounts.
-                let toLinkResult = await storeIntoAccountToLinkTable(
-                    result.recipeUserId,
-                    result.primaryUserId,
-                    userContext
-                );
-                if (toLinkResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
-                    if (toLinkResult.primaryUserId === result.primaryUserId) {
-                        // this is some sort of a race condition issue, so we just ignore it
-                        // since we already linked to the session's account anyway...
-                        return {
-                            status: "OK",
-                            wereAccountsAlreadyLinked: true,
-                        };
-                    } else {
-                        return {
-                            status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
-                            description:
-                                "Input user is already linked to another account. Please try again or contact support.",
-                        };
-                    }
-                } else if (toLinkResult.status === "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR") {
-                    // this can happen due to a race condition wherein
-                    // by the time the code comes here, the input primary user is no more a
-                    // primary user. So we can do recursion and then linkAccountWithUserFromSession
-                    // will try and make the session user a primary user again
-                    return this.linkAccountWithUserFromSessionPOST!({
-                        formFields,
-                        session,
-                        options,
-                        userContext,
-                    });
-                }
-                // status: "OK"
+        //     let accountLinkingInstance = AccountLinking.getInstance();
+        //     let result = await accountLinkingInstance.linkAccountWithUserFromSession<{
+        //         status: "WRONG_CREDENTIALS_ERROR";
+        //     }>({
+        //         session,
+        //         newUser: {
+        //             email,
+        //             recipeId: "emailpassword",
+        //         },
+        //         createRecipeUserFunc,
+        //         verifyCredentialsFunc,
+        //         userContext,
+        //     });
+        //     if (result.status === "CUSTOM_RESPONSE") {
+        //         return result.resp;
+        //     } else if (result.status === "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR") {
+        //         // we now send an email verification email to this user.
+        //         const emailVerificationInstance = EmailVerification.getInstance();
+        //         if (emailVerificationInstance) {
+        //             const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+        //                 {
+        //                     recipeUserId: result.recipeUserId,
+        //                     email,
+        //                     userContext,
+        //                 }
+        //             );
 
-                // we now send an email verification email to this user.
-                const emailVerificationInstance = EmailVerification.getInstance();
-                if (emailVerificationInstance) {
-                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                        {
-                            recipeUserId: result.recipeUserId,
-                            email,
-                            userContext,
-                        }
-                    );
+        //             if (tokenResponse.status === "OK") {
+        //                 let emailVerifyLink = getEmailVerifyLink({
+        //                     appInfo: options.appInfo,
+        //                     token: tokenResponse.token,
+        //                     recipeId: options.recipeId,
+        //                 });
 
-                    if (tokenResponse.status === "OK") {
-                        let emailVerifyLink = getEmailVerifyLink({
-                            appInfo: options.appInfo,
-                            token: tokenResponse.token,
-                            recipeId: options.recipeId,
-                        });
+        //                 logDebugMessage(`Sending email verification email to ${email}`);
+        //                 await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+        //                     type: "EMAIL_VERIFICATION",
+        //                     user: {
+        //                         // we send the session's user ID here cause
+        //                         // we will be linking this user ID and the result.recipeUserId
+        //                         // eventually.
+        //                         id: session.getUserId(),
+        //                         recipeUserId: result.recipeUserId,
+        //                         email,
+        //                     },
+        //                     emailVerifyLink,
+        //                     userContext,
+        //                 });
+        //             } else {
+        //                 // this means that the email is already verified. It can come here
+        //                 // cause of a race condition, so we just try again
+        //                 return this.linkAccountWithUserFromSessionPOST!({
+        //                     formFields,
+        //                     session,
+        //                     options,
+        //                     userContext,
+        //                 });
+        //             }
+        //         } else {
+        //             throw new Error(
+        //                 "Developer configuration error - email verification is required, but the email verification recipe has not been initialized."
+        //             );
+        //         }
 
-                        logDebugMessage(`Sending email verification email to ${email}`);
-                        await emailVerificationInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                            type: "EMAIL_VERIFICATION",
-                            user: {
-                                // we send the session's user ID here cause
-                                // we will be linking this user ID and the result.recipeUserId
-                                // eventually.
-                                id: session.getUserId(),
-                                recipeUserId: result.recipeUserId,
-                                email,
-                            },
-                            emailVerifyLink,
-                            userContext,
-                        });
-                    } else {
-                        // this means that the email is already verified. It can come here
-                        // cause of a race condition, so we just try again
-                        return this.linkAccountWithUserFromSessionPOST!({
-                            formFields,
-                            session,
-                            options,
-                            userContext,
-                        });
-                    }
-                } else {
-                    throw new Error(
-                        "Developer configuration error - email verification is required, but the email verification recipe has not been initialized."
-                    );
-                }
-
-                return {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
-                    recipeUserId: result.recipeUserId.getAsString(),
-                    email,
-                    primaryUserId: result.primaryUserId,
-                    description:
-                        "Before accounts can be linked, the new account must be verified, and an email verification email has been sent already.",
-                };
-            }
-            // status: "OK" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
-            return result;
-        },
+        //         return {
+        //             status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR",
+        //             recipeUserId: result.recipeUserId.getAsString(),
+        //             email,
+        //             primaryUserId: result.primaryUserId,
+        //             description:
+        //                 "Before accounts can be linked, the new account must be verified, and an email verification email has been sent already.",
+        //         };
+        //     }
+        //     // status: "OK" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR"
+        //     return result;
+        // },
         emailExistsGET: async function ({
             email,
             userContext,

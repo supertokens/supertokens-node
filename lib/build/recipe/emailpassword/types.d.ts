@@ -275,37 +275,6 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
-    linkAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "WRONG_CREDENTIALS_ERROR";
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                    description: string;
-                    recipeUserId: string;
-                    email: string;
-                    primaryUserId: string;
-                }
-              | GeneralErrorResponse
-          >);
 };
 export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, UserInfo } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -304,50 +304,6 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
-    linkThirdPartyAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              fromProvider:
-                  | {
-                        userInfo: UserInfo;
-                        authCodeResponse: any;
-                    }
-                  | undefined;
-              session: SessionContainerInterface;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                    authCodeResponse: any;
-                }
-              | {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-                }
-              | {
-                    status: "SIGN_IN_NOT_ALLOWED";
-                    reason: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-                    description: string;
-                    recipeUserId: string;
-                    primaryUserId: string;
-                    email: string;
-                    authCodeResponse: any;
-                }
-              | GeneralErrorResponse
-          >);
     thirdPartySignInUpPOST:
         | undefined
         | ((input: {
@@ -481,52 +437,6 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                     exists: boolean;
-                }
-              | GeneralErrorResponse
-          >);
-    linkPasswordlessAccountWithUserFromSessionPOST:
-        | undefined
-        | ((
-              input: (
-                  | {
-                        userInputCode: string;
-                        deviceId: string;
-                        preAuthSessionId: string;
-                    }
-                  | {
-                        linkCode: string;
-                        preAuthSessionId: string;
-                    }
-              ) & {
-                  session: SessionContainerInterface;
-                  options: PasswordlessAPIOptions;
-                  userContext: any;
-              }
-          ) => Promise<
-              | {
-                    status: "OK";
-                    user: User;
-                    session: SessionContainerInterface;
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                    isNotVerifiedAccountFromInputSession: boolean;
-                    description: string;
                 }
               | GeneralErrorResponse
           >);
