@@ -181,6 +181,7 @@ export default class Wrapper {
           }
     >;
     static isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any): Promise<boolean>;
+    static isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
 }
 export declare const init: typeof Recipe.init;
 export declare const canCreatePrimaryUser: typeof Wrapper.canCreatePrimaryUser;
@@ -194,4 +195,5 @@ export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPri
 export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export declare const linkAccountsWithUserFromSession: typeof Wrapper.linkAccountsWithUserFromSession;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
+export declare const isSignInAllowed: typeof Wrapper.isSignInAllowed;
 export type { RecipeInterface };

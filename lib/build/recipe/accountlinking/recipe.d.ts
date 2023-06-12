@@ -51,12 +51,28 @@ export default class Recipe extends RecipeModule {
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<User | undefined>;
+    isSignInAllowed: ({
+        recipeUserId,
+        userContext,
+    }: {
+        recipeUserId: RecipeUserId;
+        userContext: any;
+    }) => Promise<boolean>;
     isSignUpAllowed: ({
         newUser,
         isVerified,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
+        isVerified: boolean;
+        userContext: any;
+    }) => Promise<boolean>;
+    isSignInUpAllowedHelper: ({
+        accountInfo,
+        isVerified,
+        userContext,
+    }: {
+        accountInfo: AccountInfoWithRecipeId;
         isVerified: boolean;
         userContext: any;
     }) => Promise<boolean>;

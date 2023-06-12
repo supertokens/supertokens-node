@@ -142,7 +142,7 @@ export default class Wrapper {
         userContext = userContext === undefined ? {} : userContext;
         return await Recipe.getInstance().recipeInterfaceImpl.fetchFromAccountToLinkTable({
             recipeUserId,
-            userContext,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
@@ -151,7 +151,7 @@ export default class Wrapper {
         return await Recipe.getInstance().recipeInterfaceImpl.storeIntoAccountToLinkTable({
             recipeUserId,
             primaryUserId,
-            userContext,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
@@ -160,7 +160,15 @@ export default class Wrapper {
         return await Recipe.getInstance().isSignUpAllowed({
             newUser,
             isVerified,
-            userContext,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any) {
+        userContext = userContext === undefined ? {} : userContext;
+        return await Recipe.getInstance().isSignInAllowed({
+            recipeUserId,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 }
@@ -177,5 +185,6 @@ export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLi
 export const getPrimaryUserIdThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export const linkAccountsWithUserFromSession = Wrapper.linkAccountsWithUserFromSession;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
+export const isSignInAllowed = Wrapper.isSignInAllowed;
 
 export type { RecipeInterface };
