@@ -202,57 +202,6 @@ export async function mockLinkAccounts({
 
     await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
 
-    // we use require here cause it prevents a circular dependency
-    let EmailVerification = require("../emailverification");
-    try {
-        let newAccountIsVerified = await EmailVerification.isEmailVerified(recipeUserId);
-        let user = (await mockGetUser({ userId: primaryUserId }))!;
-        let newAccountEmail: string | undefined = undefined;
-        for (let i = 0; i < user.loginMethods.length; i++) {
-            if (user.loginMethods[i].recipeUserId.getAsString() === recipeUserId.getAsString()) {
-                newAccountEmail = user.loginMethods[i].email;
-                break;
-            }
-        }
-        if (newAccountEmail !== undefined) {
-            if (newAccountIsVerified) {
-                // we try and mark other emails in the primary user as verified
-                for (let i = 0; i < user.loginMethods.length; i++) {
-                    if (user.loginMethods[i].hasSameEmailAs(newAccountEmail) && !user.loginMethods[i].verified) {
-                        let tokenResp = await EmailVerification.createEmailVerificationToken(
-                            user.loginMethods[i].recipeUserId
-                        );
-                        if (tokenResp.status === "OK") {
-                            await EmailVerification.verifyEmailUsingToken(tokenResp.token);
-                        }
-                    }
-                }
-            } else {
-                // if another login method has the same email as verified, we mark this as
-                // verified as well.
-                let markAsVerified = false;
-                for (let i = 0; i < user.loginMethods.length; i++) {
-                    if (user.loginMethods[i].hasSameEmailAs(newAccountEmail) && user.loginMethods[i].verified) {
-                        markAsVerified = true;
-                        break;
-                    }
-                }
-                if (markAsVerified) {
-                    let tokenResp = await EmailVerification.createEmailVerificationToken(recipeUserId);
-                    if (tokenResp.status === "OK") {
-                        await EmailVerification.verifyEmailUsingToken(tokenResp.token);
-                    }
-                }
-            }
-        }
-    } catch (err) {
-        if (err.message === "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
-            // this means email verification is not enabled.. So we just ignore.
-        } else {
-            throw err;
-        }
-    }
-
     return {
         status: "OK",
         accountsAlreadyLinked: false,

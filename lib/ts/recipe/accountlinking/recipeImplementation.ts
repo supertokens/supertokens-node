@@ -228,6 +228,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
+                // TODO: call verifyEmailForRecipeUserIfLinkedAccountsAreVerified
                 let user: User | undefined = await this.getUser({
                     userId: primaryUserId,
                     userContext,
