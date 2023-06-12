@@ -31,8 +31,13 @@ import {
     mockStoreIntoAccountToLinkTable,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
+import type AccountLinkingRecipe from "./recipe";
 
-export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
+export default function getRecipeImplementation(
+    querier: Querier,
+    config: TypeNormalisedInput,
+    recipeInstance: AccountLinkingRecipe
+): RecipeInterface {
     return {
         getUsers: async function (
             this: RecipeInterface,
@@ -228,7 +233,11 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
-                // TODO: call verifyEmailForRecipeUserIfLinkedAccountsAreVerified
+                await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId,
+                    userContext,
+                });
+
                 let user: User | undefined = await this.getUser({
                     userId: primaryUserId,
                     userContext,

@@ -745,8 +745,6 @@ export default function getAPIImplementation(): APIInterface {
 
             let response = await options.recipeImplementation.signIn({ email, password, userContext });
 
-            // TODO: check if sign in is allowed using isSignInAllowed
-
             if (response.status === "WRONG_CREDENTIALS_ERROR") {
                 return response;
             }
@@ -758,6 +756,23 @@ export default function getAPIImplementation(): APIInterface {
             if (emailPasswordRecipeUser === undefined) {
                 // this can happen cause of some race condition, but it's not a big deal.
                 throw new Error("Race condition error - please call this API again");
+            }
+
+            // Here we do this check after sign in is done cause:
+            // - We first want to check if the credentials are correct first or not
+            // - The above recipe function marks the email as verified if other linked users
+            // with the same email are verified. The function below checks for the email verification
+            // so we want to call it only once this is up to date,
+
+            let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
+                recipeUserId: emailPasswordRecipeUser.recipeUserId,
+                userContext,
+            });
+
+            if (!isSignInAllowed) {
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
             }
 
             let session = await Session.createNewSession(
