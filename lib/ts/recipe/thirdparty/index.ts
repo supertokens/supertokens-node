@@ -119,19 +119,13 @@ export default class Wrapper {
                 };
             }
 
-            // this can come here for two reasons:
-            //
-            // - if the input user is a primary user and the info is already linked
-            // to the session user. This is because if the input user info was
-            // linked to another user, then the linkAccountsWithUserFromSession function
-            // would return early with a ACCOUNT_LINKING_NOT_ALLOWED_ERROR error.
-            //
-            // - If the input user is not a primary user, and their email has changed
-            // in a way that it's unverified AND another primary user has that email
-            // then we prevent login since it may lead to the email verification email
-            // being clicked by the actual user by mistake, thereby linking
-            // this account (which could be owned by an attacker - leading
-            // to an account takeover case).
+            // this can really only come in here if the input user info is already
+            // linked to the session user. This is because if the input user info
+            // was linked to another user, then the linkAccountsWithUserFromSession
+            // function would return early with a ACCOUNT_LINKING_NOT_ALLOWED_ERROR
+            // error. And if the input user info is not a primary user, nor is it a
+            // linked user, then the createNewOrUpdateEmailOfRecipeUser would not return
+            // this status.
             return {
                 status: "CUSTOM_RESPONSE",
                 resp: {
