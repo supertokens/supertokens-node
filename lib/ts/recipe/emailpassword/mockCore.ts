@@ -195,7 +195,6 @@ export async function mockUpdateEmailOrPassword(input: {
       }
     | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
 > {
-    let shouldMarkEmailVerified = false;
     if (input.email !== undefined) {
         let user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
             userId: input.recipeUserId.getAsString(),
@@ -214,13 +213,7 @@ export async function mockUpdateEmailOrPassword(input: {
             );
             let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
             if (primaryUserForNewEmail.length === 1) {
-                if (primaryUserForNewEmail[0].id === user.id) {
-                    user.loginMethods.forEach((loginMethod) => {
-                        if (loginMethod.hasSameEmailAs(input.email) && loginMethod.verified) {
-                            shouldMarkEmailVerified = true;
-                        }
-                    });
-                } else {
+                if (primaryUserForNewEmail[0].id !== user.id) {
                     return {
                         status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
                         reason: "New email is associated with another primary user ID",
@@ -235,23 +228,6 @@ export async function mockUpdateEmailOrPassword(input: {
         email: input.email,
         password: input.password,
     });
-
-    if (response.status === "OK" && shouldMarkEmailVerified) {
-        let EmailVerification = require("../emailverification");
-        try {
-            let tokenResp = await EmailVerification.createEmailVerificationToken(input.recipeUserId);
-            if (tokenResp.status === "OK") {
-                // cause we do not want to account link in this function
-                await EmailVerification.verifyEmailUsingToken(tokenResp.token, false);
-            }
-        } catch (err) {
-            if (err.message === "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
-                // this means email verification is not enabled.. So we just ignore.
-            } else {
-                throw err;
-            }
-        }
-    }
 
     return response;
 }

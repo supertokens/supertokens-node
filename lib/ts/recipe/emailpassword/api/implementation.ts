@@ -744,6 +744,9 @@ export default function getAPIImplementation(): APIInterface {
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
             let response = await options.recipeImplementation.signIn({ email, password, userContext });
+
+            // TODO: check if sign in is allowed using isSignInAllowed
+
             if (response.status === "WRONG_CREDENTIALS_ERROR") {
                 return response;
             }

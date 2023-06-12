@@ -96,6 +96,8 @@ export default function getRecipeInterface(
             } else {
                 return mockSignIn({ email, password });
             }
+
+            // TODO: mark email as verified using verifyEmailForRecipeUserIfLinkedAccountsAreVerified
         },
 
         createResetPasswordToken: async function ({
@@ -191,8 +193,6 @@ export default function getRecipeInterface(
                 }
             }
 
-            // TODO: need to call isEmailChangeAllowed
-
             if (process.env.MOCK !== "true") {
                 // the input userId must be a recipe user ID.
                 return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
@@ -206,6 +206,8 @@ export default function getRecipeInterface(
                     querier,
                 });
             }
+
+            // TODO: mark email as verified using verifyEmailForRecipeUserIfLinkedAccountsAreVerified
         },
     };
 }

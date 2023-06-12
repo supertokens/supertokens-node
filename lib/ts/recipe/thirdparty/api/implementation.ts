@@ -390,6 +390,8 @@ export default function getAPIInterface(): APIInterface {
                         status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT",
                     };
                 }
+            } else {
+                // TODO: check if sign in is allowed using isSignInAllowed
             }
 
             let response = await options.recipeImplementation.signInUp({

@@ -23,8 +23,6 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                   reason: string;
               }
         > {
-            // TODO: call isEmailChangeAllowed
-
             let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
                 accountInfo: {
                     thirdParty: {
@@ -61,6 +59,8 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     }
                 });
                 isVerified = await EmailVerification.isEmailVerified(recipeUserId!, email);
+
+                // TODO: call isEmailChangeAllowed
             }
 
             if (process.env.MOCK !== "true") {
@@ -76,14 +76,10 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     user: response.user,
                 };
             } else {
-                return mockCreateNewOrUpdateEmailOfRecipeUser(
-                    thirdPartyId,
-                    thirdPartyUserId,
-                    email,
-                    isVerified,
-                    querier
-                );
+                return mockCreateNewOrUpdateEmailOfRecipeUser(thirdPartyId, thirdPartyUserId, email, querier);
             }
+
+            // TODO: call verifyEmailForRecipeUserIfLinkedAccountsAreVerified
         },
         signInUp: async function (
             this: RecipeInterface,

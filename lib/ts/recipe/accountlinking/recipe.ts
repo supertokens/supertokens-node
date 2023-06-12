@@ -1092,4 +1092,59 @@ export default class Recipe extends RecipeModule {
             return true;
         }
     };
+
+    verifyEmailForRecipeUserIfLinkedAccountsAreVerified = async (input: {
+        recipeUserId: RecipeUserId;
+        userContext: any;
+    }) => {
+        // This is just a helper function cause it's called in many places
+        // like during sign up, sign in and post linking accounts.
+        // This is not exposed to the developer as it's called in the relevant
+        // recipe functions.
+        // We do not do this in the core cause email verification is a different
+        // recipe.
+        // Finally, we only mark the email of this recipe user as verified and not
+        // the other recipe users in the primary user (if this user's email is verified),
+        // cause when those other users sign in, this function will be called for them anyway
+
+        let user = await this.recipeInterfaceImpl.getUser({
+            userId: input.recipeUserId.getAsString(),
+            userContext: input.userContext,
+        });
+
+        if (user === undefined) {
+            throw new Error("Passed in recipe user id does not exist");
+        }
+
+        if (user.isPrimaryUser) {
+            let recipeUserEmail: string | undefined = undefined;
+            let isAlreadyVerified = false;
+            user.loginMethods.forEach((lm) => {
+                if (lm.recipeUserId.getAsString() === input.recipeUserId.getAsString()) {
+                    recipeUserEmail = lm.email;
+                    isAlreadyVerified = lm.verified;
+                }
+            });
+
+            if (recipeUserEmail !== undefined) {
+                if (isAlreadyVerified) {
+                    return;
+                }
+                let shouldVerifyEmail = false;
+                user.loginMethods.forEach((lm) => {
+                    if (lm.hasSameEmailAs(recipeUserEmail) && lm.verified) {
+                        shouldVerifyEmail = true;
+                    }
+                });
+
+                if (shouldVerifyEmail) {
+                    let resp = await EmailVerification.createEmailVerificationToken(input.recipeUserId);
+                    if (resp.status === "OK") {
+                        let token = resp.token;
+                        await EmailVerification.verifyEmailUsingToken(token);
+                    }
+                }
+            }
+        }
+    };
 }
