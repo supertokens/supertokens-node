@@ -1138,10 +1138,14 @@ export default class Recipe extends RecipeModule {
                 });
 
                 if (shouldVerifyEmail) {
-                    let resp = await EmailVerification.createEmailVerificationToken(input.recipeUserId);
+                    let resp = await EmailVerification.createEmailVerificationToken(
+                        input.recipeUserId,
+                        input.userContext
+                    );
                     if (resp.status === "OK") {
-                        let token = resp.token;
-                        await EmailVerification.verifyEmailUsingToken(token);
+                        // we purposely pass in false below cause we don't want account
+                        // linking to happen
+                        await EmailVerification.verifyEmailUsingToken(resp.token, false, input.userContext);
                     }
                 }
             }
