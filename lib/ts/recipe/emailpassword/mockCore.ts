@@ -184,7 +184,6 @@ export async function mockUpdateEmailOrPassword(input: {
     email?: string;
     password?: string;
     applyPasswordPolicy?: boolean;
-    isAccountLinkingEnabled: boolean;
     querier: Querier;
 }): Promise<
     | {
@@ -203,17 +202,7 @@ export async function mockUpdateEmailOrPassword(input: {
             userContext: {},
         });
 
-        // if we are doing account linking, then we do the check below regardless of
-        //if the current user is primary one or not. This is to prevent the following attack scenario:
-        // - attacker creates account with email "A" which they do not verify (even though they own the email).
-        // - victim signs up with email "V" using google, and that is not a primary user.
-        // - attacker changes their email to "V", which shoots an email verification email to the victim.
-        // - the victim thinks that they are getting an email verification email for their google account, and clicks on it.
-        // - the victim's account is now compromised cause the attacker's account is now linked to
-        // the victim's account.
-        // To prevent this, we disallow the attacker's account to change the email in the first place
-        // even though their account is still just a recipe level account.
-        if (user !== undefined && (user.isPrimaryUser || input.isAccountLinkingEnabled)) {
+        if (user !== undefined && user.isPrimaryUser) {
             let existingUsersWithNewEmail = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo(
                 {
                     accountInfo: {
@@ -232,18 +221,10 @@ export async function mockUpdateEmailOrPassword(input: {
                         }
                     });
                 } else {
-                    if (user.isPrimaryUser) {
-                        return {
-                            status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                            reason: "New email is associated with another primary user ID",
-                        };
-                    } else {
-                        return {
-                            status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                            reason:
-                                "New email is associated with primary user ID, this user is a recipe user and is not verified",
-                        };
-                    }
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        reason: "New email is associated with another primary user ID",
+                    };
                 }
             }
         }

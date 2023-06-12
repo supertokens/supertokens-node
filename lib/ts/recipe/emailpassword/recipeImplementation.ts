@@ -14,7 +14,6 @@ import {
     mockGetPasswordResetInfo,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
-import EmailVerification from "../emailverification";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -191,63 +190,8 @@ export default function getRecipeInterface(
                     }
                 }
             }
-            let isAccountLinkingEnabled = false;
 
-            // TODO: maybe this all should not happen here at all, and should be exposed
-            // as another function in account linking recipe called isEmailChangeAllowed -
-            // cause this is a recipe level function and we want to let devs call this
-            // independently of the user calling it (via an API for example).
-
-            // we check for this cause maybe the new email is already verified.
-            let isVerified = await EmailVerification.isEmailVerified(input.recipeUserId, input.email);
-            if (input.email !== undefined && !isVerified) {
-                // we do all of this cause we need to know if the dev allows for
-                // account linking if we were to change the email of this user (since the
-                // core API requires this boolean). If the input user is already a primary
-                // user, then there will be no account linking done on email change, so we can just pass
-                // that has false. If the current user is a recipe user, and there is no primary
-                // user that exists for the new email, then also, there will be no account linking
-                // done, so we again pass it as false. Therefore the only time we need to check
-                // for account linking from the callback is if the current user is a recipe user,
-                // and it will be linked to a primary user post email verification change.
-                let user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
-                    userId: input.recipeUserId.getAsString(),
-                    userContext: {},
-                });
-
-                if (user !== undefined) {
-                    let existingUsersWithNewEmail = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo(
-                        {
-                            accountInfo: {
-                                email: input.email,
-                            },
-                            doUnionOfAccountInfo: false,
-                            userContext: input.userContext,
-                        }
-                    );
-                    let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
-                    if (
-                        primaryUserForNewEmail.length === 1 &&
-                        primaryUserForNewEmail[0].id !== user.id &&
-                        !user.isPrimaryUser
-                    ) {
-                        // the above if statement is done cause only then it implies that
-                        // post email update, the current user will be linked to the primary user.
-
-                        let shouldDoAccountLinking = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-                            {
-                                recipeId: "emailpassword",
-                                email: input.email,
-                            },
-                            primaryUserForNewEmail[0],
-                            undefined,
-                            input.userContext
-                        );
-
-                        isAccountLinkingEnabled = shouldDoAccountLinking.shouldAutomaticallyLink;
-                    }
-                }
-            }
+            // TODO: need to call isEmailChangeAllowed
 
             if (process.env.MOCK !== "true") {
                 // the input userId must be a recipe user ID.
@@ -260,7 +204,6 @@ export default function getRecipeInterface(
                 return mockUpdateEmailOrPassword({
                     ...input,
                     querier,
-                    isAccountLinkingEnabled,
                 });
             }
         },

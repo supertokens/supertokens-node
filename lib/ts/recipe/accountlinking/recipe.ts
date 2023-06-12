@@ -987,4 +987,109 @@ export default class Recipe extends RecipeModule {
             };
         }
     };
+
+    isEmailChangeAllowed = async (input: {
+        recipeUserId: RecipeUserId;
+        newEmail: string;
+        isVerified: boolean;
+        userContext: any;
+    }): Promise<boolean> => {
+        /**
+         * The purpose of this function is to check that if a recipe user ID's email
+         * can be changed or not. There are two conditions for when it can't be changed:
+         * - If the recipe user is a primary user, then we need to check that the new email
+         * doesn't belong to any other primary user. If it does, we disallow the change
+         * since multiple primary user's can't have the same account info.
+         *
+         * - If the recipe user is NOT a primary user, and if isVerified is false, then
+         * we check if there exists a primary user with the same email, and if it does
+         * we disallow the email change cause if this email is changed, and an email
+         * verification email is sent, then the primary user may end up clicking
+         * on the link by mistake, causing account linking to happen which can result
+         * in account take over if this recipe user is malicious.
+         */
+
+        let user = await this.recipeInterfaceImpl.getUser({
+            userId: input.recipeUserId.getAsString(),
+            userContext: input.userContext,
+        });
+
+        if (user === undefined) {
+            throw new Error("Passed in recipe user id does not exist");
+        }
+
+        let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            accountInfo: {
+                email: input.newEmail,
+            },
+            doUnionOfAccountInfo: false,
+            userContext: input.userContext,
+        });
+
+        let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
+        if (primaryUserForNewEmail.length > 1) {
+            throw new Error("You found a bug. Please report it on github.com/supertokens/supertokens-node");
+        }
+
+        if (user.isPrimaryUser) {
+            // this is condition one from the above comment.
+            if (primaryUserForNewEmail.length === 1 && primaryUserForNewEmail[0].id !== user.id) {
+                logDebugMessage(
+                    "isEmailChangeAllowed: returning false cause email change will lead to two primary users having same email"
+                );
+                return false;
+            }
+            logDebugMessage(
+                "isEmailChangeAllowed: returning true cause input recipeUserId is primary and new email doesn't belong to any other primary user"
+            );
+            return true;
+        } else {
+            if (input.isVerified) {
+                logDebugMessage(
+                    "isEmailChangeAllowed: returning true cause input recipeUserId is not a primary and new email is verified"
+                );
+                return true;
+            }
+
+            if (user.loginMethods[0].email === input.newEmail) {
+                logDebugMessage(
+                    "isEmailChangeAllowed: returning true cause input recipeUserId is not a primary and new email is same as the older one"
+                );
+                return true;
+            }
+
+            if (primaryUserForNewEmail.length === 1) {
+                let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
+                    user.loginMethods[0],
+                    primaryUserForNewEmail[0],
+                    undefined,
+                    input.userContext
+                );
+
+                if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                    logDebugMessage(
+                        "isEmailChangeAllowed: returning true cause input recipeUserId is not a primary there exists a primary user exists with the new email, but the dev does not have account linking enabled."
+                    );
+                    return true;
+                }
+
+                if (!shouldDoAccountLinking.shouldRequireVerification) {
+                    logDebugMessage(
+                        "isEmailChangeAllowed: returning true cause input recipeUserId is not a primary there exists a primary user exists with the new email, but the dev does not require email verification."
+                    );
+                    return true;
+                }
+
+                logDebugMessage(
+                    "isEmailChangeAllowed: returning false cause input recipeUserId is not a primary there exists a primary user exists with the new email."
+                );
+                return false;
+            }
+
+            logDebugMessage(
+                "isEmailChangeAllowed: returning true cause input recipeUserId is not a primary no primary user exists with the new email"
+            );
+            return true;
+        }
+    };
 }

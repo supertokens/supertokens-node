@@ -117,4 +117,10 @@ export default class Recipe extends RecipeModule {
               resp: T;
           }
     >;
+    isEmailChangeAllowed: (input: {
+        recipeUserId: RecipeUserId;
+        newEmail: string;
+        isVerified: boolean;
+        userContext: any;
+    }) => Promise<boolean>;
 }

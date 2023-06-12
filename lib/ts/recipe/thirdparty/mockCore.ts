@@ -9,7 +9,6 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
     thirdPartyId: string,
     thirdPartyUserId: string,
     email: string,
-    isAccountLinkingEnabled: boolean,
     isVerified: boolean,
     querier: Querier
 ): Promise<
@@ -19,9 +18,6 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
           reason: string;
       }
 > {
-    if (isAccountLinkingEnabled && isVerified) {
-        throw new Error("Bad request");
-    }
     let shouldMarkInputEmailVerified = false;
     let thirdPartyUser = await mockListUsersByAccountInfo({
         accountInfo: {
@@ -57,19 +53,6 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
                         });
                     }
                 }
-            }
-        } else if (isAccountLinkingEnabled) {
-            // this means that we are signing in a recipe user id
-            // TODO: this part should not be here, and should actually be in the backend
-            // SDK - as a function like isEmailChangeAllowed and isSignUpAllowed which is
-            // only called during the sign in API.
-            let primaryUserForEmail = userBasedOnEmail.filter((u) => u.isPrimaryUser);
-            if (primaryUserForEmail.length === 1 && primaryUserForEmail[0].id !== thirdPartyUser[0].id) {
-                return {
-                    status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                    reason:
-                        "New email is associated with primary user ID, this user is a recipe user and is not verified",
-                };
             }
         }
     }
