@@ -84,20 +84,45 @@ export default function getRecipeInterface(
         signIn: async function ({
             email,
             password,
+            userContext,
         }: {
             email: string;
             password: string;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            let response: { status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" };
+
             if (process.env.MOCK !== "true") {
-                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
+                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
                     email,
                     password,
                 });
             } else {
-                return mockSignIn({ email, password });
+                response = await mockSignIn({ email, password });
             }
 
-            // TODO: mark email as verified using verifyEmailForRecipeUserIfLinkedAccountsAreVerified
+            if (response.status === "OK") {
+                let recipeUserId: RecipeUserId | undefined = undefined;
+                for (let i = 0; i < response.user.loginMethods.length; i++) {
+                    if (
+                        response.user.loginMethods[i].recipeId === "emailpassword" &&
+                        response.user.loginMethods[i].hasSameEmailAs(email)
+                    ) {
+                        recipeUserId = response.user.loginMethods[i].recipeUserId;
+                        break;
+                    }
+                }
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId: recipeUserId!,
+                    userContext,
+                });
+
+                // we do this so that we get the updated user (in case the above
+                // function updated the verification status) and can return that
+                response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
+            }
+
+            return response;
         },
 
         createResetPasswordToken: async function ({
@@ -193,21 +218,29 @@ export default function getRecipeInterface(
                 }
             }
 
+            let response;
             if (process.env.MOCK !== "true") {
                 // the input userId must be a recipe user ID.
-                return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
+                response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                     userId: input.recipeUserId.getAsString(),
                     email: input.email,
                     password: input.password,
                 });
             } else {
-                return mockUpdateEmailOrPassword({
+                response = await mockUpdateEmailOrPassword({
                     ...input,
                     querier,
                 });
             }
 
-            // TODO: mark email as verified using verifyEmailForRecipeUserIfLinkedAccountsAreVerified
+            if (response.status === "OK") {
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId: input.recipeUserId,
+                    userContext: input.userContext,
+                });
+            }
+
+            return response;
         },
     };
 }

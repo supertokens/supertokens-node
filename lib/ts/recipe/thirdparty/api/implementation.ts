@@ -390,8 +390,6 @@ export default function getAPIInterface(): APIInterface {
                         status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT",
                     };
                 }
-            } else {
-                // TODO: check if sign in is allowed using isSignInAllowed
             }
 
             let response = await options.recipeImplementation.signInUp({
@@ -420,6 +418,23 @@ export default function getAPIInterface(): APIInterface {
 
             if (loginMethod === undefined) {
                 throw new Error("Should never come here");
+            }
+
+            // Here we do this check after sign in is done cause:
+            // - We first want to check if the credentials are correct first or not
+            // - The above recipe function marks the email as verified if other linked users
+            // with the same email are verified. The function below checks for the email verification
+            // so we want to call it only once this is up to date,
+
+            let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
+                recipeUserId: loginMethod.recipeUserId,
+                userContext,
+            });
+
+            if (!isSignInAllowed) {
+                return {
+                    status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT",
+                };
             }
 
             let session = await Session.createNewSession(

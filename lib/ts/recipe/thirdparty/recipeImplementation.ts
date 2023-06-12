@@ -42,11 +42,8 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 );
             }
 
-            if (users.length === 1 && !isVerified) {
-                // Even if the input isVerified is false, it's from the provider.
-                // Since this is a sign in, the user may have previously verified
-                // their email already with SuperTokens, and so we should set
-                // isVerified to true before proceeding.
+            if (users.length === 1) {
+                // this means it's a sign in
                 let recipeUserId: RecipeUserId | undefined = undefined;
                 users[0].loginMethods.forEach((lM) => {
                     if (
@@ -58,13 +55,37 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                         recipeUserId = lM.recipeUserId;
                     }
                 });
-                isVerified = await EmailVerification.isEmailVerified(recipeUserId!, email);
 
-                // TODO: call isEmailChangeAllowed
+                if (!isVerified) {
+                    // Even if the input isVerified is false, it's from the provider.
+                    // Since this is a sign in, the user may have previously verified
+                    // their email already with SuperTokens, and so we should set
+                    // isVerified to true before proceeding.
+                    isVerified = await EmailVerification.isEmailVerified(recipeUserId!, email);
+                }
+
+                // During social login, email can be changed by the provider,
+                // so we need to check for the new email changed allowance based
+                // on the linked accounts.
+                let isEmailChangeAllowed = await AccountLinking.getInstance().isEmailChangeAllowed({
+                    recipeUserId: recipeUserId!,
+                    isVerified,
+                    newEmail: email,
+                    userContext,
+                });
+
+                if (!isEmailChangeAllowed) {
+                    return {
+                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                        reason: "Cannot sign in due to security reasons. Please contact support",
+                    };
+                }
             }
 
+            let response;
+
             if (process.env.MOCK !== "true") {
-                let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
                     thirdPartyId,
                     thirdPartyUserId,
                     email: { id: email },
@@ -76,10 +97,33 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     user: response.user,
                 };
             } else {
-                return mockCreateNewOrUpdateEmailOfRecipeUser(thirdPartyId, thirdPartyUserId, email, querier);
+                response = await mockCreateNewOrUpdateEmailOfRecipeUser(thirdPartyId, thirdPartyUserId, email, querier);
             }
 
-            // TODO: call verifyEmailForRecipeUserIfLinkedAccountsAreVerified
+            if (response.status === "OK") {
+                let recipeUserId: RecipeUserId | undefined = undefined;
+                for (let i = 0; i < response.user.loginMethods.length; i++) {
+                    if (
+                        response.user.loginMethods[i].recipeId === "thirdparty" &&
+                        response.user.loginMethods[i].hasSameThirdPartyInfoAs({
+                            id: thirdPartyId,
+                            userId: thirdPartyUserId,
+                        })
+                    ) {
+                        recipeUserId = response.user.loginMethods[i].recipeUserId;
+                        break;
+                    }
+                }
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId: recipeUserId!,
+                    userContext,
+                });
+
+                // we do this so that we get the updated user (in case the above
+                // function updated the verification status) and can return that
+                response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
+            }
+            return response;
         },
         signInUp: async function (
             this: RecipeInterface,
