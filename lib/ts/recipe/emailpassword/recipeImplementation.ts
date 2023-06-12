@@ -84,10 +84,12 @@ export default function getRecipeInterface(
         signIn: async function ({
             email,
             password,
+            attemptAccountLinking,
             userContext,
         }: {
             email: string;
             password: string;
+            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             let response: { status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" };
@@ -117,9 +119,19 @@ export default function getRecipeInterface(
                     userContext,
                 });
 
-                // we do this so that we get the updated user (in case the above
+                // Finally, we attempt to do account linking.
+                let userId = recipeUserId!.getAsString();
+                if (attemptAccountLinking) {
+                    userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                        recipeUserId: recipeUserId!,
+                        checkAccountsToLinkTableAsWell: true,
+                        userContext,
+                    });
+                }
+
+                // We do this so that we get the updated user (in case the above
                 // function updated the verification status) and can return that
-                response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
+                response.user = (await getUser(userId, userContext))!;
             }
 
             return response;

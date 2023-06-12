@@ -54,6 +54,7 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
             email,
             password,
+            attemptAccountLinking: true,
             userContext,
         });
     }

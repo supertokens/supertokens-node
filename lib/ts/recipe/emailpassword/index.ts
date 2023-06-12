@@ -38,6 +38,7 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
+            attemptAccountLinking: true,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -157,6 +158,7 @@ export default class Wrapper {
             const signInResult = await recipeInstance.recipeInterfaceImpl.signIn({
                 email: input.email,
                 password: input.password,
+                attemptAccountLinking: false,
                 userContext,
             });
 

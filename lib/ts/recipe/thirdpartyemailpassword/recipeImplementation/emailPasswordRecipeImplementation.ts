@@ -16,6 +16,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         signIn: async function (input: {
             email: string;
             password: string;
+            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return recipeInterface.emailPasswordSignIn(input);

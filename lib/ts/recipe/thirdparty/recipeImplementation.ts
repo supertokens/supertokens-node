@@ -182,16 +182,27 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
 
             let userId = response.user.id;
 
-            if (response.createdNewUser) {
-                // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
-                // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
-                userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    // we can use index 0 cause this is a new recipe user
-                    recipeUserId: response.user.loginMethods[0].recipeUserId,
-                    checkAccountsToLinkTableAsWell: true,
-                    userContext,
-                });
+            // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
+            // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
+            let recipeUserId: RecipeUserId | undefined = undefined;
+            for (let i = 0; i < response.user.loginMethods.length; i++) {
+                if (
+                    response.user.loginMethods[i].recipeId === "thirdparty" &&
+                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
+                        id: thirdPartyId,
+                        userId: thirdPartyUserId,
+                    })
+                ) {
+                    recipeUserId = response.user.loginMethods[i].recipeUserId;
+                    break;
+                }
             }
+
+            userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                recipeUserId: recipeUserId!,
+                checkAccountsToLinkTableAsWell: true,
+                userContext,
+            });
 
             let updatedUser = await getUser(userId, userContext);
 
@@ -201,7 +212,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
-                user: updatedUser,
+                user: response.user,
             };
         },
     };

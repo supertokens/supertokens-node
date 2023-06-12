@@ -1170,6 +1170,7 @@ EmailPassword.init({
                     let response = await options.recipeImplementation.signIn({
                         email,
                         password,
+                        attemptAccountLinking: true,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {

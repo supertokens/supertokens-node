@@ -112,6 +112,7 @@ export declare type RecipeInterface = {
     emailPasswordSignIn(input: {
         email: string;
         password: string;
+        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {

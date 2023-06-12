@@ -116,6 +116,7 @@ export type RecipeInterface = {
     emailPasswordSignIn(input: {
         email: string;
         password: string;
+        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
