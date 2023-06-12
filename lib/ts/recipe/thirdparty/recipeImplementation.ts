@@ -23,67 +23,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                   reason: string;
               }
         > {
-            let users = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
-                accountInfo: {
-                    thirdParty: {
-                        id: thirdPartyId,
-                        userId: thirdPartyUserId,
-                    },
-                },
-                doUnionOfAccountInfo: false,
-                userContext,
-            });
-
-            // we can do this check cause we are checking based on third party info which is always
-            // unique.
-            if (users.length > 1) {
-                throw new Error(
-                    "You have found a bug. Please report it on https://github.com/supertokens/supertokens-node/issues"
-                );
-            }
-
-            if (users.length === 1) {
-                // this means it's a sign in
-                let recipeUserId: RecipeUserId | undefined = undefined;
-                users[0].loginMethods.forEach((lM) => {
-                    if (
-                        lM.hasSameThirdPartyInfoAs({
-                            id: thirdPartyId,
-                            userId: thirdPartyUserId,
-                        })
-                    ) {
-                        recipeUserId = lM.recipeUserId;
-                    }
-                });
-
-                if (!isVerified) {
-                    // Even if the input isVerified is false, it's from the provider.
-                    // Since this is a sign in, the user may have previously verified
-                    // their email already with SuperTokens, and so we should set
-                    // isVerified to true before proceeding.
-                    isVerified = await EmailVerification.isEmailVerified(recipeUserId!, email);
-                }
-
-                // During social login, email can be changed by the provider,
-                // so we need to check for the new email changed allowance based
-                // on the linked accounts.
-                let isEmailChangeAllowed = await AccountLinking.getInstance().isEmailChangeAllowed({
-                    recipeUserId: recipeUserId!,
-                    isVerified,
-                    newEmail: email,
-                    userContext,
-                });
-
-                if (!isEmailChangeAllowed) {
-                    return {
-                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                        reason: "Cannot sign in due to security reasons. Please contact support",
-                    };
-                }
-            }
-
             let response;
-
             if (process.env.MOCK !== "true") {
                 response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
                     thirdPartyId,
@@ -119,7 +59,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     userContext,
                 });
 
-                // the above may have marked the user's email as verified already, but in case
+                // The above may have marked the user's email as verified already, but in case
                 // this is a sign up, or it's a sign in from a non primary user, and the
                 // provider said that the user's email is verified, we should mark it as verified
                 // here as well
@@ -150,18 +90,20 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 thirdPartyUserId,
                 email,
                 isVerified,
+                attemptAccountLinking,
                 userContext,
             }: {
                 thirdPartyId: string;
                 thirdPartyUserId: string;
                 email: string;
                 isVerified: boolean;
+                attemptAccountLinking: boolean;
                 userContext: any;
             }
         ): Promise<
             | { status: "OK"; createdNewUser: boolean; user: User }
             | {
-                  status: "SIGN_IN_NOT_ALLOWED";
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
         > {
@@ -175,9 +117,14 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
 
             if (response.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
                 return {
-                    status: "SIGN_IN_NOT_ALLOWED",
-                    reason: response.reason,
+                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                    reason:
+                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support",
                 };
+            }
+
+            if (!attemptAccountLinking) {
+                return response;
             }
 
             let userId = response.user.id;

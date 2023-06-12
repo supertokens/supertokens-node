@@ -13,6 +13,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -21,13 +22,14 @@ export default class Wrapper {
               user: import("../emailpassword").User;
           }
         | {
-              status: "SIGN_IN_NOT_ALLOWED";
+              status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
     static emailPasswordSignUp(
         email: string,
         password: string,
+        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -41,6 +43,7 @@ export default class Wrapper {
     static emailPasswordSignIn(
         email: string,
         password: string,
+        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {

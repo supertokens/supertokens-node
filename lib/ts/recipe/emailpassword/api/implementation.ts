@@ -746,7 +746,8 @@ export default function getAPIImplementation(): APIInterface {
             let response = await options.recipeImplementation.signIn({
                 email,
                 password,
-                attemptAccountLinking: true,
+                attemptAccountLinking: false, // we pass false here cause before attempting account linking,
+                // we want to check if isSignInAllowed is true or not.
                 userContext,
             });
 
@@ -779,6 +780,14 @@ export default function getAPIImplementation(): APIInterface {
                     status: "WRONG_CREDENTIALS_ERROR",
                 };
             }
+
+            let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                recipeUserId: emailPasswordRecipeUser.recipeUserId!,
+                checkAccountsToLinkTableAsWell: true,
+                userContext,
+            });
+
+            response.user = (await getUser(userId, userContext))!;
 
             let session = await Session.createNewSession(
                 options.req,
@@ -846,6 +855,7 @@ export default function getAPIImplementation(): APIInterface {
             let response = await options.recipeImplementation.signUp({
                 email,
                 password,
+                attemptAccountLinking: true,
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {

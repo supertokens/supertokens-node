@@ -31,6 +31,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
+        attemptAccountLinking: boolean = true,
         userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
@@ -38,6 +39,7 @@ export default class Wrapper {
             thirdPartyUserId,
             email,
             isVerified,
+            attemptAccountLinking,
             userContext,
         });
     }

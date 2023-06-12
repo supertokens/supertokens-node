@@ -65,11 +65,12 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
+            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
             | {
-                  status: "SIGN_IN_NOT_ALLOWED";
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
         > {

@@ -69,6 +69,7 @@ export declare type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {
@@ -77,7 +78,7 @@ export declare type RecipeInterface = {
               user: User;
           }
         | {
-              status: "SIGN_IN_NOT_ALLOWED";
+              status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
@@ -145,7 +146,7 @@ export declare type APIInterface = {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
               | {
-                    status: "SIGN_IN_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
               | {

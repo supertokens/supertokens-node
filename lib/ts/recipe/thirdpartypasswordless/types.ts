@@ -206,11 +206,12 @@ export type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
         | {
-              status: "SIGN_IN_NOT_ALLOWED";
+              status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
@@ -374,7 +375,7 @@ export type APIInterface = {
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | {
-                    status: "SIGN_IN_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
               | {

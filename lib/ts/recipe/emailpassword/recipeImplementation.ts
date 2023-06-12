@@ -25,10 +25,12 @@ export default function getRecipeInterface(
             {
                 email,
                 password,
+                attemptAccountLinking,
                 userContext,
             }: {
                 email: string;
                 password: string;
+                attemptAccountLinking: boolean;
                 userContext: any;
             }
         ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
@@ -38,6 +40,10 @@ export default function getRecipeInterface(
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+                return response;
+            }
+
+            if (!attemptAccountLinking) {
                 return response;
             }
 
@@ -79,6 +85,9 @@ export default function getRecipeInterface(
             } else {
                 return mockCreateRecipeUser(input);
             }
+
+            // we do not do email verification here cause it's a new user and email password
+            // users are always initially unverified.
         },
 
         signIn: async function ({

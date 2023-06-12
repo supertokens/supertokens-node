@@ -26,6 +26,7 @@ export default function getRecipeInterface(
         emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
+            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
@@ -45,11 +46,12 @@ export default function getRecipeInterface(
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
+            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
             | {
-                  status: "SIGN_IN_NOT_ALLOWED";
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
         > {

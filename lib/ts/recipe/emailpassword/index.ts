@@ -26,19 +26,20 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(email: string, password: string, userContext?: any) {
+    static signUp(email: string, password: string, attemptAccountLinking: boolean = true, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
+            attemptAccountLinking,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static signIn(email: string, password: string, userContext?: any) {
+    static signIn(email: string, password: string, attemptAccountLinking: boolean = true, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
-            attemptAccountLinking: true,
+            attemptAccountLinking,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
