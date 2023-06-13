@@ -12,6 +12,7 @@ import { listUsersByAccountInfo, getUser } from "../../..";
 import { UserInfo } from "../types";
 import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
+import EmailVerificationRecipe from "../../emailverification/recipe";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -423,7 +424,7 @@ export default function getAPIInterface(): APIInterface {
                     }
                 });
 
-                if (!emailInfo.isVerified) {
+                if (!emailInfo.isVerified && EmailVerificationRecipe.getInstance() !== undefined) {
                     emailInfo.isVerified = await EmailVerification.isEmailVerified(
                         recipeUserId!,
                         emailInfo.id,
