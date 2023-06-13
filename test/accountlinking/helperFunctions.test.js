@@ -3171,4 +3171,59 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(users.length === 2);
         });
     });
+
+    describe("isEmailChangeAllowed tests", function () {
+        it("isEmailChangeAllowed returns false if checking for email which belongs to other primary and if email password user is not a primary user or is not linked, and account linking is enabled and email verification is required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await ThirdParty.signInUp("google", "abc", "test@example.com", true);
+
+            let response = await EmailPassword.signUp("test2@example.com", "password123");
+            assert(response.user.isPrimaryUser === false);
+            assert(response.status === "OK");
+            let recipeUserId = response.user.loginMethods[0].recipeUserId;
+
+            response = await AccountLinking.isEmailChangeAllowed(
+                response.user.loginMethods[0].recipeUserId,
+                "test@example.com"
+            );
+
+            assert(response === false);
+        });
+    });
 });
