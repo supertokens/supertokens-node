@@ -231,6 +231,13 @@ export default function getRecipeInterface(
                 }
             }
 
+            // We do not check for AccountLinking.isEmailChangeAllowed here cause
+            // that may return false if the user's email is not verified, and this
+            // function should not fail due to lack of email verification - since it's
+            // really up to the developer to decide what should be the pre condition for
+            // a change in email. The check for email verification should actually go in
+            // an update email API (post login update).
+
             let response;
             if (process.env.MOCK !== "true") {
                 // the input userId must be a recipe user ID.
