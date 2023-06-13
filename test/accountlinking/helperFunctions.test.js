@@ -914,7 +914,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(!isAllowed);
             assert(
                 (await ProcessState.getInstance().waitForEvent(
-                    PROCESS_STATE.IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
+                    PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
                 )) !== undefined
             );
         });
@@ -990,7 +990,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(!isAllowed);
             assert(
                 (await ProcessState.getInstance().waitForEvent(
-                    PROCESS_STATE.IS_SIGN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
+                    PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
                 )) !== undefined
             );
         });
