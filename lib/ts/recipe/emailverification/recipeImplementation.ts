@@ -1,7 +1,6 @@
 import { RecipeInterface, User } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import AccountLinking from "../accountlinking";
 import RecipeUserId from "../../recipeUserId";
 import { mockGetEmailVerificationTokenInfo, mockCreateEmailVerificationToken } from "./mockCore";
 
@@ -79,6 +78,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
             if (response.status === "OK") {
                 if (attemptAccountLinking) {
+                    // we do this here to prevent cyclic dependencies.
+                    let AccountLinking = require("../accountlinking");
                     await AccountLinking.createPrimaryUserIdOrLinkAccounts({
                         recipeUserId: new RecipeUserId(response.userId),
                         checkAccountsToLinkTableAsWell: true,
