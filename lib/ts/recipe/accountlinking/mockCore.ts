@@ -439,6 +439,8 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
             if (thirdParty === undefined) {
                 return false;
             }
+            thirdParty.id = thirdParty.id.trim();
+            thirdParty.userId = thirdParty.userId.trim();
             return (
                 lM.thirdParty !== undefined &&
                 lM.thirdParty.id === thirdParty.id &&

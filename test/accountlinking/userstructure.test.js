@@ -18,6 +18,7 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
+let ThirdParty = require("../../recipe/thirdparty");
 
 describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
     beforeEach(async function () {
@@ -75,11 +76,83 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
         assert.deepEqual(jsonifiedUser, user);
     });
 
-    it("hasSamePhoneNumberAs function in user object work", async function () {
-        // TODO:...
+    it("hasSameThirdPartyInfoAs function in user object work", async function () {
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirdParty.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        let user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+
+        assert(user.loginMethods[0].hasSameEmailAs("test@example.com"));
+        assert(user.loginMethods[0].hasSameEmailAs(" Test@example.com"));
+        assert(user.loginMethods[0].hasSameEmailAs("test@examplE.com"));
+        assert(!user.loginMethods[0].hasSameEmailAs("t2est@examplE.com"));
+
+        assert(
+            user.loginMethods[0].hasSameThirdPartyInfoAs({
+                id: "google",
+                userId: "abcd",
+            })
+        );
+        assert(
+            user.loginMethods[0].hasSameThirdPartyInfoAs({
+                id: "google ",
+                userId: " abcd",
+            })
+        );
+        assert(
+            user.loginMethods[0].hasSameThirdPartyInfoAs({
+                id: " google ",
+                userId: "abcd ",
+            })
+        );
+        assert(
+            user.loginMethods[0].hasSameThirdPartyInfoAs({
+                id: " google",
+                userId: "   abcd",
+            })
+        );
+        assert(
+            !user.loginMethods[0].hasSameThirdPartyInfoAs({
+                id: " gOogle",
+                userId: "aBcd",
+            })
+        );
+        assert(
+            !user.loginMethods[0].hasSameThirdPartyInfoAs({
+                id: "abc",
+                userId: "abcd",
+            })
+        );
+        assert(
+            !user.loginMethods[0].hasSameThirdPartyInfoAs({
+                id: "google",
+                userId: "aabcd",
+            })
+        );
     });
 
-    it("hasSameThirdPartyInfoAs function in user object work", async function () {
+    it("hasSamePhoneNumberAs function in user object work", async function () {
         // TODO:...
     });
 });
