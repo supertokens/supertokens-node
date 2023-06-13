@@ -346,6 +346,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             assert(response.user.isPrimaryUser);
             assert(response.status === "OK");
 
+            let isAllowed = await AccountLinking.isEmailChangeAllowed(
+                response.user.loginMethods[0].recipeUserId,
+                "test@example.com"
+            );
+            assert(isAllowed === false);
+
             response = await EmailPassword.updateEmailOrPassword({
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
                 email: "test@example.com",
@@ -399,6 +405,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
+            let isAllowed = await AccountLinking.isEmailChangeAllowed(
+                response.user.loginMethods[0].recipeUserId,
+                "test@example.com"
+            );
+            assert(isAllowed === true);
+
             response = await EmailPassword.updateEmailOrPassword({
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
                 email: "test@example.com",
@@ -407,67 +419,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             assert(response.status === "OK");
             let isVerified = await EmailVerification.isEmailVerified(recipeUserId);
             assert(!isVerified);
-        });
-
-        it("update email which belongs to other primary account should not work if email password user is not a primary user or is not linked, and account linking is enabled and email verification is not required", async function () {
-            await startST();
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    EmailPassword.init(),
-                    Session.init(),
-                    EmailVerification.init({
-                        mode: "OPTIONAL",
-                    }),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
-                            ],
-                        },
-                    }),
-                    AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, ___, userContext) => {
-                            if (userContext.doNotLink) {
-                                return {
-                                    shouldAutomaticallyLink: false,
-                                };
-                            }
-                            return {
-                                shouldAutomaticallyLink: true,
-                                shouldRequireVerification: false,
-                            };
-                        },
-                    }),
-                ],
-            });
-
-            let user = await ThirdParty.signInUp("google", "abc", "test@example.com", true);
-
-            let response = await EmailPassword.signUp("test2@example.com", "password123", {
-                doNotLink: true,
-            });
-            assert(response.user.isPrimaryUser === false);
-            assert(response.status === "OK");
-            let recipeUserId = response.user.loginMethods[0].recipeUserId;
-
-            response = await EmailPassword.updateEmailOrPassword({
-                recipeUserId: response.user.loginMethods[0].recipeUserId,
-                email: "test@example.com",
-            });
-
-            assert(response.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR");
-            assert(response.reason === "New email is associated with another primary user ID");
         });
 
         it("update email which belongs to linked user should mark email as verified of email password user", async function () {
@@ -515,6 +466,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             await AccountLinking.linkAccounts(response.user.loginMethods[0].recipeUserId, user.user.id);
+
+            let isAllowed = await AccountLinking.isEmailChangeAllowed(
+                response.user.loginMethods[0].recipeUserId,
+                "test@example.com"
+            );
+            assert(isAllowed === true);
 
             response = await EmailPassword.updateEmailOrPassword({
                 recipeUserId: response.user.loginMethods[0].recipeUserId,

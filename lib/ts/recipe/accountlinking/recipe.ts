@@ -1140,6 +1140,7 @@ export default class Recipe extends RecipeModule {
                 if (shouldVerifyEmail) {
                     let resp = await EmailVerification.createEmailVerificationToken(
                         input.recipeUserId,
+                        undefined,
                         input.userContext
                     );
                     if (resp.status === "OK") {
