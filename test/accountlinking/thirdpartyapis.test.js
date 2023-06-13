@@ -401,7 +401,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(session.getRecipeUserId().getAsString() === pUser.loginMethods[1].recipeUserId.getAsString());
         });
 
-        it("signInUpPOST successfully does NOT links account and returns the session of the right recipe user if it's a sign in", async function () {
+        it("signInUpPOST successfully does linking of accounts and returns the session of the right recipe user if it's a sign in", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -483,23 +483,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
             );
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
+            );
             assert(response.body.createdNewUser === false);
 
             let pUser = await supertokens.getUser(tpUser.id);
             assert(pUser.isPrimaryUser === true);
-            assert(pUser.loginMethods.length === 1);
+            assert(pUser.loginMethods.length === 2);
             assert(pUser.loginMethods[0].thirdParty.id === "google");
-
-            let recipeUser = await supertokens.getUser(tpUser2.id);
-            assert(recipeUser.isPrimaryUser === false);
-            assert(recipeUser.loginMethods.length === 1);
-            assert(recipeUser.loginMethods[0].thirdParty.id === "custom-ev");
+            assert(pUser.loginMethods[1].thirdParty.id === "custom-ev");
 
             // checking session
             tokens = extractInfoFromResponse(response);
             let session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
-            assert(session.getUserId() === tpUser2.id);
-            assert(session.getRecipeUserId().getAsString() === recipeUser.loginMethods[0].recipeUserId.getAsString());
+            assert(session.getUserId() === tpUser.id);
+            assert(session.getRecipeUserId().getAsString() === tpUser2.loginMethods[0].recipeUserId.getAsString());
         });
 
         it("signInUpPOST gives the right user in the override on successful account linking", async function () {
@@ -664,8 +663,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     })
             );
 
-            assert(response.body.status === "SIGN_IN_NOT_ALLOWED");
-            assert(response.body.reason === "Email already associated with another primary user.");
+            assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
+            assert(
+                response.body.reason ===
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support"
+            );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
             );
