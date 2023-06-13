@@ -3227,6 +3227,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 recipeList: [
                     EmailPassword.init(),
                     Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
@@ -3239,14 +3242,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
-                            if (userContext.doNotLink) {
+                            if (userContext.doLink) {
                                 return {
-                                    shouldAutomaticallyLink: false,
+                                    shouldAutomaticallyLink: true,
+                                    shouldRequireVerification: true,
                                 };
                             }
                             return {
-                                shouldAutomaticallyLink: true,
-                                shouldRequireVerification: true,
+                                shouldAutomaticallyLink: false,
                             };
                         },
                     }),
@@ -3257,9 +3260,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
+                doLink: true,
+            });
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
+            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+                doLink: true,
+            });
 
             let res = await new Promise((resolve) =>
                 request(app)
