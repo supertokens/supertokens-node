@@ -72,7 +72,6 @@ export type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
-        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
@@ -99,7 +98,6 @@ export type RecipeInterface = {
     emailPasswordSignUp(input: {
         email: string;
         password: string;
-        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
@@ -118,7 +116,6 @@ export type RecipeInterface = {
     emailPasswordSignIn(input: {
         email: string;
         password: string;
-        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 

@@ -452,8 +452,6 @@ export default function getAPIInterface(): APIInterface {
                 thirdPartyUserId: userInfo.id,
                 email: emailInfo.id,
                 isVerified: emailInfo.isVerified,
-                attemptAccountLinking: false, // we pass false here cause we want to check if
-                // isSignInAllowed returns true or not before attempting to link accounts.
                 userContext,
             });
 
@@ -499,15 +497,17 @@ export default function getAPIInterface(): APIInterface {
                         reason: "Cannot sign in / up due to security reasons. Please contact support.",
                     };
                 }
+
+                // we do account linking only during sign in here cause during sign up,
+                // the recipe function above does account linking for us.
+                let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    recipeUserId: loginMethod.recipeUserId,
+                    checkAccountsToLinkTableAsWell: true,
+                    userContext,
+                });
+
+                response.user = (await getUser(userId, userContext))!;
             }
-
-            let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: loginMethod.recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-                userContext,
-            });
-
-            response.user = (await getUser(userId, userContext))!;
 
             let session = await Session.createNewSession(
                 options.req,

@@ -65,7 +65,6 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
-            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: GlobalUser }

@@ -26,7 +26,6 @@ export default function getRecipeInterface(
         emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
-            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
@@ -35,7 +34,6 @@ export default function getRecipeInterface(
         emailPasswordSignIn: async function (input: {
             email: string;
             password: string;
-            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
@@ -46,7 +44,6 @@ export default function getRecipeInterface(
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
-            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: GlobalUser }

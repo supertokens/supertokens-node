@@ -11,7 +11,6 @@ export default class Wrapper {
     static signUp(
         email: string,
         password: string,
-        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -25,7 +24,6 @@ export default class Wrapper {
     static signIn(
         email: string,
         password: string,
-        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {

@@ -156,7 +156,6 @@ export declare type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
-        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {

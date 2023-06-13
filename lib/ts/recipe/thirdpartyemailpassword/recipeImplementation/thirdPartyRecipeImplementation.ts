@@ -9,7 +9,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
-            attemptAccountLinking: boolean;
             userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: User }

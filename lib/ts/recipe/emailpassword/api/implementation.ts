@@ -746,8 +746,6 @@ export default function getAPIImplementation(): APIInterface {
             let response = await options.recipeImplementation.signIn({
                 email,
                 password,
-                attemptAccountLinking: false, // we pass false here cause before attempting account linking,
-                // we want to check if isSignInAllowed is true or not.
                 userContext,
             });
 
@@ -781,6 +779,7 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
+            // the above sign in recipe function does not do account linking - so we do it here.
             let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 recipeUserId: emailPasswordRecipeUser.recipeUserId!,
                 checkAccountsToLinkTableAsWell: true,
@@ -855,7 +854,6 @@ export default function getAPIImplementation(): APIInterface {
             let response = await options.recipeImplementation.signUp({
                 email,
                 password,
-                attemptAccountLinking: true,
                 userContext,
             });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {

@@ -13,7 +13,6 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -29,7 +28,6 @@ export default class Wrapper {
     static emailPasswordSignUp(
         email: string,
         password: string,
-        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {
@@ -43,7 +41,6 @@ export default class Wrapper {
     static emailPasswordSignIn(
         email: string,
         password: string,
-        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {

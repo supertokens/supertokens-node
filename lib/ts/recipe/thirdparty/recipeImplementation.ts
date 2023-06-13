@@ -90,14 +90,12 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 thirdPartyUserId,
                 email,
                 isVerified,
-                attemptAccountLinking,
                 userContext,
             }: {
                 thirdPartyId: string;
                 thirdPartyUserId: string;
                 email: string;
                 isVerified: boolean;
-                attemptAccountLinking: boolean;
                 userContext: any;
             }
         ): Promise<
@@ -123,7 +121,16 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 };
             }
 
-            if (!attemptAccountLinking) {
+            if (!response.createdNewUser) {
+                // Unlike in the sign up scenario, we do not do account linking here
+                // cause we do not want sign in to change the potentially user ID of a user
+                // due to linking when this function is called by the dev in their API.
+                // If we did account linking
+                // then we would have to ask the dev to also change the session
+                // in such API calls.
+                // In the case of sign up, since we are creating a new user, it's fine
+                // to link there since there is no user id change really from the dev's
+                // point of view who is calling the sign up recipe function.
                 return response;
             }
 

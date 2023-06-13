@@ -54,7 +54,6 @@ export declare type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
-        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {
@@ -87,7 +86,6 @@ export declare type RecipeInterface = {
     emailPasswordSignUp(input: {
         email: string;
         password: string;
-        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {
@@ -114,7 +112,6 @@ export declare type RecipeInterface = {
     emailPasswordSignIn(input: {
         email: string;
         password: string;
-        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<
         | {

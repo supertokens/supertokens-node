@@ -31,7 +31,6 @@ export default class Wrapper {
         thirdPartyUserId: string,
         email: string,
         isVerified: boolean,
-        attemptAccountLinking: boolean = true,
         userContext: any = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
@@ -39,35 +38,22 @@ export default class Wrapper {
             thirdPartyUserId,
             email,
             isVerified,
-            attemptAccountLinking,
             userContext,
         });
     }
 
-    static emailPasswordSignUp(
-        email: string,
-        password: string,
-        attemptAccountLinking: boolean = true,
-        userContext: any = {}
-    ) {
+    static emailPasswordSignUp(email: string, password: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
             email,
             password,
-            attemptAccountLinking,
             userContext,
         });
     }
 
-    static emailPasswordSignIn(
-        email: string,
-        password: string,
-        attemptAccountLinking: boolean = true,
-        userContext: any = {}
-    ) {
+    static emailPasswordSignIn(email: string, password: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
             email,
             password,
-            attemptAccountLinking,
             userContext,
         });
     }
