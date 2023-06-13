@@ -968,7 +968,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(isVerified === true);
     });
 
-    it("link accounts success causes primary user's account's email to be verified if same email", async function () {
+    it("link accounts success does not cause primary user's account's email to be verified if same email", async function () {
         await startST();
         supertokens.init({
             supertokens: {
@@ -1018,7 +1018,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         {
             let isVerified = await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(user.id));
-            assert(isVerified === true);
+            assert(isVerified === false);
         }
 
         {
