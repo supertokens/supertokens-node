@@ -37,7 +37,6 @@ import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
 import { mockReset } from "./mockCore";
-import EmailVerification from "../emailverification";
 import EmailVerificationRecipe from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {
@@ -373,11 +372,19 @@ export default class Recipe extends RecipeModule {
         let isVerified = true;
         try {
             EmailVerificationRecipe.getInstanceOrThrowError();
-            isVerified = await EmailVerification.isEmailVerified(
+            let emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
                 user.loginMethods[0].recipeUserId,
-                undefined,
                 userContext
             );
+            if (emailInfo.status === "OK") {
+                isVerified = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified(
+                    {
+                        recipeUserId: user.loginMethods[0].recipeUserId,
+                        email: emailInfo.email,
+                        userContext,
+                    }
+                );
+            }
         } catch (ignored) {}
 
         return this.isSignInUpAllowedHelper({
@@ -1148,15 +1155,23 @@ export default class Recipe extends RecipeModule {
                 });
 
                 if (shouldVerifyEmail) {
-                    let resp = await EmailVerification.createEmailVerificationToken(
-                        input.recipeUserId,
-                        undefined,
-                        input.userContext
+                    let resp = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
+                        {
+                            recipeUserId: input.recipeUserId,
+                            email: recipeUserEmail,
+                            userContext: input.userContext,
+                        }
                     );
                     if (resp.status === "OK") {
                         // we purposely pass in false below cause we don't want account
                         // linking to happen
-                        await EmailVerification.verifyEmailUsingToken(resp.token, false, input.userContext);
+                        await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken(
+                            {
+                                token: resp.token,
+                                attemptAccountLinking: false,
+                                userContext: input.userContext,
+                            }
+                        );
                     }
                 }
             }
