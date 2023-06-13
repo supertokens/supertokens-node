@@ -6,6 +6,7 @@ import AccountLinking from "../accountlinking/recipe";
 import { getUser } from "../..";
 import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
 import EmailVerification from "../emailverification";
+import EmailVerificationRecipe from "../emailverification/recipe";
 import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
@@ -65,15 +66,22 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 // here as well
 
                 if (isVerified) {
-                    let verifyResponse = await EmailVerification.createEmailVerificationToken(
-                        recipeUserId!,
-                        undefined,
-                        userContext
-                    );
-                    if (verifyResponse.status === "OK") {
-                        // we pass in false here cause we do not want to attempt account linking
-                        // as of yet.
-                        await EmailVerification.verifyEmailUsingToken(verifyResponse.token, false, userContext);
+                    let isInitialized = false;
+                    try {
+                        EmailVerificationRecipe.getInstanceOrThrowError();
+                        isInitialized = true;
+                    } catch (ignored) {}
+                    if (isInitialized) {
+                        let verifyResponse = await EmailVerification.createEmailVerificationToken(
+                            recipeUserId!,
+                            undefined,
+                            userContext
+                        );
+                        if (verifyResponse.status === "OK") {
+                            // we pass in false here cause we do not want to attempt account linking
+                            // as of yet.
+                            await EmailVerification.verifyEmailUsingToken(verifyResponse.token, false, userContext);
+                        }
                     }
                 }
 

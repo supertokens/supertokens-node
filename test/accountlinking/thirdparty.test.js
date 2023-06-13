@@ -282,8 +282,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(user2.isPrimaryUser === true);
 
             let resp = await ThirdParty.signInUp("github", "abcd", "test@example.com", true);
-            assert(resp.status === "SIGN_IN_NOT_ALLOWED");
-            assert(resp.reason === "Email already associated with another primary user.");
+            assert(resp.status === "SIGN_IN_UP_NOT_ALLOWED");
+            assert(
+                resp.reason ===
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support"
+            );
         });
 
         it("sign up in fails cause changed email already associated with another primary user when the user trying to sign in is linked with another user", async function () {
@@ -335,8 +338,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(user3.loginMethods.length === 2);
 
             let resp = await ThirdParty.signInUp("github2", "abcd", "test@example.com", true);
-            assert(resp.status === "SIGN_IN_NOT_ALLOWED");
-            assert(resp.reason === "Email already associated with another primary user.");
+            assert(resp.status === "SIGN_IN_UP_NOT_ALLOWED");
+            assert(
+                resp.reason ===
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support"
+            );
         });
 
         it("sign up in succeeds when changed email belongs to a recipe user even though the new email is already associated with another primary user", async function () {
@@ -1155,7 +1161,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(resp.status === "OK");
         });
 
-        it("linkThirdPartyAccountWithUserFromSession succeeds, and does not mark email as verified for sign in case - with email verification not required", async function () {
+        it("linkThirdPartyAccountWithUserFromSession succeeds, and marks new user email as verified even if sign in, but keeps primary user's email verification status unchanged - with email verification not required", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -1225,7 +1231,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(user2.isPrimaryUser === true);
             assert(user2.id === user.id);
             assert(user2.loginMethods[0].verified === false);
-            assert(user2.loginMethods[1].verified === false);
+            assert(user2.loginMethods[0].thirdParty.id === "google");
+            assert(user2.loginMethods[0].thirdParty.userId === "abcd");
+            assert(user2.loginMethods[1].verified === true);
+            assert(user2.loginMethods[1].thirdParty.id === "github");
+            assert(user2.loginMethods[1].thirdParty.userId === "abcd");
         });
 
         it("linkThirdPartyAccountWithUserFromSession returns NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR if email verification required and new account does not already exist", async function () {
