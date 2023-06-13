@@ -38,6 +38,7 @@ import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
 import { mockReset } from "./mockCore";
 import EmailVerification from "../emailverification";
+import EmailVerificationRecipe from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -369,12 +370,15 @@ export default class Recipe extends RecipeModule {
         }
 
         // this is now a recipe user sign in.
-
-        let isVerified = await EmailVerification.isEmailVerified(
-            user.loginMethods[0].recipeUserId,
-            undefined,
-            userContext
-        );
+        let isVerified = true;
+        try {
+            EmailVerificationRecipe.getInstanceOrThrowError();
+            isVerified = await EmailVerification.isEmailVerified(
+                user.loginMethods[0].recipeUserId,
+                undefined,
+                userContext
+            );
+        } catch (ignored) {}
 
         return this.isSignInUpAllowedHelper({
             accountInfo: user.loginMethods[0],
@@ -1097,6 +1101,12 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => {
+        try {
+            EmailVerificationRecipe.getInstanceOrThrowError();
+        } catch (ignored) {
+            // if email verification recipe is not initialized, we do a no-op
+            return;
+        }
         // This is just a helper function cause it's called in many places
         // like during sign up, sign in and post linking accounts.
         // This is not exposed to the developer as it's called in the relevant
