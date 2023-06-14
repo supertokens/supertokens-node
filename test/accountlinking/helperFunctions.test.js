@@ -21,6 +21,7 @@ let EmailPassword = require("../../recipe/emailpassword");
 let EmailVerification = require("../../recipe/emailverification");
 let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
+let AccountLinkingRecipe = require("../../lib/build/recipe/accountlinking/recipe").default;
 
 describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions.test.js]")}`, function () {
     beforeEach(async function () {
@@ -4411,6 +4412,263 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED)) ===
                     undefined
             );
+        });
+    });
+
+    describe("verifyEmailForRecipeUserIfLinkedAccountsAreVerified tests", function () {
+        it("verifyEmailForRecipeUserIfLinkedAccountsAreVerified should not crash if email verification is not defined", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+
+            await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                recipeUserId: user.user.loginMethods[0].recipeUserId,
+            });
+        });
+
+        it("verifyEmailForRecipeUserIfLinkedAccountsAreVerified marks email as verified of linked user with same email", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123");
+            let tokens = await EmailVerification.createEmailVerificationToken(user.user.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(tokens.token);
+            await AccountLinking.createPrimaryUser(user.user.loginMethods[0].recipeUserId);
+
+            let tpUser = await ThirdParty.signInUp("abc", "abcd", "test@example.com", false);
+            await AccountLinking.linkAccounts(tpUser.user.loginMethods[0].recipeUserId, user.user.id);
+
+            await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
+            });
+
+            let pUser = await supertokens.getUser(user.user.id);
+            assert(pUser.loginMethods[0].verified === true);
+            assert(pUser.loginMethods[1].verified === true);
+
+            assert(pUser.loginMethods[0].recipeUserId.getAsString() === user.user.id);
+            assert(pUser.loginMethods[1].recipeUserId.getAsString() === tpUser.user.id);
+        });
+
+        it("verifyEmailForRecipeUserIfLinkedAccountsAreVerified does not mark email as verified of linked user that has different email", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123");
+            let tokens = await EmailVerification.createEmailVerificationToken(user.user.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(tokens.token);
+            await AccountLinking.createPrimaryUser(user.user.loginMethods[0].recipeUserId);
+
+            let tpUser = await ThirdParty.signInUp("abc", "abcd", "test2@example.com", false);
+            await AccountLinking.linkAccounts(tpUser.user.loginMethods[0].recipeUserId, user.user.id);
+
+            await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
+            });
+
+            let pUser = await supertokens.getUser(user.user.id);
+            assert(pUser.loginMethods[0].verified === true);
+            assert(pUser.loginMethods[1].verified === false);
+
+            assert(pUser.loginMethods[0].recipeUserId.getAsString() === user.user.id);
+            assert(pUser.loginMethods[1].recipeUserId.getAsString() === tpUser.user.id);
+        });
+
+        it("verifyEmailForRecipeUserIfLinkedAccountsAreVerified does not mark email as verified of linked user with same email if no other linked user has email as verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123");
+            await AccountLinking.createPrimaryUser(user.user.loginMethods[0].recipeUserId);
+
+            let tpUser = await ThirdParty.signInUp("abc", "abcd", "test2@example.com", false);
+            await AccountLinking.linkAccounts(tpUser.user.loginMethods[0].recipeUserId, user.user.id);
+
+            await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
+            });
+
+            let pUser = await supertokens.getUser(user.user.id);
+            assert(pUser.loginMethods[0].verified === false);
+            assert(pUser.loginMethods[1].verified === false);
+
+            assert(pUser.loginMethods[0].recipeUserId.getAsString() === user.user.id);
+            assert(pUser.loginMethods[1].recipeUserId.getAsString() === tpUser.user.id);
+        });
+
+        it("verifyEmailForRecipeUserIfLinkedAccountsAreVerified does not change email verification status of non linked user", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let tpUser = await ThirdParty.signInUp("abc", "abcd", "test2@example.com", false);
+
+            await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
+            });
+
+            let pUser = await supertokens.getUser(tpUser.user.id);
+            assert(pUser.loginMethods[0].verified === false);
+
+            assert(pUser.loginMethods[0].recipeUserId.getAsString() === tpUser.user.id);
         });
     });
 });
