@@ -15,7 +15,6 @@
 
 import { parse, serialize } from "cookie";
 import type { Request, Response } from "express";
-import { json, urlencoded } from "body-parser";
 import type { IncomingMessage } from "http";
 import { ServerResponse } from "http";
 import STError from "../error";
@@ -23,6 +22,8 @@ import type { HTTPMethod } from "../types";
 import { NextApiRequest } from "next";
 import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
+import raw from "raw-body";
+import inflate from "inflation";
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
     if (headers === undefined || headers === null) {
@@ -109,6 +110,16 @@ function JSONCookies(obj: any) {
     return obj;
 }
 
+export async function parseJSONBodyFromRequest(req: IncomingMessage) {
+    const str = await raw(inflate(req), { encoding: "utf-8" });
+    return JSON.parse(str);
+}
+
+export async function parseURLEncodedFormData(req: IncomingMessage) {
+    const str = await raw(inflate(req), { encoding: "utf-8" });
+    return Object.fromEntries(new URLSearchParams(str).entries());
+}
+
 export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
     request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
@@ -133,36 +144,13 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             Buffer.isBuffer(request.body) ||
             Object.keys(request.body).length === 0
         ) {
-            // parsing it again to make sure that the request is parsed atleast once by a json parser
-            let jsonParser = json();
-            let err = await new Promise((resolve) => {
-                let resolvedCalled = false;
-                if (request.readable) {
-                    jsonParser(request, new ServerResponse(request), (e) => {
-                        if (!resolvedCalled) {
-                            resolvedCalled = true;
-                            resolve(e);
-                        }
-                    });
-                } else {
-                    resolve(undefined);
-                }
-            });
-            if (err !== undefined) {
+            try {
+                // parsing it again to make sure that the request is parsed atleast once by a json parser
+                request.body = await parseJSONBodyFromRequest(request);
+            } catch {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass a valid JSON input in the request body",
-                });
-            }
-        }
-    } else if (method === "delete" || method === "get") {
-        if (request.query === undefined) {
-            let parser = urlencoded({ extended: true });
-            let err = await new Promise((resolve) => parser(request, new ServerResponse(request), resolve));
-            if (err !== undefined) {
-                throw new STError({
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass valid url encoded form in the request body",
                 });
             }
         }
@@ -172,21 +160,29 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
 export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
     request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
 ) {
-    let parser = urlencoded({ extended: true });
-    let err = await new Promise((resolve) => {
-        if (request.readable) {
-            parser(request, new ServerResponse(request), (e) => {
-                resolve(e);
-            });
-        } else {
-            resolve(undefined);
+    if (typeof request.body === "string") {
+        try {
+            request.body = Object.fromEntries(new URLSearchParams(request.body).entries());
+        } catch (err) {
+            if (request.body === "") {
+                request.body = {};
+            } else {
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "API input error: Please make sure to pass valid url encoded form in the request body",
+                });
+            }
         }
-    });
-    if (err !== undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "API input error: Please make sure to pass valid url encoded form in the request body",
-        });
+    } else if (request.body === undefined || Buffer.isBuffer(request.body) || Object.keys(request.body).length === 0) {
+        try {
+            // parsing it again to make sure that the request is parsed atleast once by a json parser
+            request.body = await parseURLEncodedFormData(request);
+        } catch {
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: "API input error: Please make sure to pass valid url encoded form in the request body",
+            });
+        }
     }
 }
 

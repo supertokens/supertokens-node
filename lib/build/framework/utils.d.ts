@@ -9,6 +9,12 @@ export declare function getCookieValueFromHeaders(headers: any, key: string): st
 export declare function getCookieValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
 export declare function getHeaderValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
 export declare function normalizeHeaderValue(value: string | string[] | undefined): string | undefined;
+export declare function parseJSONBodyFromRequest(req: IncomingMessage): Promise<any>;
+export declare function parseURLEncodedFormData(
+    req: IncomingMessage
+): Promise<{
+    [k: string]: string;
+}>;
 export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
     request: (Request | NextApiRequest) & {
