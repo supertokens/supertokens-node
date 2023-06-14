@@ -1166,6 +1166,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let token = await EmailVerification.createEmailVerificationToken(pUser.loginMethods[0].recipeUserId);
             await EmailVerification.verifyEmailUsingToken(token.token);
 
+            await ThirdParty.signInUp("abcd", "abcd", "test@example.com", false);
+
             let isAllowed = await AccountLinking.isSignUpAllowed(
                 {
                     email: "test@example.com",
@@ -3888,6 +3890,527 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
 
             assert(response === true);
+        });
+    });
+
+    describe("isSignInAllowed tests", function () {
+        it("calling isSignInAllowed returns true if the email is unique", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "abcd1234");
+
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+        });
+
+        it("calling isSignInAllowed returns true if user exists with same email, but is not a primary user, and email verification not required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+        });
+
+        it("calling isSignInAllowed returns true if user exists with same email, but is not a primary user, and account linking is disabled", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+        });
+
+        it("calling isSignInAllowed returns true if user exists with same email, but is not a primary user, and email verification is not required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+        });
+
+        it("calling isSignInAllowed returns false if user exists with same email, but is not a primary user, and email verification is required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+
+            assert(!isAllowed);
+            assert(
+                (await ProcessState.getInstance().waitForEvent(
+                    PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
+                )) !== undefined
+            );
+        });
+
+        it("calling isSignInAllowed returns false if 2 users exists with same email, are not primary users, one of them has email verified, and one of them not, and email verification is required", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = await EmailPassword.signUp("test@example.com", "password123", {
+                doNotLink: true,
+            });
+            assert(!epUser.user.isPrimaryUser);
+            let token = await EmailVerification.createEmailVerificationToken(
+                supertokens.convertToRecipeUserId(epUser.user.id)
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token, false);
+            {
+                let user = await supertokens.getUser(epUser.user.id);
+                assert(user.isPrimaryUser === false);
+            }
+
+            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false, {
+                doNotLink: true,
+            });
+            assert(!tpUser.user.isPrimaryUser);
+
+            let isAllowed = await AccountLinking.isSignInAllowed(tpUser.user.loginMethods[0].recipeUserId);
+
+            assert(!isAllowed);
+            assert(
+                (await ProcessState.getInstance().waitForEvent(
+                    PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_NO_PRIMARY_USER_EXISTS
+                )) !== undefined
+            );
+        });
+
+        it("calling isSignInAllowed returns false if user exists with same email, but primary user's email is not verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let pUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(pUser.loginMethods[0].recipeUserId);
+            pUser = await supertokens.getUser(pUser.id);
+            assert(pUser.isPrimaryUser);
+
+            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+
+            let tpUser = (await ThirdParty.signInUp("abcd", "abcd", "test@example.com", false)).user;
+            assert(tpUser.isPrimaryUser === false);
+
+            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId);
+
+            assert(!isAllowed);
+        });
+
+        it("calling isSignInAllowed returns true if user exists with same email, and primary user's email is not verified, but automatic account linking is disabled", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let pUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(pUser.loginMethods[0].recipeUserId);
+            pUser = await supertokens.getUser(pUser.id);
+            assert(pUser.isPrimaryUser);
+
+            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+
+            let tpUser = (await ThirdParty.signInUp("abcd", "abcd", "test@example.com", false)).user;
+            assert(tpUser.isPrimaryUser === false);
+
+            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+        });
+
+        it("calling isSignInAllowed returns true if recipe user's email is verified and primary user's email is verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let pUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(pUser.loginMethods[0].recipeUserId);
+
+            pUser = await supertokens.getUser(pUser.id);
+            assert(pUser.isPrimaryUser);
+            let token = await EmailVerification.createEmailVerificationToken(pUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let tpUser = (
+                await ThirdParty.signInUp("abcd", "abcd", "test@example.com", true, {
+                    doNotLink: true,
+                })
+            ).user;
+            assert(tpUser.isPrimaryUser === false);
+            assert(tpUser.loginMethods[0].verified);
+
+            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+        });
+
+        it("calling isSignInAllowed returns true if primary user's email is verified and other recipe user's email is not verified, with the same email", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let pUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(pUser.loginMethods[0].recipeUserId);
+
+            pUser = await supertokens.getUser(pUser.id);
+            assert(pUser.isPrimaryUser);
+            let token = await EmailVerification.createEmailVerificationToken(pUser.loginMethods[0].recipeUserId);
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let user = await ThirdParty.signInUp("abcd", "abcd", "test@example.com", false);
+
+            let user2 = await ThirdParty.signInUp("abcd1", "abcd", "test@example.com", true);
+
+            let isAllowed = await AccountLinking.isSignInAllowed(user2.user.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+        });
+
+        it("calling isSignInAllowed with primary user does not call the helper function", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let pUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            await AccountLinking.createPrimaryUser(pUser.loginMethods[0].recipeUserId);
+            pUser = await supertokens.getUser(pUser.id);
+            assert(pUser.isPrimaryUser);
+
+            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId);
+
+            assert(isAllowed);
+
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED)) ===
+                    undefined
+            );
         });
     });
 });

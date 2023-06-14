@@ -426,6 +426,7 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         userContext: any;
     }): Promise<boolean> => {
+        ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED);
         // since this is a recipe level user, we have to do the following checks
         // before allowing sign in. We do these checks cause sign in also attempts
         // account linking:
