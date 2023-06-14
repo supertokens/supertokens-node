@@ -302,6 +302,91 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
         });
     });
 
+    describe("sign in tests", function () {
+        it("sign in recipe function does not do account linking", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(!user.isPrimaryUser);
+
+            user = (await EmailPassword.signIn("test@example.com", "password123")).user;
+            assert(!user.isPrimaryUser);
+        });
+
+        it("sign in recipe function marks email as verified if linked accounts has email as verified and uses the same email", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let tpUser = (await ThirdParty.signInUp("abc", "abcd", "test@example.com", true)).user;
+
+            let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(!user.isPrimaryUser);
+            assert(user.loginMethods[0].verified === false);
+
+            await AccountLinking.linkAccounts(user.loginMethods[0].recipeUserId, tpUser.id);
+
+            user = (await EmailPassword.signIn("test@example.com", "password123")).user;
+            assert(user.isPrimaryUser === true);
+            assert(user.loginMethods[0].verified === true);
+            assert(user.loginMethods[1].verified === true);
+        });
+    });
+
     describe("update email or password tests", function () {
         it("update email which belongs to other primary account, and current user is also a primary user should not work", async function () {
             await startST();
