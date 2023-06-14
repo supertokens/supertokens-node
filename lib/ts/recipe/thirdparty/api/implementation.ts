@@ -110,9 +110,7 @@ export default function getAPIInterface(): APIInterface {
             let providerInfo = await provider.get(redirectURI, code, userContext);
 
             if (authCodeResponse !== undefined) {
-                accessTokenAPIResponse = {
-                    data: authCodeResponse,
-                };
+                accessTokenAPIResponse = authCodeResponse;
             } else {
                 // we should use code to get the authCodeResponse body
                 if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
@@ -125,7 +123,7 @@ export default function getAPIInterface(): APIInterface {
                     });
                 }
 
-                accessTokenAPIResponse = await fetch(providerInfo.accessTokenAPI.url, {
+                const atResp = await fetch(providerInfo.accessTokenAPI.url, {
                     method: "post",
                     body: new URLSearchParams(providerInfo.accessTokenAPI.params).toString(),
                     headers: {
@@ -133,9 +131,10 @@ export default function getAPIInterface(): APIInterface {
                         accept: "application/json", // few providers like github don't send back json response by default
                     },
                 });
+                accessTokenAPIResponse = await atResp.json();
             }
 
-            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
+            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse, userContext);
 
             let emailInfo = userInfo.email;
             if (emailInfo === undefined) {
@@ -185,7 +184,7 @@ export default function getAPIInterface(): APIInterface {
                 createdNewUser: response.createdNewUser,
                 user: response.user,
                 session,
-                authCodeResponse: accessTokenAPIResponse.data,
+                authCodeResponse: accessTokenAPIResponse,
             };
         },
 
