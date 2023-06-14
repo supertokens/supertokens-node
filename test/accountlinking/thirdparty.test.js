@@ -285,7 +285,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(resp.status === "SIGN_IN_UP_NOT_ALLOWED");
             assert(
                 resp.reason ===
-                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support"
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support."
             );
         });
 
@@ -341,7 +341,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(resp.status === "SIGN_IN_UP_NOT_ALLOWED");
             assert(
                 resp.reason ===
-                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support"
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support."
             );
         });
 

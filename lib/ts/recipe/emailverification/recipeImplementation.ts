@@ -2,9 +2,13 @@ import { RecipeInterface, User } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
+import { GetEmailForRecipeUserIdFunc } from "./types";
 import { mockGetEmailVerificationTokenInfo, mockCreateEmailVerificationToken } from "./mockCore";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc
+): RecipeInterface {
     return {
         createEmailVerificationToken: async function ({
             recipeUserId,
@@ -78,13 +82,20 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
             if (response.status === "OK") {
                 if (attemptAccountLinking) {
-                    // we do this here to prevent cyclic dependencies.
-                    let AccountLinking = require("../accountlinking");
-                    await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                        recipeUserId: new RecipeUserId(response.userId),
-                        checkAccountsToLinkTableAsWell: true,
-                        userContext,
-                    });
+                    // before attempting this, we must check that the email that got verified
+                    // from the ID is the one that is currently associated with the ID (since
+                    // email verification can be done for any combination of (user id, email)
+                    // and not necessarily the email that is currently associated with the ID)
+                    let emailInfo = await getEmailForRecipeUserId(new RecipeUserId(response.userId), userContext);
+                    if (emailInfo.status === "OK" && emailInfo.email === response.email) {
+                        // we do this here to prevent cyclic dependencies.
+                        let AccountLinking = require("../accountlinking");
+                        await AccountLinking.createPrimaryUserIdOrLinkAccounts({
+                            recipeUserId: new RecipeUserId(response.userId),
+                            checkAccountsToLinkTableAsWell: true,
+                            userContext,
+                        });
+                    }
                 }
 
                 return {

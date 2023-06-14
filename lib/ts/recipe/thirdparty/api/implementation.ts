@@ -443,7 +443,7 @@ export default function getAPIInterface(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support",
+                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support.",
                     };
                 }
             }

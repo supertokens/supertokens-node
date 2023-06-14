@@ -666,10 +666,184 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
             assert(
                 response.body.reason ===
-                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support"
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support."
             );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
+            );
+        });
+
+        it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED if it's a sign in and isEmailChangeAllowed returns false", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailNotVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", false)).user;
+            assert(tpUser.isPrimaryUser === false);
+
+            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            assert(tpUser2.isPrimaryUser === true);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-no-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
+            assert(
+                response.body.reason ===
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support."
+            );
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
+            );
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) === undefined
+            );
+        });
+
+        it("signInUpPOST checks verification from email verification recipe before calling  isEmailChangeAllowed", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailNotVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (
+                await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", true, {
+                    doNotLink: true,
+                })
+            ).user;
+            assert(tpUser.isPrimaryUser === false);
+
+            let token = await EmailVerification.createEmailVerificationToken(
+                tpUser.loginMethods[0].recipeUserId,
+                "email@test.com"
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            assert(tpUser2.isPrimaryUser === true);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-no-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            console.log(response.body);
+            assert(response.body.status === "OK");
+
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
             );
         });
     });
