@@ -48,6 +48,8 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
         throw new Error("Invalid JWT");
     }
 
+    const latestVersion = 3;
+
     // V1&V2 is functionally identical, plus all legacy tokens should be V2 now.
     let version = 2;
     let kid = undefined;
@@ -68,7 +70,7 @@ export function parseJWTWithoutSignatureVerification(jwt: string): ParsedJWTInfo
             logDebugMessage(
                 "parseJWTWithoutSignatureVerification: assuming latest version (3) because version header is missing"
             );
-            version = 3;
+            version = latestVersion;
         }
         kid = parsedHeader.kid;
 
