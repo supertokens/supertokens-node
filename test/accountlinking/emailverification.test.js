@@ -97,7 +97,7 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
             }
         });
 
-        it.only("verifyEmailUsingToken links account only if the associated email is verified", async function () {
+        it("verifyEmailUsingToken links account only if the associated email is verified", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
