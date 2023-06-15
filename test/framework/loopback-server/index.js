@@ -114,7 +114,9 @@ let app = new rest_1.RestApplication({
         port: 9876,
     },
 });
-app.middleware(loopback_1.middleware);
+if (process.env.TEST_SKIP_MIDDLEWARE !== "true") {
+    app.middleware(loopback_1.middleware);
+}
 app.controller(Create);
 app.controller(CreateThrowing);
 app.controller(Verify);

@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
 import type { VerifySessionOptions } from "..";
 import type { Next } from "koa";
@@ -23,7 +24,18 @@ export function verifySession(options?: VerifySessionOptions) {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new KoaRequest(ctx);
         let response = new KoaResponse(ctx);
-        ctx.session = await sessionRecipe.verifySession(options, request, response);
+
+        try {
+            ctx.session = await sessionRecipe.verifySession(options, request, response);
+        } catch (err) {
+            try {
+                const supertokens = SuperTokens.getInstanceOrThrowError();
+                await supertokens.errorHandler(err, request, response);
+                return;
+            } catch {
+                throw err;
+            }
+        }
         await next();
     };
 }
