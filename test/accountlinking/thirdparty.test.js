@@ -888,6 +888,194 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
             assert(user.isPrimaryUser === true);
         });
+
+        it("sign in up verifies email based on linked accounts", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === true);
+
+            let user2 = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+            assert(user2.isPrimaryUser === false);
+
+            await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+            // link accuonts above also verifies the account
+            await EmailVerification.unverifyEmail(user2.loginMethods[0].recipeUserId);
+
+            let pUser = await supertokens.getUser(user2.id);
+            assert(pUser.isPrimaryUser === true);
+            assert(pUser.loginMethods[1].verified === false);
+            assert(pUser.loginMethods[1].thirdParty.id === "google");
+
+            // now logging in should mark the email as verified
+            pUser = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+            assert(pUser.isPrimaryUser === true);
+            assert(pUser.loginMethods[1].verified === true);
+            assert(pUser.loginMethods[1].thirdParty.id === "google");
+        });
+
+        it("sign in up verifies email if provider says that the email is verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+
+            // now logging in should mark the email as verified
+            user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === false);
+            assert(user.loginMethods.length === 1);
+            assert(user.loginMethods[0].verified === true);
+            assert(user.loginMethods[0].thirdParty.id === "google");
+
+            // during sign up as well
+            user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === false);
+            assert(user.loginMethods.length === 1);
+            assert(user.loginMethods[0].verified === true);
+            assert(user.loginMethods[0].thirdParty.id === "github");
+        });
+
+        it("sign in up does not crash if email verification recipe is not used", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+
+            // now logging in should mark the email as verified
+            user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === false);
+            assert(user.loginMethods.length === 1);
+            assert(user.loginMethods[0].verified === false);
+            assert(user.loginMethods[0].thirdParty.id === "google");
+
+            // during sign up as well
+            user = (await ThirdParty.signInUp("github", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === false);
+            assert(user.loginMethods.length === 1);
+            assert(user.loginMethods[0].verified === false);
+            assert(user.loginMethods[0].thirdParty.id === "github");
+        });
+
+        it("sign in up does not mark email as unverified even if provider says it's not verified but it was previously verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", true)).user;
+
+            // now logging in should mark the email as verified
+            user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+            assert(user.isPrimaryUser === false);
+            assert(user.loginMethods.length === 1);
+            assert(user.loginMethods[0].verified === true);
+            assert(user.loginMethods[0].thirdParty.id === "google");
+        });
     });
 
     describe("linkThirdPartyAccountWithUserFromSession tests", function () {
