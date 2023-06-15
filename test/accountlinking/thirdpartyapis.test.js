@@ -839,7 +839,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     })
             );
 
-            console.log(response.body);
             assert(response.body.status === "OK");
 
             assert(
