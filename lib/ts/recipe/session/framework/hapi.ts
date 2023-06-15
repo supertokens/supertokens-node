@@ -42,9 +42,9 @@ export function verifySession(options?: VerifySessionOptions) {
                     return resObj.takeover();
                 }
             } catch {
-                // We catch and ignore this since we want to re-throw the original error if handling wasn't successful
+                // We catch and ignore since we want to re-throw the original error if handling wasn't successful
+                throw err;
             }
-            throw err;
         }
         return h.continue;
     };

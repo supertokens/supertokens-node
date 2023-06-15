@@ -34,6 +34,7 @@ export function verifySession(options?: VerifySessionOptions): InterceptorOrKey 
                 await supertokens.errorHandler(err, request, response);
                 return;
             } catch {
+                // We catch and ignore since we want to re-throw the original error if handling wasn't successful
                 throw err;
             }
         }
