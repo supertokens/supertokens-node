@@ -1076,6 +1076,50 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(user.loginMethods[0].verified === true);
             assert(user.loginMethods[0].thirdParty.id === "google");
         });
+
+        it("sign up in does not attempt to make primary user / account link during sign in", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+
+            let user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+            assert(user.isPrimaryUser === false);
+
+            user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", true)).user;
+            assert(user.isPrimaryUser === false);
+        });
     });
 
     describe("linkThirdPartyAccountWithUserFromSession tests", function () {
