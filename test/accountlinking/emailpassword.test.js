@@ -317,7 +317,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 recipeList: [
                     EmailPassword.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async () => {
+                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: false,
@@ -327,7 +332,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 ],
             });
 
-            let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let user = (
+                await EmailPassword.signUp("test@example.com", "password123", {
+                    doNotLink: true,
+                })
+            ).user;
             assert(!user.isPrimaryUser);
 
             user = (await EmailPassword.signIn("test@example.com", "password123")).user;
