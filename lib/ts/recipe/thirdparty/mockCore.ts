@@ -28,20 +28,21 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
 
     if (thirdPartyUser.length > 0) {
         assert(thirdPartyUser.length === 1);
+        let userBasedOnEmail = await mockListUsersByAccountInfo({
+            accountInfo: {
+                email,
+            },
+            doUnionOfAccountInfo: false,
+        });
         if (thirdPartyUser[0].isPrimaryUser === true) {
-            let userBasedOnEmail = await mockListUsersByAccountInfo({
-                accountInfo: {
-                    email,
-                },
-                doUnionOfAccountInfo: false,
-            });
-
             for (let i = 0; i < userBasedOnEmail.length; i++) {
-                if (userBasedOnEmail[i].isPrimaryUser && userBasedOnEmail[i].id !== thirdPartyUser[0].id) {
-                    return {
-                        status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
-                        reason: "Email already associated with another primary user.",
-                    };
+                if (userBasedOnEmail[i].isPrimaryUser) {
+                    if (userBasedOnEmail[i].id !== thirdPartyUser[0].id) {
+                        return {
+                            status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",
+                            reason: "Email already associated with another primary user.",
+                        };
+                    }
                 }
             }
         }

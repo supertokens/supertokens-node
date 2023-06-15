@@ -92,7 +92,7 @@ export default class Wrapper {
         applyPasswordPolicy?: boolean;
     }): Promise<
         | {
-              status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

@@ -139,28 +139,46 @@ export default class Wrapper {
     }
 
     static async fetchFromAccountToLinkTable(recipeUserId: RecipeUserId, userContext?: any) {
-        userContext = userContext === undefined ? {} : userContext;
         return await Recipe.getInstance().recipeInterfaceImpl.fetchFromAccountToLinkTable({
             recipeUserId,
-            userContext,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
     static async storeIntoAccountToLinkTable(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
-        userContext = userContext === undefined ? {} : userContext;
         return await Recipe.getInstance().recipeInterfaceImpl.storeIntoAccountToLinkTable({
             recipeUserId,
             primaryUserId,
-            userContext,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
     static async isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any) {
-        userContext = userContext === undefined ? {} : userContext;
         return await Recipe.getInstance().isSignUpAllowed({
             newUser,
             isVerified,
-            userContext,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any) {
+        return await Recipe.getInstance().isSignInAllowed({
+            recipeUserId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async isEmailChangeAllowed(
+        recipeUserId: RecipeUserId,
+        newEmail: string,
+        isVerified: boolean,
+        userContext?: any
+    ) {
+        return await Recipe.getInstance().isEmailChangeAllowed({
+            recipeUserId,
+            newEmail,
+            isVerified,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 }
@@ -177,5 +195,7 @@ export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLi
 export const getPrimaryUserIdThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export const linkAccountsWithUserFromSession = Wrapper.linkAccountsWithUserFromSession;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
+export const isSignInAllowed = Wrapper.isSignInAllowed;
+export const isEmailChangeAllowed = Wrapper.isEmailChangeAllowed;
 
 export type { RecipeInterface };

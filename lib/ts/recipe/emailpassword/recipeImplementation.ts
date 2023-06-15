@@ -79,23 +79,63 @@ export default function getRecipeInterface(
             } else {
                 return mockCreateRecipeUser(input);
             }
+
+            // we do not do email verification here cause it's a new user and email password
+            // users are always initially unverified.
         },
 
         signIn: async function ({
             email,
             password,
+            userContext,
         }: {
             email: string;
             password: string;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            let response: { status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" };
+
             if (process.env.MOCK !== "true") {
-                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
+                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
                     email,
                     password,
                 });
             } else {
-                return mockSignIn({ email, password });
+                response = await mockSignIn({ email, password });
             }
+
+            if (response.status === "OK") {
+                let recipeUserId: RecipeUserId | undefined = undefined;
+                for (let i = 0; i < response.user.loginMethods.length; i++) {
+                    if (
+                        response.user.loginMethods[i].recipeId === "emailpassword" &&
+                        response.user.loginMethods[i].hasSameEmailAs(email)
+                    ) {
+                        recipeUserId = response.user.loginMethods[i].recipeUserId;
+                        break;
+                    }
+                }
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId: recipeUserId!,
+                    userContext,
+                });
+
+                // Unlike in the sign up recipe function, we do not do account linking here
+                // cause we do not want sign in to change the potentially user ID of a user
+                // due to linking when this function is called by the dev in their API -
+                // for example in their update password API. If we did account linking
+                // then we would have to ask the dev to also change the session
+                // in such API calls.
+                // In the case of sign up, since we are creating a new user, it's fine
+                // to link there since there is no user id change really from the dev's
+                // point of view who is calling the sign up recipe function.
+
+                // We do this so that we get the updated user (in case the above
+                // function updated the verification status) and can return that
+                response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
+            }
+
+            return response;
         },
 
         createResetPasswordToken: async function ({
@@ -190,70 +230,37 @@ export default function getRecipeInterface(
                     }
                 }
             }
-            let isAccountLinkingEnabled = false;
-            if (input.email !== undefined) {
-                // we do all of this cause we need to know if the dev allows for
-                // account linking if we were to change the email of this user (since the
-                // core API requires this boolean). If the input user is already a primary
-                // user, then there will be no account linking done on email change, so we can just pass
-                // that has false. If the current user is a recipe user, and there is no primary
-                // user that exists for the new email, then also, there will be no account linking
-                // done, so we again pass it as false. Therefore the only time we need to check
-                // for account linking from the callback is if the current user is a recipe user,
-                // and it will be linked to a primary user post email verification change.
-                let user = await AccountLinking.getInstance().recipeInterfaceImpl.getUser({
-                    userId: input.recipeUserId.getAsString(),
-                    userContext: {},
-                });
 
-                if (user !== undefined) {
-                    let existingUsersWithNewEmail = await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo(
-                        {
-                            accountInfo: {
-                                email: input.email,
-                            },
-                            doUnionOfAccountInfo: false,
-                            userContext: input.userContext,
-                        }
-                    );
-                    let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
-                    if (
-                        primaryUserForNewEmail.length === 1 &&
-                        primaryUserForNewEmail[0].id !== user.id &&
-                        !user.isPrimaryUser
-                    ) {
-                        // the above if statement is done cause only then it implies that
-                        // post email update, the current user will be linked to the primary user.
+            // We do not check for AccountLinking.isEmailChangeAllowed here cause
+            // that may return false if the user's email is not verified, and this
+            // function should not fail due to lack of email verification - since it's
+            // really up to the developer to decide what should be the pre condition for
+            // a change in email. The check for email verification should actually go in
+            // an update email API (post login update).
 
-                        let shouldDoAccountLinking = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-                            {
-                                recipeId: "emailpassword",
-                                email: input.email,
-                            },
-                            primaryUserForNewEmail[0],
-                            undefined,
-                            input.userContext
-                        );
-
-                        isAccountLinkingEnabled = shouldDoAccountLinking.shouldAutomaticallyLink;
-                    }
-                }
-            }
-
+            let response;
             if (process.env.MOCK !== "true") {
                 // the input userId must be a recipe user ID.
-                return await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
+                response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                     userId: input.recipeUserId.getAsString(),
                     email: input.email,
                     password: input.password,
                 });
             } else {
-                return mockUpdateEmailOrPassword({
+                response = await mockUpdateEmailOrPassword({
                     ...input,
                     querier,
-                    isAccountLinkingEnabled,
                 });
             }
+
+            if (response.status === "OK") {
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId: input.recipeUserId,
+                    userContext: input.userContext,
+                });
+            }
+
+            return response;
         },
     };
 }

@@ -19,7 +19,6 @@ import * as thirdPartyProviders from "./providers";
 import { RecipeInterface, APIInterface, APIOptions, TypeProvider } from "./types";
 import RecipeUserId from "../../recipeUserId";
 import { SessionContainerInterface } from "../session/types";
-import EmailVerification from "../emailverification/recipe";
 import { linkAccountsWithUserFromSession } from "../accountlinking";
 
 export default class Wrapper {
@@ -80,41 +79,17 @@ export default class Wrapper {
     > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const createRecipeUserFunc = async (userContext: any): Promise<void> => {
-            let resp = await recipeInstance.recipeInterfaceImpl.createNewOrUpdateEmailOfRecipeUser({
+            await recipeInstance.recipeInterfaceImpl.createNewOrUpdateEmailOfRecipeUser({
                 thirdPartyId: input.thirdPartyId,
                 thirdPartyUserId: input.thirdPartyUserId,
                 email: input.email,
+                isVerified: input.isVerified,
                 userContext,
             });
 
-            if (resp.status === "OK") {
-                if (resp.createdNewUser) {
-                    if (input.isVerified) {
-                        const emailVerificationInstance = EmailVerification.getInstance();
-                        if (emailVerificationInstance) {
-                            const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                                {
-                                    recipeUserId: resp.user.loginMethods[0].recipeUserId,
-                                    email: input.email,
-                                    userContext,
-                                }
-                            );
-
-                            if (tokenResponse.status === "OK") {
-                                await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                                    token: tokenResponse.token,
-                                    attemptAccountLinking: false, // we pass this cause in this API, we
-                                    // already try and do account linking.
-                                    userContext,
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            // the other status type of EMAIL_CHANGE_NOT_ALLOWED_ERROR should not happen
-            // cause that is only possible when signing in, and here we only try and create
-            // a new user.
+            // we ignore response of the above cause linkAccountsWithUserFromSession
+            // will recurse and call the verifyCredentialsFunc which will take into
+            // account the status code.
         };
 
         const verifyCredentialsFunc = async (
@@ -133,6 +108,7 @@ export default class Wrapper {
                 thirdPartyId: input.thirdPartyId,
                 thirdPartyUserId: input.thirdPartyUserId,
                 email: input.email,
+                isVerified: input.isVerified,
                 userContext,
             });
             if (resp.status === "OK") {

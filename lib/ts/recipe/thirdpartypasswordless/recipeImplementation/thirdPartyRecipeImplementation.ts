@@ -13,7 +13,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: User }
             | {
-                  status: "SIGN_IN_NOT_ALLOWED";
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
         > {
@@ -24,6 +24,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            isVerified: boolean;
             userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: User }

@@ -2117,8 +2117,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             for (let i = 0; i < userPostPasswordReset.loginMethods.length; i++) {
                 if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.user.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
+                    assert(userPostPasswordReset.loginMethods[i].verified);
+                } else {
+                    assert(userPostPasswordReset.loginMethods[i].verified === false);
                 }
-                assert(userPostPasswordReset.loginMethods[i].verified);
                 assert(userPostPasswordReset.loginMethods[i].email === "test@example.com");
             }
         });

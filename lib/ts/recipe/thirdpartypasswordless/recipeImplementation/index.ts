@@ -69,7 +69,7 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
             | {
-                  status: "SIGN_IN_NOT_ALLOWED";
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
         > {
@@ -83,6 +83,7 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            isVerified: boolean;
             userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: GlobalUser }

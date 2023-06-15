@@ -1,7 +1,7 @@
 import { APIFunction, APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
-import EmailVerificationRecipe from "../../../emailverification/recipe";
 import EmailVerification from "../../../emailverification";
+import EmailVerificationRecipe from "../../../emailverification/recipe";
 import RecipeUserId from "../../../../recipeUserId";
 
 type Response =
