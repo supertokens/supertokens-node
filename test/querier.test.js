@@ -23,8 +23,8 @@ let nock = require("nock");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 let EmailPassword = require("../recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
-const { default: axios } = require("axios");
 const { fail } = require("assert");
+const { default: fetch } = require("cross-fetch");
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
@@ -257,12 +257,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST();
 
         try {
-            await axios.get("http://localhost:8080/test/hello");
-        } catch (error) {
-            if (error.response.status === 404) {
-                //core must be an older version, so we return early
+            const res = await fetch("http://localhost:8080/test/hello");
+            if (res.status === 404) {
                 return;
             }
+        } catch (error) {
             throw error;
         }
 
@@ -289,7 +288,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST();
 
         try {
-            await axios.get("http://localhost:8080/some/path/hello");
+            const res = await fetch("http://localhost:8080/some/path/hello");
+            if (res.status === 404) {
+                return;
+            }
         } catch (error) {
             if (error.response.status === 404) {
                 //core must be an older version, so we return early
@@ -325,7 +327,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST();
 
         try {
-            await axios.get("http://localhost:8080/some/path/hello");
+            const res = await fetch("http://localhost:8080/some/path/hello");
+            if (res.status === 404) {
+                return;
+            }
         } catch (error) {
             if (error.response.status === 404) {
                 //core must be an older version, so we return early

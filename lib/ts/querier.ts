@@ -133,7 +133,7 @@ export class Querier {
                 }
                 return fetch(url, {
                     method: "POST",
-                    body,
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },
@@ -167,7 +167,7 @@ export class Querier {
 
                 return fetch(finalURL.toString(), {
                     method: "DELETE",
-                    body,
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },
@@ -195,7 +195,10 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await fetch(url + new URLSearchParams(params).toString(), {
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(params);
+                finalURL.search = searchParams.toString();
+                return await fetch(finalURL.toString(), {
                     method: "GET",
                     headers,
                 });
@@ -227,7 +230,7 @@ export class Querier {
 
                 return fetch(url, {
                     method: "PUT",
-                    body,
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },

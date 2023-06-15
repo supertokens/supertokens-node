@@ -28,7 +28,6 @@ const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
 const { Apple, Google, Github } = require("../../recipe/thirdparty");
-const fetch = require("node-fetch");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {
@@ -807,20 +806,3 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         assert(result.data.users.length === 3);
     });
 });
-
-async function request(init) {
-    const url = new URL(init.url, init.baseURL);
-    if (init.params) {
-        url.search = new URLSearchParams(init.params).toString();
-    }
-
-    /** @type {Response} */
-    const resp = await fetch(url, {
-        ...init,
-    });
-    return {
-        status: resp.status,
-        data: await resp.json(),
-        headers: Object.fromEntries(resp.headers.entries()),
-    };
-}
