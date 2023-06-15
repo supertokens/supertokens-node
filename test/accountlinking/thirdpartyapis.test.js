@@ -847,7 +847,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
         });
 
-        it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED if it's a sign in and isSignInAllowed returns false", async function () {
+        it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED if it's a sign in and isSignInAllowed returns false cause there is no email change", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -1010,6 +1010,165 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
             assert(session.getUserId() === tpUser2.id);
             assert(session.getRecipeUserId().getAsString() === tpUser.id);
+        });
+
+        it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED even though isEmailChangeAllowed returns true if other recipe exist with unverified, same email", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailNotVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", false)).user;
+            assert(tpUser.isPrimaryUser === false);
+
+            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", false)).user;
+            assert(tpUser2.isPrimaryUser === false);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-no-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
+            assert(response.body.reason === "Cannot sign in / up due to security reasons. Please contact support.");
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
+            );
+        });
+
+        it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED even though isEmailChangeAllowed returns true if primary user exists with same email, new email is verified for recipe user, but not for primary user", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                this.customProviderWithEmailNotVerified,
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            nock("https://test.com").post("/oauth/token").reply(200, {});
+
+            let tpUser = (await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", false)).user;
+            assert(tpUser.isPrimaryUser === false);
+
+            let token = await EmailVerification.createEmailVerificationToken(
+                tpUser.loginMethods[0].recipeUserId,
+                "email@test.com"
+            );
+            await EmailVerification.verifyEmailUsingToken(token.token);
+
+            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", false)).user;
+            assert(tpUser2.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(tpUser2.loginMethods[0].recipeUserId);
+
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom-no-ev",
+                        code: "abcdefghj",
+                        redirectURI: "http://127.0.0.1/callback",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
+            assert(response.body.reason === "Cannot sign in / up due to security reasons. Please contact support.");
+            assert(
+                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
+            );
         });
     });
 });
