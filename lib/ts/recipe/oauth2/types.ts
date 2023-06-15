@@ -90,9 +90,12 @@ export type APIInterface = {
 
         options: APIOptions;
         userContext: any;
-    }): Promise<{
-        redirectUrl: string; // This will end up as a 302, encoding both error and success
-    }>;
+    }): Promise<
+        | {
+              redirectUrl: string; // This will end up as a 302, encoding both error and success
+          }
+        | GeneralErrorResponse
+    >;
     authorizePOST(input: {
         clientId: string;
         responseType: ResponseType[]; // add enum
@@ -112,11 +115,18 @@ export type APIInterface = {
 
         options: APIOptions;
         userContext: any;
-    }): Promise<{
-        redirectUrl: string; // This will end up as a 302, encoding both error and success
-    }>;
+    }): Promise<
+        | {
+              redirectUrl: string; // This will end up as a 302, encoding both error and success
+          }
+        | GeneralErrorResponse
+    >;
 
-    userInfoGET(input: { oauth2AccessToken: string; options: APIOptions; userContext: any }): Promise<JSONObject>;
+    userInfoGET(input: {
+        oauth2AccessToken: string;
+        options: APIOptions;
+        userContext: any;
+    }): Promise<JSONObject | { status: "UNAUTHORISED"; message: string }>;
 };
 
 export type RecipeInterface = {
@@ -256,6 +266,14 @@ export type RecipeInterface = {
         | { status: "INVALID_SCOPE_ERROR"; message: string } // Returning this signifies a client error and should result in a redirection back to the client with the "invalid_scope" error
         | { status: "ACCESS_DENIED_ERROR"; message: string } // This means we need to redirect to the auth frontend (i.e.: there is a claim validation issue we can resolve there)
     >;
+
+    shouldIssueRefreshToken(input: {
+        clientId: string;
+        userId?: string;
+        sessionHandle?: string;
+        scopes: string[];
+        userContext: any;
+    }): Promise<boolean>;
 };
 
 export type ResponseType = "code" | "id_token" | "token"; // We do not support "token", but it's a possible input value.
