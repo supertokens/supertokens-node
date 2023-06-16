@@ -52,6 +52,9 @@ export async function mockCanLinkAccounts({
           primaryUserId: string;
           description: string;
       }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+      }
 > {
     let primaryUser = await mockGetUser({ userId: primaryUserId });
 
@@ -60,7 +63,9 @@ export async function mockCanLinkAccounts({
     }
 
     if (primaryUser.isPrimaryUser === false) {
-        throw new Error("Input primary user is not a primary user");
+        return {
+            status: "INPUT_USER_IS_NOT_A_PRIMARY_USER",
+        };
     }
 
     let recipeUser = await mockGetUser({ userId: recipeUserId.getAsString() });
@@ -186,7 +191,20 @@ export async function mockLinkAccounts({
           primaryUserId: string;
           description: string;
       }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+      }
 > {
+    let pUser = await mockGetUser({ userId: primaryUserId });
+
+    if (pUser === undefined) {
+        throw new Error("Primary user does not exist");
+    }
+
+    // we do this cause we want to still link to the primary user even if the input primary user
+    // is a recipe user that is linked to some primary user.
+    primaryUserId = pUser.id;
+
     let canLinkAccounts = await mockCanLinkAccounts({
         recipeUserId,
         primaryUserId,

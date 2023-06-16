@@ -176,6 +176,9 @@ export default function getRecipeImplementation(
                   primaryUserId: string;
                   description: string;
               }
+            | {
+                  status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+              }
         > {
             if (process.env.MOCK !== "true") {
                 let result = await querier.sendGetRequest(
@@ -217,6 +220,9 @@ export default function getRecipeImplementation(
                   status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
+              }
+            | {
+                  status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
               }
         > {
             let accountsLinkingResult;

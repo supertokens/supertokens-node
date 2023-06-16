@@ -115,6 +115,9 @@ export declare type RecipeInterface = {
               primaryUserId: string;
               description: string;
           }
+        | {
+              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
     >;
     linkAccounts: (input: {
         recipeUserId: RecipeUserId;
@@ -134,6 +137,9 @@ export declare type RecipeInterface = {
               status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
+          }
+        | {
+              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
           }
     >;
     unlinkAccount: (input: {
