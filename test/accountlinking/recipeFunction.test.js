@@ -325,6 +325,42 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(primaryUserInCallback === undefined);
     });
 
+    it("link accounts failure - input user is not a primary user", async function () {
+        await startST();
+        let primaryUserInCallback;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    onAccountLinked: (primaryUser, newAccountInfo) => {
+                        primaryUserInCallback = primaryUser;
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        try {
+            await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+            assert(false);
+        } catch (err) {
+            assert(err.message === "Input primary user is not a primary user");
+        }
+    });
+
     it("account linking failure - account info user already associated with a primary user", async function () {
         await startST();
         supertokens.init({
