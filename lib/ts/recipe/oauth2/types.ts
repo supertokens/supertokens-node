@@ -58,6 +58,7 @@ export type APIInterface = {
         redirectUri?: string;
         scope: string[];
 
+        queryString: string;
         options: APIOptions;
         userContext: any;
     }): Promise<
@@ -82,10 +83,7 @@ export type APIInterface = {
         codeChallenge?: string;
         codeChallengeMethod?: CodeChallengeMethod;
 
-        // OpenIdConnect
-        prompt?: OAuthPromptType;
-        nonce?: string;
-
+        queryString: string;
         session?: SessionContainer;
 
         options: APIOptions;
@@ -107,10 +105,7 @@ export type APIInterface = {
         codeChallenge?: string;
         codeChallengeMethod?: CodeChallengeMethod;
 
-        // OpenIdConnect
-        prompt?: OAuthPromptType;
-        nonce?: string;
-
+        queryString: string;
         session?: SessionContainer;
 
         options: APIOptions;
@@ -126,7 +121,7 @@ export type APIInterface = {
         oauth2AccessToken: string;
         options: APIOptions;
         userContext: any;
-    }): Promise<JSONObject | { status: "UNAUTHORISED"; message: string }>;
+    }): Promise<JSONObject | { status: "UNAUTHORISED_ERROR"; message: string }>;
 };
 
 export type RecipeInterface = {
@@ -134,11 +129,12 @@ export type RecipeInterface = {
         oauth2AccessToken: string;
 
         userContext: any;
-    }): Promise<JSONObject>;
+    }): Promise<JSONObject | { status: "UNAUTHORISED_ERROR" }>;
 
     createAuthCode(input: {
         clientId: string;
-        responseType: ResponseType;
+        responseTypes: ResponseType[];
+        sessionHandle: string;
         redirectUri?: string;
         scopes: string[];
 
@@ -146,13 +142,8 @@ export type RecipeInterface = {
         codeChallenge?: string;
         codeChallengeMethod?: CodeChallengeMethod;
 
-        // OpenIdConnect
-        prompt?: OAuthPromptType;
-        nonce?: string;
+        queryString: string;
 
-        allQueryParams: string;
-
-        session: SessionContainer;
         userContext: any;
     }): Promise<
         // State is added into the url on the endpoint level
@@ -176,7 +167,7 @@ export type RecipeInterface = {
                   redirectUri: string;
                   scope?: string[];
 
-                  allQueryParams: string;
+                  queryString: string;
 
                   userContext: any;
               }
@@ -186,6 +177,8 @@ export type RecipeInterface = {
                   clientSecret: string;
                   scope?: string[];
 
+                  queryString: string;
+
                   userContext: any;
               }
             | {
@@ -194,6 +187,8 @@ export type RecipeInterface = {
                   clientSecret?: string;
                   refreshToken?: string;
                   scope?: string[];
+
+                  queryString: string;
 
                   userContext: any;
               }
@@ -210,56 +205,75 @@ export type RecipeInterface = {
         | { status: "CLIENT_ERROR"; error: TokensErrorCode } // This results in a 400 with the error code added. The status specifies that this is a client error to be consistent with the createAuthCode
     >;
 
-    verifyAccessToken(input: {
+    verifyAccessTokenFromDatabase(input: {
         clientId: string;
         accessToken: string;
-    }): Promise<{
-        sessionHandle?: string;
-        scopes: string[];
-        timeCreated: number;
-        lastUpdated: number;
-        timeAccessTokenExpires: number;
-        timeRefreshTokenExpires?: number;
-    }>;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              tokenInfo: TokenInfo;
+          }
+        | {
+              status: "UNAUTHORISED_ERROR";
+          }
+    >;
 
-    getTokenInfo(input: {
+    getAuthCodeInfo(input: {
         clientId: string;
-        refreshToken?: string;
-        authCode?: string;
+        authCode: string;
+        userContext: any;
     }): Promise<{
-        sessionHandle?: string;
-        scopes: string[];
-        timeCreated: number;
-        lastUpdated: number;
-        timeAccessTokenExpires: number;
-        timeRefreshTokenExpires?: number;
+        status: "OK";
+        tokenInfo?: AuthCodeInfo;
     }>;
 
-    revokeToken(input: { clientId: string } | { sessionHandle: string } | { accessToken: string }): Promise<void>;
-    revokeAuthCodes(input: { clientId: string } | { sessionHandle: string }): Promise<void>;
+    getTokenInfoByRefreshToken(input: {
+        clientId: string;
+        refreshToken: string;
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        tokenInfo?: TokenInfo;
+    }>;
+
+    getIssuedTokens(input: {
+        clientId: string;
+        sessionHandle?: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              tokens: TokenInfo[];
+          }
+        | {
+              status: "UNKNOWN_CLIENT_ID_ERROR";
+          }
+    >;
+
+    revokeTokens(
+        input:
+            | { clientId: string; userContext: any }
+            | { sessionHandle: string; userContext: any }
+            | { accessToken: string; userContext: any }
+    ): Promise<void>;
+    revokeAuthCodes(
+        input: { clientId: string; userContext: any } | { sessionHandle: string; userContext: any }
+    ): Promise<void>;
 
     // Customization points called by createTokens&createAuthCode
     buildAccessToken(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
+        tokenInfo: TokenBuilderInfo;
         userContext: any;
     }): Promise<{ payload?: JSONObject; lifetimeInSecs?: number }>; // Returning undefined for these props means we use the default from Core
     buildIdToken(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
+        tokenInfo: TokenBuilderInfo;
         userContext: any;
     }): Promise<{ payload?: JSONObject; lifetimeInSecs?: number }>; // Returning undefined for these props means we use the defaults from BE SDKs
-    getRefreshTokenLifetime(): Promise<number | undefined>; // Returning undefined means we use the default from Core
+    getRefreshTokenLifetime(input: { tokenInfo: TokenBuilderInfo; userContext: any }): Promise<number | undefined>; // Returning undefined means we use the default from Core
 
     validateScopes(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
+        tokenInfo: TokenBuilderInfo;
         userContext: any;
     }): Promise<
         | { status: "OK"; grantedScopes: string[] }
@@ -267,13 +281,32 @@ export type RecipeInterface = {
         | { status: "ACCESS_DENIED_ERROR"; message: string } // This means we need to redirect to the auth frontend (i.e.: there is a claim validation issue we can resolve there)
     >;
 
-    shouldIssueRefreshToken(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
-        userContext: any;
-    }): Promise<boolean>;
+    shouldIssueRefreshToken(input: { tokenInfo: TokenInfo; userContext: any }): Promise<boolean>;
+};
+
+export type TokenBuilderInfo = {
+    clientId: string;
+    sessionHandle?: string;
+    scopes: string[];
+    queryString?: string;
+};
+
+export type AuthCodeInfo = TokenBuilderInfo & {
+    timeCreatedMs: number;
+    timeExpiresMs: number;
+    accessType: "offline" | "online";
+    authorizationCodeHash: string;
+    codeChallenge: string;
+    codeChallengeMethod: "S256";
+};
+
+export type TokenInfo = TokenBuilderInfo & {
+    accessTokenHash: string;
+    refreshTokenHash?: string;
+    timeCreatedMs: number;
+    lastUpdatedMs: number;
+    timeAccessTokenExpiresMs: number;
+    timeRefreshTokenExpiresMs?: number;
 };
 
 export type ResponseType = "code" | "id_token" | "token"; // We do not support "token", but it's a possible input value.
