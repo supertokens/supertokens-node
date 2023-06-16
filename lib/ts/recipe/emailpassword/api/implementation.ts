@@ -10,7 +10,7 @@ import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
 // import { validateFormFieldsOrThrowError } from "./utils";
 import { completeFactorInSession } from "../../mfa";
-import { linkAccounts } from "../../accountlinking";
+import { linkAccounts, createPrimaryUser } from "../../accountlinking";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -893,7 +893,6 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Race condition error - please call this API again");
             }
 
-            console.log("Called signin");
             let session = await Session.getSession(
                 options.req,
                 options.res,
@@ -910,26 +909,30 @@ export default function getAPIImplementation(): APIInterface {
                     userContext
                 );
             } else {
-                console.log("Alraedy exist");
-                console.log(session.getUserId());
-
                 // Session already exists, we need to link accounts
-
+                let user = await getUser(session.getUserId(), userContext);
+                if (user?.isPrimaryUser === false) {
+                    let resp = await createPrimaryUser(session.getRecipeUserId(), userContext);
+                    if (resp.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR") {
+                        throw new Error("Should never come here");
+                    } else if (resp.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+                        // passwordless -> primary user (pUser)
+                        // social login -> recipe user (!pUser)
+                        // TODO:...
+                        return {
+                            status: "EMAIL_ALREADY_EXISTS_ERROR",
+                        };
+                    }
+                }
                 const linkAccountResponse = await linkAccounts(
                     emailPasswordRecipeUser.recipeUserId,
                     session.getUserId(),
                     userContext
                 );
-                console.log(linkAccountResponse);
                 if (linkAccountResponse.status !== "OK") {
+                    // TODO..
                     throw new Error("Error in linking accounts.");
                 }
-
-                console.log("*************");
-
-                let user = await getUser(session.getUserId(), userContext);
-                console.log(user);
-                console.log(emailPasswordRecipeUser.recipeUserId.getAsString());
             }
 
             userContext.flow = "signup";

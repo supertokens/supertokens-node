@@ -47,7 +47,7 @@ export declare function setCookieForServerResponse(
     expires: number,
     path: string,
     sameSite: "strict" | "lax" | "none"
-): ServerResponse;
+): ServerResponse<IncomingMessage>;
 export declare function getCookieValueToSetInHeader(
     prev: string | string[] | undefined,
     val: string | string[],
