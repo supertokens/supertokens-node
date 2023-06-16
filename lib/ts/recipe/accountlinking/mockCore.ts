@@ -59,6 +59,10 @@ export async function mockCanLinkAccounts({
         throw new Error("Primary user does not exist");
     }
 
+    if (primaryUser.isPrimaryUser === false) {
+        throw new Error("Input primary user is not a primary user");
+    }
+
     let recipeUser = await mockGetUser({ userId: recipeUserId.getAsString() });
 
     if (recipeUser === undefined) {
