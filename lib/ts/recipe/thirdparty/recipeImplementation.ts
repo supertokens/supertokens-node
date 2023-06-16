@@ -1,69 +1,181 @@
-import { RecipeInterface, User } from "./types";
+import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { User } from "../../types";
+import AccountLinking from "../accountlinking/recipe";
+import { getUser } from "../..";
+import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
+import EmailVerification from "../emailverification";
+import EmailVerificationRecipe from "../emailverification/recipe";
+import RecipeUserId from "../../recipeUserId";
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
     return {
-        signInUp: async function ({
+        createNewOrUpdateEmailOfRecipeUser: async function ({
             thirdPartyId,
             thirdPartyUserId,
             email,
-        }: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-            email: string;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+            isVerified,
+            userContext,
+        }): Promise<
+            | { status: "OK"; createdNewUser: boolean; user: User }
+            | {
+                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                  reason: string;
+              }
+        > {
+            let response;
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+                    thirdPartyId,
+                    thirdPartyUserId,
+                    email: { id: email },
+                });
+
+                return {
+                    status: "OK",
+                    createdNewUser: response.createdNewUser,
+                    user: response.user,
+                };
+            } else {
+                response = await mockCreateNewOrUpdateEmailOfRecipeUser(thirdPartyId, thirdPartyUserId, email, querier);
+            }
+
+            if (response.status === "OK") {
+                let recipeUserId: RecipeUserId | undefined = undefined;
+                for (let i = 0; i < response.user.loginMethods.length; i++) {
+                    if (
+                        response.user.loginMethods[i].recipeId === "thirdparty" &&
+                        response.user.loginMethods[i].hasSameThirdPartyInfoAs({
+                            id: thirdPartyId,
+                            userId: thirdPartyUserId,
+                        })
+                    ) {
+                        recipeUserId = response.user.loginMethods[i].recipeUserId;
+                        break;
+                    }
+                }
+                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId: recipeUserId!,
+                    userContext,
+                });
+
+                // The above may have marked the user's email as verified already, but in case
+                // this is a sign up, or it's a sign in from a non primary user, and the
+                // provider said that the user's email is verified, we should mark it as verified
+                // here as well
+
+                if (isVerified) {
+                    let isInitialized = false;
+                    try {
+                        EmailVerificationRecipe.getInstanceOrThrowError();
+                        isInitialized = true;
+                    } catch (ignored) {}
+                    if (isInitialized) {
+                        let verifyResponse = await EmailVerification.createEmailVerificationToken(
+                            recipeUserId!,
+                            undefined,
+                            userContext
+                        );
+                        if (verifyResponse.status === "OK") {
+                            // we pass in false here cause we do not want to attempt account linking
+                            // as of yet.
+                            await EmailVerification.verifyEmailUsingToken(verifyResponse.token, false, userContext);
+                        }
+                    }
+                }
+
+                // we do this so that we get the updated user (in case the above
+                // function updated the verification status) and can return that
+                response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
+            }
+            return response;
+        },
+        signInUp: async function (
+            this: RecipeInterface,
+            {
                 thirdPartyId,
                 thirdPartyUserId,
-                email: { id: email },
+                email,
+                isVerified,
+                userContext,
+            }: {
+                thirdPartyId: string;
+                thirdPartyUserId: string;
+                email: string;
+                isVerified: boolean;
+                userContext: any;
+            }
+        ): Promise<
+            | { status: "OK"; createdNewUser: boolean; user: User }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
+            let response = await this.createNewOrUpdateEmailOfRecipeUser({
+                thirdPartyId,
+                thirdPartyUserId,
+                email,
+                isVerified,
+                userContext,
             });
+
+            if (response.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR") {
+                return {
+                    status: "SIGN_IN_UP_NOT_ALLOWED",
+                    reason:
+                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support.",
+                };
+            }
+
+            if (!response.createdNewUser) {
+                // Unlike in the sign up scenario, we do not do account linking here
+                // cause we do not want sign in to change the potentially user ID of a user
+                // due to linking when this function is called by the dev in their API.
+                // If we did account linking
+                // then we would have to ask the dev to also change the session
+                // in such API calls.
+                // In the case of sign up, since we are creating a new user, it's fine
+                // to link there since there is no user id change really from the dev's
+                // point of view who is calling the sign up recipe function.
+                return response;
+            }
+
+            let userId = response.user.id;
+
+            // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
+            // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
+            let recipeUserId: RecipeUserId | undefined = undefined;
+            for (let i = 0; i < response.user.loginMethods.length; i++) {
+                if (
+                    response.user.loginMethods[i].recipeId === "thirdparty" &&
+                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
+                        id: thirdPartyId,
+                        userId: thirdPartyUserId,
+                    })
+                ) {
+                    recipeUserId = response.user.loginMethods[i].recipeUserId;
+                    break;
+                }
+            }
+
+            userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                recipeUserId: recipeUserId!,
+                checkAccountsToLinkTableAsWell: true,
+                userContext,
+            });
+
+            let updatedUser = await getUser(userId, userContext);
+
+            if (updatedUser === undefined) {
+                throw new Error("Should never come here.");
+            }
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
-                user: response.user,
+                user: updatedUser,
             };
-        },
-
-        getUserById: async function ({ userId }: { userId: string }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                userId,
-            });
-            if (response.status === "OK") {
-                return {
-                    ...response.user,
-                };
-            } else {
-                return undefined;
-            }
-        },
-
-        getUsersByEmail: async function ({ email }: { email: string }): Promise<User[]> {
-            const { users } = await querier.sendGetRequest(new NormalisedURLPath("/recipe/users/by-email"), {
-                email,
-            });
-
-            return users;
-        },
-
-        getUserByThirdPartyInfo: async function ({
-            thirdPartyId,
-            thirdPartyUserId,
-        }: {
-            thirdPartyId: string;
-            thirdPartyUserId: string;
-        }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                thirdPartyId,
-                thirdPartyUserId,
-            });
-            if (response.status === "OK") {
-                return {
-                    ...response.user,
-                };
-            } else {
-                return undefined;
-            }
         },
     };
 }

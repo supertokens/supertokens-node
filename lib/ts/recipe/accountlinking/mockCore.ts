@@ -26,6 +26,11 @@ let primaryUserMap: Map<string, RecipeUserId[]> = new Map(); // primary user id 
 
 let accountToLink: Map<string, string> = new Map(); // recipe user id -> primary user id
 
+export async function mockReset() {
+    primaryUserMap = new Map();
+    accountToLink = new Map();
+}
+
 export async function mockCanLinkAccounts({
     recipeUserId,
     primaryUserId,
@@ -81,6 +86,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 email,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -105,6 +111,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 phoneNumber,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -129,6 +136,7 @@ export async function mockCanLinkAccounts({
             accountInfo: {
                 thirdParty,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -194,57 +202,6 @@ export async function mockLinkAccounts({
 
     await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
 
-    // we use require here cause it prevents a circular dependency
-    let EmailVerification = require("../emailverification");
-    try {
-        let newAccountIsVerified = await EmailVerification.isEmailVerified(recipeUserId);
-        let user = (await mockGetUser({ userId: primaryUserId }))!;
-        let newAccountEmail: string | undefined = undefined;
-        for (let i = 0; i < user.loginMethods.length; i++) {
-            if (user.loginMethods[i].recipeUserId.getAsString() === recipeUserId.getAsString()) {
-                newAccountEmail = user.loginMethods[i].email;
-                break;
-            }
-        }
-        if (newAccountEmail !== undefined) {
-            if (newAccountIsVerified) {
-                // we try and mark other emails in the primary user as verified
-                for (let i = 0; i < user.loginMethods.length; i++) {
-                    if (user.loginMethods[i].hasSameEmailAs(newAccountEmail) && !user.loginMethods[i].verified) {
-                        let tokenResp = await EmailVerification.createEmailVerificationToken(
-                            user.loginMethods[i].recipeUserId
-                        );
-                        if (tokenResp.status === "OK") {
-                            await EmailVerification.verifyEmailUsingToken(tokenResp.token);
-                        }
-                    }
-                }
-            } else {
-                // if another login method has the same email as verified, we mark this as
-                // verified as well.
-                let markAsVerified = false;
-                for (let i = 0; i < user.loginMethods.length; i++) {
-                    if (user.loginMethods[i].hasSameEmailAs(newAccountEmail) && user.loginMethods[i].verified) {
-                        markAsVerified = true;
-                        break;
-                    }
-                }
-                if (markAsVerified) {
-                    let tokenResp = await EmailVerification.createEmailVerificationToken(recipeUserId);
-                    if (tokenResp.status === "OK") {
-                        await EmailVerification.verifyEmailUsingToken(tokenResp.token);
-                    }
-                }
-            }
-        }
-    } catch (err) {
-        if (err.message === "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
-            // this means email verification is not enabled.. So we just ignore.
-        } else {
-            throw err;
-        }
-    }
-
     return {
         status: "OK",
         accountsAlreadyLinked: false,
@@ -293,6 +250,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 email,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -311,6 +269,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 phoneNumber,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -329,6 +288,7 @@ export async function mockCanCreatePrimaryUser(
             accountInfo: {
                 thirdParty,
             },
+            doUnionOfAccountInfo: false,
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
@@ -397,7 +357,6 @@ export async function mockGetUsers(
     users: User[];
     nextPaginationToken?: string;
 }> {
-    // TODO: needs to take into account primaryUserMap table.
     let includeRecipeIdsStr = undefined;
     if (input.includeRecipeIds !== undefined) {
         includeRecipeIdsStr = input.includeRecipeIds.join(",");
@@ -480,6 +439,8 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
             if (thirdParty === undefined) {
                 return false;
             }
+            thirdParty.id = thirdParty.id.trim();
+            thirdParty.userId = thirdParty.userId.trim();
             return (
                 lM.thirdParty !== undefined &&
                 lM.thirdParty.id === thirdParty.id &&
@@ -547,16 +508,32 @@ async function isEmailVerified(userId: string, email: string | undefined): Promi
     return response.data.status === "OK" && response.data.isVerified;
 }
 
-export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]> {
+export async function mockListUsersByAccountInfo({
+    accountInfo,
+    doUnionOfAccountInfo,
+}: {
+    accountInfo: AccountInfo;
+    doUnionOfAccountInfo: boolean;
+}): Promise<User[]> {
+    if (
+        accountInfo.email === undefined &&
+        accountInfo.phoneNumber === undefined &&
+        accountInfo.thirdParty === undefined
+    ) {
+        throw new Error("Please pass at least one account info field");
+    }
     let users: User[] = [];
     if (accountInfo.email !== undefined) {
         // email password
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?email=${accountInfo.email}`, {
-                headers: {
-                    rid: "emailpassword",
-                },
-            });
+            let response = await axios.get(
+                `http://localhost:8080/recipe/user?email=${encodeURIComponent(accountInfo.email)}`,
+                {
+                    headers: {
+                        rid: "emailpassword",
+                    },
+                }
+            );
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
                 let userAlreadyAdded = false;
@@ -622,11 +599,14 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
     if (accountInfo.phoneNumber !== undefined) {
         // passwordless
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?phoneNumber=${accountInfo.phoneNumber}`, {
-                headers: {
-                    rid: "passwordless",
-                },
-            });
+            let response = await axios.get(
+                `http://localhost:8080/recipe/user?phoneNumber=${encodeURIComponent(accountInfo.phoneNumber)}`,
+                {
+                    headers: {
+                        rid: "passwordless",
+                    },
+                }
+            );
             if (response.data.status === "OK") {
                 let user = (await mockGetUser({ userId: response.data.user.id }))!;
                 let userAlreadyAdded = false;
@@ -668,6 +648,40 @@ export async function mockListUsersByAccountInfo({ accountInfo }: { accountInfo:
                 }
             }
         }
+    }
+
+    if (!doUnionOfAccountInfo) {
+        users = users.filter((u) => {
+            let pass = true;
+            if (accountInfo.email !== undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSameEmailAs(accountInfo.email);
+                    }) === undefined
+                ) {
+                    pass = false;
+                }
+            }
+            if (accountInfo.phoneNumber !== undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSamePhoneNumberAs(accountInfo.phoneNumber);
+                    }) === undefined
+                ) {
+                    pass = false;
+                }
+            }
+            if (accountInfo.thirdParty !== undefined) {
+                if (
+                    u.loginMethods.find((lM) => {
+                        return lM.hasSameThirdPartyInfoAs(accountInfo.thirdParty);
+                    }) === undefined
+                ) {
+                    pass = false;
+                }
+            }
+            return pass;
+        });
     }
 
     return users;

@@ -5,7 +5,6 @@ import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static AccountLinkingClaim: import("./accountLinkingClaim").AccountLinkingClaimClass;
     /**
      * This is a function which is a combination of createPrimaryUser and
      * linkAccounts where the input recipeUserID is either linked to a user that it can be
@@ -17,7 +16,6 @@ export default class Wrapper {
      */
     static createPrimaryUserIdOrLinkAccounts(input: {
         recipeUserId: RecipeUserId;
-        isVerified: boolean;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }): Promise<string>;
@@ -183,6 +181,13 @@ export default class Wrapper {
           }
     >;
     static isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any): Promise<boolean>;
+    static isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
+    static isEmailChangeAllowed(
+        recipeUserId: RecipeUserId,
+        newEmail: string,
+        isVerified: boolean,
+        userContext?: any
+    ): Promise<boolean>;
 }
 export declare const init: typeof Recipe.init;
 export declare const canCreatePrimaryUser: typeof Wrapper.canCreatePrimaryUser;
@@ -196,5 +201,6 @@ export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPri
 export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export declare const linkAccountsWithUserFromSession: typeof Wrapper.linkAccountsWithUserFromSession;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
+export declare const isSignInAllowed: typeof Wrapper.isSignInAllowed;
+export declare const isEmailChangeAllowed: typeof Wrapper.isEmailChangeAllowed;
 export type { RecipeInterface };
-export { AccountLinkingClaim } from "./accountLinkingClaim";

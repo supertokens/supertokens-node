@@ -292,9 +292,9 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -334,9 +334,9 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
         assert.strictEqual(response2.body.createdNewUser, false);
-        assert.strictEqual(response2.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response2.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response2.body.user.email, "email@test.com");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
 
         let cookies2 = extractInfoFromResponse(response2);
         assert.notStrictEqual(cookies2.accessToken, undefined);
@@ -460,9 +460,9 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -502,9 +502,9 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
         assert.strictEqual(response2.body.createdNewUser, false);
-        assert.strictEqual(response2.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response2.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response2.body.user.email, "email@test.com");
+        assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response2.body.user.emails[0], "email@test.com");
 
         let cookies2 = extractInfoFromResponse(response2);
         assert.notStrictEqual(cookies2.accessToken, undefined);
@@ -575,9 +575,9 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         let cookies1 = extractInfoFromResponse(response1);
         assert.notStrictEqual(cookies1.accessToken, undefined);
@@ -1039,7 +1039,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             ],
         });
 
-        assert.strictEqual(await ThirdPartyPasswordless.getUserById("randomID"), undefined);
+        assert.strictEqual(await STExpress.getUser("randomID"), undefined);
 
         const app = express();
 
@@ -1073,9 +1073,9 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyPasswordless.getUserById(signUpUserInfo.id);
+        let userInfo = await STExpress.getUser(signUpUserInfo.id);
 
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
+        assert.strictEqual(userInfo.emails[0], signUpUserInfo.emails[0]);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
     });
 
@@ -1109,7 +1109,14 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             return;
         }
 
-        assert.strictEqual(await ThirdPartyPasswordless.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(
+            (
+                await STExpress.listUsersByAccountInfo({
+                    thirdParty: { id: "custom", userId: "user" },
+                })
+            ).length,
+            0
+        );
 
         const app = express();
 
@@ -1138,9 +1145,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyPasswordless.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await STExpress.listUsersByAccountInfo({
+            thirdParty: { id: "custom", userId: "user" },
+        });
 
-        assert.strictEqual(userInfo.email, signUpUserInfo.email);
-        assert.strictEqual(userInfo.id, signUpUserInfo.id);
+        assert.strictEqual(userInfo[0].emails[0], signUpUserInfo.emails[0]);
+        assert.strictEqual(userInfo[0].id, signUpUserInfo.id);
     });
 });

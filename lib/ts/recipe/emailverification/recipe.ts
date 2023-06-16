@@ -35,9 +35,9 @@ import { EmailVerificationClaim } from "./emailVerificationClaim";
 import { SessionContainerInterface } from "../session/types";
 import SessionError from "../session/error";
 import Session from "../session";
-import { AccountLinkingClaim } from "../accountlinking/accountLinkingClaim";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
+import { mockReset } from "./mockCore";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -67,7 +67,9 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.getEmailForRecipeUserId)
+            );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
@@ -127,6 +129,7 @@ export default class Recipe extends RecipeModule {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;
+        mockReset();
     }
 
     // abstract instance functions below...............
@@ -345,10 +348,7 @@ export default class Recipe extends RecipeModule {
                 // In both case 3 and case 4, we do not want to change anything in the
                 // current session in terms of user ID or email verification claim (since
                 // both of these refer to the current logged in user and not the newly
-                // linked user's account). Instead, we just want to remove the
-                // account linking claim from the session.
-
-                await input.session.removeClaim(AccountLinkingClaim, input.userContext);
+                // linked user's account).
 
                 return undefined;
             }

@@ -161,7 +161,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
@@ -357,7 +357,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
-        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
         let otherPrimaryUser = (await EmailPassword.signUp("test3@example.com", "password123")).user;
 
         let response = await AccountLinking.linkAccounts(
@@ -949,7 +949,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
+        assert(user.isPrimaryUser === false);
 
         let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user.id));
         await EmailVerification.verifyEmailUsingToken(token.token);
@@ -967,7 +968,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(isVerified === true);
     });
 
-    it("link accounts success causes primary user's account's email to be verified if same email", async function () {
+    it("link accounts success does not cause primary user's account's email to be verified if same email", async function () {
         await startST();
         supertokens.init({
             supertokens: {
@@ -997,7 +998,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
 
         let user2 = (await EmailPassword.signUp("test@example.com", "password123")).user;
 
@@ -1017,7 +1018,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         {
             let isVerified = await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(user.id));
-            assert(isVerified === true);
+            assert(isVerified === false);
         }
 
         {
@@ -1056,7 +1057,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
 
         let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user.id));
         await EmailVerification.verifyEmailUsingToken(token.token);
@@ -1104,7 +1105,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com")).user;
+        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
 
         let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
 

@@ -583,7 +583,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 ],
             });
 
-            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
 
             let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
 
@@ -662,7 +662,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 ],
             });
 
-            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
 
             let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
 

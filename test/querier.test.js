@@ -312,7 +312,9 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         try {
             // we query the core now
-            await Session.getAllSessionHandlesForUser("user1");
+            await Session.getAllSessionHandlesForUser("user1", true, {
+                doNotMock: true,
+            });
             fail();
         } catch (err) {
             assert(err.message.startsWith("SuperTokens core threw an error"));

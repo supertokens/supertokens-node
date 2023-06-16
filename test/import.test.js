@@ -37,7 +37,14 @@ describe(`importTests: ${printPath("[test/import.test.js]")}`, function () {
             writeFileSync(testFilePath, `require(".${relativeFilePath}")`);
 
             // This will throw an error if the command fails
-            execSync(`node ${resolve(process.cwd(), `./${testFileName}`)}`);
+            try {
+                execSync(`node ${resolve(process.cwd(), `./${testFileName}`)}`);
+            } catch (err) {
+                console.log();
+                console.log("failed for ", relativeFilePath);
+                console.log();
+                throw err;
+            }
         });
     });
 });

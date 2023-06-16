@@ -275,30 +275,6 @@ export declare type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
-    linkAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "WRONG_CREDENTIALS_ERROR";
-                }
-              | GeneralErrorResponse
-          >);
 };
 export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";

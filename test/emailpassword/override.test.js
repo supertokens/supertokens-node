@@ -282,11 +282,6 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.use(errorHandler());
 
-        app.get("/user", async (req, res) => {
-            let userId = req.query.userId;
-            res.json(await EmailPassword.getUserById(userId));
-        });
-
         let emailExistsResponse = await new Promise((resolve) =>
             request(app)
                 .get("/auth/signup/email/exists")

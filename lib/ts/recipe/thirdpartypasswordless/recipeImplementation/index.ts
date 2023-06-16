@@ -1,4 +1,4 @@
-import { RecipeInterface, User } from "../types";
+import { RecipeInterface } from "../types";
 import PasswordlessImplemenation from "../../passwordless/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
@@ -6,6 +6,8 @@ import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedPwdless from "./passwordlessRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
+import { User as GlobalUser } from "../../../types";
+import { getUser } from "../../../";
 
 export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPartyQuerier?: Querier): RecipeInterface {
     let originalPasswordlessImplementation = PasswordlessImplemenation(passwordlessQuerier);
@@ -23,9 +25,6 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
         },
         createNewCodeForDevice: async function (input) {
             return originalPasswordlessImplementation.createNewCodeForDevice.bind(DerivedPwdless(this))(input);
-        },
-        getUserByPhoneNumber: async function (input) {
-            return originalPasswordlessImplementation.getUserByPhoneNumber.bind(DerivedPwdless(this))(input);
         },
         listCodesByDeviceId: async function (input) {
             return originalPasswordlessImplementation.listCodesByDeviceId.bind(DerivedPwdless(this))(input);
@@ -47,12 +46,13 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
         },
 
         updatePasswordlessUser: async function (this: RecipeInterface, input) {
-            let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
+            let user = await getUser(input.userId, input.userContext);
             if (user === undefined) {
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",
                 };
-            } else if ("thirdParty" in user) {
+            } else if (user.thirdParty.length > 0) {
+                // TODO: the above if condition is wrong.
                 throw new Error(
                     "Cannot update passwordless user info for those who signed up using third party login."
                 );
@@ -64,54 +64,38 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            isVerified: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+        }): Promise<
+            | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
             if (originalThirdPartyImplementation === undefined) {
                 throw new Error("No thirdparty provider configured");
             }
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
 
-        getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
-            let user: User | undefined = await originalPasswordlessImplementation.getUserById.bind(
-                DerivedPwdless(this)
-            )(input);
-            if (user !== undefined) {
-                return user;
-            }
-            if (originalThirdPartyImplementation === undefined) {
-                return undefined;
-            }
-            return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
-        },
-
-        getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
-            let userFromEmailPass: User | undefined = await originalPasswordlessImplementation.getUserByEmail.bind(
-                DerivedPwdless(this)
-            )({ email, userContext });
-
-            if (originalThirdPartyImplementation === undefined) {
-                return userFromEmailPass === undefined ? [] : [userFromEmailPass];
-            }
-            let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
-                DerivedTP(this)
-            )({ email, userContext });
-
-            if (userFromEmailPass !== undefined) {
-                return [...usersFromThirdParty, userFromEmailPass];
-            }
-            return usersFromThirdParty;
-        },
-
-        getUserByThirdPartyInfo: async function (input: {
+        createNewOrUpdateEmailOfThirdPartyRecipeUser: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            email: string;
+            isVerified: boolean;
             userContext: any;
-        }): Promise<User | undefined> {
+        }): Promise<
+            | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+            | {
+                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                  reason: string;
+              }
+        > {
             if (originalThirdPartyImplementation === undefined) {
-                return undefined;
+                throw new Error("No thirdparty provider configured");
             }
-            return originalThirdPartyImplementation.getUserByThirdPartyInfo.bind(DerivedTP(this))(input);
+            return originalThirdPartyImplementation.createNewOrUpdateEmailOfRecipeUser.bind(DerivedTP(this))(input);
         },
     };
 }

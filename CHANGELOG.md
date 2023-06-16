@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [14.1.2] - 2023-06-07
+
+### Fixes
+
+-   Fixed email templates to fix an issue with styling on some email clients
+
+### Changes
+
+-   Minor internal refactors & additional tests
+-   Now assuming latest token version if the claim is missing from the header
+
 ## [14.1.1] - 2023-05-24
 
 ### Added

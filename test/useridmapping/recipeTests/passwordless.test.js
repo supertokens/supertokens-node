@@ -157,9 +157,7 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await PasswordlessRecipe.getUserById({
-                userId: externalId,
-            });
+            let response = await STExpress.getUser(externalId);
             assert.ok(response !== undefined);
             assert.strictEqual(response.id, externalId);
         });
@@ -224,11 +222,11 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await PasswordlessRecipe.getUserByEmail({
+            let response = await STExpress.listUsersByAccountInfo({
                 email,
             });
             assert.ok(response !== undefined);
-            assert.strictEqual(response.id, externalId);
+            assert.strictEqual(response[0].id, externalId);
         });
     });
 
@@ -291,11 +289,11 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await PasswordlessRecipe.getUserByPhoneNumber({
+            let response = await STExpress.listUsersByAccountInfo({
                 phoneNumber,
             });
             assert.ok(response !== undefined);
-            assert.strictEqual(response.id, externalId);
+            assert.strictEqual(response[0].id, externalId);
         });
     });
 
@@ -366,12 +364,12 @@ describe(`userIdMapping with passwordless: ${printPath(
             assert.strictEqual(updateUserResponse.status, "OK");
 
             // retrieve user
-            let response = await PasswordlessRecipe.getUserByPhoneNumber({
+            let response = await STExpress.listUsersByAccountInfo({
                 phoneNumber,
             });
-            assert.strictEqual(response.id, externalId);
-            assert.strictEqual(response.phoneNumber, phoneNumber);
-            assert.strictEqual(response.email, email);
+            assert.strictEqual(response[0].id, externalId);
+            assert.strictEqual(response[0].phoneNumbers[0], phoneNumber);
+            assert.strictEqual(response[0].emails[0], email);
         });
     });
 });

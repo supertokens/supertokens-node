@@ -23,6 +23,7 @@ let ThirdParty = require("../../recipe/thirdparty");
 const express = require("express");
 const request = require("supertest");
 let nock = require("nock");
+let AccountLinking = require("../../recipe/accountlinking");
 let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, function () {
@@ -78,6 +79,34 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (response !== undefined) {
+                                        user = {
+                                            ...response,
+                                            loginMethods: [
+                                                {
+                                                    ...response.loginMethods[0],
+                                                    recipeUserId: response.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
+                                    }
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
@@ -88,13 +117,20 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                 ...oI,
                                 signInUp: async (input) => {
                                     let response = await oI.signInUp(input);
-                                    user = response.user;
+                                    user = {
+                                        ...response.user,
+                                        loginMethods: [
+                                            {
+                                                ...response.user.loginMethods[0],
+                                                recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                            },
+                                        ],
+                                    };
+                                    delete user.loginMethods[0].hasSameEmailAs;
+                                    delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                    delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                    delete user.toJson;
                                     newUser = response.createdNewUser;
-                                    return response;
-                                },
-                                getUserById: async (input) => {
-                                    let response = await oI.getUserById(input);
-                                    user = response;
                                     return response;
                                 },
                             };
@@ -115,7 +151,9 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await ThirdParty.getUserById(userId));
+            let user = await STExpress.getUser(userId);
+            user.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
+            res.json(user);
         });
 
         let signUpResponse = await new Promise((resolve) =>
@@ -211,7 +249,19 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                 signInUpPOST: async (input) => {
                                     let response = await oI.signInUpPOST(input);
                                     if (response.status === "OK") {
-                                        user = response.user;
+                                        user = {
+                                            ...response.user,
+                                            loginMethods: [
+                                                {
+                                                    ...response.user.loginMethods[0],
+                                                    recipeUserId: response.user.loginMethods[0].recipeUserId.getAsString(),
+                                                },
+                                            ],
+                                        };
+                                        delete user.loginMethods[0].hasSameEmailAs;
+                                        delete user.loginMethods[0].hasSamePhoneNumberAs;
+                                        delete user.loginMethods[0].hasSameThirdPartyInfoAs;
+                                        delete user.toJson;
                                         newUser = response.createdNewUser;
                                     }
                                     return response;
@@ -229,11 +279,6 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         app.use(middleware());
 
         app.use(errorHandler());
-
-        app.get("/user", async (req, res) => {
-            let userId = req.query.userId;
-            res.json(await ThirdParty.getUserById(userId));
-        });
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 
@@ -296,6 +341,24 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                AccountLinking.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getUser: async (input) => {
+                                    let response = await oI.getUser(input);
+                                    if (input.userContext.shouldError === undefined) {
+                                        return response;
+                                    }
+                                    throw {
+                                        error: "get user error",
+                                    };
+                                },
+                            };
+                        },
+                    },
+                }),
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
@@ -317,12 +380,6 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                         error: "signin error",
                                     };
                                 },
-                                getUserById: async (input) => {
-                                    await oI.getUserById(input);
-                                    throw {
-                                        error: "get user error",
-                                    };
-                                },
                             };
                         },
                     },
@@ -340,7 +397,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         app.get("/user", async (req, res, next) => {
             try {
                 let userId = req.query.userId;
-                res.json(await ThirdParty.getUserById(userId));
+                res.json(await STExpress.getUser(userId, { shouldError: true }));
             } catch (err) {
                 next(err);
             }

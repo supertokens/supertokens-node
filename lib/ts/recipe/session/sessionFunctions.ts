@@ -30,6 +30,7 @@ import {
     mockGetSessionInformation,
     mockRevokeAllSessionsForUser,
     mockUpdateAccessTokenPayload,
+    mockRevokeSession,
 } from "./mockCore";
 
 /**
@@ -385,9 +386,10 @@ export async function revokeAllSessionsForUser(
 export async function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
-    fetchSessionsForAllLinkedAccounts: boolean
+    fetchSessionsForAllLinkedAccounts: boolean,
+    userContext: any
 ): Promise<string[]> {
-    if (process.env.MOCK !== "true") {
+    if (process.env.MOCK !== "true" || (userContext !== undefined && userContext.doNotMock === true)) {
         let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
             userId,
             fetchSessionsForAllLinkedAccounts,
@@ -403,10 +405,14 @@ export async function getAllSessionHandlesForUser(
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
 export async function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean> {
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
-        sessionHandles: [sessionHandle],
-    });
-    return response.sessionHandlesRevoked.length === 1;
+    if (process.env.MOCK !== "true") {
+        let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+            sessionHandles: [sessionHandle],
+        });
+        return response.sessionHandlesRevoked.length === 1;
+    } else {
+        return await mockRevokeSession(sessionHandle, helpers.querier);
+    }
 }
 
 /**

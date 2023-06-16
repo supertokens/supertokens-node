@@ -31,8 +31,13 @@ import {
     mockStoreIntoAccountToLinkTable,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
+import type AccountLinkingRecipe from "./recipe";
 
-export default function getRecipeImplementation(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
+export default function getRecipeImplementation(
+    querier: Querier,
+    config: TypeNormalisedInput,
+    recipeInstance: AccountLinkingRecipe
+): RecipeInterface {
     return {
         getUsers: async function (
             this: RecipeInterface,
@@ -228,6 +233,11 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
             }
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
+                await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    recipeUserId,
+                    userContext,
+                });
+
                 let user: User | undefined = await this.getUser({
                     userId: primaryUserId,
                     userContext,
@@ -288,7 +298,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
 
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
-            { accountInfo }: { accountInfo: AccountInfo }
+            { accountInfo, doUnionOfAccountInfo }: { accountInfo: AccountInfo; doUnionOfAccountInfo: boolean }
         ): Promise<User[]> {
             if (process.env.MOCK !== "true") {
                 let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
@@ -296,7 +306,7 @@ export default function getRecipeImplementation(querier: Querier, config: TypeNo
                 });
                 return result.users;
             } else {
-                return mockListUsersByAccountInfo({ accountInfo });
+                return mockListUsersByAccountInfo({ accountInfo, doUnionOfAccountInfo });
             }
         },
 

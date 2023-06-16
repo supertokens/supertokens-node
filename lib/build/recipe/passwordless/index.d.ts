@@ -81,16 +81,13 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserById(input: { userId: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByEmail(input: { email: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
     static updateUser(input: {
         userId: string;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
     }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
     }>;
     static revokeAllCodes(
         input:
@@ -165,9 +162,6 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let createCode: typeof Wrapper.createCode;
 export declare let consumeCode: typeof Wrapper.consumeCode;
-export declare let getUserByEmail: typeof Wrapper.getUserByEmail;
-export declare let getUserById: typeof Wrapper.getUserById;
-export declare let getUserByPhoneNumber: typeof Wrapper.getUserByPhoneNumber;
 export declare let listCodesByDeviceId: typeof Wrapper.listCodesByDeviceId;
 export declare let listCodesByEmail: typeof Wrapper.listCodesByEmail;
 export declare let listCodesByPhoneNumber: typeof Wrapper.listCodesByPhoneNumber;
