@@ -8,6 +8,9 @@ import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
+// import { validateFormFieldsOrThrowError } from "./utils";
+import { completeFactorInSession } from "../../mfa";
+import { linkAccounts } from "../../accountlinking";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -788,14 +791,36 @@ export default function getAPIImplementation(): APIInterface {
 
             response.user = (await getUser(userId, userContext))!;
 
-            let session = await Session.createNewSession(
+            let session = await Session.getSession(
                 options.req,
                 options.res,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
                 userContext
             );
+            if (session === undefined) {
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+            } else {
+                // Session already exists, we need to link accounts
+                const linkAccountResponse = await linkAccounts(
+                    emailPasswordRecipeUser.recipeUserId,
+                    session.getUserId(),
+                    userContext
+                );
+                if (linkAccountResponse.status !== "OK") {
+                    throw new Error("Error in linking accounts. Contact support.");
+                }
+            }
+
+            userContext.flow = "signin";
+            await completeFactorInSession(session, "emailpassword", userContext);
+
             return {
                 status: "OK",
                 session,
@@ -868,14 +893,48 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Race condition error - please call this API again");
             }
 
-            let session = await Session.createNewSession(
+            console.log("Called signin");
+            let session = await Session.getSession(
                 options.req,
                 options.res,
-                emailPasswordRecipeUser.recipeUserId,
-                {},
-                {},
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
                 userContext
             );
+            if (session === undefined) {
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    emailPasswordRecipeUser.recipeUserId,
+                    {},
+                    {},
+                    userContext
+                );
+            } else {
+                console.log("Alraedy exist");
+                console.log(session.getUserId());
+
+                // Session already exists, we need to link accounts
+
+                const linkAccountResponse = await linkAccounts(
+                    emailPasswordRecipeUser.recipeUserId,
+                    session.getUserId(),
+                    userContext
+                );
+                console.log(linkAccountResponse);
+                if (linkAccountResponse.status !== "OK") {
+                    throw new Error("Error in linking accounts.");
+                }
+
+                console.log("*************");
+
+                let user = await getUser(session.getUserId(), userContext);
+                console.log(user);
+                console.log(emailPasswordRecipeUser.recipeUserId.getAsString());
+            }
+
+            userContext.flow = "signup";
+            await completeFactorInSession(session, "emailpassword", userContext);
+
             return {
                 status: "OK",
                 session,

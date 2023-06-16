@@ -200,6 +200,8 @@ export async function mockLinkAccounts({
     primaryUserMap.set(primaryUserId, existing);
     accountToLink.delete(recipeUserId.getAsString());
 
+    console.log(primaryUserMap);
+
     await Session.revokeAllSessionsForUser(recipeUserId.getAsString(), false);
 
     return {
@@ -701,7 +703,10 @@ function getPrimaryUserForUserId(userId: string): string {
 }
 
 export async function mockGetUser({ userId }: { userId: string }): Promise<User | undefined> {
+    // console.log(`before userId: ${userId}`);
     userId = getPrimaryUserForUserId(userId);
+    // console.log(`after userId: ${userId}`);
+    console.log(primaryUserMap);
 
     let allRecipeUserIds = primaryUserMap.get(userId);
 
@@ -748,11 +753,13 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
 
         // third party
         {
+            console.log(`CURR USER`, currUser);
             let response = await axios.get(`http://localhost:8080/recipe/user?userId=${currUser}`, {
                 headers: {
                     rid: "thirdparty",
                 },
             });
+            console.log(`Thirdparty response`, response.data);
             if (response.data.status === "OK") {
                 let user = response.data.user;
                 let verified = await isEmailVerified(user.id, user.email);
@@ -803,6 +810,8 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
     if (finalResult.loginMethods.length === 0) {
         return undefined;
     }
+
+    console.log(`finalResult:`, finalResult);
 
     return createUserObject(finalResult);
 }

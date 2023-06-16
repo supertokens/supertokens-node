@@ -1,9 +1,10 @@
 // @ts-nocheck
 import RecipeUserId from "../../../recipeUserId";
 import { JSONPrimitive } from "../../../types";
-import { SessionClaim, SessionClaimValidator } from "../types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
 export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
     readonly fetchValue: (
+        session: SessionContainerInterface,
         userId: string,
         recipeUserId: RecipeUserId,
         userContext: any

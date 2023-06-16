@@ -390,6 +390,40 @@ module.exports.signUPRequest = async function (app, email, password) {
     });
 };
 
+module.exports.enableFactorRequest = async function (app, factorId) {
+    return new Promise(function (resolve) {
+        request(app)
+            .post("/auth/mfa/factor/enable")
+            .set("st-auth-mode", "cookie")
+            .send({
+                factorId,
+            })
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            });
+    });
+};
+
+module.exports.listFactorsRequest = async function (app) {
+    return new Promise(function (resolve) {
+        request(app)
+            .get("/auth/mfa/factors/list")
+            .set("st-auth-mode", "cookie")
+            .send()
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            });
+    });
+};
+
 module.exports.signUPRequestEmptyJSON = async function (app) {
     return new Promise(function (resolve) {
         request(app)

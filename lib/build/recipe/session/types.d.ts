@@ -241,6 +241,7 @@ export declare type RecipeInterface = {
         | undefined
     >;
     validateClaims(input: {
+        session: SessionContainerInterface | undefined;
         userId: string;
         recipeUserId: RecipeUserId;
         accessTokenPayload: any;
@@ -379,6 +380,7 @@ export declare abstract class SessionClaim<T> {
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
     abstract fetchValue(
+        session: SessionContainerInterface | undefined,
         userId: string,
         recipeUserId: RecipeUserId,
         userContext: any
@@ -407,7 +409,12 @@ export declare abstract class SessionClaim<T> {
      * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
-    build(userId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<JSONObject>;
+    build(
+        session: SessionContainerInterface | undefined,
+        userId: string,
+        recipeUserId: RecipeUserId,
+        userContext?: any
+    ): Promise<JSONObject>;
 }
 export declare type ReqResInfo = {
     res: BaseResponse;

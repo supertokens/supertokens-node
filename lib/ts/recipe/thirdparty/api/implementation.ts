@@ -13,6 +13,8 @@ import { UserInfo } from "../types";
 import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
+import { completeFactorInSession } from "../../mfa";
+import { linkAccounts } from "../../accountlinking";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -562,14 +564,35 @@ export default function getAPIInterface(): APIInterface {
                 response.user = (await getUser(userId, userContext))!;
             }
 
-            let session = await Session.createNewSession(
+            let session = await Session.getSession(
                 options.req,
                 options.res,
-                loginMethod.recipeUserId,
-                {},
-                {},
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
                 userContext
             );
+            if (session === undefined) {
+                session = await Session.createNewSession(
+                    options.req,
+                    options.res,
+                    new RecipeUserId(response.user.id),
+                    {},
+                    {},
+                    userContext
+                );
+            } else {
+                // Session already exists, we need to link accounts
+                const linkAccountResponse = await linkAccounts(
+                    new RecipeUserId(response.user.id),
+                    session.getUserId(),
+                    userContext
+                );
+                if (linkAccountResponse.status !== "OK") {
+                    throw new Error("Error in linking accounts. Contact support.");
+                }
+            }
+
+            userContext.flow = response.createdNewUser ? "signup" : "signin";
+            await completeFactorInSession(session, "passwordless", userContext);
 
             return {
                 status: "OK",

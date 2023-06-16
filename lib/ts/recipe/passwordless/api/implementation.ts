@@ -4,6 +4,8 @@ import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
 import RecipeUserId from "../../../recipeUserId";
 import { listUsersByAccountInfo } from "../../..";
+import { completeFactorInSession } from "../../mfa";
+// import { linkAccounts } from  '../../accountlinking'
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -52,14 +54,31 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            const session = await Session.createNewSession(
+            let session = await Session.getSession(
                 input.options.req,
                 input.options.res,
-                new RecipeUserId(user.id), // TODO: change to recipeUserId
-                {},
-                {},
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
                 input.userContext
             );
+            if (session === undefined) {
+                session = await Session.createNewSession(
+                    input.options.req,
+                    input.options.res,
+                    new RecipeUserId(user.id),
+                    {},
+                    {},
+                    input.userContext
+                );
+            } else {
+                // TODO: uncomment this when account linking for passwordless is ready
+                // Session already exsits, we need to link the accounts
+                // const result = await linkAccounts(new RecipeUserId(user.id), session.getUserId(), input.userContext);
+                // if (result.status === "OK") {
+                // }
+            }
+
+            input.userContext.flow = "signup";
+            await completeFactorInSession(session, "passwordless", input.userContext);
 
             return {
                 status: "OK",

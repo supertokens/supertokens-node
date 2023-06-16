@@ -233,6 +233,7 @@ export default function getRecipeInterface(
         validateClaims: async function (
             this: RecipeInterface,
             input: {
+                session: SessionContainerInterface;
                 userId: string;
                 recipeUserId: RecipeUserId;
                 accessTokenPayload: any;
@@ -251,7 +252,12 @@ export default function getRecipeInterface(
                 logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(input.userId, input.recipeUserId, input.userContext);
+                    const value = await validator.claim.fetchValue(
+                        input.session,
+                        input.userId,
+                        input.recipeUserId,
+                        input.userContext
+                    );
                     logDebugMessage(
                         "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
                     );
@@ -471,6 +477,7 @@ export default function getRecipeInterface(
                 return false;
             }
             const accessTokenPayloadUpdate = await input.claim.build(
+                undefined, // FIXME
                 sessionInfo.userId,
                 sessionInfo.recipeUserId,
                 input.userContext

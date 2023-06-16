@@ -208,6 +208,7 @@ export default class Session implements SessionContainerInterface {
     // Any update to this function should also be reflected in the respective JWT version
     async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
         let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
+            session: this,
             accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
             recipeUserId: this.getRecipeUserId(userContext),
@@ -234,7 +235,12 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        const update = await claim.build(this.getUserId(userContext), this.getRecipeUserId(userContext), userContext);
+        const update = await claim.build(
+            this,
+            this.getUserId(userContext),
+            this.getRecipeUserId(userContext),
+            userContext
+        );
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 

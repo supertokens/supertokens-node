@@ -288,6 +288,7 @@ export type RecipeInterface = {
     >;
 
     validateClaims(input: {
+        session: SessionContainerInterface | undefined; // FIXME
         userId: string;
         recipeUserId: RecipeUserId;
         accessTokenPayload: any;
@@ -446,6 +447,7 @@ export abstract class SessionClaim<T> {
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
     abstract fetchValue(
+        session: SessionContainerInterface | undefined,
         userId: string,
         recipeUserId: RecipeUserId,
         userContext: any
@@ -479,8 +481,13 @@ export abstract class SessionClaim<T> {
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
-    async build(userId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<JSONObject> {
-        const value = await this.fetchValue(userId, recipeUserId, userContext);
+    async build(
+        session: SessionContainerInterface | undefined,
+        userId: string,
+        recipeUserId: RecipeUserId,
+        userContext?: any
+    ): Promise<JSONObject> {
+        const value = await this.fetchValue(session, userId, recipeUserId, userContext);
 
         if (value === undefined) {
             return {};
