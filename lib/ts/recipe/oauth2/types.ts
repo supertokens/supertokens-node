@@ -16,7 +16,7 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, JSONObject } from "../../types";
-import { SessionContainer } from "../session";
+import { SessionContainer, SessionInformation } from "../session";
 
 export type TypeInput = {
     override?: {
@@ -152,7 +152,7 @@ export type RecipeInterface = {
               code?: string;
               idToken?: string;
           }
-        | { status: "CLIENT_ERROR"; error: AuthorizationErrorCode; errorDescription: string; errorURI: string } // these are redirected back to the client
+        | { status: "CLIENT_ERROR"; error: AuthorizationErrorCode; errorDescription?: string; errorURI?: string } // these are redirected back to the client
         | { status: "AUTH_ERROR"; error: string } // This gets a redirection to the auth frontend
     >;
 
@@ -165,7 +165,7 @@ export type RecipeInterface = {
                   code?: string;
                   codeVerifier?: string;
                   redirectUri: string;
-                  scope?: string[];
+                  scopes?: string[];
 
                   queryString: string;
 
@@ -175,7 +175,7 @@ export type RecipeInterface = {
                   clientId: string;
                   grantType: "client_credentials";
                   clientSecret: string;
-                  scope?: string[];
+                  scopes?: string[];
 
                   queryString: string;
 
@@ -186,7 +186,7 @@ export type RecipeInterface = {
                   grantType: "refresh_token";
                   clientSecret?: string;
                   refreshToken?: string;
-                  scope?: string[];
+                  scopes?: string[];
 
                   queryString: string;
 
@@ -264,16 +264,23 @@ export type RecipeInterface = {
     // Customization points called by createTokens&createAuthCode
     buildAccessToken(input: {
         tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
         userContext: any;
     }): Promise<{ payload?: JSONObject; lifetimeInSecs?: number }>; // Returning undefined for these props means we use the default from Core
     buildIdToken(input: {
         tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
         userContext: any;
     }): Promise<{ payload?: JSONObject; lifetimeInSecs?: number }>; // Returning undefined for these props means we use the defaults from BE SDKs
-    getRefreshTokenLifetime(input: { tokenInfo: TokenBuilderInfo; userContext: any }): Promise<number | undefined>; // Returning undefined means we use the default from Core
+    getRefreshTokenLifetime(input: {
+        tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
+        userContext: any;
+    }): Promise<number | undefined>; // Returning undefined means we use the default from Core
 
     validateScopes(input: {
         tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
         userContext: any;
     }): Promise<
         | { status: "OK"; grantedScopes: string[] }
@@ -281,7 +288,11 @@ export type RecipeInterface = {
         | { status: "ACCESS_DENIED_ERROR"; message: string } // This means we need to redirect to the auth frontend (i.e.: there is a claim validation issue we can resolve there)
     >;
 
-    shouldIssueRefreshToken(input: { tokenInfo: TokenInfo; userContext: any }): Promise<boolean>;
+    shouldIssueRefreshToken(input: {
+        tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
+        userContext: any;
+    }): Promise<boolean>;
 };
 
 export type TokenBuilderInfo = {
