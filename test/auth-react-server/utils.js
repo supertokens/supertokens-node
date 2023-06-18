@@ -196,12 +196,12 @@ module.exports.customAuth0Provider = () => {
 
 async function getListOfPids() {
     let installationPath = process.env.INSTALL_PATH;
+    let currList;
     try {
-        (await module.exports.executeCommand("cd " + installationPath + " && ls .started/")).stdout;
+        currList = (await module.exports.executeCommand("cd " + installationPath + " && ls .started/")).stdout;
     } catch (err) {
         return [];
     }
-    let currList = (await module.exports.executeCommand("cd " + installationPath + " && ls .started/")).stdout;
     currList = currList.split("\n");
     let result = [];
     for (let i = 0; i < currList.length; i++) {

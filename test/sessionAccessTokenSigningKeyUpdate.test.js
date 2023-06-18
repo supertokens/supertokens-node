@@ -37,20 +37,21 @@ const request = require("http");
 describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     "[test/sessionAccessTokenSigningKeyUpdate.test.js]"
 )}`, function () {
-    let requestSpy;
+    let requestMock;
     beforeEach(async function () {
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
-        requestSpy.resetHistory();
+        requestMock.reset();
+        requestMock.callThrough();
     });
 
     before(() => {
-        requestSpy = sinon.spy(request, "get");
+        requestMock = sinon.stub(request, "get").callThrough();
     });
 
     after(async function () {
-        requestSpy.restore();
+        requestMock.restore();
         await killAllST();
         await cleanST();
     });
@@ -70,6 +71,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
+        // We create a new token
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
@@ -78,6 +80,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             {}
         );
 
+        // Check that the keys have not been loaded
+        assert.strictEqual(requestMock.callCount, 0);
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
@@ -94,6 +98,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             assert(verifyState === undefined);
         }
 
+        // The keys have been loaded during getSession
+        assert.strictEqual(requestMock.callCount, 1);
+
+        // We wait for signing key to expire
         await new Promise((r) => setTimeout(r, 6000));
 
         try {
@@ -113,6 +121,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             }
         }
 
+        // This should not have called the core
         const verifyState = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
             1500
@@ -121,15 +130,23 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         ProcessState.getInstance().reset();
 
+        assert.strictEqual(requestMock.callCount, 1);
         const response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken,
             false
         );
-        assert.strictEqual(requestSpy.callCount, 1);
+        // Calling refresh doesn't refresh the key cache
+        assert.strictEqual(requestMock.callCount, 1);
 
-        await SessionFunctions.getSession(
+        // Double check that the refresh resulted in a new (unknown) kid
+        const accessToken1 = parseJWTWithoutSignatureVerification(response.accessToken.token);
+        const accessToken2 = parseJWTWithoutSignatureVerification(response2.accessToken.token);
+        assert.notEqual(accessToken1.kid, accessToken2.kid, accessToken2.payload);
+
+        // This call should actually call the core
+        const response3 = await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
@@ -137,13 +154,40 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             false
         );
 
-        // We call verify, since refresh does not refresh the signing key info
+        // This should have refreshed the keys because of the cache miss
+        assert.strictEqual(requestMock.callCount, 2);
+
+        // This will call the core verify since parentRefreshTokenHash1 is defined
         const verifyState2 = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
             1500
         );
         assert(verifyState2 !== undefined);
-        assert.strictEqual(requestSpy.callCount, 2);
+        ProcessState.getInstance().reset();
+
+        const accessToken3 = parseJWTWithoutSignatureVerification(response3.accessToken.token);
+        assert.strictEqual(accessToken3.payload.parentRefreshTokenHash1, null);
+        assert.strictEqual(accessToken3.kid, accessToken2.kid);
+        // We try to verify the new token without parentRefreshTokenHash1
+        const response4 = await SessionFunctions.getSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
+            parseJWTWithoutSignatureVerification(response3.accessToken.token),
+            response2.antiCsrfToken,
+            true,
+            false
+        );
+
+        assert.strictEqual(response4.accessToken, undefined);
+
+        // This should not have needed a key refresh
+        assert.strictEqual(requestMock.callCount, 2);
+
+        // This will not call the core verify since parentRefreshTokenHash1 is null
+        const verifyState3 = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+            1500
+        );
+        assert(verifyState3 === undefined);
     });
 
     it("check that if signing key changes, after new key is fetched - via token query, old tokens don't query the core", async function () {
@@ -202,8 +246,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
 
             assert(verifyState === undefined);
-            assert.strictEqual(requestSpy.callCount, 1);
-            assert(requestSpy.getCall(0).args[0].endsWith("/.well-known/jwks.json"));
+            assert.strictEqual(requestMock.callCount, 1);
+            assert(requestMock.getCall(0).args[0].endsWith("/.well-known/jwks.json"));
         }
 
         await ProcessState.getInstance().reset();
@@ -223,7 +267,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
+        assert.strictEqual(requestMock.callCount, 1);
     });
 
     it("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
@@ -302,7 +346,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
+        assert.strictEqual(requestMock.callCount, 1);
     });
 
     it("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
@@ -354,8 +398,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 1500
             );
             assert(verifyState === undefined);
-            assert.strictEqual(requestSpy.callCount, 1);
-            assert(requestSpy.getCall(0).args[0].endsWith("/.well-known/jwks.json"));
+            assert.strictEqual(requestMock.callCount, 1);
+            assert(requestMock.getCall(0).args[0].endsWith("/.well-known/jwks.json"));
         }
 
         await ProcessState.getInstance().reset();
@@ -384,7 +428,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
+        assert.strictEqual(requestMock.callCount, 1);
     });
 
     it("test reducing access token signing key update interval time", async function () {
@@ -474,8 +518,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState3 === undefined);
             // we have one at the start as well as now
-            assert.strictEqual(requestSpy.callCount, 2);
-            assert(requestSpy.getCall(1).args[0].endsWith("/.well-known/jwks.json"));
+            assert.strictEqual(requestMock.callCount, 2);
+            assert(requestMock.getCall(1).args[0].endsWith("/.well-known/jwks.json"));
         }
 
         ProcessState.getInstance().reset();
@@ -500,7 +544,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         {
             // We should not have called the core jwks endpoint since the last check
-            assert.strictEqual(requestSpy.callCount, 2);
+            assert.strictEqual(requestMock.callCount, 2);
             // now we will use the original session again and see that core is not called
             try {
                 await SessionFunctions.getSession(
@@ -523,7 +567,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState3 === undefined);
             // We call the jwks endpoint since the key is not in the cache anymore, and we double-check
-            assert.strictEqual(requestSpy.callCount, 3);
+            assert.strictEqual(requestMock.callCount, 3);
         }
     });
 
@@ -594,6 +638,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState3 === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
+        assert.strictEqual(requestMock.callCount, 1);
     });
 });

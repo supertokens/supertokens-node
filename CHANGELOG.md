@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [14.1.2] - 2023-06-15
+## [14.1.2] - 2023-06-07
 
 ### Fixes
 
+-   Fixed email templates to fix an issue with styling on some email clients
+
+### Changes
+
+-   Minor internal refactors & additional tests
+-   Now assuming latest token version if the claim is missing from the header
 -   Make `verifySession` send the appropriate response instead of throwing (and sending 500) if session validation fails in koa, hapi and loopback (already happening in other frameworks).
 
 ## [14.1.1] - 2023-05-24
