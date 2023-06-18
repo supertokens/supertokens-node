@@ -49,7 +49,7 @@ const loopbackRoutes = [
     },
 ];
 
-module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods } = {}) => {
+module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods, withoutMiddleware } = {}) => {
     if (allTokenTransferMethods) {
         addTestCases("header");
         addTestCases("cookie");
@@ -80,7 +80,9 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
                     app = express();
 
-                    app.use(ExpressFramework.middleware());
+                    if (withoutMiddleware !== true) {
+                        app.use(ExpressFramework.middleware());
+                    }
 
                     for (const route of routes) {
                         const handlers = [
@@ -103,12 +105,16 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         }
                     }
 
-                    app.use(ExpressFramework.errorHandler());
+                    if (withoutMiddleware !== true) {
+                        app.use(ExpressFramework.errorHandler());
+                    }
                 },
                 ({ method, path, headers }) => {
                     const req = method === "post" ? request(app).post(path) : request(app).get(path);
-                    for (const key of Object.keys(headers)) {
-                        req.set(key, headers[key]);
+                    if (headers) {
+                        for (const key of Object.keys(headers)) {
+                            req.set(key, headers[key]);
+                        }
                     }
                     return new Promise((resolve) =>
                         req.end((err, res) => {
@@ -120,7 +126,8 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         })
                     );
                 },
-                tokenTransferMethod
+                tokenTransferMethod,
+                "express"
             );
         });
 
@@ -155,8 +162,11 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
                     server = Fastify();
 
-                    await server.register(FastifyFramework.plugin);
-                    server.setErrorHandler(FastifyFramework.errorHandler());
+                    if (withoutMiddleware !== true) {
+                        await server.register(FastifyFramework.plugin);
+                        server.setErrorHandler(FastifyFramework.errorHandler());
+                    }
+
                     for (const route of routes) {
                         const handlers = [
                             (req, res) =>
@@ -171,10 +181,15 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         if (route.verifySession) {
                             handlers.unshift(fastifyVerifySession(route.verifySessionOpts));
                         }
+                        const preHandler = handlers.length > 1 ? handlers[0] : undefined;
+                        const handler = handlers[handlers.length - 1];
+                        if (handler.length > 2) {
+                            throw new Error("having more than 2 handlers is not implemented in fastify yet.");
+                        }
                         if (route.method === "get") {
-                            server.get(route.path, ...handlers);
+                            server.get(route.path, { preHandler }, handler);
                         } else if (route.method === "post") {
-                            server.post(route.path, ...handlers);
+                            server.post(route.path, { preHandler }, handler);
                         } else {
                             throw new Error("UNKNOWN METHOD");
                         }
@@ -187,7 +202,8 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         headers,
                     });
                 },
-                tokenTransferMethod
+                tokenTransferMethod,
+                "fastify"
             );
         });
 
@@ -245,7 +261,10 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                             },
                         });
                     }
-                    await server.register(HapiFramework.plugin);
+
+                    if (withoutMiddleware !== true) {
+                        await server.register(HapiFramework.plugin);
+                    }
 
                     await server.initialize();
                 },
@@ -256,7 +275,8 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         headers,
                     });
                 },
-                tokenTransferMethod
+                tokenTransferMethod,
+                "hapi"
             );
         });
 
@@ -292,7 +312,10 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
                     app = new Koa();
                     const router = new Router();
-                    app.use(KoaFramework.middleware());
+
+                    if (withoutMiddleware !== true) {
+                        app.use(KoaFramework.middleware());
+                    }
 
                     for (const route of routes) {
                         const handlers = [
@@ -318,8 +341,10 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 },
                 ({ method, path, headers }) => {
                     const req = method === "post" ? request(server).post(path) : request(server).get(path);
-                    for (const key of Object.keys(headers)) {
-                        req.set(key, headers[key]);
+                    if (headers) {
+                        for (const key of Object.keys(headers)) {
+                            req.set(key, headers[key]);
+                        }
                     }
                     return new Promise((resolve) =>
                         req.end((err, res) => {
@@ -331,7 +356,8 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         })
                     );
                 },
-                tokenTransferMethod
+                tokenTransferMethod,
+                "koa"
             );
         });
 
@@ -341,7 +367,6 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                 await killAllST();
                 await setupST();
                 ProcessState.getInstance().reset();
-                app = require("./loopback-server/index.js");
             });
 
             afterEach(async function () {
@@ -357,6 +382,11 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
             getTestCases(
                 async ({ stConfig, routes }) => {
+                    if (withoutMiddleware === true) {
+                        process.env.TEST_SKIP_MIDDLEWARE = "true";
+                    }
+                    app = require("./loopback-server/index.js");
+
                     await startST();
 
                     SuperTokens.init({
@@ -386,8 +416,10 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         method === "post"
                             ? request("http://localhost:9876").post(path)
                             : request("http://localhost:9876").get(path);
-                    for (const key of Object.keys(headers)) {
-                        req.set(key, headers[key]);
+                    if (headers) {
+                        for (const key of Object.keys(headers)) {
+                            req.set(key, headers[key]);
+                        }
                     }
                     return new Promise((resolve) =>
                         req.end((err, res) => {
@@ -399,7 +431,8 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                         })
                     );
                 },
-                tokenTransferMethod
+                tokenTransferMethod,
+                "loopback"
             );
         });
     }
