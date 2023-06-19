@@ -192,9 +192,16 @@ export declare type RecipeInterface = {
         email?: string;
         password?: string;
         userContext: any;
-    }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-    }>;
+        applyPasswordPolicy?: boolean;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
 };
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;

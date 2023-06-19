@@ -7,7 +7,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeThirdPart
     private passwordlessSMTPService;
     constructor(config: TypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>);
     sendEmail: (
-        input: import("../../../../passwordless/types").TypePasswordlessEmailDeliveryInput & {
+        input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;

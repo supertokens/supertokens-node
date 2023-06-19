@@ -9,10 +9,11 @@ export default class OpenIdRecipeWrapper {
         });
     }
 
-    static createJWT(payload?: any, validitySeconds?: number, userContext?: any) {
+    static createJWT(payload?: any, validitySeconds?: number, useStaticSigningKey?: boolean, userContext?: any) {
         return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.createJWT({
             payload,
             validitySeconds,
+            useStaticSigningKey,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

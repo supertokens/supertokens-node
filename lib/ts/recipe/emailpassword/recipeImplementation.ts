@@ -1,8 +1,12 @@
-import { RecipeInterface, User } from "./types";
+import { RecipeInterface, TypeNormalisedInput, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { FORM_FIELD_PASSWORD_ID } from "./constants";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    getEmailPasswordConfig: () => TypeNormalisedInput
+): RecipeInterface {
     return {
         signUp: async function ({
             email,
@@ -119,7 +123,26 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userId: string;
             email?: string;
             password?: string;
-        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            applyPasswordPolicy?: boolean;
+        }): Promise<
+            | {
+                  status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+            | { status: "PASSWORD_POLICY_VIOLATED_ERROR"; failureReason: string }
+        > {
+            if (input.applyPasswordPolicy || input.applyPasswordPolicy === undefined) {
+                let formFields = getEmailPasswordConfig().signUpFeature.formFields;
+                if (input.password !== undefined) {
+                    const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
+                    const error = await passwordField.validate(input.password);
+                    if (error !== undefined) {
+                        return {
+                            status: "PASSWORD_POLICY_VIOLATED_ERROR",
+                            failureReason: error,
+                        };
+                    }
+                }
+            }
             let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                 userId: input.userId,
                 email: input.email,

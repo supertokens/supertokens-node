@@ -38,53 +38,8 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         userContext?: any
-    ): Promise<
-        | ({
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | ({
-              email: string;
-              thirdParty: {
-                  id: string;
-                  userId: string;
-              };
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | undefined
-    >;
-    static getUserById(
-        userId: string,
-        userContext?: any
-    ): Promise<
-        | ({
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | ({
-              email: string;
-              thirdParty: {
-                  id: string;
-                  userId: string;
-              };
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | undefined
-    >;
+    ): Promise<User | undefined>;
+    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
     static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
     static createCode(
         input: (
@@ -155,31 +110,7 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserByPhoneNumber(input: {
-        phoneNumber: string;
-        userContext?: any;
-    }): Promise<
-        | ({
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | ({
-              email: string;
-              thirdParty: {
-                  id: string;
-                  userId: string;
-              };
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | undefined
-    >;
+    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
     static updatePasswordlessUser(input: {
         userId: string;
         email?: string | null;

@@ -21,7 +21,7 @@ export default class BackwardCompatibilityService
         }
     );
     sendEmail: (
-        input: import("../../../types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
+        input: TypeEmailPasswordEmailDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;

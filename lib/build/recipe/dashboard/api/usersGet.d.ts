@@ -29,3 +29,8 @@ export declare type Response = {
     }[];
 };
 export default function usersGet(_: APIInterface, options: APIOptions): Promise<Response>;
+export declare function getSearchParamsFromURL(
+    path: string
+): {
+    [key: string]: string;
+};

@@ -35,7 +35,6 @@ import {
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
 } from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
-import RecipeImplementationWithJWT from "./with-jwt";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -56,7 +55,7 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
-    openIdRecipe?: OpenIdRecipe;
+    openIdRecipe: OpenIdRecipe;
 
     apiImpl: APIInterface;
 
@@ -74,44 +73,20 @@ export default class SessionRecipe extends RecipeModule {
 
         this.isInServerlessEnv = isInServerlessEnv;
 
-        if (this.config.jwt.enable === true) {
-            this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {
-                issuer: this.config.jwt.issuer,
-                override: this.config.override.openIdFeature,
-            });
+        this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {
+            override: this.config.override.openIdFeature,
+        });
 
-            let builder = new OverrideableBuilder(
-                RecipeImplementation(
-                    Querier.getNewInstanceOrThrowError(recipeId),
-                    this.config,
-                    this.getAppInfo(),
-                    () => this.recipeInterfaceImpl
-                )
-            );
-            this.recipeInterfaceImpl = builder
-                .override((oI) => {
-                    return RecipeImplementationWithJWT(
-                        oI,
-                        // this.jwtRecipe is never undefined here
-                        this.openIdRecipe!.recipeImplementation,
-                        this.config
-                    );
-                })
-                .override(this.config.override.functions)
-                .build();
-        } else {
-            {
-                let builder = new OverrideableBuilder(
-                    RecipeImplementation(
-                        Querier.getNewInstanceOrThrowError(recipeId),
-                        this.config,
-                        this.getAppInfo(),
-                        () => this.recipeInterfaceImpl
-                    )
-                );
-                this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
-            }
-        }
+        let builder = new OverrideableBuilder(
+            RecipeImplementation(
+                Querier.getNewInstanceOrThrowError(recipeId),
+                this.config,
+                this.getAppInfo(),
+                () => this.recipeInterfaceImpl
+            )
+        );
+        this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+
         {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
@@ -183,9 +158,7 @@ export default class SessionRecipe extends RecipeModule {
             },
         ];
 
-        if (this.openIdRecipe !== undefined) {
-            apisHandled.push(...this.openIdRecipe.getAPIsHandled());
-        }
+        apisHandled.push(...this.openIdRecipe.getAPIsHandled());
 
         return apisHandled;
     };
@@ -209,10 +182,8 @@ export default class SessionRecipe extends RecipeModule {
             return await handleRefreshAPI(this.apiImpl, options);
         } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options);
-        } else if (this.openIdRecipe !== undefined) {
-            return await this.openIdRecipe.handleAPIRequest(id, req, res, path, method);
         } else {
-            return false;
+            return await this.openIdRecipe.handleAPIRequest(id, req, res, path, method);
         }
     };
 
@@ -247,19 +218,15 @@ export default class SessionRecipe extends RecipeModule {
             } else {
                 throw err;
             }
-        } else if (this.openIdRecipe !== undefined) {
-            return await this.openIdRecipe.handleError(err, request, response);
         } else {
-            throw err;
+            return await this.openIdRecipe.handleError(err, request, response);
         }
     };
 
     getAllCORSHeaders = (): string[] => {
         let corsHeaders: string[] = [...getCORSAllowedHeadersFromCookiesAndHeaders()];
 
-        if (this.openIdRecipe !== undefined) {
-            corsHeaders.push(...this.openIdRecipe.getAllCORSHeaders());
-        }
+        corsHeaders.push(...this.openIdRecipe.getAllCORSHeaders());
 
         return corsHeaders;
     };
@@ -267,8 +234,7 @@ export default class SessionRecipe extends RecipeModule {
     isErrorFromThisRecipe = (err: any): err is STError => {
         return (
             STError.isErrorFromSuperTokens(err) &&
-            (err.fromRecipe === SessionRecipe.RECIPE_ID ||
-                (this.openIdRecipe !== undefined && this.openIdRecipe.isErrorFromThisRecipe(err)))
+            (err.fromRecipe === SessionRecipe.RECIPE_ID || this.openIdRecipe.isErrorFromThisRecipe(err))
         );
     };
 

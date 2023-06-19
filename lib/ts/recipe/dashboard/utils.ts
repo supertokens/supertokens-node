@@ -13,12 +13,15 @@
  * under the License.
  */
 
-import { BaseResponse } from "../../framework";
+import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
+    SEARCH_TAGS_API,
+    SIGN_IN_API,
+    SIGN_OUT_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -28,6 +31,7 @@ import {
     USER_PASSWORD_API,
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
+    DASHBOARD_ANALYTICS_API,
 } from "./constants";
 import {
     APIInterface,
@@ -50,20 +54,17 @@ import ThirdPartyEmailPasswordRecipe from "../thirdpartyemailpassword/recipe";
 import ThirdPartyPasswordless from "../thirdpartypasswordless";
 import ThirdPartyPasswordlessRecipe from "../thirdpartypasswordless/recipe";
 
-export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
-    if (config.apiKey.trim().length === 0) {
-        throw new Error("apiKey provided to Dashboard recipe cannot be empty");
-    }
-
+export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
+        ...(config === undefined ? {} : config.override),
     };
 
     return {
-        apiKey: config.apiKey,
+        ...config,
         override,
+        authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
     };
 }
 
@@ -89,6 +90,14 @@ export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): 
 export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined {
     if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === "post") {
         return VALIDATE_KEY_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(SIGN_IN_API) && method === "post") {
+        return SIGN_IN_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(SIGN_OUT_API) && method === "post") {
+        return SIGN_OUT_API;
     }
 
     if (path.getAsStringDangerous().endsWith(USERS_LIST_GET_API) && method === "get") {
@@ -133,6 +142,13 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 
     if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
         return USER_PASSWORD_API;
+    }
+    if (path.getAsStringDangerous().endsWith(SEARCH_TAGS_API) && method === "get") {
+        return SEARCH_TAGS_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(DASHBOARD_ANALYTICS_API) && method === "post") {
+        return DASHBOARD_ANALYTICS_API;
     }
 
     return undefined;
@@ -340,4 +356,21 @@ export function isRecipeInitialised(recipeId: RecipeIdForUser): boolean {
     }
 
     return isRecipeInitialised;
+}
+
+export async function validateApiKey(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }) {
+    let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
+
+    // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+    apiKeyHeaderValue = apiKeyHeaderValue?.split(" ")[1];
+
+    if (apiKeyHeaderValue === undefined) {
+        return false;
+    }
+
+    return apiKeyHeaderValue === input.config.apiKey;
+}
+
+export function getApiPathWithDashboardBase(path: string): string {
+    return DASHBOARD_API + path;
 }

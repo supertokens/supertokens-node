@@ -8,6 +8,8 @@ import ProviderGoogle from "./google";
 import ProviderGoogleWorkspaces from "./googleWorkspaces";
 import ProviderLinkedin from "./linkedin";
 import ProviderOkta from "./okta";
+import ProviderBitbucket from "./bitbucket";
+import ProviderGitlab from "./gitlab";
 
 export let ActiveDirectory = ProviderActiveDirectory;
 export let BoxySAML = ProviderBoxySAML;
@@ -19,3 +21,5 @@ export let Google = ProviderGoogle;
 export let GoogleWorkspaces = ProviderGoogleWorkspaces;
 export let Linkedin = ProviderLinkedin;
 export let Okta = ProviderOkta;
+export let Bitbucket = ProviderBitbucket;
+export let GitLab = ProviderGitlab;

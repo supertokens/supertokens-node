@@ -18,7 +18,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 
 export type TypeInput = {
-    apiKey: string;
+    apiKey?: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -29,7 +29,8 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    apiKey: string;
+    apiKey?: string;
+    authMode: AuthMode;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -61,6 +62,8 @@ export type APIInterface = {
 export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
 
 export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
+
+export type AuthMode = "api-key" | "email-password";
 
 type CommonUserInformation = {
     id: string;

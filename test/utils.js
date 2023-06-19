@@ -23,6 +23,7 @@ let ThirPartyPasswordless = require("../lib/build/recipe/thirdpartypasswordless/
 let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
 let ThirdPartyPasswordlessRecipe = require("../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+let DashboardRecipe = require("../lib/build/recipe/dashboard/recipe").default;
 const EmailVerificationRecipe = require("../lib/build/recipe/emailverification/recipe").default;
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
@@ -34,6 +35,9 @@ let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
+const { join } = require("path");
+
+const users = require("./users.json");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -233,6 +237,7 @@ module.exports.resetAll = function () {
     UserRolesRecipe.reset();
     PasswordlessRecipe.reset();
     OpenIDRecipe.reset();
+    DashboardRecipe.reset();
     ProcessState.getInstance().reset();
     MultitenancyRecipe.reset();
 };
@@ -564,4 +569,53 @@ module.exports.mockRequest = () => {
         header: (key) => headers[key],
     };
     return req;
+};
+
+module.exports.getAllFilesInDirectory = (path) => {
+    return fs
+        .readdirSync(path, {
+            withFileTypes: true,
+        })
+        .flatMap((file) => {
+            if (file.isDirectory()) {
+                return this.getAllFilesInDirectory(join(path, file.name));
+            } else {
+                return join(path, file.name);
+            }
+        });
+};
+
+module.exports.createUsers = async (emailpassword = null, passwordless = null, thirdparty = null) => {
+    const usersArray = users.users;
+    for (let i = 0; i < usersArray.length; i++) {
+        const user = usersArray[i];
+        if (user.recipe === "emailpassword" && emailpassword !== null) {
+            await emailpassword.signUp(user.email, user.password);
+        }
+        if (user.recipe === "passwordless" && passwordless !== null) {
+            if (user.email !== undefined) {
+                const codeResponse = await passwordless.createCode({
+                    email: user.email,
+                });
+                await passwordless.consumeCode({
+                    preAuthSessionId: codeResponse.preAuthSessionId,
+                    deviceId: codeResponse.deviceId,
+                    userInputCode: codeResponse.userInputCode,
+                });
+            } else {
+                const codeResponse = await passwordless.createCode({
+                    phoneNumber: user.phone,
+                });
+                await passwordless.consumeCode({
+                    preAuthSessionId: codeResponse.preAuthSessionId,
+                    deviceId: codeResponse.deviceId,
+                    userInputCode: codeResponse.userInputCode,
+                });
+            }
+        }
+
+        if (user.recipe === "thirdparty" && thirdparty !== null) {
+            await thirdparty.signInUp(user.provider, user.userId, user.email);
+        }
+    }
 };
