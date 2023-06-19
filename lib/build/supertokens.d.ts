@@ -37,7 +37,7 @@ export default class SuperTokens {
             recipeId: string;
             user: any;
         }[];
-        nextPaginationToken?: string;
+        nextPaginationToken?: string | undefined;
     }>;
     deleteUser: (input: {
         userId: string;

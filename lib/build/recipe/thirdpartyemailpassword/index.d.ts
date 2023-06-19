@@ -85,7 +85,6 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
-    static Google: typeof import("../thirdparty/providers/google").default;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
