@@ -22,7 +22,7 @@ export type TypeInput = {
     issuer?: string;
     defaultSkew?: number;
     defaultPeriod?: number;
-    getEmailOrPhoneForRecipeUserId?: GetUserIdentifierInfoForUserIdFunc;
+    getUserIdentifierInfoForUserId?: GetUserIdentifierInfoForUserIdFunc;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -112,8 +112,6 @@ export type APIInterface = {
     createDevicePOST?: (input: {
         session: SessionContainer;
         deviceName: string;
-        skew?: number;
-        period?: number;
         options: APIOptions;
         userContext: any;
     }) => Promise<
