@@ -55,7 +55,7 @@ export default class Recipe extends RecipeModule {
         method: HTTPMethod
     ) => Promise<boolean>;
     handleError: (
-        err: STErrorThirdParty | STErrorPasswordless,
+        err: STErrorPasswordless | STErrorThirdParty,
         request: BaseRequest,
         response: BaseResponse
     ) => Promise<void>;

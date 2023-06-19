@@ -18,7 +18,7 @@ import {
     normaliseUserInputConfig,
 } from "../../../../../ingredients/smsdelivery/services/twilio";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import * as Twilio from "twilio";
+import Twilio from "twilio";
 import OverrideableBuilder from "supertokens-js-override";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { getServiceImplementation } from "./serviceImplementation";

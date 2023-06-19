@@ -15,9 +15,11 @@
 
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import { Querier } from "../../../querier";
 import SuperTokens from "../../../supertokens";
+import { maxVersion } from "../../../utils";
 import { DASHBOARD_API } from "../constants";
-import { APIInterface } from "../types";
+import { APIInterface, AuthMode } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -33,8 +35,17 @@ export default function getAPIImplementation(): APIInterface {
             let connectionURI: string = "";
             const superTokensInstance = SuperTokens.getInstanceOrThrowError();
 
+            const authMode: AuthMode = input.options.config.authMode;
+
             if (superTokensInstance.supertokens !== undefined) {
                 connectionURI = superTokensInstance.supertokens.connectionURI;
+            }
+
+            let isSearchEnabled = false;
+            const cdiVersion = await Querier.getNewInstanceOrThrowError(input.options.recipeId).getAPIVersion();
+            if (maxVersion("2.20", cdiVersion) === cdiVersion) {
+                // Only enable search if CDI version is 2.20 or above
+                isSearchEnabled = true;
             }
 
             return `
@@ -47,6 +58,8 @@ export default function getAPIImplementation(): APIInterface {
                             .appendPath(new NormalisedURLPath(DASHBOARD_API))
                             .getAsStringDangerous()}"
                         window.connectionURI = "${connectionURI}"
+                        window.authMode = "${authMode}"
+                        window.isSearchEnabled = "${isSearchEnabled}"
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">

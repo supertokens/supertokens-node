@@ -1,11 +1,11 @@
-import * as jwt from "jsonwebtoken";
-import * as jwksClient from "jwks-rsa";
 import * as qs from "querystring";
 import { ProviderConfigForClientType } from "../types";
 import axios from "axios";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { logDebugMessage } from "../../../logger";
+import { verify, VerifyOptions } from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
 
 export async function doGetRequest(
     url: string,
@@ -72,8 +72,8 @@ export async function doPostRequest(
 export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
     jwksUri: string,
-    otherOptions: jwt.VerifyOptions
-): Promise<{ [key: string]: any }> {
+    otherOptions: VerifyOptions
+): Promise<any> {
     const client = jwksClient({
         jwksUri,
     });
@@ -85,7 +85,7 @@ export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
     }
 
     let payload: any = await new Promise((resolve, reject) => {
-        jwt.verify(idToken, getKey, otherOptions, function (err, decoded) {
+        verify(idToken, getKey, otherOptions, function (err, decoded) {
             if (err) {
                 reject(err);
             } else {

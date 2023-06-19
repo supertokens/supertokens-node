@@ -166,3 +166,49 @@ addCrossFrameworkTests(
     },
     { allTokenTransferMethods: true }
 );
+
+addCrossFrameworkTests(
+    (setup, callServer, _tokenTransferMethod) => {
+        describe("verifySession without middleware", () => {
+            it("should return a 401 for invalid tokens", async function () {
+                await setup({
+                    stConfig: {
+                        supertokens: {
+                            connectionURI: "http://localhost:8080",
+                        },
+                        appInfo: {
+                            apiDomain: "http://api.supertokens.io",
+                            appName: "SuperTokens",
+                            websiteDomain: "http://supertokens.io",
+                            apiBasePath: "/",
+                        },
+                        recipeList: [
+                            Session.init({
+                                antiCsrf: "VIA_TOKEN",
+                            }),
+                        ],
+                    },
+                    routes: [
+                        {
+                            path: "/session/verify",
+                            method: "post",
+                            verifySession: true,
+                            handler: async (req, res) => {
+                                res.json({ status: "OK" });
+                            },
+                        },
+                    ],
+                });
+
+                let res = extractInfoFromResponse(
+                    await callServer({
+                        method: "post",
+                        path: "/session/verify",
+                    })
+                );
+                assert.strictEqual(res.status, 401);
+            });
+        });
+    },
+    { allTokenTransferMethods: false, withoutMiddleware: true }
+);

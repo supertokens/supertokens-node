@@ -38,53 +38,8 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         userContext?: any
-    ): Promise<
-        | ({
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | ({
-              email: string;
-              thirdParty: {
-                  id: string;
-                  userId: string;
-              };
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | undefined
-    >;
-    static getUserById(
-        userId: string,
-        userContext?: any
-    ): Promise<
-        | ({
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | ({
-              email: string;
-              thirdParty: {
-                  id: string;
-                  userId: string;
-              };
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | undefined
-    >;
+    ): Promise<User | undefined>;
+    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
     static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
     static createCode(
         input: (
@@ -155,31 +110,7 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserByPhoneNumber(input: {
-        phoneNumber: string;
-        userContext?: any;
-    }): Promise<
-        | ({
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | ({
-              email: string;
-              thirdParty: {
-                  id: string;
-                  userId: string;
-              };
-          } & {
-              id: string;
-              timeJoined: number;
-              tenantId?: string | undefined;
-          })
-        | undefined
-    >;
+    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
     static updatePasswordlessUser(input: {
         userId: string;
         email?: string | null;
@@ -280,6 +211,14 @@ export declare let updatePasswordlessUser: typeof Wrapper.updatePasswordlessUser
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
+export declare let Google: typeof import("../thirdparty/providers/google").default;
+export declare let Github: typeof import("../thirdparty/providers/github").default;
+export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;
+export declare let Apple: typeof import("../thirdparty/providers/apple").default;
+export declare let Discord: typeof import("../thirdparty/providers/discord").default;
+export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
+export declare let Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
+export declare let GitLab: typeof import("../thirdparty/providers/gitlab").default;
 export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

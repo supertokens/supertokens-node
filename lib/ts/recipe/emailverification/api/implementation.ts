@@ -24,6 +24,9 @@ export default function getAPIInterface(): APIInterface {
                 } catch (err) {
                     // This should never happen, since we've just set the status above.
                     if ((err as Error).message === "UNKNOWN_USER_ID") {
+                        logDebugMessage(
+                            "verifyEmailPOST: Returning UNAUTHORISED because the user id provided is unknown"
+                        );
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
                             message: "Unknown User ID provided",
@@ -53,6 +56,9 @@ export default function getAPIInterface(): APIInterface {
                 await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
             } catch (err) {
                 if ((err as Error).message === "UNKNOWN_USER_ID") {
+                    logDebugMessage(
+                        "isEmailVerifiedGET: Returning UNAUTHORISED because the user id provided is unknown"
+                    );
                     throw new SessionError({
                         type: SessionError.UNAUTHORISED,
                         message: "Unknown User ID provided",
@@ -143,6 +149,9 @@ export default function getAPIInterface(): APIInterface {
                     status: "OK",
                 };
             } else {
+                logDebugMessage(
+                    "generateEmailVerifyTokenPOST: Returning UNAUTHORISED because the user id provided is unknown"
+                );
                 throw new SessionError({ type: SessionError.UNAUTHORISED, message: "Unknown User ID provided" });
             }
         },

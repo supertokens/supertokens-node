@@ -32,6 +32,14 @@ export default class Wrapper {
         thirdPartyUserId: string,
         userContext?: any
     ): Promise<User | undefined>;
+    static Google: typeof import("./providers/google").default;
+    static Github: typeof import("./providers/github").default;
+    static Facebook: typeof import("./providers/facebook").default;
+    static Apple: typeof import("./providers/apple").default;
+    static Discord: typeof import("./providers/discord").default;
+    static GoogleWorkspaces: typeof import("./providers/googleWorkspaces").default;
+    static Bitbucket: typeof import("./providers/bitbucket").default;
+    static GitLab: typeof import("./providers/gitlab").default;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

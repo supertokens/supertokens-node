@@ -15,7 +15,8 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "lib": ["ES2017"]
+        "lib": ["ES2017"],
+        "esModuleInterop": true
     },
     "include": ["ts/**/*"],
     "exclude": ["build"],

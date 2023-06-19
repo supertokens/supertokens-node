@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2022, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -14,5 +12,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const recipeImplementation_1 = require("./recipeImplementation");
-exports.default = recipeImplementation_1.default;
+
+import { APIInterface, APIOptions } from "../../types";
+import { Querier } from "../../../../querier";
+import NormalisedURLPath from "../../../../normalisedURLPath";
+
+type TagsResponse = { status: "OK"; tags: string[] };
+
+export const getSearchTags = async (_: APIInterface, options: APIOptions): Promise<TagsResponse> => {
+    let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
+    let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {});
+    return tagsResponse;
+};

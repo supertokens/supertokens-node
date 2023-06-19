@@ -1,6 +1,6 @@
 import * as express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface, SessionClaimValidator } from "../../recipe/session";
+import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
@@ -24,7 +24,7 @@ import {
     SupertokensService as SupertokensServiceP,
 } from "../../recipe/thirdpartypasswordless/smsdelivery";
 import UserMetadata from "../../recipe/usermetadata";
-import { BooleanClaim, PrimitiveClaim, SessionClaim } from "../../recipe/session/claims";
+import { BooleanClaim, PrimitiveClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
@@ -925,6 +925,7 @@ Multitenancy.init({
 import { TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
+import SuperTokensError from "../../lib/build/error";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {
@@ -940,11 +941,10 @@ let sessionConfig: SessionTypeInput = {
                         getAccessToken: session.getAccessToken,
                         getHandle: session.getHandle,
                         getAccessTokenPayload: session.getAccessTokenPayload,
-                        getSessionData: session.getSessionData,
+                        getSessionDataFromDatabase: session.getSessionDataFromDatabase,
                         getUserId: session.getUserId,
                         revokeSession: session.revokeSession,
-                        updateAccessTokenPayload: session.updateAccessTokenPayload,
-                        updateSessionData: session.updateSessionData,
+                        updateSessionDataInDatabase: session.updateSessionDataInDatabase,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
                         assertClaims: session.assertClaims,
                         fetchAndSetClaim: session.fetchAndSetClaim,
@@ -953,6 +953,8 @@ let sessionConfig: SessionTypeInput = {
                         removeClaim: session.removeClaim,
                         getExpiry: session.getExpiry,
                         getTimeCreated: session.getTimeCreated,
+                        getAllSessionTokensDangerously: session.getAllSessionTokensDangerously,
+                        attachToRequestResponse: session.attachToRequestResponse,
                     };
                 },
                 getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
@@ -960,10 +962,7 @@ let sessionConfig: SessionTypeInput = {
                 revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                 revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                 revokeSession: originalImpl.revokeSession,
-                updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
-                updateSessionData: originalImpl.updateSessionData,
-                getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
-                getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
+                updateSessionDataInDatabase: originalImpl.updateSessionDataInDatabase,
                 getSessionInformation: originalImpl.getSessionInformation,
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
                 mergeIntoAccessTokenPayload: originalImpl.mergeIntoAccessTokenPayload,
@@ -1148,8 +1147,8 @@ Supertokens.init({
                                 someKey: "someValue",
                             };
 
-                            input.sessionData = {
-                                ...input.sessionData,
+                            input.sessionDataInDatabase = {
+                                ...input.sessionDataInDatabase,
                                 someKey: "someValue",
                             };
 
@@ -1226,10 +1225,8 @@ Supertokens.init({
 });
 
 Session.init({
-    jwt: {
-        enable: true,
-        propertyNameInAccessTokenPayload: "someKey",
-    },
+    exposeAccessTokenToFrontendInCookieBasedAuth: true,
+    useDynamicAccessTokenSigningKey: false,
 });
 
 ThirdPartyEmailPassword.init({
@@ -1330,10 +1327,7 @@ Session.init({
                 refreshSession: async function (input) {
                     let session = await originalImplementation.refreshSession(input);
 
-                    let currAccessTokenPayload = session.getAccessTokenPayload();
-
-                    await session.updateAccessTokenPayload({
-                        ...currAccessTokenPayload,
+                    await session.mergeIntoAccessTokenPayload({
                         lastTokenRefresh: Date.now(),
                     });
 
@@ -1446,7 +1440,6 @@ Supertokens.init({
     },
     recipeList: [
         Dashboard.init({
-            apiKey: "",
             override: {
                 functions: () => {
                     return {
@@ -1470,9 +1463,9 @@ Supertokens.init({
     ],
 });
 
-Dashboard.init({
-    apiKey: "",
-});
+Dashboard.init();
+Dashboard.init(undefined);
+Dashboard.init({});
 
 Session.init({
     getTokenTransferMethod: () => "cookie",
@@ -1480,6 +1473,40 @@ Session.init({
 
 Session.init({
     getTokenTransferMethod: () => "header",
+    override: {
+        functions: (oI) => ({
+            ...oI,
+            getSession: async (input) => {
+                const session = await oI.getSession(input);
+                if (session !== undefined) {
+                    const origPayload = session.getAccessTokenPayload();
+                    if (origPayload.appSub === undefined) {
+                        await session.mergeIntoAccessTokenPayload({ appSub: origPayload.sub, sub: null });
+                    }
+                }
+                return session;
+            },
+            createNewSession: async (input) => {
+                return oI.createNewSession({
+                    ...input,
+                    accessTokenPayload: {
+                        ...input.accessTokenPayload,
+                        appSub: input.userId + "!!!",
+                    },
+                });
+            },
+        }),
+        openIdFeature: {
+            functions: (oI) => ({
+                ...oI,
+                getOpenIdDiscoveryConfiguration: async (input) => ({
+                    issuer: "your issuer",
+                    jwks_uri: "https://your.api.domain/auth/jwt/jwks.json",
+                    status: "OK",
+                }),
+            }),
+        },
+    },
 });
 
 Supertokens.init({
@@ -1538,3 +1565,168 @@ Passwordless.init({
         },
     },
 });
+
+async function getSessionWithErrorHandlerMiddleware(req: express.Request, resp: express.Response) {
+    const session = await Session.getSession(req, resp, {
+        /* options */
+    });
+
+    // ...
+}
+
+async function getSessionWithoutErrorHandler(req: express.Request, resp: express.Response, next: express.NextFunction) {
+    try {
+        const session = await Session.getSession(req, resp, {
+            /* options */
+        });
+        /* .... */
+    } catch (err) {
+        if (SuperTokensError.isErrorFromSuperTokens(err)) {
+            if (err.type === Session.Error.TRY_REFRESH_TOKEN) {
+                resp.status(401).json({ message: "try again " });
+                // This means that the session exists, but the access token
+                // has expired.
+
+                // You can handle this in a custom way by sending a 401.
+                // Or you can call the errorHandler middleware as shown below
+            } else if (err.type === Session.Error.UNAUTHORISED) {
+                resp.status(401).json({ message: "try again " });
+                // This means that the session does not exist anymore.
+                // You can handle this in a custom way by sending a 401.
+                // Or you can call the errorHandler middleware as shown below
+            } else if (err.type === Session.Error.TOKEN_THEFT_DETECTED) {
+                // Security Alert!!
+                resp.status(401).json({ message: "try again " });
+                // Session hijacking attempted. You should revoke the session
+                // using Session.revokeSession fucntion and send a 401
+            } else if (err.type === Session.Error.INVALID_CLAIMS) {
+                resp.status(403).json({ status: "CLAIM_VALIDATION_ERROR", claimValidationErrors: err.payload });
+                // The user is missing some required claim.
+                // You can pass the missing claims to the frontend and handle it there
+            }
+
+            // OR you can use this errorHandler which will
+            // handle all of the above errors in the default way
+            errorHandler()(err, req, resp, (err) => {
+                next(err);
+            });
+        } else {
+            next(err);
+        }
+    }
+}
+
+async function getSessionWithoutRequestOrErrorHandler(req: express.Request, resp: express.Response) {
+    const accessToken = req.headers.authorization?.replace(/^Bearer /, "");
+
+    // We only need to split this declaration (and have the else statement) if the session is optional
+    let session;
+    if (!accessToken) {
+        // This means that the user doesn't have an active session
+        return resp.status(401).json({ message: "try again " }); // Or equivalent...
+    } else {
+        try {
+            const session1 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                antiCsrfCheck: false,
+            });
+            const session2 = await Session.getSessionWithoutRequestResponse(accessToken, undefined);
+            const session3 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                sessionRequired: false,
+            });
+            let x: boolean | undefined;
+            const session4 = await Session.getSessionWithoutRequestResponse(accessToken, undefined, {
+                sessionRequired: x,
+            });
+            const options: VerifySessionOptions = {};
+            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
+            session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { ...options });
+        } catch (ex) {
+            if (Session.Error.isErrorFromSuperTokens(ex)) {
+                if (ex.type === Session.Error.INVALID_CLAIMS) {
+                    return resp.status(403).json({
+                        message: "invalid claim",
+                        claimValidationErrors: ex.payload,
+                    }); // Or equivalent...
+                } else {
+                    resp.status(401);
+                }
+            } else {
+                throw ex;
+            }
+        }
+    }
+    // API code...
+}
+
+async function getSessionWithoutRequestWithErrorHandler(req: express.Request, resp: express.Response) {
+    const accessToken = req.headers.authorization?.replace(/^Bearer /, "");
+
+    // We only need to split this declaration (and have the else statement) if the session is optional
+    let session;
+    if (!accessToken) {
+        // This means that the user doesn't have an active session
+        return resp.status(401).json({ message: "try again " });
+    } else {
+        session = await Session.getSessionWithoutRequestResponse(accessToken, undefined, { antiCsrfCheck: false });
+    }
+    // API code...
+    if (session) {
+        const tokens = session.getAllSessionTokensDangerously();
+        if (tokens.accessAndFrontTokenUpdated) {
+            resp.set("st-access-token", tokens.accessToken);
+            resp.set("front-token", tokens.frontToken);
+        }
+    }
+}
+
+async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
+    const userId = "user-id"; // This would be fetched from somewhere
+
+    const session = await Session.createNewSessionWithoutRequestResponse(userId);
+
+    const tokens = session.getAllSessionTokensDangerously();
+    if (tokens.accessAndFrontTokenUpdated) {
+        resp.set("st-access-token", tokens.accessToken);
+        resp.set("front-token", tokens.frontToken);
+        resp.set("st-refresh-token", tokens.refreshToken);
+        if (tokens.antiCsrfToken) {
+            resp.set("anti-csrf", tokens.antiCsrfToken);
+        }
+    }
+}
+
+async function refreshSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
+    const refreshToken = req.headers.authorization?.replace(/^Bearer /, "");
+
+    if (!refreshToken) {
+        // This means that the user doesn't have an active session
+        return resp.status(401);
+    } else {
+        let session;
+
+        try {
+            session = await Session.refreshSessionWithoutRequestResponse(refreshToken, true);
+        } catch (ex) {
+            if (Session.Error.isErrorFromSuperTokens(ex)) {
+                return resp
+                    .status(401)
+                    .set("st-access-token", "")
+                    .set("set-refresh-token", "")
+                    .set("front-token", "remove"); // Or equivalent...
+            } else {
+                throw ex;
+            }
+        }
+
+        const tokens = session.getAllSessionTokensDangerously();
+
+        if (tokens.accessAndFrontTokenUpdated) {
+            resp.set("st-access-token", tokens.accessToken);
+            resp.set("front-token", tokens.frontToken);
+            resp.set("st-refresh-token", tokens.refreshToken);
+            if (tokens.antiCsrfToken) {
+                resp.set("anti-csrf", tokens.antiCsrfToken);
+            }
+        }
+    }
+}
