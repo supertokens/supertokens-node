@@ -15,4 +15,4 @@
 
 export const LOGIN_METHODS_API = "/loginmethods";
 
-export const DEFAULT_TENANT_ID = "defaultTenantId";
+export const DEFAULT_TENANT_ID = "public";

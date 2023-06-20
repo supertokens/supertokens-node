@@ -34,7 +34,7 @@ export default class Recipe extends RecipeModule {
     ) =>
         | {
               id: string;
-              tenantId?: string;
+              tenantId?: string | undefined;
           }
         | undefined;
 }

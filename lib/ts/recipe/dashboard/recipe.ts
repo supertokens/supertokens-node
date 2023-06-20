@@ -59,6 +59,7 @@ import signIn from "./api/signIn";
 import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -357,16 +358,42 @@ export default class Recipe extends RecipeModule {
     ): { id: string; tenantId?: string } | undefined => {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
 
+        const basePathStr = this.getAppInfo().apiBasePath.getAsStringDangerous();
+        const pathStr = path.getAsStringDangerous();
+        const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?(/.*)$`);
+
+        const match = pathStr.match(regex);
+        let tenantId: string = DEFAULT_TENANT_ID;
+        let remainingPath: NormalisedURLPath | undefined = undefined;
+
+        if (match) {
+            tenantId = match[1];
+            remainingPath = new NormalisedURLPath(match[2]);
+        }
+
         if (isApiPath(path, this.getAppInfo())) {
-            const id = getApiIdIfMatched(path, method);
-            if (id === undefined) {
-                return undefined;
+            let id = getApiIdIfMatched(path, method);
+            if (id !== undefined) {
+                return { id, tenantId: DEFAULT_TENANT_ID };
             }
-            return { id };
+
+            if (remainingPath !== undefined) {
+                id = getApiIdIfMatched(remainingPath, method);
+                if (id !== undefined) {
+                    return { id, tenantId };
+                }
+            }
         }
 
         if (path.startsWith(dashboardBundlePath)) {
-            return { id: DASHBOARD_API };
+            return { id: DASHBOARD_API, tenantId: DEFAULT_TENANT_ID };
+        }
+
+        const dashboardBundlePathWithTenantId = this.getAppInfo()
+            .apiBasePath.appendPath(new NormalisedURLPath(`/${tenantId}`))
+            .appendPath(new NormalisedURLPath(DASHBOARD_API));
+        if (path.startsWith(dashboardBundlePathWithTenantId)) {
+            return { id: DASHBOARD_API, tenantId };
         }
 
         return undefined;

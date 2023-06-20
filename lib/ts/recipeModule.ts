@@ -17,6 +17,7 @@ import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
+import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
 export default abstract class RecipeModule {
     private recipeId: string;
@@ -47,7 +48,7 @@ export default abstract class RecipeModule {
         const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?(/.*)$`);
 
         const match = pathStr.match(regex);
-        let tenantId: string | undefined = undefined;
+        let tenantId: string = DEFAULT_TENANT_ID;
         let remainingPath: NormalisedURLPath | undefined = undefined;
 
         if (match) {
@@ -59,7 +60,7 @@ export default abstract class RecipeModule {
             let currAPI = apisHandled[i];
             if (!currAPI.disabled && currAPI.method === method) {
                 if (this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)) {
-                    return { id: currAPI.id };
+                    return { id: currAPI.id, tenantId: DEFAULT_TENANT_ID };
                 } else if (
                     remainingPath !== undefined &&
                     this.appInfo.apiBasePath
