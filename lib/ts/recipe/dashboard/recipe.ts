@@ -59,6 +59,7 @@ import signIn from "./api/signIn";
 import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -247,6 +248,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        _: string | undefined, // TODO tenantId
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
@@ -350,16 +352,50 @@ export default class Recipe extends RecipeModule {
         return error.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
+    returnAPIIdIfCanHandleRequest = (
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ): { id: string; tenantId: string } | undefined => {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
 
-        if (isApiPath(path, this.getAppInfo())) {
-            return getApiIdIfMatched(path, method);
+        const basePathStr = this.getAppInfo().apiBasePath.getAsStringDangerous();
+        const pathStr = path.getAsStringDangerous();
+        const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?(/.*)$`);
+
+        const match = pathStr.match(regex);
+        let tenantId: string = DEFAULT_TENANT_ID;
+        let remainingPath: NormalisedURLPath | undefined = undefined;
+
+        if (match) {
+            tenantId = match[1];
+            remainingPath = new NormalisedURLPath(match[2]);
+        }
+
+        if (
+            isApiPath(path, this.getAppInfo().apiBasePath) ||
+            (remainingPath !== undefined &&
+                isApiPath(path, this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(`/${tenantId}`))))
+        ) {
+            // check remainingPath first as path that contains tenantId might match as well
+            // since getApiIdIfMatched uses endsWith to match
+            if (remainingPath !== undefined) {
+                const id = getApiIdIfMatched(remainingPath, method);
+                if (id !== undefined) {
+                    return { id, tenantId };
+                }
+            }
+
+            const id = getApiIdIfMatched(path, method);
+            if (id !== undefined) {
+                return { id, tenantId: DEFAULT_TENANT_ID };
+            }
         }
 
         if (path.startsWith(dashboardBundlePath)) {
-            return DASHBOARD_API;
+            return { id: DASHBOARD_API, tenantId: DEFAULT_TENANT_ID };
         }
+
+        // tenantId is not supported for bundlePath, so not matching for it
 
         return undefined;
     };

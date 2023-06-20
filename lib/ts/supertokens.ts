@@ -123,12 +123,13 @@ export default class SuperTokens {
     handleAPI = async (
         matchedRecipe: RecipeModule,
         id: string,
+        tenantId: string,
         request: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
     ) => {
-        return await matchedRecipe.handleAPIRequest(id, request, response, path, method);
+        return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method);
     };
 
     getAllCORSHeaders = (): string[] => {
@@ -353,8 +354,8 @@ export default class SuperTokens {
             }
             logDebugMessage("middleware: Matched with recipe ID: " + matchedRecipe.getRecipeId());
 
-            let id = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
-            if (id === undefined) {
+            let idResult = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
+            if (idResult === undefined) {
                 logDebugMessage(
                     "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
                         path.getAsStringDangerous() +
@@ -365,10 +366,17 @@ export default class SuperTokens {
                 return false;
             }
 
-            logDebugMessage("middleware: Request being handled by recipe. ID is: " + id);
+            logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
 
             // give task to the matched recipe
-            let requestHandled = await matchedRecipe.handleAPIRequest(id, request, response, path, method);
+            let requestHandled = await matchedRecipe.handleAPIRequest(
+                idResult.id,
+                idResult.tenantId,
+                request,
+                response,
+                path,
+                method
+            );
             if (!requestHandled) {
                 logDebugMessage("middleware: Not handled because API returned requestHandled as false");
                 return false;
@@ -379,11 +387,12 @@ export default class SuperTokens {
             // we loop through all recipe modules to find the one with the matching path and method
             for (let i = 0; i < this.recipeModules.length; i++) {
                 logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
-                let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
-                if (id !== undefined) {
-                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + id);
+                let idResult = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
+                if (idResult !== undefined) {
+                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
                     let requestHandled = await this.recipeModules[i].handleAPIRequest(
-                        id,
+                        idResult.id,
+                        idResult.tenantId,
                         request,
                         response,
                         path,

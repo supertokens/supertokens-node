@@ -19,6 +19,7 @@ export default class SuperTokens {
     handleAPI: (
         matchedRecipe: RecipeModule,
         id: string,
+        tenantId: string,
         request: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,

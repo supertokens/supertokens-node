@@ -165,6 +165,7 @@ export default class SessionRecipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string | undefined,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
@@ -183,7 +184,7 @@ export default class SessionRecipe extends RecipeModule {
         } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options);
         } else {
-            return await this.openIdRecipe.handleAPIRequest(id, req, res, path, method);
+            return await this.openIdRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
         }
     };
 

@@ -206,19 +206,20 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string | undefined,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
     ): Promise<boolean> => {
         if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
-            return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, path, method);
+            return await this.emailPasswordRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
         }
         if (
             this.thirdPartyRecipe !== undefined &&
             this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
         ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
+            return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
         }
         return false;
     };
