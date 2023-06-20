@@ -145,6 +145,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        _: string | undefined, // TODO tenantId
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,

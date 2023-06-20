@@ -247,6 +247,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        _: string | undefined, // TODO tenantId
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
@@ -350,15 +351,22 @@ export default class Recipe extends RecipeModule {
         return error.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
+    returnAPIIdIfCanHandleRequest = (
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ): { id: string; tenantId?: string } | undefined => {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
 
         if (isApiPath(path, this.getAppInfo())) {
-            return getApiIdIfMatched(path, method);
+            const id = getApiIdIfMatched(path, method);
+            if (id === undefined) {
+                return undefined;
+            }
+            return { id };
         }
 
         if (path.startsWith(dashboardBundlePath)) {
-            return DASHBOARD_API;
+            return { id: DASHBOARD_API };
         }
 
         return undefined;

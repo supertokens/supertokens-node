@@ -9,10 +9,19 @@ export default abstract class RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo);
     getRecipeId: () => string;
     getAppInfo: () => NormalisedAppinfo;
-    returnAPIIdIfCanHandleRequest: (path: NormalisedURLPath, method: HTTPMethod) => string | undefined;
+    returnAPIIdIfCanHandleRequest: (
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) =>
+        | {
+              id: string;
+              tenantId?: string | undefined;
+          }
+        | undefined;
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(
         id: string,
+        tenantId: string | undefined,
         req: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,

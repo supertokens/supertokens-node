@@ -36,16 +36,38 @@ export default abstract class RecipeModule {
         return this.appInfo;
     };
 
-    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
+    returnAPIIdIfCanHandleRequest = (
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ): { id: string; tenantId?: string } | undefined => {
         let apisHandled = this.getAPIsHandled();
+
+        const basePathStr = this.appInfo.apiBasePath.getAsStringDangerous();
+        const pathStr = path.getAsStringDangerous();
+        const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?(/.*)$`);
+
+        const match = pathStr.match(regex);
+        let tenantId: string | undefined = undefined;
+        let remainingPath: NormalisedURLPath | undefined = undefined;
+
+        if (match) {
+            tenantId = match[1];
+            remainingPath = new NormalisedURLPath(match[2]);
+        }
+
         for (let i = 0; i < apisHandled.length; i++) {
             let currAPI = apisHandled[i];
-            if (
-                !currAPI.disabled &&
-                currAPI.method === method &&
-                this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)
-            ) {
-                return currAPI.id;
+            if (!currAPI.disabled && currAPI.method === method) {
+                if (this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)) {
+                    return { id: currAPI.id };
+                } else if (
+                    remainingPath !== undefined &&
+                    this.appInfo.apiBasePath
+                        .appendPath(currAPI.pathWithoutApiBasePath)
+                        .equals(this.appInfo.apiBasePath.appendPath(remainingPath))
+                ) {
+                    return { id: currAPI.id, tenantId };
+                }
             }
         }
         return undefined;
@@ -55,6 +77,7 @@ export default abstract class RecipeModule {
 
     abstract handleAPIRequest(
         id: string,
+        tenantId: string | undefined,
         req: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,

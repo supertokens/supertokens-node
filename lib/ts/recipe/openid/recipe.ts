@@ -91,6 +91,7 @@ export default class OpenIdRecipe extends RecipeModule {
     };
     handleAPIRequest = async (
         id: string,
+        tenantId: string | undefined,
         req: BaseRequest,
         response: BaseResponse,
         path: normalisedURLPath,
@@ -107,7 +108,7 @@ export default class OpenIdRecipe extends RecipeModule {
         if (id === GET_DISCOVERY_CONFIG_URL) {
             return await getOpenIdDiscoveryConfiguration(this.apiImpl, apiOptions);
         } else {
-            return this.jwtRecipe.handleAPIRequest(id, req, response, path, method);
+            return this.jwtRecipe.handleAPIRequest(id, tenantId, req, response, path, method);
         }
     };
     handleError = async (error: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {
