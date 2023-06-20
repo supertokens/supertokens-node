@@ -20,6 +20,7 @@ export default class OpenIdRecipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
+        tenantId: string | undefined,
         req: BaseRequest,
         response: BaseResponse,
         path: normalisedURLPath,
