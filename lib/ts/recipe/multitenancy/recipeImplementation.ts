@@ -30,7 +30,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         getTenantConfig: async function ({ tenantId }) {
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath(
-                    `${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant`
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant`
                 ),
                 {}
             );

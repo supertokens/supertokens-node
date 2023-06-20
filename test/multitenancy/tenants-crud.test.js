@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -35,7 +35,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test creation of tenants", async function () {
-        await startST();
+        await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -59,5 +59,44 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
 
         const tenants = await Multitenancy.listAllTenants();
         assert(tenants.tenants.length === 4); // public + 3 tenants created above
+    });
+
+    it("test get tenant", async function () {
+        await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+
+        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+        assert(tenantConfig.emailPassword.enabled === true);
+        assert(tenantConfig.passwordless.enabled === false);
+        assert(tenantConfig.thirdParty.enabled === false);
+
+        tenantConfig = await Multitenancy.getTenantConfig("t2");
+        assert(tenantConfig.passwordless.enabled === true);
+        assert(tenantConfig.emailPassword.enabled === false);
+        assert(tenantConfig.thirdParty.enabled === false);
+
+        tenantConfig = await Multitenancy.getTenantConfig("t3");
+        assert(tenantConfig.thirdParty.enabled === true);
+        assert(tenantConfig.passwordless.enabled === false);
+        assert(tenantConfig.emailPassword.enabled === false);
     });
 });

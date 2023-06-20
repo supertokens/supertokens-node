@@ -36,6 +36,7 @@ let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
 const { join } = require("path");
+const axios = require("axios");
 
 const users = require("./users.json");
 
@@ -307,10 +308,13 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
 };
 
 module.exports.startSTWithMultitenancy = async function (host = "localhost", port = 8080) {
-    await startST(host, port);
+    await module.exports.startST(host, port);
     const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
-        "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-" +
-        "BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
+        "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
+
+    await axios.put(`http://${host}:${port}/ee/license`, {
+        licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+    });
 };
 
 async function getListOfPids() {
