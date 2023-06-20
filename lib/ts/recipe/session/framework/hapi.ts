@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { ResponseToolkit } from "@hapi/hapi";
@@ -22,7 +23,29 @@ export function verifySession(options?: VerifySessionOptions) {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new HapiRequest(req);
         let response = new HapiResponse(h as ExtendedResponseToolkit);
-        req.session = await sessionRecipe.verifySession(options, request, response);
+
+        try {
+            req.session = await sessionRecipe.verifySession(options, request, response);
+        } catch (err) {
+            try {
+                const supertokens = SuperTokens.getInstanceOrThrowError();
+                await supertokens.errorHandler(err, request, response);
+                if (response.responseSet) {
+                    let resObj = response.sendResponse(true);
+                    (((req.app as any).lazyHeaders || []) as {
+                        key: string;
+                        value: string;
+                        allowDuplicateKey: boolean;
+                    }[]).forEach(({ key, value, allowDuplicateKey }) => {
+                        resObj.header(key, value, { append: allowDuplicateKey });
+                    });
+                    return resObj.takeover();
+                }
+            } catch {
+                // We catch and ignore since we want to re-throw the original error if handling wasn't successful
+                throw err;
+            }
+        }
         return h.continue;
     };
 }

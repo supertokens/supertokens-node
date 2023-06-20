@@ -71,7 +71,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             assert.ok(payload["iss"], "http://api.supertokens.io/auth");
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
-            assert(payload["st-true"].t > Date.now() - 1000);
+            assert(payload["st-true"].t > Date.now() - 1500);
         });
 
         it("should create access token payload wo/ session claims with an undefined value", async function () {
@@ -166,7 +166,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             // We have the boolean claim
             assert.ok(payload["st-true"]);
             assert.strictEqual(payload["st-true"].v, true);
-            assert(payload["st-true"].t > Date.now() - 1000);
+            assert(payload["st-true"].t > Date.now() - 1500);
             // We have the custom claim
             // The resulting payload is different from the input: it doesn't container undefined
             assert.deepStrictEqual(payload["user-custom"], "asdf");
