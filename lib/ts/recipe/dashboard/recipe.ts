@@ -371,17 +371,23 @@ export default class Recipe extends RecipeModule {
             remainingPath = new NormalisedURLPath(match[2]);
         }
 
-        if (isApiPath(path, this.getAppInfo())) {
-            let id = getApiIdIfMatched(path, method);
-            if (id !== undefined) {
-                return { id, tenantId: DEFAULT_TENANT_ID };
-            }
-
+        if (
+            isApiPath(path, this.getAppInfo().apiBasePath) ||
+            (remainingPath !== undefined &&
+                isApiPath(path, this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(`/${tenantId}`))))
+        ) {
+            // check remainingPath first as path that contains tenantId might match as well
+            // since getApiIdIfMatched uses endsWith to match
             if (remainingPath !== undefined) {
-                id = getApiIdIfMatched(remainingPath, method);
+                const id = getApiIdIfMatched(remainingPath, method);
                 if (id !== undefined) {
                     return { id, tenantId };
                 }
+            }
+
+            const id = getApiIdIfMatched(path, method);
+            if (id !== undefined) {
+                return { id, tenantId: DEFAULT_TENANT_ID };
             }
         }
 
@@ -389,12 +395,7 @@ export default class Recipe extends RecipeModule {
             return { id: DASHBOARD_API, tenantId: DEFAULT_TENANT_ID };
         }
 
-        const dashboardBundlePathWithTenantId = this.getAppInfo()
-            .apiBasePath.appendPath(new NormalisedURLPath(`/${tenantId}`))
-            .appendPath(new NormalisedURLPath(DASHBOARD_API));
-        if (path.startsWith(dashboardBundlePathWithTenantId)) {
-            return { id: DASHBOARD_API, tenantId };
-        }
+        // tenantId is not supported for bundlePath, so not matching for it
 
         return undefined;
     };

@@ -29,6 +29,7 @@ let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let EmailPassword = require("../recipe/emailpassword");
+let Dashboard = require("../recipe/dashboard");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let { middleware, errorHandler } = require("../framework/express");
 let { verifySession } = require("../recipe/session/framework/express");
@@ -90,5 +91,47 @@ describe(`middleware3: ${printPath("[test/middleware3.test.js]")}`, function () 
         );
         assert(response.status == 200);
         assert(response.body.status === "OK");
+    });
+
+    it("test Dashboard APIs match with tenantId", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                EmailPassword.init(),
+                Dashboard.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/public/dashboard/api/signin")
+                .send({
+                    email: "test@example.com",
+                    password: "password1",
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(response.status == 200);
     });
 });

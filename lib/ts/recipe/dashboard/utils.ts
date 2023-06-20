@@ -15,7 +15,7 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { HTTPMethod, NormalisedAppinfo } from "../../types";
+import { HTTPMethod } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
 import {
     DASHBOARD_API,
@@ -68,8 +68,8 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
     };
 }
 
-export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): boolean {
-    const dashboardRecipeBasePath = appInfo.apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
+export function isApiPath(path: NormalisedURLPath, basePath: NormalisedURLPath): boolean {
+    const dashboardRecipeBasePath = basePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
     if (!path.startsWith(dashboardRecipeBasePath)) {
         return false;
     }
