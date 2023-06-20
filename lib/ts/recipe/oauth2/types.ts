@@ -129,7 +129,7 @@ export type RecipeInterface = {
         oauth2AccessToken: string;
 
         userContext: any;
-    }): Promise<JSONObject | { status: "UNAUTHORISED_ERROR" }>;
+    }): Promise<{ status: "OK"; info: JSONObject } | { status: "UNAUTHORISED_ERROR" }>;
 
     createAuthCode(input: {
         clientId: string;

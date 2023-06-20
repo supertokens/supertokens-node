@@ -2,7 +2,7 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { GeneralErrorResponse, JSONObject } from "../../types";
-import { SessionContainer } from "../session";
+import { SessionContainer, SessionInformation } from "../session";
 export declare type TypeInput = {
     override?: {
         functions?: (
@@ -39,6 +39,7 @@ export declare type APIInterface = {
         refreshToken?: string;
         redirectUri?: string;
         scope: string[];
+        queryString: string;
         options: APIOptions;
         userContext: any;
     }): Promise<
@@ -59,8 +60,7 @@ export declare type APIInterface = {
         state?: string;
         codeChallenge?: string;
         codeChallengeMethod?: CodeChallengeMethod;
-        prompt?: OAuthPromptType;
-        nonce?: string;
+        queryString: string;
         session?: SessionContainer;
         options: APIOptions;
         userContext: any;
@@ -78,8 +78,7 @@ export declare type APIInterface = {
         state?: string;
         codeChallenge?: string;
         codeChallengeMethod?: CodeChallengeMethod;
-        prompt?: OAuthPromptType;
-        nonce?: string;
+        queryString: string;
         session?: SessionContainer;
         options: APIOptions;
         userContext: any;
@@ -96,24 +95,33 @@ export declare type APIInterface = {
     }): Promise<
         | JSONObject
         | {
-              status: "UNAUTHORISED";
+              status: "UNAUTHORISED_ERROR";
               message: string;
           }
     >;
 };
 export declare type RecipeInterface = {
-    getUserInfo(input: { oauth2AccessToken: string; userContext: any }): Promise<JSONObject>;
+    getUserInfo(input: {
+        oauth2AccessToken: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              info: JSONObject;
+          }
+        | {
+              status: "UNAUTHORISED_ERROR";
+          }
+    >;
     createAuthCode(input: {
         clientId: string;
-        responseType: ResponseType;
+        responseTypes: ResponseType[];
+        sessionHandle: string;
         redirectUri?: string;
         scopes: string[];
         codeChallenge?: string;
         codeChallengeMethod?: CodeChallengeMethod;
-        prompt?: OAuthPromptType;
-        nonce?: string;
-        allQueryParams: string;
-        session: SessionContainer;
+        queryString: string;
         userContext: any;
     }): Promise<
         | {
@@ -124,8 +132,8 @@ export declare type RecipeInterface = {
         | {
               status: "CLIENT_ERROR";
               error: AuthorizationErrorCode;
-              errorDescription: string;
-              errorURI: string;
+              errorDescription?: string;
+              errorURI?: string;
           }
         | {
               status: "AUTH_ERROR";
@@ -141,15 +149,16 @@ export declare type RecipeInterface = {
                   code?: string;
                   codeVerifier?: string;
                   redirectUri: string;
-                  scope?: string[];
-                  allQueryParams: string;
+                  scopes?: string[];
+                  queryString: string;
                   userContext: any;
               }
             | {
                   clientId: string;
                   grantType: "client_credentials";
                   clientSecret: string;
-                  scope?: string[];
+                  scopes?: string[];
+                  queryString: string;
                   userContext: any;
               }
             | {
@@ -157,7 +166,8 @@ export declare type RecipeInterface = {
                   grantType: "refresh_token";
                   clientSecret?: string;
                   refreshToken?: string;
-                  scope?: string[];
+                  scopes?: string[];
+                  queryString: string;
                   userContext: any;
               }
     ): Promise<
@@ -174,76 +184,98 @@ export declare type RecipeInterface = {
               error: TokensErrorCode;
           }
     >;
-    verifyAccessToken(input: {
+    verifyAccessTokenFromDatabase(input: {
         clientId: string;
         accessToken: string;
-    }): Promise<{
-        sessionHandle?: string;
-        scopes: string[];
-        timeCreated: number;
-        lastUpdated: number;
-        timeAccessTokenExpires: number;
-        timeRefreshTokenExpires?: number;
-    }>;
-    getTokenInfo(input: {
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              tokenInfo: TokenInfo;
+          }
+        | {
+              status: "UNAUTHORISED_ERROR";
+          }
+    >;
+    getAuthCodeInfo(input: {
         clientId: string;
-        refreshToken?: string;
-        authCode?: string;
+        authCode: string;
+        userContext: any;
     }): Promise<{
-        sessionHandle?: string;
-        scopes: string[];
-        timeCreated: number;
-        lastUpdated: number;
-        timeAccessTokenExpires: number;
-        timeRefreshTokenExpires?: number;
+        status: "OK";
+        tokenInfo?: AuthCodeInfo;
     }>;
-    revokeToken(
+    getTokenInfoByRefreshToken(input: {
+        clientId: string;
+        refreshToken: string;
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        tokenInfo?: TokenInfo;
+    }>;
+    getIssuedTokens(input: {
+        clientId: string;
+        sessionHandle?: string;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "OK";
+              tokens: TokenInfo[];
+          }
+        | {
+              status: "UNKNOWN_CLIENT_ID_ERROR";
+          }
+    >;
+    revokeTokens(
         input:
             | {
                   clientId: string;
+                  userContext: any;
               }
             | {
                   sessionHandle: string;
+                  userContext: any;
               }
             | {
                   accessToken: string;
+                  userContext: any;
               }
     ): Promise<void>;
     revokeAuthCodes(
         input:
             | {
                   clientId: string;
+                  userContext: any;
               }
             | {
                   sessionHandle: string;
+                  userContext: any;
               }
     ): Promise<void>;
     buildAccessToken(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
+        tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
         userContext: any;
     }): Promise<{
         payload?: JSONObject;
         lifetimeInSecs?: number;
     }>;
     buildIdToken(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
+        tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
         userContext: any;
     }): Promise<{
         payload?: JSONObject;
         lifetimeInSecs?: number;
     }>;
-    getRefreshTokenLifetime(): Promise<number | undefined>;
+    getRefreshTokenLifetime(input: {
+        tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
+        userContext: any;
+    }): Promise<number | undefined>;
     validateScopes(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
+        tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
         userContext: any;
     }): Promise<
         | {
@@ -260,12 +292,32 @@ export declare type RecipeInterface = {
           }
     >;
     shouldIssueRefreshToken(input: {
-        clientId: string;
-        userId?: string;
-        sessionHandle?: string;
-        scopes: string[];
+        tokenInfo: TokenBuilderInfo;
+        sessionInformation?: SessionInformation;
         userContext: any;
     }): Promise<boolean>;
+};
+export declare type TokenBuilderInfo = {
+    clientId: string;
+    sessionHandle?: string;
+    scopes: string[];
+    queryString?: string;
+};
+export declare type AuthCodeInfo = TokenBuilderInfo & {
+    timeCreatedMs: number;
+    timeExpiresMs: number;
+    accessType: "offline" | "online";
+    authorizationCodeHash: string;
+    codeChallenge: string;
+    codeChallengeMethod: "S256";
+};
+export declare type TokenInfo = TokenBuilderInfo & {
+    accessTokenHash: string;
+    refreshTokenHash?: string;
+    timeCreatedMs: number;
+    lastUpdatedMs: number;
+    timeAccessTokenExpiresMs: number;
+    timeRefreshTokenExpiresMs?: number;
 };
 export declare type ResponseType = "code" | "id_token" | "token";
 export declare type CodeChallengeMethod = "S256";
