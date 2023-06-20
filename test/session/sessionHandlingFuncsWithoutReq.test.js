@@ -17,6 +17,8 @@ const assert = require("assert");
 const SuperTokens = require("../..");
 const Session = require("../../recipe/session");
 const JWT = require("../../recipe/jwt");
+const { maxVersion } = require("../../lib/build/utils");
+let { Querier } = require("../../lib/build/querier");
 
 describe(`Session handling functions without modifying response: ${printPath(
     "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
@@ -227,6 +229,14 @@ describe(`Session handling functions without modifying response: ${printPath(
                 },
                 recipeList: [Session.init(), JWT.init()],
             });
+
+            let q = Querier.getNewInstanceOrThrowError(undefined);
+            let apiVersion = await q.getAPIVersion();
+
+            // Only run test for >= 3.0 CDI (3.0 is after 2.21)
+            if (maxVersion(apiVersion, "2.21") === "2.21") {
+                return;
+            }
 
             const session = await Session.createNewSessionWithoutRequestResponse("testId");
             const originalPayload = session.getAccessTokenPayload();
