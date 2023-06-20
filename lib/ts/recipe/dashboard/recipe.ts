@@ -355,7 +355,7 @@ export default class Recipe extends RecipeModule {
     returnAPIIdIfCanHandleRequest = (
         path: NormalisedURLPath,
         method: HTTPMethod
-    ): { id: string; tenantId?: string } | undefined => {
+    ): { id: string; tenantId: string } | undefined => {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
 
         const basePathStr = this.getAppInfo().apiBasePath.getAsStringDangerous();

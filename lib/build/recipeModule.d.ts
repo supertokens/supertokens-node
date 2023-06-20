@@ -15,13 +15,13 @@ export default abstract class RecipeModule {
     ) =>
         | {
               id: string;
-              tenantId?: string | undefined;
+              tenantId: string;
           }
         | undefined;
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(
         id: string,
-        tenantId: string | undefined,
+        tenantId: string,
         req: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,

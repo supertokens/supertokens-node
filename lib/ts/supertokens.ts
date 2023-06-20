@@ -123,7 +123,7 @@ export default class SuperTokens {
     handleAPI = async (
         matchedRecipe: RecipeModule,
         id: string,
-        tenantId: string | undefined,
+        tenantId: string,
         request: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,

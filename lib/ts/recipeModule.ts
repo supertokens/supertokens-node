@@ -40,7 +40,7 @@ export default abstract class RecipeModule {
     returnAPIIdIfCanHandleRequest = (
         path: NormalisedURLPath,
         method: HTTPMethod
-    ): { id: string; tenantId?: string } | undefined => {
+    ): { id: string; tenantId: string } | undefined => {
         let apisHandled = this.getAPIsHandled();
 
         const basePathStr = this.appInfo.apiBasePath.getAsStringDangerous();
@@ -78,7 +78,7 @@ export default abstract class RecipeModule {
 
     abstract handleAPIRequest(
         id: string,
-        tenantId: string | undefined,
+        tenantId: string,
         req: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
