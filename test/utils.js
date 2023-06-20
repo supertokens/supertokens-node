@@ -306,6 +306,13 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
     });
 };
 
+module.exports.startSTWithMultitenancy = async function (host = "localhost", port = 8080) {
+    await startST(host, port);
+    const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
+        "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-" +
+        "BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
+};
+
 async function getListOfPids() {
     let installationPath = process.env.INSTALL_PATH;
     let currList;
