@@ -16,7 +16,7 @@
 import type { Request, ResponseToolkit, Plugin, ResponseObject, ServerRoute } from "@hapi/hapi";
 import type { Boom } from "@hapi/boom";
 import type { HTTPMethod } from "../../types";
-import { normaliseHttpMethod } from "../../utils";
+import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { normalizeHeaderValue, getCookieValueFromHeaders } from "../utils";
@@ -176,7 +176,9 @@ const plugin: Plugin<{}> = {
         server.ext("onPreHandler", async (req, h) => {
             let request = new HapiRequest(req);
             let response = new HapiResponse(h as ExtendedResponseToolkit);
-            let result = await supertokens.middleware(request, response);
+            const userContext = makeDefaultUserContextFromAPI(request);
+
+            let result = await supertokens.middleware(request, response, userContext);
             if (!result) {
                 return h.continue;
             }

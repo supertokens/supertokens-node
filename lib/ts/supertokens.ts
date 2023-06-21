@@ -127,9 +127,10 @@ export default class SuperTokens {
         request: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => {
-        return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method);
+        return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method, userContext);
     };
 
     getAllCORSHeaders = (): string[] => {
@@ -315,7 +316,7 @@ export default class SuperTokens {
         }
     };
 
-    middleware = async (request: BaseRequest, response: BaseResponse): Promise<boolean> => {
+    middleware = async (request: BaseRequest, response: BaseResponse, userContext: any): Promise<boolean> => {
         logDebugMessage("middleware: Started");
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
@@ -354,7 +355,7 @@ export default class SuperTokens {
             }
             logDebugMessage("middleware: Matched with recipe ID: " + matchedRecipe.getRecipeId());
 
-            let idResult = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
+            let idResult = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext);
             if (idResult === undefined) {
                 logDebugMessage(
                     "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
@@ -375,7 +376,8 @@ export default class SuperTokens {
                 request,
                 response,
                 path,
-                method
+                method,
+                userContext
             );
             if (!requestHandled) {
                 logDebugMessage("middleware: Not handled because API returned requestHandled as false");
@@ -387,7 +389,7 @@ export default class SuperTokens {
             // we loop through all recipe modules to find the one with the matching path and method
             for (let i = 0; i < this.recipeModules.length; i++) {
                 logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
-                let idResult = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
+                let idResult = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
                 if (idResult !== undefined) {
                     logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
                     let requestHandled = await this.recipeModules[i].handleAPIRequest(
@@ -396,7 +398,8 @@ export default class SuperTokens {
                         request,
                         response,
                         path,
-                        method
+                        method,
+                        userContext
                     );
                     if (!requestHandled) {
                         logDebugMessage("middleware: Not handled because API returned requestHandled as false");

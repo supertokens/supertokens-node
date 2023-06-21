@@ -210,14 +210,15 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
-        if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
+        if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext) !== undefined) {
             return await this.emailPasswordRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
         }
         if (
             this.thirdPartyRecipe !== undefined &&
-            this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
+            this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext) !== undefined
         ) {
             return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
         }

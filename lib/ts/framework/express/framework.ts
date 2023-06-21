@@ -15,7 +15,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 import type { HTTPMethod } from "../../types";
-import { normaliseHttpMethod } from "../../utils";
+import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import {
@@ -158,9 +158,11 @@ export const middleware = () => {
         let supertokens;
         const request = new ExpressRequest(req);
         const response = new ExpressResponse(res);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
             supertokens = SuperTokens.getInstanceOrThrowError();
-            const result = await supertokens.middleware(request, response);
+            const result = await supertokens.middleware(request, response, userContext);
             if (!result) {
                 return next();
             }
