@@ -43,7 +43,7 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        tenantExisted: boolean;
+        didExist: boolean;
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.deleteTenant({
@@ -88,6 +88,7 @@ export default class Wrapper {
     }
 
     static async createOrUpdateThirdPartyConfig(
+        tenantId: string | undefined,
         config: ProviderConfig,
         skipValidation?: boolean,
         userContext?: any
@@ -97,6 +98,7 @@ export default class Wrapper {
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.createOrUpdateThirdPartyConfig({
+            tenantId,
             config,
             skipValidation,
             userContext: userContext === undefined ? {} : userContext,
@@ -124,7 +126,10 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        providers: ProviderConfig[];
+        tenants: {
+            tenantId: string;
+            providers: ProviderConfig[];
+        }[];
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.listThirdPartyConfigsForThirdPartyId({

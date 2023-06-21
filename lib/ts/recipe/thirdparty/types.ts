@@ -40,7 +40,7 @@ export type UserInfoMap = {
 
 export type ProviderClientConfig = {
     clientType?: string;
-    clientID: string;
+    clientId: string;
     clientSecret?: string;
     scope?: string[];
     forcePKCE?: boolean;
@@ -49,7 +49,6 @@ export type ProviderClientConfig = {
 
 type CommonProviderConfig = {
     thirdPartyId: string;
-    tenantId?: string;
     name?: string;
 
     authorizationEndpoint?: string;

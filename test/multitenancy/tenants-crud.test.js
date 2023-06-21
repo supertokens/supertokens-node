@@ -99,4 +99,264 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         assert(tenantConfig.passwordless.enabled === false);
         assert(tenantConfig.emailPassword.enabled === false);
     });
+
+    it("test update tenant", async function () {
+        await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+
+        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+        assert(tenantConfig.emailPassword.enabled === true);
+        assert(tenantConfig.passwordless.enabled === false);
+        assert(tenantConfig.thirdParty.enabled === false);
+
+        await Multitenancy.createOrUpdateTenant("t1", { passwordlessEnabled: true });
+        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        assert(tenantConfig.emailPassword.enabled === true);
+        assert(tenantConfig.passwordless.enabled === true);
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: false });
+        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        assert(tenantConfig.emailPassword.enabled === false);
+        assert(tenantConfig.passwordless.enabled === true);
+    });
+
+    it("test delete tenant", async function () {
+        await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+
+        let tenants = await Multitenancy.listAllTenants();
+        assert(tenants.tenants.length === 4); // public + 3 tenants created above
+
+        let response = await Multitenancy.deleteTenant("t3");
+        assert(response.didExist === true);
+
+        tenants = await Multitenancy.listAllTenants();
+        assert(tenants.tenants.length === 3); // public + 3 tenants created above
+
+        response = await Multitenancy.deleteTenant("t3");
+        assert(response.didExist === false);
+    });
+
+    it("test creation of thirdParty config", async function () {
+        await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "abcd" }],
+        });
+
+        const tenantConfig = await Multitenancy.getTenantConfig("t1");
+
+        assert(tenantConfig.thirdParty.providers.length === 1);
+        assert(tenantConfig.thirdParty.providers[0].thirdPartyId === "google");
+        assert(tenantConfig.thirdParty.providers[0].clients.length === 1);
+        assert(tenantConfig.thirdParty.providers[0].clients[0].clientId === "abcd");
+    });
+
+    it("test deletion of thirdparty id", async function () {
+        await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "abcd" }],
+        });
+
+        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+
+        assert(tenantConfig.thirdParty.providers.length === 1);
+
+        await Multitenancy.deleteThirdPartyConfig("t1", "google");
+
+        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        assert(tenantConfig.thirdParty.providers.length === 0);
+    });
+
+    it("test updation of thirdparty provider", async function () {
+        await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "abcd" }],
+        });
+
+        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+
+        assert(tenantConfig.thirdParty.providers.length === 1);
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
+            thirdPartyId: "google",
+            name: "Custom name",
+            clients: [{ clientId: "efgh" }],
+        });
+
+        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        assert(tenantConfig.thirdParty.providers.length === 1);
+        assert(tenantConfig.thirdParty.providers[0].thirdPartyId === "google");
+        assert(tenantConfig.thirdParty.providers[0].name === "Custom name");
+        assert(tenantConfig.thirdParty.providers[0].clients.length === 1);
+        assert(tenantConfig.thirdParty.providers[0].clients[0].clientId === "efgh");
+    });
+
+    it("test query by thirdPartyId across all tenants", async function () {
+        await startSTWithMultitenancy();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Multitenancy.init()],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await Multitenancy.createOrUpdateTenant("t1", { thirdPartyEnabled: true });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "abcd" }],
+        });
+
+        await Multitenancy.createOrUpdateTenant("t2", { thirdPartyEnabled: true });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t2", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "efgh" }],
+        });
+
+        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t3", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "ijkl" }],
+        });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("t3", {
+            thirdPartyId: "facebook",
+            clients: [{ clientId: "abcd" }],
+        });
+
+        const results = await Multitenancy.listThirdPartyConfigsForThirdPartyId("google");
+        assert(results.tenants.length == 4);
+        let count = 0;
+        for (const tenant of results.tenants) {
+            if (tenant.tenantId == "t1") {
+                count++;
+                assert(tenant.providers.length === 1);
+                assert(tenant.providers[0].thirdPartyId === "google");
+                assert(tenant.providers[0].clients.length === 1);
+                assert(tenant.providers[0].clients[0].clientId === "abcd");
+            } else if (tenant.tenantId == "t2") {
+                count++;
+                assert(tenant.providers.length === 1);
+                assert(tenant.providers[0].thirdPartyId === "google");
+                assert(tenant.providers[0].clients.length === 1);
+                assert(tenant.providers[0].clients[0].clientId === "efgh");
+            } else if (tenant.tenantId == "t3") {
+                count++;
+                assert(tenant.providers.length === 1);
+                assert(tenant.providers[0].thirdPartyId === "google");
+                assert(tenant.providers[0].clients.length === 1);
+                assert(tenant.providers[0].clients[0].clientId === "ijkl");
+            }
+        }
+
+        assert(count == 3);
+    });
 });

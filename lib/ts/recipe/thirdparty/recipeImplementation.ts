@@ -111,7 +111,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenantConfig({ tenantId, userContext });
 
             const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
-                tenantId,
                 tenantConfig.thirdParty.providers,
                 providers
             );

@@ -18,7 +18,6 @@ export declare function findAndCreateProviderInstance(
 ): Promise<TypeProvider>;
 export declare function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderConfig): ProviderConfig;
 export declare function mergeProvidersFromCoreAndStatic(
-    tenantId: string | undefined,
     providerConfigsFromCore: ProviderConfig[],
     providerInputsFromStatic: ProviderInput[]
 ): ProviderInput[];

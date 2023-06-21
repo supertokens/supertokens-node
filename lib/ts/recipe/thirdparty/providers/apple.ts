@@ -69,7 +69,7 @@ export default function Apple(input: ProviderInput): TypeProvider {
                 }
 
                 config.clientSecret = getClientSecret(
-                    config.clientID,
+                    config.clientId,
                     config.additionalConfig.keyId,
                     config.additionalConfig.teamId,
                     config.additionalConfig.privateKey

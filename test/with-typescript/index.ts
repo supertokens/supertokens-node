@@ -125,7 +125,7 @@ ThirdPartyPasswordless.init({
         {
             config: {
                 thirdPartyId: "google",
-                clients: [{ clientID: "" }],
+                clients: [{ clientId: "" }],
             },
         },
     ],
@@ -315,7 +315,7 @@ ThirdPartyPasswordless.init({
         {
             config: {
                 thirdPartyId: "google",
-                clients: [{ clientID: "" }],
+                clients: [{ clientId: "" }],
             },
         },
     ],
@@ -381,7 +381,7 @@ ThirdPartyPasswordless.init({
         {
             config: {
                 thirdPartyId: "google",
-                clients: [{ clientID: "" }],
+                clients: [{ clientId: "" }],
             },
         },
     ],

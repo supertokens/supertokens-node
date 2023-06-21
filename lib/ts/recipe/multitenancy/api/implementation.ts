@@ -12,11 +12,7 @@ export default function getAPIInterface(): APIInterface {
             const providerInputsFromStatic = options.staticThirdPartyProviders;
             const providerConfigsFromCore = tenantConfigRes.thirdParty.providers;
 
-            const mergedProviders = mergeProvidersFromCoreAndStatic(
-                tenantId,
-                providerConfigsFromCore,
-                providerInputsFromStatic
-            );
+            const mergedProviders = mergeProvidersFromCoreAndStatic(providerConfigsFromCore, providerInputsFromStatic);
 
             const finalProviderList: {
                 id: string;

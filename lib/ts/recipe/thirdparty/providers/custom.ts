@@ -146,7 +146,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             // setting this temporarily. it will be replaced with correct config
             // by the `fetchAndSetConfig` function
             ...input.config,
-            clientID: "temp",
+            clientId: "temp",
         },
 
         getConfigForClientType: async function ({ clientType }) {
@@ -171,7 +171,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
 
         getAuthorisationRedirectURL: async function ({ redirectURIOnProviderDashboard }) {
             const queryParams: { [key: string]: string } = {
-                client_id: impl.config.clientID,
+                client_id: impl.config.clientId,
                 redirect_uri: redirectURIOnProviderDashboard,
                 response_type: "code",
             };
@@ -206,8 +206,8 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             let url: string = impl.config.authorizationEndpoint;
 
             /* Transformation needed for dev keys BEGIN */
-            if (isUsingDevelopmentClientId(impl.config.clientID)) {
-                queryParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config.clientID);
+            if (isUsingDevelopmentClientId(impl.config.clientId)) {
+                queryParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config.clientId);
                 queryParams["actual_redirect_uri"] = url;
                 url = DEV_OAUTH_AUTHORIZATION_URL;
             }
@@ -231,7 +231,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             }
             const tokenAPIURL = impl.config.tokenEndpoint;
             const accessTokenAPIParams: { [key: string]: string } = {
-                client_id: impl.config.clientID,
+                client_id: impl.config.clientId,
                 redirect_uri: redirectURIInfo.redirectURIOnProviderDashboard,
                 code: redirectURIInfo.redirectURIQueryParams["code"],
                 grant_type: "authorization_code",
@@ -252,8 +252,8 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             }
 
             /* Transformation needed for dev keys BEGIN */
-            if (isUsingDevelopmentClientId(impl.config.clientID)) {
-                accessTokenAPIParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config.clientID);
+            if (isUsingDevelopmentClientId(impl.config.clientId)) {
+                accessTokenAPIParams["client_id"] = getActualClientIdFromDevelopmentClientId(impl.config.clientId);
                 accessTokenAPIParams["redirect_uri"] = DEV_OAUTH_REDIRECT_URL;
             }
             /* Transformation needed for dev keys END */
@@ -278,7 +278,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
                     idToken,
                     impl.config.jwksURI,
                     {
-                        audience: getActualClientIdFromDevelopmentClientId(impl.config.clientID),
+                        audience: getActualClientIdFromDevelopmentClientId(impl.config.clientId),
                     }
                 );
 

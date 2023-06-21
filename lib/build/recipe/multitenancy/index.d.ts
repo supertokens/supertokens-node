@@ -23,7 +23,7 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        tenantExisted: boolean;
+        didExist: boolean;
     }>;
     static getTenantConfig(
         tenantId?: string,
@@ -48,6 +48,7 @@ export default class Wrapper {
         tenants: string[];
     }>;
     static createOrUpdateThirdPartyConfig(
+        tenantId: string | undefined,
         config: ProviderConfig,
         skipValidation?: boolean,
         userContext?: any
@@ -68,7 +69,10 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        providers: ProviderConfig[];
+        tenants: {
+            tenantId: string;
+            providers: ProviderConfig[];
+        }[];
     }>;
 }
 export declare let init: typeof Recipe.init;

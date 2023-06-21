@@ -70,7 +70,7 @@ export declare type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        tenantExisted: boolean;
+        didExist: boolean;
     }>;
     getTenantConfig: (input: {
         tenantId?: string;
@@ -95,6 +95,7 @@ export declare type RecipeInterface = {
         tenants: string[];
     }>;
     createOrUpdateThirdPartyConfig: (input: {
+        tenantId?: string;
         config: ProviderConfig;
         skipValidation?: boolean;
         userContext: any;
@@ -115,7 +116,10 @@ export declare type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        providers: ProviderConfig[];
+        tenants: {
+            tenantId: string;
+            providers: ProviderConfig[];
+        }[];
     }>;
 };
 export declare type APIOptions = {

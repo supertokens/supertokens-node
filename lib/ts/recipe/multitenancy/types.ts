@@ -95,7 +95,7 @@ export type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        tenantExisted: boolean;
+        didExist: boolean;
     }>;
     getTenantConfig: (input: {
         tenantId?: string;
@@ -122,6 +122,7 @@ export type RecipeInterface = {
 
     // Third party provider management
     createOrUpdateThirdPartyConfig: (input: {
+        tenantId?: string;
         config: ProviderConfig;
         skipValidation?: boolean;
         userContext: any;
@@ -142,7 +143,10 @@ export type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        providers: ProviderConfig[];
+        tenants: {
+            tenantId: string;
+            providers: ProviderConfig[];
+        }[];
     }>;
 };
 
