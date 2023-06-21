@@ -20,6 +20,7 @@ let { Querier } = require("../../lib/build/querier");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
 let Multitenancy = require("../../recipe/multitenancy");
+let EmailPassword = require("../../recipe/emailpassword");
 let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}`, function () {
@@ -84,20 +85,23 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
         await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
 
-        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+        let tenantConfig = await Multitenancy.getTenant("t1");
         assert(tenantConfig.emailPassword.enabled === true);
         assert(tenantConfig.passwordless.enabled === false);
         assert(tenantConfig.thirdParty.enabled === false);
+        assert(tenantConfig.coreConfig !== undefined);
 
-        tenantConfig = await Multitenancy.getTenantConfig("t2");
+        tenantConfig = await Multitenancy.getTenant("t2");
         assert(tenantConfig.passwordless.enabled === true);
         assert(tenantConfig.emailPassword.enabled === false);
         assert(tenantConfig.thirdParty.enabled === false);
+        assert(tenantConfig.coreConfig !== undefined);
 
-        tenantConfig = await Multitenancy.getTenantConfig("t3");
+        tenantConfig = await Multitenancy.getTenant("t3");
         assert(tenantConfig.thirdParty.enabled === true);
         assert(tenantConfig.passwordless.enabled === false);
         assert(tenantConfig.emailPassword.enabled === false);
+        assert(tenantConfig.coreConfig !== undefined);
     });
 
     it("test update tenant", async function () {
@@ -121,18 +125,18 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
 
         await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
 
-        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+        let tenantConfig = await Multitenancy.getTenant("t1");
         assert(tenantConfig.emailPassword.enabled === true);
         assert(tenantConfig.passwordless.enabled === false);
         assert(tenantConfig.thirdParty.enabled === false);
 
         await Multitenancy.createOrUpdateTenant("t1", { passwordlessEnabled: true });
-        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        tenantConfig = await Multitenancy.getTenant("t1");
         assert(tenantConfig.emailPassword.enabled === true);
         assert(tenantConfig.passwordless.enabled === true);
 
         await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: false });
-        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        tenantConfig = await Multitenancy.getTenant("t1");
         assert(tenantConfig.emailPassword.enabled === false);
         assert(tenantConfig.passwordless.enabled === true);
     });
@@ -199,7 +203,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
             clients: [{ clientId: "abcd" }],
         });
 
-        const tenantConfig = await Multitenancy.getTenantConfig("t1");
+        const tenantConfig = await Multitenancy.getTenant("t1");
 
         assert(tenantConfig.thirdParty.providers.length === 1);
         assert(tenantConfig.thirdParty.providers[0].thirdPartyId === "google");
@@ -233,13 +237,13 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
             clients: [{ clientId: "abcd" }],
         });
 
-        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+        let tenantConfig = await Multitenancy.getTenant("t1");
 
         assert(tenantConfig.thirdParty.providers.length === 1);
 
         await Multitenancy.deleteThirdPartyConfig("t1", "google");
 
-        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        tenantConfig = await Multitenancy.getTenant("t1");
         assert(tenantConfig.thirdParty.providers.length === 0);
     });
 
@@ -269,7 +273,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
             clients: [{ clientId: "abcd" }],
         });
 
-        let tenantConfig = await Multitenancy.getTenantConfig("t1");
+        let tenantConfig = await Multitenancy.getTenant("t1");
 
         assert(tenantConfig.thirdParty.providers.length === 1);
 
@@ -279,7 +283,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
             clients: [{ clientId: "efgh" }],
         });
 
-        tenantConfig = await Multitenancy.getTenantConfig("t1");
+        tenantConfig = await Multitenancy.getTenant("t1");
         assert(tenantConfig.thirdParty.providers.length === 1);
         assert(tenantConfig.thirdParty.providers[0].thirdPartyId === "google");
         assert(tenantConfig.thirdParty.providers[0].name === "Custom name");
@@ -287,7 +291,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         assert(tenantConfig.thirdParty.providers[0].clients[0].clientId === "efgh");
     });
 
-    it("test query by thirdPartyId across all tenants", async function () {
+    it("test user association and disassociation with tenants", async function () {
         await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
@@ -298,7 +302,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Multitenancy.init()],
+            recipeList: [Multitenancy.init(), EmailPassword.init()],
         });
 
         const app = express();
@@ -306,57 +310,27 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         app.use(middleware());
         app.use(errorHandler());
 
-        await Multitenancy.createOrUpdateTenant("t1", { thirdPartyEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t1", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t2", { emailPasswordEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
 
-        await Multitenancy.createOrUpdateThirdPartyConfig("t1", {
-            thirdPartyId: "google",
-            clients: [{ clientId: "abcd" }],
-        });
+        const user = await EmailPassword.signUp("test@example.com", "password1");
+        const userId = user.user.id;
 
-        await Multitenancy.createOrUpdateTenant("t2", { thirdPartyEnabled: true });
+        await Multitenancy.associateUserToTenant("t1", userId);
+        await Multitenancy.associateUserToTenant("t2", userId);
+        await Multitenancy.associateUserToTenant("t3", userId);
 
-        await Multitenancy.createOrUpdateThirdPartyConfig("t2", {
-            thirdPartyId: "google",
-            clients: [{ clientId: "efgh" }],
-        });
+        let newUser = await EmailPassword.getUserById(userId);
 
-        await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
+        assert(newUser.tenantIds.length === 4); // public + 3 tenants created above
 
-        await Multitenancy.createOrUpdateThirdPartyConfig("t3", {
-            thirdPartyId: "google",
-            clients: [{ clientId: "ijkl" }],
-        });
+        await Multitenancy.disassociateUserFromTenant("t1", userId);
+        await Multitenancy.disassociateUserFromTenant("t2", userId);
+        await Multitenancy.disassociateUserFromTenant("t3", userId);
 
-        await Multitenancy.createOrUpdateThirdPartyConfig("t3", {
-            thirdPartyId: "facebook",
-            clients: [{ clientId: "abcd" }],
-        });
+        newUser = await EmailPassword.getUserById(userId);
 
-        const results = await Multitenancy.listThirdPartyConfigsForThirdPartyId("google");
-        assert(results.tenants.length == 4);
-        let count = 0;
-        for (const tenant of results.tenants) {
-            if (tenant.tenantId == "t1") {
-                count++;
-                assert(tenant.providers.length === 1);
-                assert(tenant.providers[0].thirdPartyId === "google");
-                assert(tenant.providers[0].clients.length === 1);
-                assert(tenant.providers[0].clients[0].clientId === "abcd");
-            } else if (tenant.tenantId == "t2") {
-                count++;
-                assert(tenant.providers.length === 1);
-                assert(tenant.providers[0].thirdPartyId === "google");
-                assert(tenant.providers[0].clients.length === 1);
-                assert(tenant.providers[0].clients[0].clientId === "efgh");
-            } else if (tenant.tenantId == "t3") {
-                count++;
-                assert(tenant.providers.length === 1);
-                assert(tenant.providers[0].thirdPartyId === "google");
-                assert(tenant.providers[0].clients.length === 1);
-                assert(tenant.providers[0].clients[0].clientId === "ijkl");
-            }
-        }
-
-        assert(count == 3);
+        assert(newUser.tenantIds.length === 1); // only public
     });
 });

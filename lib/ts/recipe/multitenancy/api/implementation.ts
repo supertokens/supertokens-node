@@ -4,7 +4,7 @@ import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "
 export default function getAPIInterface(): APIInterface {
     return {
         loginMethodsGET: async function ({ tenantId, clientType, options, userContext }) {
-            const tenantConfigRes = await options.recipeImplementation.getTenantConfig({
+            const tenantConfigRes = await options.recipeImplementation.getTenant({
                 tenantId,
                 userContext,
             });

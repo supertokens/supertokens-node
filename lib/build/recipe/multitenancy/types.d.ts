@@ -59,6 +59,7 @@ export declare type RecipeInterface = {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled?: boolean;
+            coreConfig?: any;
         };
         userContext: any;
     }) => Promise<{
@@ -72,7 +73,7 @@ export declare type RecipeInterface = {
         status: "OK";
         didExist: boolean;
     }>;
-    getTenantConfig: (input: {
+    getTenant: (input: {
         tenantId?: string;
         userContext: any;
     }) => Promise<{
@@ -87,6 +88,7 @@ export declare type RecipeInterface = {
             enabled: boolean;
             providers: ProviderConfig[];
         };
+        coreConfig: any;
     }>;
     listAllTenants: (input: {
         userContext: any;
@@ -111,15 +113,21 @@ export declare type RecipeInterface = {
         status: "OK";
         didConfigExist: boolean;
     }>;
-    listThirdPartyConfigsForThirdPartyId: (input: {
-        thirdPartyId: string;
+    associateUserToTenant: (input: {
+        tenantId?: string;
+        userId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
-        tenants: {
-            tenantId: string;
-            providers: ProviderConfig[];
-        }[];
+        wasAlreadyAssociated: boolean;
+    }>;
+    disassociateUserFromTenant: (input: {
+        tenantId?: string;
+        userId: string;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+        wasAssociated: boolean;
     }>;
 };
 export declare type APIOptions = {

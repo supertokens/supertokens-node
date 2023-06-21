@@ -108,7 +108,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
         getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {
             const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
-            const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenantConfig({ tenantId, userContext });
+            const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
 
             const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
                 tenantConfig.thirdParty.providers,

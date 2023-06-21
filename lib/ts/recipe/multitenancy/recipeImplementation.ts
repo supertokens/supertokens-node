@@ -2,12 +2,10 @@ import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { DEFAULT_TENANT_ID } from "./constants";
-import { ProviderConfig } from "../thirdparty/types";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
         getTenantId: async function ({ tenantIdFromFrontend }) {
-            // TODO do we need this function?
             return tenantIdFromFrontend;
         },
 
@@ -28,7 +26,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return response;
         },
 
-        getTenantConfig: async function ({ tenantId }) {
+        getTenant: async function ({ tenantId }) {
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath(
                     `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant`
@@ -36,22 +34,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 {}
             );
 
-            return {
-                status: response.status,
-                emailPassword: response.emailPassword,
-                passwordless: response.passwordless,
-                thirdParty: response.thirdParty,
-            };
+            return response;
         },
 
         listAllTenants: async function () {
             let response = await querier.sendGetRequest(new NormalisedURLPath(`/recipe/multitenancy/tenant/list`), {});
-
-            const tenants: string[] = response.tenants.map((item: any) => item.tenantId);
-            return {
-                status: "OK",
-                tenants,
-            };
+            return response;
         },
 
         createOrUpdateThirdPartyConfig: async function ({ tenantId, config, skipValidation }) {
@@ -81,30 +69,28 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return response;
         },
 
-        listThirdPartyConfigsForThirdPartyId: async function ({ thirdPartyId }) {
-            let response = await querier.sendGetRequest(new NormalisedURLPath(`/recipe/multitenancy/tenant/list`), {});
+        associateUserToTenant: async function ({ tenantId, userId }) {
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user`
+                ),
+                {
+                    userId,
+                }
+            );
+            return response;
+        },
 
-            let result: {
-                status: "OK";
-                tenants: {
-                    tenantId: string;
-                    providers: ProviderConfig[];
-                }[];
-            } = {
-                status: "OK",
-                tenants: [],
-            };
-
-            for (const tenant of response.tenants) {
-                result.tenants.push({
-                    tenantId: tenant.tenantId,
-                    providers: tenant.thirdParty.providers.filter(
-                        (provider: any) => provider.thirdPartyId === thirdPartyId
-                    ),
-                });
-            }
-
-            return result;
+        disassociateUserFromTenant: async function ({ tenantId, userId }) {
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/multitenancy/tenant/user/remove`
+                ),
+                {
+                    userId,
+                }
+            );
+            return response;
         },
     };
 }
