@@ -99,17 +99,13 @@ export async function mockCanLinkAccounts({
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
-                if (user.id === primaryUserId) {
+                if (user.id !== primaryUserId) {
                     return {
-                        status: "OK",
-                        accountsAlreadyLinked: false,
+                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                        primaryUserId: user.id,
+                        description: "This user's email is already associated with another user ID",
                     };
                 }
-                return {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                    primaryUserId: user.id,
-                    description: "This user's email is already associated with another user ID",
-                };
             }
         }
     }
@@ -124,17 +120,13 @@ export async function mockCanLinkAccounts({
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
-                if (user.id === primaryUserId) {
+                if (user.id !== primaryUserId) {
                     return {
-                        status: "OK",
-                        accountsAlreadyLinked: false,
+                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                        primaryUserId: user.id,
+                        description: "This user's phone number is already associated with another user ID",
                     };
                 }
-                return {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                    primaryUserId: user.id,
-                    description: "This user's phone number is already associated with another user ID",
-                };
             }
         }
     }
@@ -149,17 +141,13 @@ export async function mockCanLinkAccounts({
         });
         for (let user of users) {
             if (user.isPrimaryUser) {
-                if (user.id === primaryUserId) {
+                if (user.id !== primaryUserId) {
                     return {
-                        status: "OK",
-                        accountsAlreadyLinked: false,
+                        status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
+                        primaryUserId: user.id,
+                        description: "This user's third party info is already associated with another user ID",
                     };
                 }
-                return {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-                    primaryUserId: user.id,
-                    description: "This user's third party info is already associated with another user ID",
-                };
             }
         }
     }
