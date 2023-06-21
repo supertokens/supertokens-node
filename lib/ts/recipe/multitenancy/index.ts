@@ -28,7 +28,7 @@ export default class Wrapper {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled: boolean;
-            coreConfig?: any;
+            coreConfig?: { [key: string]: any };
         },
         userContext?: any
     ): Promise<{
@@ -72,7 +72,7 @@ export default class Wrapper {
             enabled: boolean;
             providers: ProviderConfig[];
         };
-        coreConfig: any;
+        coreConfig: { [key: string]: any };
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.getTenant({
@@ -131,10 +131,19 @@ export default class Wrapper {
         tenantId: string | undefined,
         userId: string,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        wasAlreadyAssociated: boolean;
-    }> {
+    ): Promise<
+        | {
+              status: "OK";
+              wasAlreadyAssociated: boolean;
+          }
+        | {
+              status:
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+          }
+    > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.associateUserToTenant({
             tenantId,
