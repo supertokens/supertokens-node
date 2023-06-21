@@ -24,7 +24,12 @@ export default class Wrapper {
 
     static async createOrUpdateTenant(
         tenantId?: string,
-        config?: { emailPasswordEnabled?: boolean; passwordlessEnabled?: boolean; thirdPartyEnabled: boolean },
+        config?: {
+            emailPasswordEnabled?: boolean;
+            passwordlessEnabled?: boolean;
+            thirdPartyEnabled: boolean;
+            coreConfig?: { [key: string]: any };
+        },
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -43,7 +48,7 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        tenantExisted: boolean;
+        didExist: boolean;
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.deleteTenant({
@@ -52,7 +57,7 @@ export default class Wrapper {
         });
     }
 
-    static async getTenantConfig(
+    static async getTenant(
         tenantId?: string,
         userContext?: any
     ): Promise<{
@@ -67,9 +72,10 @@ export default class Wrapper {
             enabled: boolean;
             providers: ProviderConfig[];
         };
+        coreConfig: { [key: string]: any };
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
-        return recipeInstance.recipeInterfaceImpl.getTenantConfig({
+        return recipeInstance.recipeInterfaceImpl.getTenant({
             tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -88,6 +94,7 @@ export default class Wrapper {
     }
 
     static async createOrUpdateThirdPartyConfig(
+        tenantId: string | undefined,
         config: ProviderConfig,
         skipValidation?: boolean,
         userContext?: any
@@ -97,6 +104,7 @@ export default class Wrapper {
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.createOrUpdateThirdPartyConfig({
+            tenantId,
             config,
             skipValidation,
             userContext: userContext === undefined ? {} : userContext,
@@ -119,16 +127,43 @@ export default class Wrapper {
         });
     }
 
-    static async listThirdPartyConfigsForThirdPartyId(
-        thirdPartyId: string,
+    static async associateUserToTenant(
+        tenantId: string | undefined,
+        userId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              wasAlreadyAssociated: boolean;
+          }
+        | {
+              status:
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+          }
+    > {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.recipeInterfaceImpl.associateUserToTenant({
+            tenantId,
+            userId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async disassociateUserFromTenant(
+        tenantId: string | undefined,
+        userId: string,
         userContext?: any
     ): Promise<{
         status: "OK";
-        providers: ProviderConfig[];
+        wasAssociated: boolean;
     }> {
         const recipeInstance = Recipe.getInstanceOrThrowError();
-        return recipeInstance.recipeInterfaceImpl.listThirdPartyConfigsForThirdPartyId({
-            thirdPartyId,
+        return recipeInstance.recipeInterfaceImpl.disassociateUserFromTenant({
+            tenantId,
+            userId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -138,12 +173,14 @@ export let init = Wrapper.init;
 
 export let createOrUpdateTenant = Wrapper.createOrUpdateTenant;
 export let deleteTenant = Wrapper.deleteTenant;
-export let getTenantConfig = Wrapper.getTenantConfig;
+export let getTenant = Wrapper.getTenant;
 export let listAllTenants = Wrapper.listAllTenants;
 
 export let createOrUpdateThirdPartyConfig = Wrapper.createOrUpdateThirdPartyConfig;
 export let deleteThirdPartyConfig = Wrapper.deleteThirdPartyConfig;
-export let listThirdPartyConfigsForThirdPartyId = Wrapper.listThirdPartyConfigsForThirdPartyId;
+
+export let associateUserToTenant = Wrapper.associateUserToTenant;
+export let disassociateUserFromTenant = Wrapper.disassociateUserFromTenant;
 
 export { RecipeDisabledForTenantError, TenantDoesNotExistError };
 export { AllowedDomainsClaim };

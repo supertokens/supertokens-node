@@ -125,7 +125,7 @@ ThirdPartyPasswordless.init({
         {
             config: {
                 thirdPartyId: "google",
-                clients: [{ clientID: "" }],
+                clients: [{ clientId: "" }],
             },
         },
     ],
@@ -315,7 +315,7 @@ ThirdPartyPasswordless.init({
         {
             config: {
                 thirdPartyId: "google",
-                clients: [{ clientID: "" }],
+                clients: [{ clientId: "" }],
             },
         },
     ],
@@ -381,7 +381,7 @@ ThirdPartyPasswordless.init({
         {
             config: {
                 thirdPartyId: "google",
-                clients: [{ clientID: "" }],
+                clients: [{ clientId: "" }],
             },
         },
     ],
@@ -898,8 +898,8 @@ Multitenancy.init({
                     return await oI.deleteTenant({ tenantId, userContext });
                 },
 
-                getTenantConfig: async function ({ tenantId, userContext }) {
-                    return await oI.getTenantConfig({ tenantId, userContext });
+                getTenant: async function ({ tenantId, userContext }) {
+                    return await oI.getTenant({ tenantId, userContext });
                 },
 
                 listAllTenants: async function ({ userContext }) {
@@ -912,10 +912,6 @@ Multitenancy.init({
 
                 deleteThirdPartyConfig: async function ({ tenantId, thirdPartyId, userContext }) {
                     return await oI.deleteThirdPartyConfig({ tenantId, thirdPartyId, userContext });
-                },
-
-                listThirdPartyConfigsForThirdPartyId: async function ({ thirdPartyId, userContext }) {
-                    return await oI.listThirdPartyConfigsForThirdPartyId({ thirdPartyId, userContext });
                 },
             };
         },

@@ -59,6 +59,9 @@ export declare type RecipeInterface = {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled?: boolean;
+            coreConfig?: {
+                [key: string]: any;
+            };
         };
         userContext: any;
     }) => Promise<{
@@ -70,9 +73,9 @@ export declare type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        tenantExisted: boolean;
+        didExist: boolean;
     }>;
-    getTenantConfig: (input: {
+    getTenant: (input: {
         tenantId?: string;
         userContext: any;
     }) => Promise<{
@@ -87,6 +90,9 @@ export declare type RecipeInterface = {
             enabled: boolean;
             providers: ProviderConfig[];
         };
+        coreConfig: {
+            [key: string]: any;
+        };
     }>;
     listAllTenants: (input: {
         userContext: any;
@@ -95,6 +101,7 @@ export declare type RecipeInterface = {
         tenants: string[];
     }>;
     createOrUpdateThirdPartyConfig: (input: {
+        tenantId?: string;
         config: ProviderConfig;
         skipValidation?: boolean;
         userContext: any;
@@ -110,12 +117,30 @@ export declare type RecipeInterface = {
         status: "OK";
         didConfigExist: boolean;
     }>;
-    listThirdPartyConfigsForThirdPartyId: (input: {
-        thirdPartyId: string;
+    associateUserToTenant: (input: {
+        tenantId?: string;
+        userId: string;
+        userContext: any;
+    }) => Promise<
+        | {
+              status: "OK";
+              wasAlreadyAssociated: boolean;
+          }
+        | {
+              status:
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    disassociateUserFromTenant: (input: {
+        tenantId?: string;
+        userId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
-        providers: ProviderConfig[];
+        wasAssociated: boolean;
     }>;
 };
 export declare type APIOptions = {

@@ -33,7 +33,7 @@ export declare type UserInfoMap = {
 };
 export declare type ProviderClientConfig = {
     clientType?: string;
-    clientID: string;
+    clientId: string;
     clientSecret?: string;
     scope?: string[];
     forcePKCE?: boolean;
@@ -43,7 +43,6 @@ export declare type ProviderClientConfig = {
 };
 declare type CommonProviderConfig = {
     thirdPartyId: string;
-    tenantId?: string;
     name?: string;
     authorizationEndpoint?: string;
     authorizationEndpointQueryParams?: {

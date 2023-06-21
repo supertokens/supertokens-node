@@ -12,6 +12,9 @@ export default class Wrapper {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
             thirdPartyEnabled: boolean;
+            coreConfig?: {
+                [key: string]: any;
+            };
         },
         userContext?: any
     ): Promise<{
@@ -23,9 +26,9 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        tenantExisted: boolean;
+        didExist: boolean;
     }>;
-    static getTenantConfig(
+    static getTenant(
         tenantId?: string,
         userContext?: any
     ): Promise<{
@@ -40,6 +43,9 @@ export default class Wrapper {
             enabled: boolean;
             providers: ProviderConfig[];
         };
+        coreConfig: {
+            [key: string]: any;
+        };
     }>;
     static listAllTenants(
         userContext?: any
@@ -48,6 +54,7 @@ export default class Wrapper {
         tenants: string[];
     }>;
     static createOrUpdateThirdPartyConfig(
+        tenantId: string | undefined,
         config: ProviderConfig,
         skipValidation?: boolean,
         userContext?: any
@@ -63,22 +70,41 @@ export default class Wrapper {
         status: "OK";
         didConfigExist: boolean;
     }>;
-    static listThirdPartyConfigsForThirdPartyId(
-        thirdPartyId: string,
+    static associateUserToTenant(
+        tenantId: string | undefined,
+        userId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              wasAlreadyAssociated: boolean;
+          }
+        | {
+              status:
+                  | "UNKNOWN_USER_ID_ERROR"
+                  | "EMAIL_ALREADY_EXISTS_ERROR"
+                  | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    static disassociateUserFromTenant(
+        tenantId: string | undefined,
+        userId: string,
         userContext?: any
     ): Promise<{
         status: "OK";
-        providers: ProviderConfig[];
+        wasAssociated: boolean;
     }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createOrUpdateTenant: typeof Wrapper.createOrUpdateTenant;
 export declare let deleteTenant: typeof Wrapper.deleteTenant;
-export declare let getTenantConfig: typeof Wrapper.getTenantConfig;
+export declare let getTenant: typeof Wrapper.getTenant;
 export declare let listAllTenants: typeof Wrapper.listAllTenants;
 export declare let createOrUpdateThirdPartyConfig: typeof Wrapper.createOrUpdateThirdPartyConfig;
 export declare let deleteThirdPartyConfig: typeof Wrapper.deleteThirdPartyConfig;
-export declare let listThirdPartyConfigsForThirdPartyId: typeof Wrapper.listThirdPartyConfigsForThirdPartyId;
+export declare let associateUserToTenant: typeof Wrapper.associateUserToTenant;
+export declare let disassociateUserFromTenant: typeof Wrapper.disassociateUserFromTenant;
 export { RecipeDisabledForTenantError, TenantDoesNotExistError };
 export { AllowedDomainsClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

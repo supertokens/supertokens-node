@@ -119,7 +119,6 @@ export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderCo
 }
 
 export function mergeProvidersFromCoreAndStatic(
-    tenantId: string | undefined,
     providerConfigsFromCore: ProviderConfig[],
     providerInputsFromStatic: ProviderInput[]
 ): ProviderInput[] {
@@ -127,7 +126,6 @@ export function mergeProvidersFromCoreAndStatic(
 
     if (providerConfigsFromCore.length === 0) {
         for (const config of providerInputsFromStatic) {
-            config.config.tenantId = tenantId;
             mergedProviders.push(config);
         }
     } else {

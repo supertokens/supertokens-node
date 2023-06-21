@@ -440,7 +440,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                                     thirdPartyId: "google",
                                     clients: [
                                         {
-                                            clientID: "",
+                                            clientId: "",
                                             clientSecret: "",
                                         },
                                     ],
