@@ -49,7 +49,10 @@ export default async function authorisationUrlAPI(
     }
 
     const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
-    tenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({ tenantIdFromFrontend: tenantId, userContext });
+    tenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
+        tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+        userContext,
+    });
 
     const providerResponse = await options.recipeImplementation.getProvider({
         thirdPartyId,

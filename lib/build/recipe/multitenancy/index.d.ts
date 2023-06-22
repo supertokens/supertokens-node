@@ -11,7 +11,7 @@ export default class Wrapper {
         config?: {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
-            thirdPartyEnabled: boolean;
+            thirdPartyEnabled?: boolean;
             coreConfig?: {
                 [key: string]: any;
             };

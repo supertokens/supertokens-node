@@ -13,12 +13,13 @@ export default abstract class RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod,
         userContext: any
-    ) =>
+    ) => Promise<
         | {
               id: string;
               tenantId: string;
           }
-        | undefined;
+        | undefined
+    >;
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(
         id: string,

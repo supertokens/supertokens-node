@@ -38,11 +38,11 @@ export default abstract class RecipeModule {
         return this.appInfo;
     };
 
-    returnAPIIdIfCanHandleRequest = (
+    returnAPIIdIfCanHandleRequest = async (
         path: NormalisedURLPath,
         method: HTTPMethod,
         userContext: any
-    ): { id: string; tenantId: string } | undefined => {
+    ): Promise<{ id: string; tenantId: string } | undefined> => {
         let apisHandled = this.getAPIsHandled();
 
         const basePathStr = this.appInfo.apiBasePath.getAsStringDangerous();
@@ -64,7 +64,7 @@ export default abstract class RecipeModule {
             let currAPI = apisHandled[i];
             if (!currAPI.disabled && currAPI.method === method) {
                 if (this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)) {
-                    const finalTenantId = mtRecipe.recipeInterfaceImpl.getTenantId({
+                    const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
                         tenantIdFromFrontend: DEFAULT_TENANT_ID,
                         userContext,
                     });
@@ -75,11 +75,11 @@ export default abstract class RecipeModule {
                         .appendPath(currAPI.pathWithoutApiBasePath)
                         .equals(this.appInfo.apiBasePath.appendPath(remainingPath))
                 ) {
-                    const finalTenantId = mtRecipe.recipeInterfaceImpl.getTenantId({
-                        tenantIdFromFrontend: DEFAULT_TENANT_ID,
+                    const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
+                        tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
                         userContext,
                     });
-                    return { id: currAPI.id, tenantId: finalTenantId === undefined ? DEFAULT_TENANT_ID : tenantId };
+                    return { id: currAPI.id, tenantId: finalTenantId };
                 }
             }
         }

@@ -31,11 +31,13 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe: (err: any) => err is error;
     returnAPIIdIfCanHandleRequest: (
         path: NormalisedURLPath,
-        method: HTTPMethod
-    ) =>
+        method: HTTPMethod,
+        userContext: any
+    ) => Promise<
         | {
               id: string;
               tenantId: string;
           }
-        | undefined;
+        | undefined
+    >;
 }
