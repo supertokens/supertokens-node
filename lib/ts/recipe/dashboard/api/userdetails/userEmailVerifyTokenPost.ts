@@ -8,7 +8,11 @@ type Response = {
     status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
 };
 
-export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userEmailVerifyTokenPost = async (
+    _: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
 
@@ -19,13 +23,13 @@ export const userEmailVerifyTokenPost = async (_: APIInterface, options: APIOpti
         });
     }
 
-    let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(userId, {});
+    let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(userId, userContext);
 
     if (emailResponse.status !== "OK") {
         throw new Error("Should never come here");
     }
 
-    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(userId);
+    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(userId, undefined, userContext);
 
     if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
         return {

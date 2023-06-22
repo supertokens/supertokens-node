@@ -25,7 +25,7 @@ export type Response = {
     status: "OK";
 };
 
-export default async function analyticsPost(_: APIInterface, options: APIOptions): Promise<Response> {
+export default async function analyticsPost(_: APIInterface, options: APIOptions, __: any): Promise<Response> {
     // If telemetry is disabled, dont send any event
     if (!SuperTokens.getInstanceOrThrowError().telemetryEnabled) {
         return {

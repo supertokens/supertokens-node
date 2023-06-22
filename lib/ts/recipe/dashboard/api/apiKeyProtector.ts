@@ -12,19 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIFunction, APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess } from "../utils";
 
 export default async function apiKeyProtector(
     apiImplementation: APIInterface,
     options: APIOptions,
-    apiFunction: APIFunction
+    apiFunction: APIFunction,
+    userContext: any
 ): Promise<boolean> {
     const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
         req: options.req,
         config: options.config,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     if (!shouldAllowAccess) {
@@ -32,7 +32,7 @@ export default async function apiKeyProtector(
         return true;
     }
 
-    const response = await apiFunction(apiImplementation, options);
+    const response = await apiFunction(apiImplementation, options, userContext);
     options.res.sendJSONResponse(response);
     return true;
 }

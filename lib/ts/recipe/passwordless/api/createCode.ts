@@ -17,9 +17,12 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export default async function createCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function createCode(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.createCodePOST === undefined) {
         return false;
     }
@@ -88,9 +91,7 @@ export default async function createCode(apiImplementation: APIInterface, option
     }
 
     let result = await apiImplementation.createCodePOST(
-        email !== undefined
-            ? { email, options, userContext: makeDefaultUserContextFromAPI(options.req) }
-            : { phoneNumber: phoneNumber!, options, userContext: makeDefaultUserContextFromAPI(options.req) }
+        email !== undefined ? { email, options, userContext } : { phoneNumber: phoneNumber!, options, userContext }
     );
 
     send200Response(options.res, result);

@@ -95,7 +95,8 @@ export default class OpenIdRecipe extends RecipeModule {
         req: BaseRequest,
         response: BaseResponse,
         path: normalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let apiOptions: APIOptions = {
             recipeImplementation: this.recipeImplementation,
@@ -106,9 +107,9 @@ export default class OpenIdRecipe extends RecipeModule {
         };
 
         if (id === GET_DISCOVERY_CONFIG_URL) {
-            return await getOpenIdDiscoveryConfiguration(this.apiImpl, apiOptions);
+            return await getOpenIdDiscoveryConfiguration(this.apiImpl, apiOptions, userContext);
         } else {
-            return this.jwtRecipe.handleAPIRequest(id, tenantId, req, response, path, method);
+            return this.jwtRecipe.handleAPIRequest(id, tenantId, req, response, path, method, userContext);
         }
     };
     handleError = async (error: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {

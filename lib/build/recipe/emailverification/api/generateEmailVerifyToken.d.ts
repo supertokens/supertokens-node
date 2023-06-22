@@ -2,5 +2,6 @@
 import { APIInterface, APIOptions } from "../";
 export default function generateEmailVerifyToken(
     apiImplementation: APIInterface,
-    options: APIOptions
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean>;

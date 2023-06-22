@@ -15,7 +15,7 @@ type Response =
           error: string;
       };
 
-export const userPasswordPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userPasswordPut = async (_: APIInterface, options: APIOptions, userContext: any): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const newPassword = requestBody.newPassword;
@@ -67,7 +67,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
             };
         }
 
-        const passwordResetToken = await EmailPassword.createResetPasswordToken(userId);
+        const passwordResetToken = await EmailPassword.createResetPasswordToken(userId, userContext);
 
         if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
             // Techincally it can but its an edge case so we assume that it wont
@@ -76,7 +76,8 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
 
         const passwordResetResponse = await EmailPassword.resetPasswordUsingToken(
             passwordResetToken.token,
-            newPassword
+            newPassword,
+            userContext
         );
 
         if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
@@ -101,7 +102,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         };
     }
 
-    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(userId);
+    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(userId, userContext);
 
     if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
         // Techincally it can but its an edge case so we assume that it wont
@@ -110,7 +111,8 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
 
     const passwordResetResponse = await ThirdPartyEmailPassword.resetPasswordUsingToken(
         passwordResetToken.token,
-        newPassword
+        newPassword,
+        userContext
     );
 
     if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {

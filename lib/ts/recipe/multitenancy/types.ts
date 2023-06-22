@@ -75,7 +75,7 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getTenantId: (input: { tenantIdFromFrontend?: string; userContext: any }) => Promise<string | undefined>;
+    getTenantId: (input: { tenantIdFromFrontend: string; userContext: any }) => Promise<string>;
 
     // Tenant management
     createOrUpdateTenant: (input: {

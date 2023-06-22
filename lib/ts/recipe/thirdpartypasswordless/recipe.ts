@@ -213,16 +213,17 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
-        if (this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
-            return await this.passwordlessRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
+        if ((await this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
+            return await this.passwordlessRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         if (
             this.thirdPartyRecipe !== undefined &&
-            this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
+            (await this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined
         ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
+            return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         return false;
     };

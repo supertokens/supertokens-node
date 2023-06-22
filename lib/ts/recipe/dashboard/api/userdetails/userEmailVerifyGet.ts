@@ -12,7 +12,11 @@ type Response =
           status: "FEATURE_NOT_ENABLED_ERROR";
       };
 
-export const userEmailverifyGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userEmailverifyGet: APIFunction = async (
+    _: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const req = options.req;
     const userId = req.getKeyValueFromQuery("userId");
 
@@ -31,7 +35,7 @@ export const userEmailverifyGet: APIFunction = async (_: APIInterface, options: 
         };
     }
 
-    const response = await EmailVerification.isEmailVerified(userId);
+    const response = await EmailVerification.isEmailVerified(userId, userContext);
     return {
         status: "OK",
         isVerified: response,

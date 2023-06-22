@@ -16,9 +16,12 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export default async function consumeCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function consumeCode(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.consumeCodePOST === undefined) {
         return false;
     }
@@ -56,7 +59,6 @@ export default async function consumeCode(apiImplementation: APIInterface, optio
         });
     }
 
-    const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.consumeCodePOST(
         deviceId !== undefined
             ? {

@@ -60,6 +60,7 @@ import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import MultitenancyRecipe from "../../recipe/multitenancy/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -252,7 +253,8 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
-        ___: HTTPMethod
+        ___: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,
@@ -266,15 +268,15 @@ export default class Recipe extends RecipeModule {
 
         // For these APIs we dont need API key validation
         if (id === DASHBOARD_API) {
-            return await dashboard(this.apiImpl, options);
+            return await dashboard(this.apiImpl, options, userContext);
         }
 
         if (id === SIGN_IN_API) {
-            return await signIn(this.apiImpl, options);
+            return await signIn(this.apiImpl, options, userContext);
         }
 
         if (id === VALIDATE_KEY_API) {
-            return await validateKey(this.apiImpl, options);
+            return await validateKey(this.apiImpl, options, userContext);
         }
 
         // Do API key validation for the remaining APIs
@@ -337,7 +339,7 @@ export default class Recipe extends RecipeModule {
             return false;
         }
 
-        return await apiKeyProtector(this.apiImpl, options, apiFunction);
+        return await apiKeyProtector(this.apiImpl, options, apiFunction, userContext);
     };
 
     handleError = async (err: error, _: BaseRequest, __: BaseResponse): Promise<void> => {
@@ -352,10 +354,11 @@ export default class Recipe extends RecipeModule {
         return error.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    returnAPIIdIfCanHandleRequest = (
+    returnAPIIdIfCanHandleRequest = async (
         path: NormalisedURLPath,
-        method: HTTPMethod
-    ): { id: string; tenantId: string } | undefined => {
+        method: HTTPMethod,
+        userContext: any
+    ): Promise<{ id: string; tenantId: string } | undefined> => {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
 
         const basePathStr = this.getAppInfo().apiBasePath.getAsStringDangerous();
@@ -371,6 +374,8 @@ export default class Recipe extends RecipeModule {
             remainingPath = new NormalisedURLPath(match[2]);
         }
 
+        const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+
         if (
             isApiPath(path, this.getAppInfo().apiBasePath) ||
             (remainingPath !== undefined &&
@@ -381,13 +386,21 @@ export default class Recipe extends RecipeModule {
             if (remainingPath !== undefined) {
                 const id = getApiIdIfMatched(remainingPath, method);
                 if (id !== undefined) {
-                    return { id, tenantId };
+                    const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
+                        tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                        userContext,
+                    });
+                    return { id, tenantId: finalTenantId };
                 }
             }
 
             const id = getApiIdIfMatched(path, method);
             if (id !== undefined) {
-                return { id, tenantId: DEFAULT_TENANT_ID };
+                const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
+                    tenantIdFromFrontend: DEFAULT_TENANT_ID,
+                    userContext,
+                });
+                return { id, tenantId: finalTenantId };
             }
         }
 

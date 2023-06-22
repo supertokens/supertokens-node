@@ -16,12 +16,15 @@
 import STError from "../error";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import MultitenancyRecipe from "../../multitenancy/recipe";
 import { RecipeDisabledForTenantError } from "../../multitenancy";
 import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
-export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function signInUpAPI(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {
         return false;
     }
@@ -63,8 +66,6 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
             message: "Please provide one of redirectURIInfo or oAuthTokens in the request body",
         });
     }
-
-    const userContext = makeDefaultUserContextFromAPI(options.req);
 
     const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
     tenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({ tenantIdFromFrontend: tenantId, userContext });

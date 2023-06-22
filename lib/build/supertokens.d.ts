@@ -23,7 +23,8 @@ export default class SuperTokens {
         request: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
@@ -89,7 +90,7 @@ export default class SuperTokens {
     }) => Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
+    middleware: (request: BaseRequest, response: BaseResponse, userContext: any) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getRequestFromUserContext: (userContext: any | undefined) => BaseRequest | undefined;
 }

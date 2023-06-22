@@ -6,7 +6,7 @@ type Response = {
     status: "OK";
 };
 
-export const userEmailVerifyPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userEmailVerifyPut = async (_: APIInterface, options: APIOptions, userContext: any): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const verified = requestBody.verified;
@@ -26,7 +26,7 @@ export const userEmailVerifyPut = async (_: APIInterface, options: APIOptions): 
     }
 
     if (verified) {
-        const tokenResponse = await EmailVerification.createEmailVerificationToken(userId);
+        const tokenResponse = await EmailVerification.createEmailVerificationToken(userId, undefined, userContext);
 
         if (tokenResponse.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
             return {
@@ -34,14 +34,14 @@ export const userEmailVerifyPut = async (_: APIInterface, options: APIOptions): 
             };
         }
 
-        const verifyResponse = await EmailVerification.verifyEmailUsingToken(tokenResponse.token);
+        const verifyResponse = await EmailVerification.verifyEmailUsingToken(tokenResponse.token, userContext);
 
         if (verifyResponse.status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR") {
             // This should never happen because we consume the token immediately after creating it
             throw new Error("Should not come here");
         }
     } else {
-        await EmailVerification.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId, userContext);
     }
 
     return {

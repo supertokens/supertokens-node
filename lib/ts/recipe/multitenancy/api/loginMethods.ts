@@ -13,19 +13,20 @@
  * under the License.
  */
 
-import { send200Response, makeDefaultUserContextFromAPI } from "../../../utils";
+import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
-export default async function loginMethodsAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function loginMethodsAPI(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.loginMethodsGET === undefined) {
         return false;
     }
 
     let tenantId = options.req.getKeyValueFromQuery("tenantId");
     const clientType = options.req.getKeyValueFromQuery("clientType");
-
-    const userContext = makeDefaultUserContextFromAPI(options.req);
-    tenantId = await options.recipeImplementation.getTenantId({ tenantIdFromFrontend: tenantId, userContext });
 
     const result = await apiImplementation.loginMethodsGET({ tenantId, clientType, options, userContext });
     send200Response(options.res, result);

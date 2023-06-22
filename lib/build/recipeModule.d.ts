@@ -11,13 +11,15 @@ export default abstract class RecipeModule {
     getAppInfo: () => NormalisedAppinfo;
     returnAPIIdIfCanHandleRequest: (
         path: NormalisedURLPath,
-        method: HTTPMethod
-    ) =>
+        method: HTTPMethod,
+        userContext: any
+    ) => Promise<
         | {
               id: string;
               tenantId: string;
           }
-        | undefined;
+        | undefined
+    >;
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(
         id: string,
@@ -25,7 +27,8 @@ export default abstract class RecipeModule {
         req: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean>;
     abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>;
     abstract getAllCORSHeaders(): string[];

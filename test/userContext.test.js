@@ -34,6 +34,8 @@ const { verifySession } = require("../recipe/session/framework/express");
 const { default: next } = require("next");
 let { middleware, errorHandler } = require("../framework/express");
 let STExpress = require("../");
+let fs = require("fs");
+let path = require("path");
 
 describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () {
     beforeEach(async function () {
@@ -423,5 +425,50 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
         assert(signInContextWorks);
         assert(signInAPIContextWorks);
         assert(createNewSessionContextWorks);
+    });
+
+    it("test that makeDefaultUserContext is not used anywhere apart from frameworks", async function () {
+        function recursive(dir, done) {
+            let results = [];
+            fs.readdir(dir, function (err, list) {
+                if (err) return done(err);
+                let pending = list.length;
+                if (!pending) return done(null, results);
+                list.forEach(function (file) {
+                    file = path.resolve(dir, file);
+                    fs.stat(file, function (err, stat) {
+                        if (stat && stat.isDirectory()) {
+                            recursive(file, function (err, res) {
+                                results = results.concat(res);
+                                if (!--pending) done(null, results);
+                            });
+                        } else {
+                            results.push(file);
+                            if (!--pending) done(null, results);
+                        }
+                    });
+                });
+            });
+        }
+
+        let files = await new Promise((resolve, reject) => {
+            recursive("./lib/ts", (err, files) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(files);
+            });
+        });
+
+        let totalCount = 0;
+
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
+            let content = fs.readFileSync(file).toString();
+            let count = content.split("makeDefaultUserContextFromAPI(").length - 1;
+            totalCount += count;
+        }
+
+        assert(totalCount === 13);
     });
 });

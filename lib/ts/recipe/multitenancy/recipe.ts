@@ -130,7 +130,8 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
-        __: HTTPMethod
+        __: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options = {
             recipeImplementation: this.recipeInterfaceImpl,
@@ -142,7 +143,7 @@ export default class Recipe extends RecipeModule {
             staticThirdPartyProviders: this.staticThirdPartyProviders,
         };
         if (id === LOGIN_METHODS_API) {
-            return await loginMethodsAPI(this.apiImpl, options);
+            return await loginMethodsAPI(this.apiImpl, options, userContext);
         }
         throw new Error("should never come here");
     };

@@ -15,7 +15,7 @@
 
 import type { Context, Next } from "koa";
 import type { HTTPMethod } from "../../types";
-import { normaliseHttpMethod } from "../../utils";
+import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { getHeaderValueFromIncomingMessage } from "../utils";
@@ -181,8 +181,10 @@ export const middleware = () => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new KoaRequest(ctx);
         let response = new KoaResponse(ctx);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
-            let result = await supertokens.middleware(request, response);
+            let result = await supertokens.middleware(request, response, userContext);
             if (!result) {
                 return await next();
             }

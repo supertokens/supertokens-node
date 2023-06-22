@@ -149,7 +149,8 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
-        _method: HTTPMethod
+        _method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options = {
             config: this.config,
@@ -162,11 +163,11 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_IN_UP_API) {
-            return await signInUpAPI(this.apiImpl, options);
+            return await signInUpAPI(this.apiImpl, options, userContext);
         } else if (id === AUTHORISATION_API) {
-            return await authorisationUrlAPI(this.apiImpl, options);
+            return await authorisationUrlAPI(this.apiImpl, options, userContext);
         } else if (id === APPLE_REDIRECT_HANDLER) {
-            return await appleRedirectHandler(this.apiImpl, options);
+            return await appleRedirectHandler(this.apiImpl, options, userContext);
         }
         return false;
     };
