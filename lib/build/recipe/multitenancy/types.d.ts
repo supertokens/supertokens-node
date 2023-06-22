@@ -18,7 +18,7 @@ export interface NormalisedErrorHandlers {
     onRecipeDisabledForTenantError: RecipeDisabledForTenantErrorHandlerMiddleware;
 }
 export declare type TypeInput = {
-    getAllowedDomainsForTenantId?: (tenantId: string | undefined, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
     errorHandlers?: ErrorHandlers;
     override?: {
         functions?: (
@@ -29,7 +29,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    getAllowedDomainsForTenantId?: (tenantId: string | undefined, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
     errorHandlers: NormalisedErrorHandlers;
     override: {
         functions: (
