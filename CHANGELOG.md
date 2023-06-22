@@ -7,10 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [14.1.2] - 2023-06-07
+
+### Fixes
+
+-   Fixed email templates to fix an issue with styling on some email clients
+
+### Changes
+
+-   Minor internal refactors & additional tests
+-   Now assuming latest token version if the claim is missing from the header
+-   Make `verifySession` send the appropriate response instead of throwing (and sending 500) if session validation fails in koa, hapi and loopback (already happening in other frameworks).
+
+## [14.1.1] - 2023-05-24
+
+### Added
+
+-   Adds additional debug logs whenever the SDK throws a `TRY_REFRESH_TOKEN` or `UNAUTHORISED` error to make debugging easier
+
+## [14.1.0] - 2023-05-23
+
+### Changes
+
+-   Added a new `getRequestFromUserContext` function that can be used to read the original network request from the user context in overridden APIs and recipe functions
+
+## [14.0.2] - 2023-05-11
+
+### Changes
+
+-   Made the access token string optional in the overrideable `getSession` function
+-   Moved checking if the access token is defined into the overrideable `getSession` function
+
+## [14.0.1] - 2023-05-11
+
+-   Fixes an issue where API key based login with dashboard would return invalid API key even if the entered API key was valid
+
+## [14.0.0] - 2023-05-04
+
 ### Breaking Changes
 
 -   Added support for CDI version `2.21`
--   Dropped support for CDI version `2.8`-`2.18`
+-   Dropped support for CDI version `2.8`-`2.20`
 -   Changed the interface and configuration of the Session recipe, see below for details. If you do not use the Session recipe directly and do not provide custom configuration, then no migration is necessary.
 -   `getAccessTokenPayload` will now return standard (`sub`, `iat`, `exp`) claims and some SuperTokens specific claims along the user defined ones in `getAccessTokenPayload`.
 -   Some claim names are now prohibited in the root level of the access token payload
@@ -47,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Refactored how access token validation is done
 -   Removed the handshake call to improve start-up times
 -   Added support for new access token version
+-   Added optional password policy check in `updateEmailOrPassword`
 
 ### Added
 
@@ -82,7 +120,7 @@ if (accessTokenPayload.jwt === undefined) {
 
 ```tsx
 let jwt = null;
-const accessTokenPayload = await session.getAccessTokenPayloadSecurely();
+const accessTokenPayload = await session.getAccessTokenPayload();
 if (accessTokenPayload.jwt === undefined) {
     jwt = await session.getAccessToken();
 } else {
@@ -102,8 +140,8 @@ if (accessTokenPayload.jwt === undefined) {
 Before:
 
 ```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
 
 SuperTokens.init({
     appInfo: {
@@ -125,8 +163,8 @@ SuperTokens.init({
 After:
 
 ```tsx
-import SuperTokens from "supertokens-auth-react";
-import Session from "supertokens-auth-react/recipe/session";
+import SuperTokens from "supertokens-node";
+import Session from "supertokens-node/recipe/session";
 
 SuperTokens.init({
     appInfo: {
@@ -280,6 +318,18 @@ Session.init({
     },
 });
 ```
+
+## [13.6.0] - 2023-04-26
+
+-   Added missing arguments from `getUsersNewestFirst` and `getUsersOldestFirst`
+
+## [13.5.0] - 2023-04-22
+
+-   Adds new config to change the access token's path
+
+## [13.4.2] - 2023-04-11
+
+-   Modified email templates to make them render fine in gmail.
 
 ## [13.4.1] - 2023-04-11
 

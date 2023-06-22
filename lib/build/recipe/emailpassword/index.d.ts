@@ -63,9 +63,16 @@ export default class Wrapper {
         email?: string;
         password?: string;
         userContext?: any;
-    }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
-    }>;
+        applyPasswordPolicy?: boolean;
+    }): Promise<
+        | {
+              status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext?: any;

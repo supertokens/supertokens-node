@@ -37,20 +37,14 @@ const request = require("http");
 describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
     "[test/sessionAccessTokenSigningKeyUpdate.test.js]"
 )}`, function () {
-    let requestSpy;
+    let requestMock;
     beforeEach(async function () {
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
-        requestSpy.resetHistory();
-    });
-
-    before(() => {
-        requestSpy = sinon.spy(request, "get");
     });
 
     after(async function () {
-        requestSpy.restore();
         await killAllST();
         await cleanST();
     });
@@ -70,6 +64,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
         });
 
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
+
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
@@ -78,6 +75,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             {}
         );
 
+        // Check that the keys have not been loaded
+        assert.strictEqual(requestMock.callCount, 0);
         {
             await SessionFunctions.getSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
@@ -94,6 +93,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             assert(verifyState === undefined);
         }
 
+        // The keys have been loaded during getSession
+        assert.strictEqual(requestMock.callCount, 1);
+
+        // We wait for signing key to expire
         await new Promise((r) => setTimeout(r, 6000));
 
         try {
@@ -113,6 +116,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             }
         }
 
+        // This should not have called the core
         const verifyState = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
             1500
@@ -121,15 +125,16 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         ProcessState.getInstance().reset();
 
+        assert.strictEqual(requestMock.callCount, 1);
         const response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken,
             false
         );
-        assert.strictEqual(requestSpy.callCount, 1);
 
-        await SessionFunctions.getSession(
+        // This call should actually call the core
+        const response3 = await SessionFunctions.getSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             parseJWTWithoutSignatureVerification(response2.accessToken.token),
             response2.antiCsrfToken,
@@ -137,13 +142,15 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             false
         );
 
-        // We call verify, since refresh does not refresh the signing key info
+        // This should have refreshed the keys because of the cache miss
+        assert.strictEqual(requestMock.callCount, 2);
+
+        // This will call the core verify since parentRefreshTokenHash1 is defined
         const verifyState2 = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
             1500
         );
         assert(verifyState2 !== undefined);
-        assert.strictEqual(requestSpy.callCount, 2);
     });
 
     it("check that if signing key changes, after new key is fetched - via token query, old tokens don't query the core", async function () {
@@ -201,9 +208,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 1500
             );
 
-            assert(verifyState === undefined);
-            assert.strictEqual(requestSpy.callCount, 1);
-            assert(requestSpy.getCall(0).args[0].endsWith("/.well-known/jwks.json"));
+            if (!coreSupportsMultipleSignigKeys) {
+                assert(verifyState === undefined);
+            } else {
+                // We call verify here, since this is a new session we can't verify locally
+                assert(verifyState !== undefined);
+            }
         }
 
         await ProcessState.getInstance().reset();
@@ -223,7 +233,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
     });
 
     it("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
@@ -302,7 +311,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
     });
 
     it("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
@@ -353,9 +361,11 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
                 1500
             );
-            assert(verifyState === undefined);
-            assert.strictEqual(requestSpy.callCount, 1);
-            assert(requestSpy.getCall(0).args[0].endsWith("/.well-known/jwks.json"));
+            if (!coreSupportsMultipleSignigKeys) {
+                assert(verifyState === undefined);
+            } else {
+                assert(verifyState !== undefined);
+            }
         }
 
         await ProcessState.getInstance().reset();
@@ -384,7 +394,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
     });
 
     it("test reducing access token signing key update interval time", async function () {
@@ -472,10 +481,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
                 1500
             );
-            assert(verifyState3 === undefined);
-            // we have one at the start as well as now
-            assert.strictEqual(requestSpy.callCount, 2);
-            assert(requestSpy.getCall(1).args[0].endsWith("/.well-known/jwks.json"));
+            assert(verifyState3 !== undefined);
         }
 
         ProcessState.getInstance().reset();
@@ -499,8 +505,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         }
 
         {
-            // We should not have called the core jwks endpoint since the last check
-            assert.strictEqual(requestSpy.callCount, 2);
             // now we will use the original session again and see that core is not called
             try {
                 await SessionFunctions.getSession(
@@ -522,8 +526,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 1500
             );
             assert(verifyState3 === undefined);
-            // We call the jwks endpoint since the key is not in the cache anymore, and we double-check
-            assert.strictEqual(requestSpy.callCount, 3);
         }
     });
 
@@ -594,6 +596,5 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             );
             assert(verifyState3 === undefined);
         }
-        assert.strictEqual(requestSpy.callCount, 1);
     });
 });

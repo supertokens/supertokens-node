@@ -108,16 +108,17 @@ export async function getSession(
          * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
          * the loop we just return TRY_REFRESH_TOKEN
          */
-        let payload = parsedAccessToken.payload;
-
-        const timeCreated = sanitizeNumberInput(payload.timeCreated);
-        const expiryTime = sanitizeNumberInput(payload.expiryTime);
-
-        if (expiryTime === undefined || timeCreated == undefined) {
-            throw err;
-        }
 
         if (parsedAccessToken.version < 3) {
+            let payload = parsedAccessToken.payload;
+
+            const timeCreated = sanitizeNumberInput(payload.timeCreated);
+            const expiryTime = sanitizeNumberInput(payload.expiryTime);
+
+            if (expiryTime === undefined || timeCreated == undefined) {
+                throw err;
+            }
+
             if (expiryTime < Date.now()) {
                 throw err;
             }
@@ -205,6 +206,10 @@ export async function getSession(
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
         delete response.status;
+        response.session.expiryTime =
+            response.accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
+            accessTokenInfo?.expiryTime || // if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
+            parsedAccessToken.payload["expiryTime"]; // if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
         return response;
     } else if (response.status === "UNAUTHORISED") {
         logDebugMessage("getSession: Returning UNAUTHORISED because of core response");

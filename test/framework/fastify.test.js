@@ -1234,6 +1234,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 "refreshTokenHash1",
                 "sessionHandle",
                 "sub",
+                "iss",
             ])
         );
         //invalid session handle when updating the jwt payload

@@ -17,6 +17,7 @@ import STError from "./error";
 import { ParsedJWTInfo } from "./jwt";
 import * as jose from "jose";
 import { ProcessState, PROCESS_STATE } from "../../processState";
+import { logDebugMessage } from "../../logger";
 
 export async function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
@@ -97,6 +98,10 @@ export async function getInfoFromAccessToken(
             timeCreated,
         };
     } catch (err) {
+        logDebugMessage(
+            "getInfoFromAccessToken: Returning TRY_REFRESH_TOKEN because access token validation failed - " +
+                err.message
+        );
         throw new STError({
             message: "Failed to verify access token",
             type: STError.TRY_REFRESH_TOKEN,
@@ -113,6 +118,8 @@ export function validateAccessTokenStructure(payload: any, version: number) {
             typeof payload.sessionHandle !== "string" ||
             typeof payload.refreshTokenHash1 !== "string"
         ) {
+            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 3");
+            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
             // it would come here if we change the structure of the JWT.
             throw Error("Access token does not contain all the information. Maybe the structure has changed?");
         }
@@ -124,6 +131,8 @@ export function validateAccessTokenStructure(payload: any, version: number) {
         typeof payload.expiryTime !== "number" ||
         typeof payload.timeCreated !== "number"
     ) {
+        logDebugMessage("validateAccessTokenStructure: Access token is using version < 3");
+        // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
         // it would come here if we change the structure of the JWT.
         throw Error("Access token does not contain all the information. Maybe the structure has changed?");
     }

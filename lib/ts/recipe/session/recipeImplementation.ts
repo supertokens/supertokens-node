@@ -29,6 +29,7 @@ export type Helpers = {
     getRecipeImpl: () => RecipeInterface;
 };
 
+const JWKCacheCooldownInMs = 500;
 export const JWKCacheMaxAgeInMs = 60000;
 
 export const protectedProps = [
@@ -51,7 +52,7 @@ export default function getRecipeInterface(
         .getAllCoreUrlsForPath("/.well-known/jwks.json")
         .map((url) =>
             createRemoteJWKSet(new URL(url), {
-                cooldownDuration: 500,
+                cooldownDuration: JWKCacheCooldownInMs,
                 cacheMaxAge: JWKCacheMaxAgeInMs,
             })
         );
@@ -142,6 +143,26 @@ export default function getRecipeInterface(
                 );
             }
             logDebugMessage("getSession: Started");
+            if (accessTokenString === undefined) {
+                if (options?.sessionRequired === false) {
+                    logDebugMessage(
+                        "getSession: Returning undefined because parsing failed and sessionRequired is false"
+                    );
+                    return undefined;
+                }
+
+                logDebugMessage("getSession: UNAUTHORISED because accessToken in request is undefined");
+                throw new SessionError({
+                    message:
+                        "Session does not exist. Are you sending the session tokens in the request with the appropriate token transfer method?",
+                    type: SessionError.UNAUTHORISED,
+                    payload: {
+                        // we do not clear the session here because of a
+                        // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+                        clearTokens: false,
+                    },
+                });
+            }
 
             let accessToken: ParsedJWTInfo | undefined;
             try {
@@ -154,6 +175,9 @@ export default function getRecipeInterface(
                     );
                     return undefined;
                 }
+                logDebugMessage(
+                    "getSession: UNAUTHORISED because the accessToken couldn't be parsed or had an invalid structure"
+                );
                 throw new SessionError({
                     message: "Token parsing failed",
                     type: "UNAUTHORISED",
@@ -171,9 +195,11 @@ export default function getRecipeInterface(
 
             logDebugMessage("getSession: Success!");
             const payload =
-                response.accessToken !== undefined
-                    ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
-                    : accessToken.payload;
+                accessToken.version >= 3
+                    ? response.accessToken !== undefined
+                        ? parseJWTWithoutSignatureVerification(response.accessToken.token).payload
+                        : accessToken.payload
+                    : response.session.userDataInJWT;
             const session = new Session(
                 helpers,
                 response.accessToken !== undefined ? response.accessToken.token : accessTokenString,

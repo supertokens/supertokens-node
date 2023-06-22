@@ -173,7 +173,8 @@ export function setCookie(
     if (pathType === "refreshTokenPath") {
         path = config.refreshTokenPath.getAsStringDangerous();
     } else if (pathType === "accessTokenPath") {
-        path = "/";
+        path =
+            config.accessTokenPath.getAsStringDangerous() === "" ? "/" : config.accessTokenPath.getAsStringDangerous();
     }
     let httpOnly = true;
 

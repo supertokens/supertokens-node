@@ -16,6 +16,9 @@ const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse
 const assert = require("assert");
 const SuperTokens = require("../..");
 const Session = require("../../recipe/session");
+const JWT = require("../../recipe/jwt");
+const { maxVersion } = require("../../lib/build/utils");
+let { Querier } = require("../../lib/build/querier");
 
 describe(`Session handling functions without modifying response: ${printPath(
     "[test/session/sessionHandlingFuncsWithoutReq.test.js]"
@@ -178,6 +181,83 @@ describe(`Session handling functions without modifying response: ${printPath(
                 }
             );
             assert.ok(getSessionWithAntiCSRFDisabled);
+        });
+
+        it("should validate access tokens created by createJWT", async () => {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init(), JWT.init()],
+            });
+
+            const session = await Session.createNewSessionWithoutRequestResponse("testId");
+            const originalPayload = session.getAccessTokenPayload();
+
+            const customAccessToken = await JWT.createJWT(
+                {
+                    ...originalPayload,
+                    exp: undefined,
+                    iat: undefined,
+                },
+                1234,
+                false
+            );
+
+            const customSession = await Session.getSessionWithoutRequestResponse(customAccessToken.jwt);
+            const customPayload = customSession.getAccessTokenPayload();
+
+            assert.notEqual(customPayload.exp, originalPayload.exp);
+        });
+
+        it("should validate access tokens created by createJWT w/ checkDatabase", async () => {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init(), JWT.init()],
+            });
+
+            let q = Querier.getNewInstanceOrThrowError(undefined);
+            let apiVersion = await q.getAPIVersion();
+
+            // Only run test for >= 3.0 CDI (3.0 is after 2.21)
+            if (maxVersion(apiVersion, "2.21") === "2.21") {
+                return;
+            }
+
+            const session = await Session.createNewSessionWithoutRequestResponse("testId");
+            const originalPayload = session.getAccessTokenPayload();
+
+            const customAccessToken = await JWT.createJWT(
+                {
+                    ...originalPayload,
+                    exp: undefined,
+                    iat: undefined,
+                    tId: "public",
+                },
+                1234,
+                false
+            );
+
+            const customSession = await Session.getSessionWithoutRequestResponse(customAccessToken.jwt, undefined, {
+                checkDatabase: true,
+            });
+            const customPayload = customSession.getAccessTokenPayload();
+
+            assert.notEqual(customPayload.exp, originalPayload.exp);
         });
 
         it("should return error for non-tokens", async () => {

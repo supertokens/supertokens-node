@@ -60,7 +60,7 @@ export type TypeInput = {
     useDynamicAccessTokenSigningKey?: boolean;
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;
-
+    accessTokenPath?: string;
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
@@ -106,6 +106,7 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     useDynamicAccessTokenSigningKey: boolean;
     refreshTokenPath: NormalisedURLPath;
+    accessTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
@@ -200,7 +201,7 @@ export type RecipeInterface = {
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 
     getSession(input: {
-        accessToken: string;
+        accessToken: string | undefined;
         antiCsrfToken?: string;
         options?: VerifySessionOptions;
         userContext: any;

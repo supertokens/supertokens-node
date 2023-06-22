@@ -34,6 +34,7 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: object;
     }): Promise<{
         users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
@@ -48,6 +49,7 @@ export default class SuperTokensWrapper {
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
+        query?: object;
     }): Promise<{
         users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
@@ -92,6 +94,10 @@ export default class SuperTokensWrapper {
     }) {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
+
+    static getRequestFromUserContext(userContext: any | undefined) {
+        return SuperTokens.getInstanceOrThrowError().getRequestFromUserContext(userContext);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -113,5 +119,7 @@ export let getUserIdMapping = SuperTokensWrapper.getUserIdMapping;
 export let deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping;
 
 export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
+
+export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserContext;
 
 export let Error = SuperTokensWrapper.Error;

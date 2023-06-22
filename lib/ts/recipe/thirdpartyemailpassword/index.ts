@@ -78,14 +78,20 @@ export default class Wrapper {
         });
     }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
+    static Google = thirdPartyProviders.Google;
+
+    static updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+        userContext?: any;
+        applyPasswordPolicy?: boolean;
+    }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
         });
     }
-
-    static Google = thirdPartyProviders.Google;
 
     static Github = thirdPartyProviders.Github;
 

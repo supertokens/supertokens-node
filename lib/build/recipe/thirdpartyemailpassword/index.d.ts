@@ -75,15 +75,22 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
+    static Google: typeof import("../thirdparty/providers/google").default;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
         password?: string;
         userContext?: any;
-    }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
-    }>;
-    static Google: typeof import("../thirdparty/providers/google").default;
+        applyPasswordPolicy?: boolean;
+    }): Promise<
+        | {
+              status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;
     static Apple: typeof import("../thirdparty/providers/apple").default;
