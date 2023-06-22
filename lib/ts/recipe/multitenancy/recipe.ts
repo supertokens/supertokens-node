@@ -45,7 +45,7 @@ export default class Recipe extends RecipeModule {
 
     staticThirdPartyProviders: ProviderInput[] = [];
 
-    getAllowedDomainsForTenantId?: (tenantId: string | undefined, userContext: any) => Promise<string[] | undefined>;
+    getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
