@@ -8,7 +8,7 @@ export class PermissionClaimClass extends PrimitiveArrayClaim<string> {
     constructor() {
         super({
             key: "st-perm",
-            async fetchValue(userId, userContext) {
+            async fetchValue(userId, _, userContext) {
                 const recipe = UserRoleRecipe.getInstanceOrThrowError();
 
                 // We fetch the roles because the rolesClaim may not be present in the payload

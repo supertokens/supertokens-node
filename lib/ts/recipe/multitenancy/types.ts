@@ -37,13 +37,7 @@ export interface NormalisedErrorHandlers {
 }
 
 export type TypeInput = {
-    getAllowedDomainsForTenantId?: (
-        tenantId: string | undefined,
-        userContext: any
-    ) => Promise<{
-        status: "OK";
-        domains: string[];
-    }>;
+    getAllowedDomainsForTenantId?: (tenantId: string | undefined, userContext: any) => Promise<string[] | undefined>;
 
     errorHandlers?: ErrorHandlers;
     override?: {
@@ -56,13 +50,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    getAllowedDomainsForTenantId?: (
-        tenantId: string | undefined,
-        userContext: any
-    ) => Promise<{
-        status: "OK";
-        domains: string[];
-    }>;
+    getAllowedDomainsForTenantId?: (tenantId: string | undefined, userContext: any) => Promise<string[] | undefined>;
 
     errorHandlers: NormalisedErrorHandlers;
     override: {
