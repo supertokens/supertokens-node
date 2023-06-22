@@ -3,7 +3,7 @@ import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
 import { RecipeDisabledForTenantError, TenantDoesNotExistError } from "./error";
-import { AllowedDomainsClaim } from "./multitenancyClaim";
+import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static createOrUpdateTenant(

@@ -365,7 +365,7 @@ export declare abstract class SessionClaim<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    abstract fetchValue(userId: string, tenantId: string, userContext: any): Promise<T | undefined> | T | undefined;
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
      *
@@ -390,7 +390,7 @@ export declare abstract class SessionClaim<T> {
      * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
-    build(userId: string, userContext?: any): Promise<JSONObject>;
+    build(userId: string, tenantId: string, userContext?: any): Promise<JSONObject>;
 }
 export declare type ReqResInfo = {
     res: BaseResponse;

@@ -26,7 +26,7 @@ import APIImplementation from "./api/implementation";
 import SessionRecipe from "../session/recipe";
 import { ProviderInput } from "../thirdparty/types";
 import { LOGIN_METHODS_API } from "./constants";
-import { AllowedDomainsClaim } from "./multitenancyClaim";
+import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import loginMethodsAPI from "./api/loginMethods";
@@ -45,13 +45,7 @@ export default class Recipe extends RecipeModule {
 
     staticThirdPartyProviders: ProviderInput[] = [];
 
-    getAllowedDomainsForTenantId?: (
-        tenantId: string | undefined,
-        userContext: any
-    ) => Promise<{
-        status: "OK";
-        domains: string[];
-    }>;
+    getAllowedDomainsForTenantId?: (tenantId: string | undefined, userContext: any) => Promise<string[] | undefined>;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);

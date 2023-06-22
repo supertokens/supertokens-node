@@ -2,7 +2,11 @@
 import { JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
-    readonly fetchValue: (userId: string, userContext: any) => Promise<T[] | undefined> | T[] | undefined;
+    readonly fetchValue: (
+        userId: string,
+        tenantId: string,
+        userContext: any
+    ) => Promise<T[] | undefined> | T[] | undefined;
     readonly defaultMaxAgeInSeconds: number | undefined;
     constructor(config: { key: string; fetchValue: SessionClaim<T[]>["fetchValue"]; defaultMaxAgeInSeconds?: number });
     addToPayload_internal(payload: any, value: T[], _userContext: any): any;
