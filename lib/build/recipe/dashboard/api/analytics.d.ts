@@ -3,4 +3,4 @@ import { APIInterface, APIOptions } from "../types";
 export declare type Response = {
     status: "OK";
 };
-export default function analyticsPost(_: APIInterface, options: APIOptions): Promise<Response>;
+export default function analyticsPost(_: APIInterface, options: APIOptions, __: any): Promise<Response>;

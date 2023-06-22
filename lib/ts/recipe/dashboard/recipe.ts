@@ -271,7 +271,7 @@ export default class Recipe extends RecipeModule {
         }
 
         if (id === SIGN_IN_API) {
-            return await signIn(this.apiImpl, options);
+            return await signIn(this.apiImpl, options, userContext);
         }
 
         if (id === VALIDATE_KEY_API) {

@@ -47,7 +47,7 @@ export type Response = {
     }[];
 };
 
-export default async function usersGet(_: APIInterface, options: APIOptions): Promise<Response> {
+export default async function usersGet(_: APIInterface, options: APIOptions, userContext: any): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");
 
@@ -104,7 +104,7 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
             (): Promise<any> =>
                 new Promise(async (resolve, reject) => {
                     try {
-                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.user.id);
+                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.user.id, userContext);
                         const { first_name, last_name } = userMetaDataResponse.metadata;
 
                         updatedUsersArray[i] = {

@@ -21,7 +21,7 @@ export type Response = {
     count: number;
 };
 
-export default async function usersCountGet(_: APIInterface, __: APIOptions): Promise<Response> {
+export default async function usersCountGet(_: APIInterface, __: APIOptions, ___: any): Promise<Response> {
     const count = await SuperTokens.getInstanceOrThrowError().getUserCount();
 
     return {

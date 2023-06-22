@@ -18,7 +18,7 @@ import { send200Response } from "../../../utils";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 
-export default async function signOut(_: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function signOut(_: APIInterface, options: APIOptions, __: any): Promise<boolean> {
     if (options.config.authMode === "api-key") {
         send200Response(options.res, { status: "OK" });
     } else {
