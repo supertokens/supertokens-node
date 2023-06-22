@@ -214,13 +214,13 @@ export default class Recipe extends RecipeModule {
         userContext: any
     ): Promise<boolean> => {
         if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext) !== undefined) {
-            return await this.emailPasswordRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
+            return await this.emailPasswordRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         if (
             this.thirdPartyRecipe !== undefined &&
             this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext) !== undefined
         ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method);
+            return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         return false;
     };

@@ -15,17 +15,18 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { getSessionFromRequest } from "../sessionRequestFunctions";
 
-export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function signOutAPI(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
     if (apiImplementation.signOutPOST === undefined) {
         return false;
     }
-
-    let defaultUserContext = makeDefaultUserContextFromAPI(options.req);
 
     const session = await getSessionFromRequest({
         req: options.req,
@@ -36,13 +37,13 @@ export default async function signOutAPI(apiImplementation: APIInterface, option
             sessionRequired: false,
             overrideGlobalClaimValidators: () => [],
         },
-        userContext: defaultUserContext,
+        userContext,
     });
 
     let result = await apiImplementation.signOutPOST({
         options,
         session,
-        userContext: defaultUserContext,
+        userContext,
     });
 
     send200Response(options.res, result);

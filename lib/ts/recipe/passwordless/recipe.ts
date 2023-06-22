@@ -175,7 +175,8 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
-        __: HTTPMethod
+        __: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         const options = {
             config: this.config,
@@ -189,15 +190,15 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === CONSUME_CODE_API) {
-            return await consumeCodeAPI(this.apiImpl, options);
+            return await consumeCodeAPI(this.apiImpl, options, userContext);
         } else if (id === CREATE_CODE_API) {
-            return await createCodeAPI(this.apiImpl, options);
+            return await createCodeAPI(this.apiImpl, options, userContext);
         } else if (id === DOES_EMAIL_EXIST_API) {
-            return await emailExistsAPI(this.apiImpl, options);
+            return await emailExistsAPI(this.apiImpl, options, userContext);
         } else if (id === DOES_PHONE_NUMBER_EXIST_API) {
-            return await phoneNumberExistsAPI(this.apiImpl, options);
+            return await phoneNumberExistsAPI(this.apiImpl, options, userContext);
         } else {
-            return await resendCodeAPI(this.apiImpl, options);
+            return await resendCodeAPI(this.apiImpl, options, userContext);
         }
     };
 

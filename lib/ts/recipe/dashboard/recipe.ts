@@ -252,7 +252,8 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
-        ___: HTTPMethod
+        ___: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,
@@ -266,7 +267,7 @@ export default class Recipe extends RecipeModule {
 
         // For these APIs we dont need API key validation
         if (id === DASHBOARD_API) {
-            return await dashboard(this.apiImpl, options);
+            return await dashboard(this.apiImpl, options, userContext);
         }
 
         if (id === SIGN_IN_API) {
@@ -274,7 +275,7 @@ export default class Recipe extends RecipeModule {
         }
 
         if (id === VALIDATE_KEY_API) {
-            return await validateKey(this.apiImpl, options);
+            return await validateKey(this.apiImpl, options, userContext);
         }
 
         // Do API key validation for the remaining APIs
@@ -337,7 +338,7 @@ export default class Recipe extends RecipeModule {
             return false;
         }
 
-        return await apiKeyProtector(this.apiImpl, options, apiFunction);
+        return await apiKeyProtector(this.apiImpl, options, apiFunction, userContext);
     };
 
     handleError = async (err: error, _: BaseRequest, __: BaseResponse): Promise<void> => {

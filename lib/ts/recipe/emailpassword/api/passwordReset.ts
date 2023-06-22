@@ -17,9 +17,12 @@ import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export default async function passwordReset(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function passwordReset(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     if (apiImplementation.passwordResetPOST === undefined) {
@@ -53,7 +56,7 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
         formFields,
         token,
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     send200Response(

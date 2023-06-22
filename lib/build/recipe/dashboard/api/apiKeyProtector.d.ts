@@ -3,5 +3,6 @@ import { APIFunction, APIInterface, APIOptions } from "../types";
 export default function apiKeyProtector(
     apiImplementation: APIInterface,
     options: APIOptions,
-    apiFunction: APIFunction
+    apiFunction: APIFunction,
+    userContext: any
 ): Promise<boolean>;

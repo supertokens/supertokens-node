@@ -16,14 +16,14 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import MultitenancyRecipe from "../../multitenancy/recipe";
 import { RecipeDisabledForTenantError } from "../../multitenancy";
 import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
-    options: APIOptions
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean> {
     if (apiImplementation.authorisationUrlGET === undefined) {
         return false;
@@ -47,8 +47,6 @@ export default async function authorisationUrlAPI(
             message: "Please provide the redirectURIOnProviderDashboard as a GET param",
         });
     }
-
-    const userContext = makeDefaultUserContextFromAPI(options.req);
 
     const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
     tenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({ tenantIdFromFrontend: tenantId, userContext });

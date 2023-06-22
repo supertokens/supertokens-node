@@ -18,15 +18,17 @@ import type { VerifySessionOptions } from "..";
 import type { Next } from "koa";
 import { KoaRequest, KoaResponse } from "../../../framework/koa/framework";
 import type { SessionContext } from "../../../framework/koa/framework";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(options?: VerifySessionOptions) {
     return async (ctx: SessionContext, next: Next) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new KoaRequest(ctx);
         let response = new KoaResponse(ctx);
+        const userContext = makeDefaultUserContextFromAPI(request);
 
         try {
-            ctx.session = await sessionRecipe.verifySession(options, request, response);
+            ctx.session = await sessionRecipe.verifySession(options, request, response, userContext);
         } catch (err) {
             try {
                 const supertokens = SuperTokens.getInstanceOrThrowError();

@@ -170,7 +170,8 @@ export default class Recipe extends RecipeModule {
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
-        _method: HTTPMethod
+        _method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options = {
             config: this.config,
@@ -183,15 +184,15 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_UP_API) {
-            return await signUpAPI(this.apiImpl, options);
+            return await signUpAPI(this.apiImpl, options, userContext);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this.apiImpl, options);
+            return await signInAPI(this.apiImpl, options, userContext);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
-            return await generatePasswordResetTokenAPI(this.apiImpl, options);
+            return await generatePasswordResetTokenAPI(this.apiImpl, options, userContext);
         } else if (id === PASSWORD_RESET_API) {
-            return await passwordResetAPI(this.apiImpl, options);
+            return await passwordResetAPI(this.apiImpl, options, userContext);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-            return await emailExistsAPI(this.apiImpl, options);
+            return await emailExistsAPI(this.apiImpl, options, userContext);
         }
         return false;
     };
