@@ -36,17 +36,20 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let existingDeviceCount = 0;
+            let verifiedDeviceCount = 0;
             if (deviceName === undefined) {
                 // We need to set the device name:
                 const listDevicesResponse = await options.recipeImplementation.listDevices({
                     userId: session.getUserId(),
                     userContext,
                 });
-                existingDeviceCount = listDevicesResponse.status === "OK" ? listDevicesResponse.devices.length : 0;
+                const devices = listDevicesResponse.status === "OK" ? listDevicesResponse.devices : [];
+                existingDeviceCount = devices.length;
+                verifiedDeviceCount = devices.filter((device) => device.verified).length;
                 deviceName = `TOTP Device ${existingDeviceCount + 1}`; // Assuming no one creates a device in the same format
             }
 
-            if (existingDeviceCount > 0) {
+            if (verifiedDeviceCount > 0) {
                 // TODO: We need to assert that all factors have been completed
                 // before actually creating the device.
                 // await session.assertClaims(MfaClaim.validators.hasCompletedAllFactors(), userContext);
