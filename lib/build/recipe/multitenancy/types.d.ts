@@ -41,6 +41,13 @@ export declare type TypeNormalisedInput = {
 };
 export declare type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: any }) => Promise<string>;
+    getWebsiteDomainAndBasePathForTenantId: (input: {
+        tenantId: string;
+        userContext: any;
+    }) => Promise<{
+        domain: string;
+        basePath: string;
+    }>;
     createOrUpdateTenant: (input: {
         tenantId?: string;
         config?: {

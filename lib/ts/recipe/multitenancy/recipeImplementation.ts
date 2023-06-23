@@ -2,11 +2,19 @@ import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { DEFAULT_TENANT_ID } from "./constants";
+import { NormalisedAppinfo } from "../../types";
 
-export default function getRecipeInterface(querier: Querier): RecipeInterface {
+export default function getRecipeInterface(appInfo: NormalisedAppinfo, querier: Querier): RecipeInterface {
     return {
         getTenantId: async function ({ tenantIdFromFrontend }) {
             return tenantIdFromFrontend;
+        },
+
+        getWebsiteDomainAndBasePathForTenantId: async function () {
+            return {
+                domain: appInfo.websiteDomain.getAsStringDangerous(),
+                basePath: appInfo.websiteBasePath.getAsStringDangerous(),
+            };
         },
 
         createOrUpdateTenant: async function ({ tenantId, config }) {

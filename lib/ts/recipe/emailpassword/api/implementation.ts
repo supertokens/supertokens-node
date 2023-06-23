@@ -3,6 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
+import MultitenancyRecipe from "../../../recipe/multitenancy/recipe";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -70,9 +71,15 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
+            const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+            const domainAndBasePath = await mtRecipe.recipeInterfaceImpl.getWebsiteDomainAndBasePathForTenantId({
+                tenantId,
+                userContext,
+            });
+
             let passwordResetLink =
-                options.appInfo.websiteDomain.getAsStringDangerous() +
-                options.appInfo.websiteBasePath.getAsStringDangerous() +
+                domainAndBasePath.domain +
+                domainAndBasePath.basePath +
                 "/reset-password?token=" +
                 response.token +
                 "&rid=" +
