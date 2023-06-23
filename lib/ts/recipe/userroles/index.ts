@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { PermissionClaim } from "./permissionClaim";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
@@ -27,7 +28,7 @@ export default class Wrapper {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addRoleToUser({
             userId,
             role,
-            tenantId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -36,7 +37,7 @@ export default class Wrapper {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeUserRole({
             userId,
             role,
-            tenantId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -44,7 +45,7 @@ export default class Wrapper {
     static async getRolesForUser(userId: string, tenantId?: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesForUser({
             userId,
-            tenantId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -52,7 +53,7 @@ export default class Wrapper {
     static async getUsersThatHaveRole(role: string, tenantId?: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersThatHaveRole({
             role,
-            tenantId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
