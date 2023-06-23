@@ -13,7 +13,7 @@ import { UserInfo } from "../types";
 import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
-import { completeFactorInSession } from "../../mfa";
+import { completeFactorInSession, checkAllowedAsFirstFactor } from "../../mfa";
 import { linkAccounts } from "../../accountlinking";
 
 export default function getAPIInterface(): APIInterface {
@@ -347,6 +347,17 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
+            let session = await Session.getSession(
+                options.req,
+                options.res,
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
+                userContext
+            );
+
+            if (session === undefined) {
+                await checkAllowedAsFirstFactor("public", "thirdparty", userContext);
+            }
+
             const fromProvider = await getUserInfoFromAuthCode(
                 provider,
                 code,
@@ -564,12 +575,6 @@ export default function getAPIInterface(): APIInterface {
                 response.user = (await getUser(userId, userContext))!;
             }
 
-            let session = await Session.getSession(
-                options.req,
-                options.res,
-                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
-                userContext
-            );
             if (session === undefined) {
                 session = await Session.createNewSession(
                     options.req,
@@ -592,7 +597,7 @@ export default function getAPIInterface(): APIInterface {
             }
 
             userContext.flow = response.createdNewUser ? "signup" : "signin";
-            await completeFactorInSession(session, "passwordless", userContext);
+            await completeFactorInSession(session, "thirdparty", userContext);
 
             return {
                 status: "OK",

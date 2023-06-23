@@ -38,6 +38,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
             const MFARecipeImpl = MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
 
+            // if (Object.keys(value.c).length === 0) {
+            // Should happen before calling any user creating API otherwise user won't login but
+            // will be created
+            //     const expectedFirstFactors = await MFARecipeImpl.getFirstFactors({tenantId: 'public', userContext: input.userContext});
+            //     if (expectedFirstFactors.indexOf(input.factorId) === -1) {
+            //         throw new Error(`First factor must be one of ${expectedFirstFactors.join(", ")}`);
+            //     }
+            // }
+
             const completedFactors = Object.keys(value.c);
             const enabledByUser = await MFARecipeImpl.getAllFactorsEnabledForUser({
                 tenantId: "public",

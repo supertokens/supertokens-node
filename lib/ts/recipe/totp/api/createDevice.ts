@@ -25,6 +25,8 @@ export default async function createDevice(apiImplementation: APIInterface, opti
         return false;
     }
 
+    // Not overriding claims here because user must have completed all factors
+    // before creating a device. Otherwise, this will be a security issue.
     let session = await Session.getSession(options.req, options.res);
 
     let { deviceName } = await options.req.getJSONBody();

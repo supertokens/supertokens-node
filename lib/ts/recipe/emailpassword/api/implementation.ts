@@ -8,8 +8,7 @@ import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
 import { RecipeLevelUser } from "../../accountlinking/types";
 import RecipeUserId from "../../../recipeUserId";
-// import { validateFormFieldsOrThrowError } from "./utils";
-import { completeFactorInSession } from "../../mfa";
+import { completeFactorInSession, checkAllowedAsFirstFactor } from "../../mfa";
 import { linkAccounts, createPrimaryUser } from "../../accountlinking";
 
 export default function getAPIImplementation(): APIInterface {
@@ -743,6 +742,17 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
+            let session = await Session.getSession(
+                options.req,
+                options.res,
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
+                userContext
+            );
+
+            if (session === undefined) {
+                await checkAllowedAsFirstFactor("public", "emailpassword", userContext);
+            }
+
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
@@ -791,12 +801,6 @@ export default function getAPIImplementation(): APIInterface {
 
             response.user = (await getUser(userId, userContext))!;
 
-            let session = await Session.getSession(
-                options.req,
-                options.res,
-                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
-                userContext
-            );
             if (session === undefined) {
                 session = await Session.createNewSession(
                     options.req,
@@ -849,6 +853,17 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
+            let session = await Session.getSession(
+                options.req,
+                options.res,
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
+                userContext
+            );
+
+            if (session === undefined) {
+                await checkAllowedAsFirstFactor("public", "emailpassword", userContext);
+            }
+
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
@@ -893,12 +908,6 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Race condition error - please call this API again");
             }
 
-            let session = await Session.getSession(
-                options.req,
-                options.res,
-                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
-                userContext
-            );
             if (session === undefined) {
                 session = await Session.createNewSession(
                     options.req,

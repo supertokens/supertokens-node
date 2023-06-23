@@ -4,12 +4,23 @@ import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
 import RecipeUserId from "../../../recipeUserId";
 import { listUsersByAccountInfo } from "../../..";
-import { completeFactorInSession } from "../../mfa";
+import { completeFactorInSession, checkAllowedAsFirstFactor } from "../../mfa";
 // import { linkAccounts } from  '../../accountlinking'
 
 export default function getAPIImplementation(): APIInterface {
     return {
         consumeCodePOST: async function (input) {
+            let session = await Session.getSession(
+                input.options.req,
+                input.options.res,
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
+                input.userContext
+            );
+
+            if (session === undefined) {
+                await checkAllowedAsFirstFactor("public", "passwordless", input.userContext);
+            }
+
             let response = await input.options.recipeImplementation.consumeCode(
                 "deviceId" in input
                     ? {
@@ -54,12 +65,6 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            let session = await Session.getSession(
-                input.options.req,
-                input.options.res,
-                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
-                input.userContext
-            );
             if (session === undefined) {
                 session = await Session.createNewSession(
                     input.options.req,
@@ -88,6 +93,17 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         createCodePOST: async function (input) {
+            let session = await Session.getSession(
+                input.options.req,
+                input.options.res,
+                { overrideGlobalClaimValidators: async (_) => [], sessionRequired: false },
+                input.userContext
+            );
+
+            if (session === undefined) {
+                await checkAllowedAsFirstFactor("public", "passwordless", input.userContext);
+            }
+
             let response = await input.options.recipeImplementation.createCode(
                 "email" in input
                     ? {

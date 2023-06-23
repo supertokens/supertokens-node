@@ -16,18 +16,36 @@
 import MfaRecipe from "./recipe";
 import SuperTokensError from "./error";
 import { SessionContainer } from "../session";
+import STError from "./error";
 
 export default class Wrapper {
     static init = MfaRecipe.init;
 
     static Error = SuperTokensError;
 
-    static completeFactorInSession(session: SessionContainer, factorId: string, userContext?: any) {
-        return MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.completeFactorInSession({
+    static async completeFactorInSession(session: SessionContainer, factorId: string, userContext?: any) {
+        return await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.completeFactorInSession({
             session,
             factorId,
             userContext: userContext ?? {},
         });
+    }
+
+    static async checkAllowedAsFirstFactor(tenantId: string, factorId: string, userContext?: any) {
+        const allowedFirstFactors = await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getFirstFactors({
+            tenantId,
+            userContext: userContext ?? {},
+        });
+
+        const isAllowed = allowedFirstFactors.indexOf(factorId) !== -1;
+
+        if (!isAllowed) {
+            throw new STError({
+                type: "BAD_INPUT_ERROR",
+                message:
+                    "The provided factor is not allowed as a first factor. Please check your recipe configuration.",
+            });
+        }
     }
 }
 
@@ -35,3 +53,4 @@ export let init = Wrapper.init;
 export let Error = Wrapper.Error;
 
 export let completeFactorInSession = Wrapper.completeFactorInSession;
+export let checkAllowedAsFirstFactor = Wrapper.checkAllowedAsFirstFactor;
