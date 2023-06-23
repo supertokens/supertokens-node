@@ -19,6 +19,7 @@ import { APIInterface, APIOptions } from "../";
 
 export default async function generatePasswordResetToken(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -39,6 +40,7 @@ export default async function generatePasswordResetToken(
 
     let result = await apiImplementation.generatePasswordResetTokenPOST({
         formFields,
+        tenantId,
         options,
         userContext,
     });

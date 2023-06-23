@@ -35,6 +35,7 @@ export type User = {
     email?: string;
     phoneNumber?: string;
     timeJoined: number;
+    tenantIds: string[];
 };
 
 export type TypeInput = (

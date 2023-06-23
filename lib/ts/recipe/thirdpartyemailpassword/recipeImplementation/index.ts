@@ -26,6 +26,7 @@ export default function getRecipeInterface(
         emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
@@ -34,6 +35,7 @@ export default function getRecipeInterface(
         emailPasswordSignIn: async function (input: {
             email: string;
             password: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
@@ -102,10 +104,18 @@ export default function getRecipeInterface(
             return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
         },
 
-        getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
+        getUsersByEmail: async function ({
+            email,
+            tenantId,
+            userContext,
+        }: {
+            email: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<User[]> {
             let userFromEmailPass: User | undefined = await originalEmailPasswordImplementation.getUserByEmail.bind(
                 DerivedEP(this)
-            )({ email, userContext });
+            )({ email, tenantId, userContext });
 
             if (originalThirdPartyImplementation === undefined) {
                 return userFromEmailPass === undefined ? [] : [userFromEmailPass];
@@ -133,12 +143,18 @@ export default function getRecipeInterface(
 
         createResetPasswordToken: async function (input: {
             userId: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return originalEmailPasswordImplementation.createResetPasswordToken.bind(DerivedEP(this))(input);
         },
 
-        resetPasswordUsingToken: async function (input: { token: string; newPassword: string; userContext: any }) {
+        resetPasswordUsingToken: async function (input: {
+            token: string;
+            newPassword: string;
+            tenantId: string;
+            userContext: any;
+        }) {
             return originalEmailPasswordImplementation.resetPasswordUsingToken.bind(DerivedEP(this))(input);
         },
 

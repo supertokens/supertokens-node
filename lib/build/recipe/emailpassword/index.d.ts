@@ -8,6 +8,7 @@ export default class Wrapper {
     static signUp(
         email: string,
         password: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -21,6 +22,7 @@ export default class Wrapper {
     static signIn(
         email: string,
         password: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -32,9 +34,10 @@ export default class Wrapper {
           }
     >;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUserByEmail(email: string, userContext?: any): Promise<User | undefined>;
+    static getUserByEmail(email: string, tenantId?: string, userContext?: any): Promise<User | undefined>;
     static createResetPasswordToken(
         userId: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -48,6 +51,7 @@ export default class Wrapper {
     static resetPasswordUsingToken(
         token: string,
         newPassword: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {

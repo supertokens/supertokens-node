@@ -8,10 +8,12 @@ export default function getAPIImplementation(): APIInterface {
     return {
         emailExistsGET: async function ({
             email,
+            tenantId,
             options,
             userContext,
         }: {
             email: string;
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -21,7 +23,7 @@ export default function getAPIImplementation(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
+            let user = await options.recipeImplementation.getUserByEmail({ email, tenantId, userContext });
 
             return {
                 status: "OK",
@@ -30,6 +32,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         generatePasswordResetTokenPOST: async function ({
             formFields,
+            tenantId,
             options,
             userContext,
         }: {
@@ -37,6 +40,7 @@ export default function getAPIImplementation(): APIInterface {
                 id: string;
                 value: string;
             }[];
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -47,7 +51,7 @@ export default function getAPIImplementation(): APIInterface {
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
 
-            let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
+            let user = await options.recipeImplementation.getUserByEmail({ email, tenantId, userContext });
             if (user === undefined) {
                 return {
                     status: "OK",
@@ -56,6 +60,7 @@ export default function getAPIImplementation(): APIInterface {
 
             let response = await options.recipeImplementation.createResetPasswordToken({
                 userId: user.id,
+                tenantId,
                 userContext,
             });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
@@ -71,7 +76,9 @@ export default function getAPIImplementation(): APIInterface {
                 "/reset-password?token=" +
                 response.token +
                 "&rid=" +
-                options.recipeId;
+                options.recipeId +
+                "&tenantId=" +
+                tenantId;
 
             logDebugMessage(`Sending password reset email to ${email}`);
             await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
@@ -88,6 +95,7 @@ export default function getAPIImplementation(): APIInterface {
         passwordResetPOST: async function ({
             formFields,
             token,
+            tenantId,
             options,
             userContext,
         }: {
@@ -96,6 +104,7 @@ export default function getAPIImplementation(): APIInterface {
                 value: string;
             }[];
             token: string;
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -115,6 +124,7 @@ export default function getAPIImplementation(): APIInterface {
             let response = await options.recipeImplementation.resetPasswordUsingToken({
                 token,
                 newPassword,
+                tenantId,
                 userContext,
             });
 
@@ -122,6 +132,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         signInPOST: async function ({
             formFields,
+            tenantId,
             options,
             userContext,
         }: {
@@ -129,6 +140,7 @@ export default function getAPIImplementation(): APIInterface {
                 id: string;
                 value: string;
             }[];
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -145,12 +157,13 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let response = await options.recipeImplementation.signIn({ email, password, userContext });
+            let response = await options.recipeImplementation.signIn({ email, password, tenantId, userContext });
             if (response.status === "WRONG_CREDENTIALS_ERROR") {
                 return response;
             }
             let user = response.user;
 
+            // TODO tenantId in create session
             let session = await Session.createNewSession(options.req, options.res, user.id, {}, {}, userContext);
             return {
                 status: "OK",
@@ -158,8 +171,10 @@ export default function getAPIImplementation(): APIInterface {
                 user,
             };
         },
+
         signUpPOST: async function ({
             formFields,
+            tenantId,
             options,
             userContext,
         }: {
@@ -167,6 +182,7 @@ export default function getAPIImplementation(): APIInterface {
                 id: string;
                 value: string;
             }[];
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -183,12 +199,13 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let response = await options.recipeImplementation.signUp({ email, password, userContext });
+            let response = await options.recipeImplementation.signUp({ email, password, tenantId, userContext });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
                 return response;
             }
             let user = response.user;
 
+            // TODO tenantId in create session
             let session = await Session.createNewSession(options.req, options.res, user.id, {}, {}, userContext);
             return {
                 status: "OK",

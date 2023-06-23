@@ -19,6 +19,7 @@ import { APIInterface, APIOptions } from "../";
 
 export default async function signInAPI(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -38,6 +39,7 @@ export default async function signInAPI(
 
     let result = await apiImplementation.signInPOST({
         formFields,
+        tenantId,
         options,
         userContext,
     });

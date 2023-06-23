@@ -61,6 +61,7 @@ export declare type User = {
     id: string;
     email: string;
     timeJoined: number;
+    tenantIds: string[];
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
@@ -78,6 +79,7 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -91,6 +93,7 @@ export declare type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -102,9 +105,10 @@ export declare type RecipeInterface = {
           }
     >;
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUserByEmail(input: { email: string; userContext: any }): Promise<User | undefined>;
+    getUserByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User | undefined>;
     createResetPasswordToken(input: {
         userId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -118,6 +122,7 @@ export declare type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -163,6 +168,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -179,6 +185,7 @@ export declare type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -195,6 +202,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -214,6 +222,7 @@ export declare type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -234,6 +243,7 @@ export declare type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<

@@ -68,7 +68,7 @@ export default abstract class RecipeModule {
                         tenantIdFromFrontend: DEFAULT_TENANT_ID,
                         userContext,
                     });
-                    return { id: currAPI.id, tenantId: finalTenantId === undefined ? DEFAULT_TENANT_ID : tenantId };
+                    return { id: currAPI.id, tenantId: finalTenantId };
                 } else if (
                     remainingPath !== undefined &&
                     this.appInfo.apiBasePath
