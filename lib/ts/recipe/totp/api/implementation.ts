@@ -14,12 +14,9 @@
  */
 
 import { APIInterface } from "../types";
-import STError from "../error";
 import TotpRecipe from "../recipe";
 import SessionError from "../../session/error";
-// import '../../mfa'
-
-// import { completeFactorInSession } from '../../mfa';
+// import { MfaClaim, completeFactorInSession } from '../../mfa';
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -64,13 +61,6 @@ export default function getAPIImplementation(): APIInterface {
             const args = { userId: session.getUserId(), totp, userContext };
             let response = await options.recipeImplementation.verifyCode(args);
 
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: "TOTP_NOT_ENABLED_ERROR",
-                    message: "TOTP is not enabled for this user",
-                });
-            }
-
             // TODO: Uncomment when MFA is implemented
             // userContext.flow = 'signin';
             // await completeFactorInSession(session, 'totp', userContext);
@@ -81,13 +71,6 @@ export default function getAPIImplementation(): APIInterface {
         verifyDevicePOST: async function ({ session, options, deviceName, totp, userContext }) {
             const args = { userId: session.getUserId(), deviceName, totp, userContext };
             let response = await options.recipeImplementation.verifyDevice(args);
-
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: STError.TOTP_NOT_ENABLED_ERROR,
-                    message: "TOTP is not enabled for this user",
-                });
-            }
 
             // TODO: Uncomment when MFA is implemented
             // userContext.flow = 'signup';
@@ -100,26 +83,12 @@ export default function getAPIImplementation(): APIInterface {
             const args = { userId: session.getUserId(), deviceName, userContext };
             let response = await options.recipeImplementation.removeDevice(args);
 
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: "TOTP_NOT_ENABLED_ERROR",
-                    message: "TOTP is not enabled for this user",
-                });
-            }
-
             return response;
         },
 
         listDevicesGET: async function ({ session, options, userContext }) {
             const args = { userId: session.getUserId(), userContext };
             let response = await options.recipeImplementation.listDevices(args);
-
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: "TOTP_NOT_ENABLED_ERROR",
-                    message: "TOTP is not enabled for this user",
-                });
-            }
 
             return response;
         },
