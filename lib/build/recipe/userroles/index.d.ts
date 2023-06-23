@@ -8,6 +8,7 @@ export default class Wrapper {
     static addRoleToUser(
         userId: string,
         role: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -21,6 +22,7 @@ export default class Wrapper {
     static removeUserRole(
         userId: string,
         role: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -33,6 +35,7 @@ export default class Wrapper {
     >;
     static getRolesForUser(
         userId: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -40,6 +43,7 @@ export default class Wrapper {
     }>;
     static getUsersThatHaveRole(
         role: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
