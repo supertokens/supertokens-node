@@ -65,14 +65,6 @@ export type TypeNormalisedInput = {
 export type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: any }) => Promise<string>;
 
-    getWebsiteDomainAndBasePathForTenantId: (input: {
-        tenantId: string;
-        userContext: any;
-    }) => Promise<{
-        domain: string;
-        basePath: string;
-    }>;
-
     // Tenant management
     createOrUpdateTenant: (input: {
         tenantId?: string;
