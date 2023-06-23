@@ -22,6 +22,7 @@ import type { HTTPMethod } from "../types";
 import { NextApiRequest } from "next";
 import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
+import contentType from "content-type";
 import raw from "raw-body";
 import inflate from "inflation";
 
@@ -110,14 +111,47 @@ function JSONCookies(obj: any) {
     return obj;
 }
 
+function getCharset(req: IncomingMessage) {
+    try {
+        return (contentType.parse(req).parameters.charset || "").toLowerCase();
+    } catch (e) {
+        return undefined;
+    }
+}
+
 export async function parseJSONBodyFromRequest(req: IncomingMessage) {
-    const str = await raw(inflate(req), { encoding: "utf-8" });
+    const encoding = getCharset(req) || "utf-8";
+    if (!encoding.startsWith("utf-")) {
+        throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
+    }
+    const str = await raw(inflate(req), { encoding });
+
+    if (str.length === 0) {
+        return {};
+    }
     return JSON.parse(str);
 }
 
 export async function parseURLEncodedFormData(req: IncomingMessage) {
-    const str = await raw(inflate(req), { encoding: "utf-8" });
-    return Object.fromEntries(new URLSearchParams(str).entries());
+    const encoding = getCharset(req) || "utf-8";
+    if (!encoding.startsWith("utf-")) {
+        throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
+    }
+    const str = await raw(inflate(req), { encoding });
+
+    let body: any = {};
+    for (const [key, val] of new URLSearchParams(str).entries()) {
+        if (key in body) {
+            if (body[key] instanceof Array) {
+                body[key].push(val);
+            } else {
+                body[key] = [body[key], val];
+            }
+        } else {
+            body[key] = val;
+        }
+    }
+    return body;
 }
 
 export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(

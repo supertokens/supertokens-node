@@ -146,8 +146,10 @@ export default function getRecipeInterface(
             if (accessTokenString === undefined) {
                 if (options?.sessionRequired === false) {
                     logDebugMessage(
-                        "getSession: Returning undefined because parsing failed and sessionRequired is false"
+                        "getSession: returning undefined because accessToken is undefined and sessionRequired is false"
                     );
+                    // there is no session that exists here, and the user wants session verification
+                    // to be optional. So we return undefined.
                     return undefined;
                 }
 

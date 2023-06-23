@@ -1,3 +1,5 @@
+import fetch from "cross-fetch";
+
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
