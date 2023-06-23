@@ -16,7 +16,7 @@ export class MfaClaimClass extends SessionClaim<MfaClaimValue> {
 
     constructor() {
         super("st-mfa");
-        this.fetchValue = async (_session, _userId, _recipeUserId, _userContext) => {
+        this.fetchValue = async (_userId, _recipeUserId, _currentAccessTokenPayload, _userContext) => {
             // TODO: Should take defaultFirstFactors from config?
             return { c: {}, next: [] };
         };

@@ -453,7 +453,7 @@ module.exports.signUPRequestNoBody = async function (app) {
     });
 };
 
-module.exports.signInUPCustomRequest = async function (app, email, id) {
+module.exports.signInUPCustomRequest = async function (app, email, id, cookies) {
     nock("https://test.com").post("/oauth/token").reply(200, {
         id,
         email,
@@ -461,6 +461,7 @@ module.exports.signInUPCustomRequest = async function (app, email, id) {
     return new Promise(function (resolve) {
         request(app)
             .post("/auth/signinup")
+            .set("Cookie", cookies ?? [])
             .send({
                 thirdPartyId: "custom",
                 code: "abcdefghj",

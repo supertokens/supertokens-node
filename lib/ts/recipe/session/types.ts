@@ -447,9 +447,9 @@ export abstract class SessionClaim<T> {
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
     abstract fetchValue(
-        session: SessionContainerInterface | undefined,
         userId: string,
         recipeUserId: RecipeUserId,
+        currentAccessTokenPayload: any,
         userContext: any
     ): Promise<T | undefined> | T | undefined;
 
@@ -482,12 +482,12 @@ export abstract class SessionClaim<T> {
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
     async build(
-        session: SessionContainerInterface | undefined,
         userId: string,
         recipeUserId: RecipeUserId,
+        currentAccessTokenPayload: any,
         userContext?: any
     ): Promise<JSONObject> {
-        const value = await this.fetchValue(session, userId, recipeUserId, userContext);
+        const value = await this.fetchValue(userId, recipeUserId, currentAccessTokenPayload, userContext);
 
         if (value === undefined) {
             return {};

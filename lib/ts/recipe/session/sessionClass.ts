@@ -236,9 +236,9 @@ export default class Session implements SessionContainerInterface {
     // Any update to this function should also be reflected in the respective JWT version
     async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
         const update = await claim.build(
-            this,
             this.getUserId(userContext),
             this.getRecipeUserId(userContext),
+            this.getAccessTokenPayload(userContext),
             userContext
         );
         return this.mergeIntoAccessTokenPayload(update, userContext);

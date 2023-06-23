@@ -101,7 +101,7 @@ export default class SessionWrapper {
         }
 
         for (const claim of claimsAddedByOtherRecipes) {
-            const update = await claim.build(undefined, userId, recipeUserId, userContext);
+            const update = await claim.build(userId, recipeUserId, accessTokenPayload, userContext); // FIXME
             finalAccessTokenPayload = {
                 ...finalAccessTokenPayload,
                 ...update,

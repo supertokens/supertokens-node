@@ -253,9 +253,9 @@ export default function getRecipeInterface(
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
                     const value = await validator.claim.fetchValue(
-                        input.session,
                         input.userId,
                         input.recipeUserId,
+                        accessTokenPayload,
                         input.userContext
                     );
                     logDebugMessage(
@@ -477,9 +477,9 @@ export default function getRecipeInterface(
                 return false;
             }
             const accessTokenPayloadUpdate = await input.claim.build(
-                undefined, // FIXME
                 sessionInfo.userId,
                 sessionInfo.recipeUserId,
+                sessionInfo.customClaimsInAccessTokenPayload, // FIXME: This is not the correct
                 input.userContext
             );
 

@@ -37,8 +37,10 @@ let Totp = require("../../recipe/totp");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
+const { verifySession } = require("../../recipe/session/framework/express");
 const request = require("supertest");
 const express = require("express");
+const { SessionContainer } = require("../../lib/build/recipe/session");
 let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
@@ -55,6 +57,9 @@ describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
 
     it("test that MFA works", async function () {
         await startST();
+
+        let allowedFirstFactors = ["emailpassword", "thirdparty"];
+        let enabledFactors = ["emailpassword", "thirdparty"];
 
         const customProvider1 = {
             id: "custom",
@@ -99,7 +104,22 @@ describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
                 }),
                 EmailPassword.init(),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
-                Mfa.init({ defaultFirstFactors: ["emailpassword"] }),
+                Mfa.init({
+                    defaultFirstFactors: ["emailpassword", "thirdparty"],
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oi,
+                                getFirstFactors: async (input) => {
+                                    return allowedFirstFactors;
+                                },
+                                getNextFactors: async (input) => {
+                                    return enabledFactors;
+                                },
+                            };
+                        },
+                    },
+                }),
                 // Passwordless.init({
                 //     contactMethod: "EMAIL_OR_PHONE",
                 //     flowType: 'USER_INPUT_CODE',
@@ -113,15 +133,24 @@ describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
 
         const app = express();
 
-        // add route to get session handle
-        app.get("/sessioninfo", async (req, res) => {
-            res.json(await Session.getSession(req, res, true));
-        });
-
         app.use(middleware());
         app.use(errorHandler());
 
-        // let response =
+        // add route to get session handle
+        // app.get("/sessionInfo", async (req, res) => {
+        //     const sessionObj = await Session.getSession(req, res, true);
+        //     res.json(sessionObj);
+        // });
+
+        app.get("/get-user", verifySession(), async (req, res) => {
+            const s = req.session;
+            res.status(200).json({
+                sessionHandle: s.getHandle(),
+                userId: s.getUserId(),
+                recipeUserId: s.getRecipeUserId().recipeUserId,
+                "st-mfa": s.getAccessTokenPayload()["st-mfa"],
+            });
+        });
 
         let response = await signInUPCustomRequest(app, "test@example.com", "customId");
         let info1 = extractInfoFromResponse(response);
@@ -146,6 +175,18 @@ describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
         assert(response.status === 200);
         assert(response.body.isSetup === false);
 
+        response = await request(app)
+            .get("/get-user")
+            .set("Cookie", ["sAccessToken=" + info1.accessToken]);
+        assert(response.status === 403);
+        assert(response.body.message === "invalid claim");
+        assert.deepEqual(response.body.claimValidationErrors, [
+            {
+                id: "st-mfa",
+                reason: { message: "Need to complete one of the required factors", choices: ["emailpassword"] },
+            },
+        ]);
+
         // response = await signUPRequest(app, "test@example.com", "validpass123");
         response = await request(app)
             .post("/auth/signup")
@@ -160,6 +201,23 @@ describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
         assert(response.status === 200);
         assert(response.body.status === "OK");
 
+        // Old token should not work anymore
+        response = await request(app)
+            .get("/get-user")
+            .set("Cookie", ["sAccessToken=" + info1.accessToken]);
+        assert(response.status === 403);
+        assert.deepEqual(response.body.claimValidationErrors[0].reason.choices, ["emailpassword"]);
+
+        // New token should work
+        response = await request(app)
+            .get("/get-user")
+            .set("Cookie", ["sAccessToken=" + info2.accessToken]);
+        assert(response.status === 200);
+        assert(response.body["st-mfa"].next.length == 0);
+        assert.deepEqual(Object.keys(response.body["st-mfa"].c), ["thirdparty", "emailpassword"]);
+        let signupUserId = response.body.userId;
+        let signupRecipeUserId = response.body.recipeUserId;
+
         // response = await request(app).post("/auth/signinup/code").set("Cookie", ["sAccessToken=" + info.accessToken]).send({ email: "test@example.com" });
         // assert(response.status === 200);
         // assert(response.body.status === "OK");
@@ -173,6 +231,8 @@ describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
         // assert(response.status === 200);
         // assert(response.body.status === "OK");
 
+        // Both tokens have same session first factor user ID
+        // Only mfa claim in the payload is slightly different
         response = await request(app)
             .get("/auth/mfa/factor/is-setup")
             .query({ factorId: "emailpassword" })
@@ -187,16 +247,54 @@ describe(`apiFunctions: ${printPath("[test/mfa/apis.test.js]")}`, function () {
         assert(response.status === 200);
         assert(response.body.isSetup === true);
 
-        // assert(response.status === 403);
-        // assert(response.body.message === 'invalid claim');
-        // assert.deepEqual(response.body.claimValidationErrors, [
-        //     {id: 'st-mfa', reason: { message: 'Need to complete one of the required factors', choices: ['totp']}}
-        // ]);
+        // Now try logging in with emailpassword as the first factor:
+        response = await request(app)
+            .post("/auth/signin")
+            .send({
+                formFields: [
+                    { id: "password", value: "validpass123" },
+                    { id: "email", value: "test@example.com" },
+                ],
+            });
+        let info3 = extractInfoFromResponse(response);
+        assert(response.status === 200);
+        assert(response.body.status === "OK");
 
-        // response = await request(app).post("/auth/totp/device").set("Cookie", ["sAccessToken=" + info.accessToken]).send({ deviceName: "test" });
-        // const totpSecret = response.body.secret;
-        // assert(response.status === 200);
-        // assert(totpSecret !== undefined);
+        response = await request(app)
+            .get("/get-user")
+            .set("Cookie", ["sAccessToken=" + info3.accessToken]);
+        assert(response.status === 403);
+        assert(response.body.message === "invalid claim");
+        assert.deepEqual(response.body.claimValidationErrors[0].reason.choices, ["thirdparty"]);
+
+        // Now try logging in with thirdparty as the first factor:
+        response = await signInUPCustomRequest(app, "test@example.com", "customId", [
+            "sAccessToken=" + info3.accessToken,
+        ]);
+        let info4 = extractInfoFromResponse(response);
+        assert(response.status === 200);
+        assert(response.body.status === "OK");
+
+        response = await request(app)
+            .get("/get-user")
+            .set("Cookie", ["sAccessToken=" + info4.accessToken]);
+        assert(response.status === 200);
+        assert(response.body["st-mfa"].next.length == 0);
+        assert.deepEqual(Object.keys(response.body["st-mfa"].c), ["emailpassword", "thirdparty"]);
+        assert(response.body.userId === signupUserId);
+        assert(response.body.recipeUserId !== signupRecipeUserId);
+
+        // Enable TOTP:
+        enabledFactors.push("totp");
+
+        // TOTP!
+        response = await request(app)
+            .post("/auth/totp/device")
+            .set("Cookie", ["sAccessToken=" + info4.accessToken])
+            .send({ deviceName: "test" });
+        const totpSecret = response.body.secret;
+        assert(response.status === 200);
+        assert(totpSecret !== undefined);
 
         // console.log(response);
     });

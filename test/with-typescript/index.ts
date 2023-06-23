@@ -896,7 +896,7 @@ let config: TypeInput = {
 
 class StringClaim extends PrimitiveClaim<string> {
     constructor(key: string) {
-        super({ key, fetchValue: (_, userId, __, ___) => userId });
+        super({ key, fetchValue: (userId, _, __, ___) => userId });
 
         this.validators = {
             ...this.validators,
@@ -927,7 +927,7 @@ class StringClaim extends PrimitiveClaim<string> {
     };
 }
 const stringClaim = new StringClaim("cust-str");
-const boolClaim = new BooleanClaim({ key: "asdf", fetchValue: (_, userId, __, ___) => userId.startsWith("5") }); // FIXME
+const boolClaim = new BooleanClaim({ key: "asdf", fetchValue: (userId, _, __, ___) => userId.startsWith("5") }); // FIXME
 
 Supertokens.init(config);
 
@@ -1227,7 +1227,12 @@ Session.init({
                     input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
-                        ...(await boolClaim.build(undefined, input.userId, input.recipeUserId, input.userContext)), // FIXME
+                        ...(await boolClaim.build(
+                            input.userId,
+                            input.recipeUserId,
+                            input.accessTokenPayload,
+                            input.userContext
+                        )), // FIXME
                         lastTokenRefresh: Date.now(),
                     };
                     return originalImplementation.createNewSession(input);

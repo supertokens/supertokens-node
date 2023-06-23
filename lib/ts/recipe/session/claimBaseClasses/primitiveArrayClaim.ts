@@ -1,12 +1,12 @@
 import RecipeUserId from "../../../recipeUserId";
 import { JSONPrimitive } from "../../../types";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
+import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
     public readonly fetchValue: (
-        session: SessionContainerInterface,
         userId: string,
         recipeUserId: RecipeUserId,
+        currentAccessTokenPayload: any,
         userContext: any
     ) => Promise<T[] | undefined> | T[] | undefined;
     public readonly defaultMaxAgeInSeconds: number | undefined;
