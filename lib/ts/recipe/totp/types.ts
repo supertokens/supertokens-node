@@ -111,11 +111,18 @@ export type APIOptions = {
 export type APIInterface = {
     createDevicePOST?: (input: {
         session: SessionContainer;
-        deviceName: string;
+        deviceName?: string;
         options: APIOptions;
         userContext: any;
     }) => Promise<
-        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCodeString: string }
+        | {
+              status: "OK";
+              issuerName: string;
+              deviceName: string;
+              secret: string;
+              userIdentifier?: string;
+              qrCodeString: string;
+          }
         | { status: "DEVICE_ALREADY_EXISTS_ERROR" }
     >;
     verifyCodePOST?: (input: {

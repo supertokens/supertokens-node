@@ -14,7 +14,6 @@
  */
 
 import { send200Response } from "../../../utils";
-import STError from "../error";
 import { APIInterface, APIOptions } from "../types";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 
@@ -25,16 +24,9 @@ export default async function createDevice(apiImplementation: APIInterface, opti
         return false;
     }
 
-    let session = await Session.getSession(options.req, options.res);
+    let session = await Session.getSession(options.req, options.res, { overrideGlobalClaimValidators: (_) => [] });
 
     let { deviceName } = await options.req.getJSONBody();
-
-    if (deviceName === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "Please provide deviceName",
-        });
-    }
 
     const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.createDevicePOST({

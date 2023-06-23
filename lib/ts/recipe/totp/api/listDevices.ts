@@ -24,7 +24,7 @@ export default async function listDevices(apiImplementation: APIInterface, optio
         return false;
     }
 
-    let session = await Session.getSession(options.req, options.res);
+    let session = await Session.getSession(options.req, options.res); // , { overrideGlobalClaimValidators: (_) => [] }
 
     const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.listDevicesGET({

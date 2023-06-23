@@ -25,7 +25,7 @@ export default async function verifyDevice(apiImplementation: APIInterface, opti
         return false;
     }
 
-    let session = await Session.getSession(options.req, options.res);
+    let session = await Session.getSession(options.req, options.res, { overrideGlobalClaimValidators: (_) => [] });
     const { deviceName, totp } = await options.req.getJSONBody();
 
     if (deviceName === undefined) {

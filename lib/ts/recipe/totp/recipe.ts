@@ -36,8 +36,6 @@ import verifyDeviceAPI from "./api/verifyDevice";
 import verifyCodeAPI from "./api/verifyCode";
 import removeDeviceAPI from "./api/removeDevice";
 import listDevicesAPI from "./api/listDevices";
-import { sendNon200ResponseWithMessage } from "../../utils";
-import TotpError from "./error";
 import { getUser } from "../..";
 
 export default class TotpRecipe extends RecipeModule {
@@ -52,7 +50,7 @@ export default class TotpRecipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
@@ -76,10 +74,10 @@ export default class TotpRecipe extends RecipeModule {
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init or totp.init function?");
     }
 
-    static init(config?: TypeInput): RecipeListFunction {
+    static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (TotpRecipe.instance === undefined) {
-                TotpRecipe.instance = new TotpRecipe(TotpRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config ?? {});
+                TotpRecipe.instance = new TotpRecipe(TotpRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return TotpRecipe.instance;
             } else {
                 throw new Error("TOTP recipe has already been initialised. Please check your code for bugs.");
@@ -162,12 +160,7 @@ export default class TotpRecipe extends RecipeModule {
         return false;
     };
 
-    handleError = async (err: STError, _: BaseRequest, res: BaseResponse): Promise<void> => {
-        if (err.fromRecipe === TotpRecipe.RECIPE_ID) {
-            if (err.type === TotpError.TOTP_NOT_ENABLED_ERROR) {
-                sendNon200ResponseWithMessage(res, "TOTP is not enabled for the user", 403); // bad req
-            }
-        }
+    handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {
         throw err;
     };
 
@@ -197,25 +190,22 @@ export default class TotpRecipe extends RecipeModule {
 
         const primaryLoginMethod = user.loginMethods.find((method) => method.recipeUserId.getAsString() === user!.id);
 
-        if (primaryLoginMethod === undefined) {
-            return {
-                status: "UNKNOWN_USER_ID_ERROR",
-            };
+        if (primaryLoginMethod !== undefined) {
+            if (primaryLoginMethod.email !== undefined) {
+                return {
+                    info: primaryLoginMethod.email,
+                    status: "OK",
+                };
+            } else if (primaryLoginMethod.phoneNumber !== undefined) {
+                return {
+                    info: primaryLoginMethod.phoneNumber,
+                    status: "OK",
+                };
+            }
         }
 
-        if (primaryLoginMethod.email !== undefined) {
-            return {
-                info: primaryLoginMethod.email,
-                status: "OK",
-            };
-        } else if (user.emails.length > 0) {
-            // fallback on trying the first email
+        if (user.emails.length > 0) {
             return { info: user.emails[0], status: "OK" };
-        } else if (primaryLoginMethod.phoneNumber !== undefined) {
-            return {
-                info: primaryLoginMethod.phoneNumber,
-                status: "OK",
-            };
         } else if (user.phoneNumbers.length > 0) {
             return { info: user.phoneNumbers[0], status: "OK" };
         }
