@@ -24,6 +24,11 @@ export default async function createDevice(apiImplementation: APIInterface, opti
         return false;
     }
 
+    // Device creation is only be allowed if you've completed all factors OR have no devices yet.
+    // We have to remove claim validators here because we want to allow the user to create a device
+    // if they don't have any. But later in createDevicePOST, before actually calling the create
+    // device core API, we use assertClaims to ensure that if they have any devices, they must
+    // have completed all factors.
     let session = await Session.getSession(options.req, options.res, { overrideGlobalClaimValidators: (_) => [] });
 
     let { deviceName } = await options.req.getJSONBody();
