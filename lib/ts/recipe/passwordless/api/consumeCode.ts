@@ -19,6 +19,7 @@ import { APIInterface, APIOptions } from "..";
 
 export default async function consumeCode(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -65,6 +66,7 @@ export default async function consumeCode(
                   deviceId,
                   userInputCode,
                   preAuthSessionId,
+                  tenantId,
                   options,
                   userContext,
               }
@@ -72,6 +74,7 @@ export default async function consumeCode(
                   linkCode,
                   options,
                   preAuthSessionId,
+                  tenantId,
                   userContext,
               }
     );

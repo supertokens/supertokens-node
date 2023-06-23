@@ -128,10 +128,18 @@ export default function getRecipeInterface(
             return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
         },
 
-        getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
+        getUsersByEmail: async function ({
+            email,
+            tenantId,
+            userContext,
+        }: {
+            email: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<User[]> {
             let userFromEmailPass: User | undefined = await originalPasswordlessImplementation.getUserByEmail.bind(
                 DerivedPwdless(this)
-            )({ email, userContext });
+            )({ email, tenantId, userContext });
 
             if (originalThirdPartyImplementation === undefined) {
                 return userFromEmailPass === undefined ? [] : [userFromEmailPass];

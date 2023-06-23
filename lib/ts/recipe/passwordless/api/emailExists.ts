@@ -19,6 +19,7 @@ import { APIInterface, APIOptions } from "../";
 
 export default async function emailExists(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -37,6 +38,7 @@ export default async function emailExists(
 
     let result = await apiImplementation.emailExistsGET({
         email,
+        tenantId,
         options,
         userContext,
     });

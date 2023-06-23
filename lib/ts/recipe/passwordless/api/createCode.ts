@@ -20,6 +20,7 @@ import parsePhoneNumber from "libphonenumber-js/max";
 
 export default async function createCode(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -91,7 +92,9 @@ export default async function createCode(
     }
 
     let result = await apiImplementation.createCodePOST(
-        email !== undefined ? { email, options, userContext } : { phoneNumber: phoneNumber!, options, userContext }
+        email !== undefined
+            ? { email, tenantId, options, userContext }
+            : { phoneNumber: phoneNumber!, tenantId, options, userContext }
     );
 
     send200Response(options.res, result);
