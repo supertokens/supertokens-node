@@ -42,6 +42,7 @@ UserRoles.init({
                 addRoleToUser: async function (input) {
                     return oI.addRoleToUser({
                         role: input.role,
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                         userId: input.userId,
                     });
@@ -72,6 +73,7 @@ UserRoles.init({
                 },
                 getRolesForUser: async function (input) {
                     return oI.getRolesForUser({
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                         userId: input.userId,
                     });
@@ -84,6 +86,7 @@ UserRoles.init({
                 },
                 getUsersThatHaveRole: async function (input) {
                     return oI.getUsersThatHaveRole({
+                        tenantId: input.tenantId,
                         role: input.role,
                         userContext: input.userContext,
                     });
@@ -98,6 +101,7 @@ UserRoles.init({
                 removeUserRole: async function (input) {
                     return oI.removeUserRole({
                         role: input.role,
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                         userId: input.userId,
                     });
