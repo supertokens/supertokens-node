@@ -176,7 +176,10 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendGetRequest = async (path: NormalisedURLPath, params: any): Promise<any> => {
+    sendGetRequest = async (
+        path: NormalisedURLPath,
+        params: Record<string, number | string | undefined>
+    ): Promise<any> => {
         return this.sendRequestHelper(
             path,
             "GET",
@@ -196,7 +199,9 @@ export class Querier {
                     };
                 }
                 const finalURL = new URL(url);
-                const searchParams = new URLSearchParams(params);
+                const searchParams = new URLSearchParams(
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
+                );
                 finalURL.search = searchParams.toString();
                 return await fetch(finalURL.toString(), {
                     method: "GET",
@@ -282,9 +287,15 @@ export class Querier {
             if (response.status !== 200) {
                 throw response;
             }
+            if (response.headers.get("content-type")?.startsWith("text")) {
+                return await response.text();
+            }
             return await response.json();
         } catch (err) {
-            if (err.message !== undefined && err.message.includes("Failed to fetch")) {
+            if (
+                err.message !== undefined &&
+                (err.message.includes("Failed to fetch") || err.message.includes("ECONNREFUSED"))
+            ) {
                 return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
             }
             if (err instanceof Response) {

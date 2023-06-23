@@ -97,6 +97,7 @@ module.exports.extractInfoFromResponse = function (res) {
     if (!Array.isArray(cookies)) {
         cookies = [cookies];
     }
+
     cookies.forEach((i) => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
             /**

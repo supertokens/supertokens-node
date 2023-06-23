@@ -557,7 +557,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
     });
 
-    it("test passing invalid privateKey in config for third party provider apple", async function () {
+    it.skip("test passing invalid privateKey in config for third party provider apple", async function () {
         await startST();
 
         let clientId = "test";

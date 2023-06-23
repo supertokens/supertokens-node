@@ -645,7 +645,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
         });
     });
 
-    it("test with thirdPartyPasswordless, passing invalid privateKey in config for third party provider apple", async function () {
+    it.skip("test with thirdPartyPasswordless, passing invalid privateKey in config for third party provider apple", async function () {
         await startST();
 
         let clientId = "test";

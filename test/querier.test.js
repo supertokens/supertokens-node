@@ -97,7 +97,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             });
 
         let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {});
-        assert(response.rid === "session");
+        assert.deepStrictEqual(response.rid, ["session"]);
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
@@ -108,7 +108,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             });
 
         let response2 = await querier.sendGetRequest(new NormalisedURLPath("/recipe/random"), {});
-        assert(response2.rid === "session");
+        assert.deepStrictEqual(response2.rid, ["session"]);
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
@@ -119,7 +119,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             });
 
         let response3 = await querier.sendGetRequest(new NormalisedURLPath("/test"), {});
-        assert(response3.rid === undefined);
+        assert.strictEqual(response3.rid, undefined);
     });
 
     it("core not available", async function () {

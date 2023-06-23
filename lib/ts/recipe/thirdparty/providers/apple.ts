@@ -18,6 +18,7 @@ import { getActualClientIdFromDevelopmentClientId } from "../api/implementation"
 import SuperTokens from "../../../supertokens";
 import { APPLE_REDIRECT_HANDLER } from "../constants";
 import { verifyIdTokenFromJWKSEndpoint } from "./utils";
+import crypto from "crypto";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -42,15 +43,15 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         teamId: string,
         privateKey: string
     ): Promise<string> {
-        const alg = "ES256";
+        const alg = "ES256K";
         return await new jose.SignJWT({})
             .setProtectedHeader({ alg, kid: keyId })
             .setIssuer(teamId)
             .setIssuedAt()
-            .setExpirationTime("6 months")
+            .setExpirationTime("0.5 year")
             .setAudience("https://appleid.apple.com")
             .setSubject(getActualClientIdFromDevelopmentClientId(clientId))
-            .sign(await jose.importPKCS8(privateKey, alg));
+            .sign(crypto.createPrivateKey(privateKey.replace(/\\n/g, "\n")));
     }
 
     // trying to generate a client secret, in case client has not passed the values correctly

@@ -62,7 +62,7 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                  */
                 throw new Error(result.resp.body.err);
             } else {
-                throw new Error("Failed to fetch - please see debug logs");
+                throw new Error(`Request failed with status code ${result.resp.status}`);
             }
         }
     };

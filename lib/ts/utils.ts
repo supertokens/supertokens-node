@@ -187,7 +187,7 @@ export async function postWithFetch(
     { successLog, errorLogHeader }: { successLog: string; errorLogHeader: string }
 ): Promise<{ resp: { status: number; body: any } } | { error: any }> {
     let error;
-    let resp;
+    let resp: { status: number; body: any };
     try {
         const fetchResp = await fetch(url, {
             method: "POST",
@@ -217,8 +217,12 @@ export async function postWithFetch(
     }
     logDebugMessage("Logging the input below:");
     logDebugMessage(JSON.stringify(body, null, 2));
+    if (error !== undefined) {
+        return {
+            error,
+        };
+    }
     return {
-        error,
-        resp,
+        resp: resp!,
     };
 }

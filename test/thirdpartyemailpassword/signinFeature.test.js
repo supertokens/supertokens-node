@@ -666,7 +666,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(
+            JSON.parse(response.text).message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
         assert(response.status === 400);
     });
 
@@ -719,7 +722,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(
+            JSON.parse(response.text).message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
         assert(response.status === 400);
     });
 
@@ -746,7 +752,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(
+            JSON.parse(response.text).message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
         assert(response.status === 400);
     });
 
@@ -772,7 +781,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(
+            JSON.parse(response.text).message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
         assert(response.status === 400);
     });
 
@@ -798,7 +810,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(
+            JSON.parse(response.text).message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
         assert(response.status === 400);
     });
 
@@ -825,7 +840,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(
+            JSON.parse(response.text).message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
         assert(response.status === 400);
     });
 

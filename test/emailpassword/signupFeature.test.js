@@ -241,7 +241,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(
+            badInputResponse.message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
     });
 
     it("test bad input, no POST body to /signup API", async function () {
@@ -277,7 +280,10 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(
+            badInputResponse.message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
     });
 
     it("test bad input, Input is JSON, but wrong structure to /signup API", async function () {
@@ -316,7 +322,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(badInputResponse.message, "Missing input param: formFields");
     });
 
     it("test bad input, formFields is not an array in /signup API", async function () {

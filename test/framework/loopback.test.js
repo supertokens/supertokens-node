@@ -20,7 +20,6 @@ let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
-const request = require("supertest");
 let Dashboard = require("../../recipe/dashboard");
 const { createUsers } = require("../utils.js");
 const { Querier } = require("../../lib/build/querier");
@@ -28,6 +27,7 @@ const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
 const { Apple, Google, Github } = require("../../recipe/thirdparty");
+const { default: fetch } = require("cross-fetch");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {
@@ -72,7 +72,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             method: "post",
         });
         let res = extractInfoFromResponse(result);
-
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
@@ -806,3 +805,28 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         assert(result.data.users.length === 3);
     });
 });
+
+async function request(init) {
+    const url = new URL(init.url, init.baseURL);
+    if (init.params) {
+        url.search = new URLSearchParams(init.params).toString();
+    }
+
+    /** @type {Response} */
+    const resp = await fetch(url, {
+        ...init,
+    });
+    const headers = Object.fromEntries(resp.headers.entries());
+    if (resp.headers.has("set-cookie")) {
+        let split = resp.headers.get("set-cookie").split(/, (\w+=)/);
+        headers["set-cookie"] = [split[0]];
+        for (let i = 1; i + 1 < split.length; i += 2) {
+            headers["set-cookie"].push(`${split[i]}${split[i + 1]}`);
+        }
+    }
+    return {
+        status: resp.status,
+        data: await resp.json(),
+        headers,
+    };
+}

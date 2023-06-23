@@ -334,7 +334,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(
+            badInputResponse.message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
     });
 
     /*
@@ -377,7 +380,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(
+            badInputResponse.message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
     });
 
     /*
@@ -422,7 +428,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(badInputResponse.message, "Missing input param: formFields");
     });
 
     // Make sure that a successful sign in yields a session
