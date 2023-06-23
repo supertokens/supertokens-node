@@ -102,7 +102,7 @@ export declare type User = {
         id: string;
         userId: string;
     };
-    tenantId?: string;
+    tenantIds: string[];
 };
 export declare type ProviderConfig = CommonProviderConfig & {
     clients?: ProviderClientConfig[];

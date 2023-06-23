@@ -2,6 +2,7 @@ import { RecipeInterface, TypeNormalisedInput, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -11,14 +12,19 @@ export default function getRecipeInterface(
         signUp: async function ({
             email,
             password,
+            tenantId,
         }: {
             email: string;
             password: string;
+            tenantId?: string;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
-                email,
-                password,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signup`),
+                {
+                    email,
+                    password,
+                }
+            );
             if (response.status === "OK") {
                 return response;
             } else {
@@ -31,14 +37,19 @@ export default function getRecipeInterface(
         signIn: async function ({
             email,
             password,
+            tenantId,
         }: {
             email: string;
             password: string;
+            tenantId?: string;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
-                email,
-                password,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
+                {
+                    email,
+                    password,
+                }
+            );
             if (response.status === "OK") {
                 return response;
             } else {
@@ -61,10 +72,19 @@ export default function getRecipeInterface(
             }
         },
 
-        getUserByEmail: async function ({ email }: { email: string }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
-                email,
-            });
+        getUserByEmail: async function ({
+            email,
+            tenantId,
+        }: {
+            email: string;
+            tenantId?: string;
+        }): Promise<User | undefined> {
+            let response = await querier.sendGetRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user`),
+                {
+                    email,
+                }
+            );
             if (response.status === "OK") {
                 return {
                     ...response.user,
@@ -76,12 +96,19 @@ export default function getRecipeInterface(
 
         createResetPasswordToken: async function ({
             userId,
+            tenantId,
         }: {
             userId: string;
+            tenantId?: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
-                userId,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset/token`
+                ),
+                {
+                    userId,
+                }
+            );
             if (response.status === "OK") {
                 return {
                     status: "OK",
@@ -97,9 +124,11 @@ export default function getRecipeInterface(
         resetPasswordUsingToken: async function ({
             token,
             newPassword,
+            tenantId,
         }: {
             token: string;
             newPassword: string;
+            tenantId?: string;
         }): Promise<
             | {
                   status: "OK";
@@ -111,11 +140,16 @@ export default function getRecipeInterface(
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset"), {
-                method: "token",
-                token,
-                newPassword,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset`
+                ),
+                {
+                    method: "token",
+                    token,
+                    newPassword,
+                }
+            );
             return response;
         },
 

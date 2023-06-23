@@ -18,6 +18,7 @@ export declare type User = {
     email?: string;
     phoneNumber?: string;
     timeJoined: number;
+    tenantIds: string[];
 };
 export declare type TypeInput = (
     | {

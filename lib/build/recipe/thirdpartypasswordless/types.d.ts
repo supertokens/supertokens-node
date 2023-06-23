@@ -33,7 +33,7 @@ export declare type User = (
 ) & {
     id: string;
     timeJoined: number;
-    tenantId?: string;
+    tenantIds: string[];
 };
 export declare type TypeInput = (
     | {

@@ -50,7 +50,7 @@ export type User = (
 ) & {
     id: string;
     timeJoined: number;
-    tenantId?: string;
+    tenantIds: string[];
 };
 
 export type TypeInput = (

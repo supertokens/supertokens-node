@@ -22,18 +22,20 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(email: string, password: string, userContext?: any) {
+    static signUp(email: string, password: string, tenantId?: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static signIn(email: string, password: string, userContext?: any) {
+    static signIn(email: string, password: string, tenantId?: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -45,24 +47,27 @@ export default class Wrapper {
         });
     }
 
-    static getUserByEmail(email: string, userContext?: any) {
+    static getUserByEmail(email: string, tenantId?: undefined, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({
             email,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static createResetPasswordToken(userId: string, userContext?: any) {
+    static createResetPasswordToken(userId: string, tenantId?: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any) {
+    static resetPasswordUsingToken(token: string, newPassword: string, tenantId?: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
             token,
             newPassword,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

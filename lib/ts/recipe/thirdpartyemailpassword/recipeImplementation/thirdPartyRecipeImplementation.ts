@@ -17,7 +17,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 id: user.id,
                 timeJoined: user.timeJoined,
                 thirdParty: user.thirdParty,
-                tenantId: user.tenantId,
+                tenantIds: user.tenantIds,
             };
         },
 
@@ -53,7 +53,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                     id: result.user.id,
                     timeJoined: result.user.timeJoined,
                     thirdParty: result.user.thirdParty,
-                    tenantId: result.user.tenantId,
+                    tenantIds: result.user.tenantIds,
                 },
                 oAuthTokens: result.oAuthTokens,
                 rawUserInfoFromProvider: result.rawUserInfoFromProvider,
@@ -78,7 +78,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                     id: result.user.id,
                     timeJoined: result.user.timeJoined,
                     thirdParty: result.user.thirdParty,
-                    tenantId: result.user.tenantId,
+                    tenantIds: result.user.tenantIds,
                 },
             };
         },
@@ -103,7 +103,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 id: user.id,
                 timeJoined: user.timeJoined,
                 thirdParty: user.thirdParty,
-                tenantId: user.tenantId,
+                tenantIds: user.tenantIds,
             };
         },
 

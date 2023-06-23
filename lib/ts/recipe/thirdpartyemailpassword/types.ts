@@ -38,7 +38,7 @@ export type User = {
         id: string;
         userId: string;
     };
-    tenantId?: string;
+    tenantIds: string[];
 };
 
 export type TypeContextEmailPasswordSignUp = {

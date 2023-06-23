@@ -24,7 +24,7 @@ export declare type User = {
         id: string;
         userId: string;
     };
-    tenantId?: string;
+    tenantIds: string[];
 };
 export declare type TypeContextEmailPasswordSignUp = {
     loginType: "emailpassword";
