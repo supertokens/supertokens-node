@@ -1168,6 +1168,7 @@ Supertokens.init({
                             if (
                                 (await supertokensImpl.getUserByEmail({
                                     email: input.email,
+                                    tenantId: input.tenantId,
                                     userContext: input.userContext,
                                 })) === undefined
                             ) {
@@ -1287,6 +1288,7 @@ EmailPassword.init({
                     let response = await options.recipeImplementation.signIn({
                         email,
                         password,
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {

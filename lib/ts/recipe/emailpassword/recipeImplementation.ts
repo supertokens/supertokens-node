@@ -16,7 +16,7 @@ export default function getRecipeInterface(
         }: {
             email: string;
             password: string;
-            tenantId?: string;
+            tenantId: string;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signup`),
@@ -41,7 +41,7 @@ export default function getRecipeInterface(
         }: {
             email: string;
             password: string;
-            tenantId?: string;
+            tenantId: string;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
@@ -77,7 +77,7 @@ export default function getRecipeInterface(
             tenantId,
         }: {
             email: string;
-            tenantId?: string;
+            tenantId: string;
         }): Promise<User | undefined> {
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user`),
@@ -99,7 +99,7 @@ export default function getRecipeInterface(
             tenantId,
         }: {
             userId: string;
-            tenantId?: string;
+            tenantId: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(
@@ -128,7 +128,7 @@ export default function getRecipeInterface(
         }: {
             token: string;
             newPassword: string;
-            tenantId?: string;
+            tenantId: string;
         }): Promise<
             | {
                   status: "OK";

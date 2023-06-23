@@ -79,7 +79,7 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
-        tenantId?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -93,7 +93,7 @@ export declare type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
-        tenantId?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -105,10 +105,10 @@ export declare type RecipeInterface = {
           }
     >;
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUserByEmail(input: { email: string; tenantId?: string; userContext: any }): Promise<User | undefined>;
+    getUserByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User | undefined>;
     createResetPasswordToken(input: {
         userId: string;
-        tenantId?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -122,7 +122,7 @@ export declare type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
-        tenantId?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
