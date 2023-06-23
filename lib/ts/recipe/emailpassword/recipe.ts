@@ -166,7 +166,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        _: string | undefined, // TODO tenantId
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
@@ -184,15 +184,15 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_UP_API) {
-            return await signUpAPI(this.apiImpl, options, userContext);
+            return await signUpAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this.apiImpl, options, userContext);
+            return await signInAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
-            return await generatePasswordResetTokenAPI(this.apiImpl, options, userContext);
+            return await generatePasswordResetTokenAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === PASSWORD_RESET_API) {
-            return await passwordResetAPI(this.apiImpl, options, userContext);
+            return await passwordResetAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-            return await emailExistsAPI(this.apiImpl, options, userContext);
+            return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         }
         return false;
     };

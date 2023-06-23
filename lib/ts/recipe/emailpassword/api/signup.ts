@@ -20,6 +20,7 @@ import STError from "../error";
 
 export default async function signUpAPI(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -40,6 +41,7 @@ export default async function signUpAPI(
 
     let result = await apiImplementation.signUpPOST({
         formFields,
+        tenantId,
         options,
         userContext: userContext,
     });

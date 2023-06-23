@@ -170,6 +170,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -187,6 +188,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -204,6 +206,7 @@ export type APIInterface = {
                   value: string;
               }[];
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -224,6 +227,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -245,6 +249,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
