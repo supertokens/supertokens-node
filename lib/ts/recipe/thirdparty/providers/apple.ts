@@ -43,9 +43,9 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         teamId: string,
         privateKey: string
     ): Promise<string> {
-        const alg = "ES256K";
+        const alg = "ES256";
         return await new jose.SignJWT({})
-            .setProtectedHeader({ alg, kid: keyId })
+            .setProtectedHeader({ alg, kid: keyId, typ: "JWT" })
             .setIssuer(teamId)
             .setIssuedAt()
             .setExpirationTime("0.5 year")

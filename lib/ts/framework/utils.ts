@@ -176,7 +176,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
         } else if (
             request.body === undefined ||
             Buffer.isBuffer(request.body) ||
-            Object.keys(request.body).length === 0
+            (Object.keys(request.body).length === 0 && request.readable)
         ) {
             try {
                 // parsing it again to make sure that the request is parsed atleast once by a json parser
@@ -207,7 +207,11 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
                 });
             }
         }
-    } else if (request.body === undefined || Buffer.isBuffer(request.body) || Object.keys(request.body).length === 0) {
+    } else if (
+        request.body === undefined ||
+        Buffer.isBuffer(request.body) ||
+        (Object.keys(request.body).length === 0 && request.readable)
+    ) {
         try {
             // parsing it again to make sure that the request is parsed atleast once by a json parser
             request.body = await parseURLEncodedFormData(request);
