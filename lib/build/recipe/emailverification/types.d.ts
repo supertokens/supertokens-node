@@ -68,6 +68,7 @@ export declare type RecipeInterface = {
     createEmailVerificationToken(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -80,6 +81,7 @@ export declare type RecipeInterface = {
     >;
     verifyEmailUsingToken(input: {
         token: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -94,6 +96,7 @@ export declare type RecipeInterface = {
     revokeEmailVerificationTokens(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -121,6 +124,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
               session?: SessionContainerInterface;
@@ -150,6 +154,7 @@ export declare type APIInterface = {
     generateEmailVerifyTokenPOST:
         | undefined
         | ((input: {
+              tenantId: string;
               options: APIOptions;
               userContext: any;
               session: SessionContainerInterface;

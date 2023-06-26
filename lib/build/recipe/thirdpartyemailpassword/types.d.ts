@@ -211,6 +211,7 @@ export declare type APIInterface = {
         | ((input: {
               provider: TypeProvider;
               redirectURIOnProviderDashboard: string;
+              tenantId: string;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
@@ -277,6 +278,7 @@ export declare type APIInterface = {
         | ((
               input: {
                   provider: TypeProvider;
+                  tenantId: string;
                   options: ThirdPartyAPIOptions;
                   userContext: any;
               } & (

@@ -9,6 +9,7 @@ export default class Wrapper {
     static createEmailVerificationToken(
         userId: string,
         email?: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -21,6 +22,7 @@ export default class Wrapper {
     >;
     static verifyEmailUsingToken(
         token: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -35,6 +37,7 @@ export default class Wrapper {
     static revokeEmailVerificationTokens(
         userId: string,
         email?: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: string;
@@ -48,6 +51,7 @@ export default class Wrapper {
     }>;
     static sendEmail(
         input: TypeEmailVerificationEmailDeliveryInput & {
+            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;

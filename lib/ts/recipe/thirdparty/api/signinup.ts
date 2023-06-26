@@ -16,12 +16,12 @@
 import STError from "../error";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import MultitenancyRecipe from "../../multitenancy/recipe";
 import { RecipeDisabledForTenantError } from "../../multitenancy";
 import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 export default async function signInUpAPI(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -32,7 +32,6 @@ export default async function signInUpAPI(
     const bodyParams = await options.req.getJSONBody();
     const thirdPartyId = bodyParams.thirdPartyId;
     const clientType = bodyParams.clientType;
-    let tenantId = bodyParams.tenantId;
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -67,9 +66,6 @@ export default async function signInUpAPI(
         });
     }
 
-    const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
-    tenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({ tenantIdFromFrontend: tenantId, userContext });
-
     const providerResponse = await options.recipeImplementation.getProvider({
         thirdPartyId,
         tenantId,
@@ -92,6 +88,7 @@ export default async function signInUpAPI(
         provider,
         redirectURIInfo,
         oAuthTokens,
+        tenantId,
         options,
         userContext,
     });

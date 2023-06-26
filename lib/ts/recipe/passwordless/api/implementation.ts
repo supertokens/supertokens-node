@@ -36,6 +36,7 @@ export default function getAPIImplementation(): APIInterface {
                         {
                             userId: user.id,
                             email: user.email,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         }
                     );
@@ -43,6 +44,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             token: tokenResponse.token,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     }
@@ -125,6 +127,7 @@ export default function getAPIImplementation(): APIInterface {
                     preAuthSessionId: response.preAuthSessionId,
                     urlWithLinkCode: magicLink,
                     userInputCode,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
             } else {
@@ -136,6 +139,7 @@ export default function getAPIImplementation(): APIInterface {
                     preAuthSessionId: response.preAuthSessionId,
                     urlWithLinkCode: magicLink,
                     userInputCode,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
             }
@@ -255,6 +259,7 @@ export default function getAPIImplementation(): APIInterface {
                             preAuthSessionId: response.preAuthSessionId,
                             urlWithLinkCode: magicLink,
                             userInputCode,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     } else {
@@ -266,6 +271,7 @@ export default function getAPIImplementation(): APIInterface {
                             preAuthSessionId: response.preAuthSessionId,
                             urlWithLinkCode: magicLink,
                             userInputCode,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     }

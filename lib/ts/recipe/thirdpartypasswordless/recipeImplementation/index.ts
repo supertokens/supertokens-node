@@ -74,6 +74,7 @@ export default function getRecipeInterface(
                 fromIdTokenPayload: { [key: string]: any };
                 fromUserInfoAPI: { [key: string]: any };
             };
+            tenantId: string;
             userContext: any;
         }): Promise<{
             status: "OK";
@@ -95,6 +96,7 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             if (originalThirdPartyImplementation === undefined) {
@@ -105,8 +107,8 @@ export default function getRecipeInterface(
 
         thirdPartyGetProvider: async function (input: {
             thirdPartyId: string;
-            tenantId?: string;
             clientType?: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }> {
             if (originalThirdPartyImplementation === undefined) {
@@ -146,7 +148,7 @@ export default function getRecipeInterface(
             }
             let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
                 DerivedTP(this)
-            )({ email, userContext });
+            )({ email, tenantId, userContext });
 
             if (userFromEmailPass !== undefined) {
                 return [...usersFromThirdParty, userFromEmailPass];
@@ -157,6 +159,7 @@ export default function getRecipeInterface(
         getUserByThirdPartyInfo: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            tenantId: string;
             userContext: any;
         }): Promise<User | undefined> {
             if (originalThirdPartyImplementation === undefined) {

@@ -79,6 +79,7 @@ export default class Wrapper {
     >;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
+            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;

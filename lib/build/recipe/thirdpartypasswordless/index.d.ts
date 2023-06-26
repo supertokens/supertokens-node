@@ -201,11 +201,13 @@ export default class Wrapper {
     }>;
     static sendEmail(
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
+            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;
     static sendSms(
         input: TypePasswordlessSmsDeliveryInput & {
+            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;

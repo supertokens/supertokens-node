@@ -152,7 +152,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        ___: string | undefined, // TODO tenantId
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
@@ -170,9 +170,9 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this.apiImpl, options, userContext);
+            return await generateEmailVerifyTokenAPI(this.apiImpl, tenantId, options, userContext);
         } else {
-            return await emailVerifyAPI(this.apiImpl, options, userContext);
+            return await emailVerifyAPI(this.apiImpl, tenantId, options, userContext);
         }
     };
 

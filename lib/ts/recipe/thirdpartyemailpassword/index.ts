@@ -18,6 +18,7 @@ import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -109,10 +110,11 @@ export default class Wrapper {
         });
     }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
+    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { tenantId?: string; userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
+            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 }

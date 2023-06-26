@@ -146,17 +146,18 @@ export type TypeNormalisedInput = {
 export type RecipeInterface = {
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
 
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
 
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<User | undefined>;
 
     getProvider(input: {
         thirdPartyId: string;
-        tenantId?: string;
+        tenantId: string;
         clientType?: string;
         userContext: any;
     }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
@@ -170,6 +171,7 @@ export type RecipeInterface = {
             fromIdTokenPayload: { [key: string]: any };
             fromUserInfoAPI: { [key: string]: any };
         };
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -186,6 +188,7 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 };
@@ -207,6 +210,7 @@ export type APIInterface = {
         | ((input: {
               provider: TypeProvider;
               redirectURIOnProviderDashboard: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -223,6 +227,7 @@ export type APIInterface = {
         | ((
               input: {
                   provider: TypeProvider;
+                  tenantId: string;
                   options: APIOptions;
                   userContext: any;
               } & (

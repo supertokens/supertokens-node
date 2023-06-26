@@ -260,6 +260,8 @@ export default class Recipe extends RecipeModule {
             this.getRecipeId() +
             "&preAuthSessionId=" +
             codeInfo.preAuthSessionId +
+            "&tenantId=" +
+            input.tenantId +
             "#" +
             codeInfo.linkCode;
 

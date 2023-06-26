@@ -7,8 +7,8 @@ export default class Wrapper {
     static Error: typeof SuperTokensError;
     static getProvider(
         thirdPartyId: string,
-        tenantId: string | undefined,
         clientType: string | undefined,
+        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -19,6 +19,7 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -26,10 +27,11 @@ export default class Wrapper {
         user: User;
     }>;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
+    static getUsersByEmail(email: string, tenantId?: string, userContext?: any): Promise<User[]>;
     static getUserByThirdPartyInfo(
         thirdPartyId: string,
         thirdPartyUserId: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<User | undefined>;
 }

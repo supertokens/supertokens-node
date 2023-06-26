@@ -86,11 +86,12 @@ export default class Wrapper {
         });
     }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
+    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { tenantId?: string; userContext?: any }) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
+            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 }
