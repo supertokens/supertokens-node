@@ -1,4 +1,4 @@
-import { RecipeInterface, User } from "../types";
+import { RecipeInterface } from "../types";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
@@ -43,23 +43,38 @@ export default function getRecipeInterface(
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            isVerified: boolean;
             userContext: any;
-        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
+        }): Promise<
+            | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
+        > {
             if (originalThirdPartyImplementation === undefined) {
                 throw new Error("No thirdparty provider configured");
             }
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
 
-        getUserByThirdPartyInfo: async function (input: {
+        createNewOrUpdateEmailOfThirdPartyRecipeUser: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            email: string;
+            isVerified: boolean;
             userContext: any;
-        }): Promise<User | undefined> {
+        }): Promise<
+            | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+            | {
+                  status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+                  reason: string;
+              }
+        > {
             if (originalThirdPartyImplementation === undefined) {
-                return undefined;
+                throw new Error("No thirdparty provider configured");
             }
-            return originalThirdPartyImplementation.getUserByThirdPartyInfo.bind(DerivedTP(this))(input);
+            return originalThirdPartyImplementation.createNewOrUpdateEmailOfRecipeUser.bind(DerivedTP(this))(input);
         },
 
         createResetPasswordToken: async function (input: {

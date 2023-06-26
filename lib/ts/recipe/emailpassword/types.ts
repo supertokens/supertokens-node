@@ -98,6 +98,9 @@ export type RecipeInterface = {
     >;
 
     // this function is meant only for creating the recipe in the core and nothing else.
+    // we added this even though signUp exists cause devs may override signup expecting it
+    // to be called just during sign up. But we also need a version of signing up which can be
+    // called during operations like creating a user during password reset flow.
     createNewRecipeUser(input: {
         email: string;
         password: string;
@@ -282,30 +285,39 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    linkAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              session: SessionContainerInterface;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "WRONG_CREDENTIALS_ERROR";
-                }
-              | GeneralErrorResponse
-          >);
+    // This is commented out because we have decided to not add this feature for now,
+    // and add it at a later iteration in the project.
+    // linkAccountWithUserFromSessionPOST:
+    //     | undefined
+    //     | ((input: {
+    //           formFields: {
+    //               id: string;
+    //               value: string;
+    //           }[];
+    //           session: SessionContainerInterface;
+    //           options: APIOptions;
+    //           userContext: any;
+    //       }) => Promise<
+    //           | {
+    //                 status: "OK";
+    //                 wereAccountsAlreadyLinked: boolean;
+    //             }
+    //           | {
+    //                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
+    //                 description: string;
+    //             }
+    //           | {
+    //                 status: "WRONG_CREDENTIALS_ERROR";
+    //             }
+    //           | {
+    //                 status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
+    //                 description: string;
+    //                 recipeUserId: string;
+    //                 email: string;
+    //                 primaryUserId: string;
+    //             }
+    //           | GeneralErrorResponse
+    //       >);
 };
 
 export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {

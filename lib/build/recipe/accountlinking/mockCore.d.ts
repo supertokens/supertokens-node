@@ -17,6 +17,7 @@ declare type UserWithoutHelperFunctions = {
         verified: boolean;
     })[];
 };
+export declare function mockReset(): Promise<void>;
 export declare function mockCanLinkAccounts({
     recipeUserId,
     primaryUserId,
@@ -37,6 +38,9 @@ export declare function mockCanLinkAccounts({
           status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           primaryUserId: string;
           description: string;
+      }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
       }
 >;
 export declare function mockLinkAccounts({
@@ -59,6 +63,9 @@ export declare function mockLinkAccounts({
           status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           primaryUserId: string;
           description: string;
+      }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
       }
 >;
 export declare function mockCanCreatePrimaryUser(
@@ -108,7 +115,13 @@ export declare function mockGetUsers(
     nextPaginationToken?: string;
 }>;
 export declare function createUserObject(input: UserWithoutHelperFunctions): User;
-export declare function mockListUsersByAccountInfo({ accountInfo }: { accountInfo: AccountInfo }): Promise<User[]>;
+export declare function mockListUsersByAccountInfo({
+    accountInfo,
+    doUnionOfAccountInfo,
+}: {
+    accountInfo: AccountInfo;
+    doUnionOfAccountInfo: boolean;
+}): Promise<User[]>;
 export declare function mockGetUser({ userId }: { userId: string }): Promise<User | undefined>;
 export declare function mockUnlinkAccount({
     recipeUserId,

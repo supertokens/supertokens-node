@@ -4,4 +4,4 @@ import { ResponseToolkit } from "@hapi/hapi";
 import { SessionRequest } from "../../../framework/hapi/framework";
 export declare function verifySession(
     options?: VerifySessionOptions
-): (req: SessionRequest, h: ResponseToolkit) => Promise<symbol>;
+): (req: SessionRequest, h: ResponseToolkit) => Promise<symbol | import("@hapi/hapi").ResponseObject>;

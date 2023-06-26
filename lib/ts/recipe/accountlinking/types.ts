@@ -130,6 +130,9 @@ export type RecipeInterface = {
               primaryUserId: string;
               description: string;
           }
+        | {
+              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
     >;
     linkAccounts: (input: {
         recipeUserId: RecipeUserId;
@@ -150,6 +153,9 @@ export type RecipeInterface = {
               primaryUserId: string;
               description: string;
           }
+        | {
+              status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+          }
     >;
     unlinkAccount: (input: {
         recipeUserId: RecipeUserId;
@@ -159,7 +165,11 @@ export type RecipeInterface = {
         wasRecipeUserDeleted: boolean;
     }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    listUsersByAccountInfo: (input: { accountInfo: AccountInfo; userContext: any }) => Promise<User[]>;
+    listUsersByAccountInfo: (input: {
+        accountInfo: AccountInfo;
+        doUnionOfAccountInfo: boolean;
+        userContext: any;
+    }) => Promise<User[]>;
     deleteUser: (input: {
         userId: string;
         removeAllLinkedAccounts: boolean;

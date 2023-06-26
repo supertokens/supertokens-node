@@ -29,17 +29,6 @@ import {
 import { GeneralErrorResponse, User as GlobalUser } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
-export type User = {
-    id: string;
-    recipeUserId: string;
-    timeJoined: number;
-    email: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
-};
-
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
 };
@@ -78,18 +67,33 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getUserByThirdPartyInfo(input: {
-        thirdPartyId: string;
-        thirdPartyUserId: string;
-        userContext: any;
-    }): Promise<User | undefined>;
-
     thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        isVerified: boolean;
         userContext: any;
-    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
+    >;
+
+    createNewOrUpdateEmailOfThirdPartyRecipeUser(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: string;
+        isVerified: boolean;
+        userContext: any;
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+    >;
 
     emailPasswordSignUp(input: {
         email: string;
@@ -167,47 +171,6 @@ export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 
 export type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export type APIInterface = {
-    linkThirdPartyAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              session: SessionContainerInterface;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    user: User;
-                    session: SessionContainerInterface;
-                    wereAccountsAlreadyLinked: boolean;
-                    authCodeResponse: any;
-                }
-              | {
-                    status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                    primaryUserId: string;
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "ACCOUNT_NOT_VERIFIED_ERROR";
-                    isNotVerifiedAccountFromInputSession: boolean;
-                    description: string;
-                }
-              | GeneralErrorResponse
-          >);
-
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -293,49 +256,21 @@ export type APIInterface = {
               | {
                     status: "OK";
                     createdNewUser: boolean;
-                    user: User;
+                    user: GlobalUser;
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | GeneralErrorResponse
+              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-                }
-              | {
-                    status: "SIGNUP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
               | {
-                    status: "SIGNIN_NOT_ALLOWED";
-                    primaryUserId: string;
-                    description: string;
-                }
-          >);
-
-    linkEmailPasswordAccountWithUserFromSessionPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              session: SessionContainerInterface;
-              options: EmailPasswordAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    wereAccountsAlreadyLinked: boolean;
-                }
-              | {
-                    status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR" | "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-                    description: string;
-                }
-              | {
-                    status: "WRONG_CREDENTIALS_ERROR";
+                    status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT";
                 }
               | GeneralErrorResponse
           >);
+
     emailPasswordSignInPOST:
         | undefined
         | ((input: {

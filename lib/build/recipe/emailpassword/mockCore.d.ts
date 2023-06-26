@@ -2,6 +2,7 @@
 import type { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
+export declare function mockReset(): Promise<void>;
 export declare function mockGetPasswordResetInfo(
     token: string
 ): Promise<
@@ -68,7 +69,6 @@ export declare function mockUpdateEmailOrPassword(input: {
     email?: string;
     password?: string;
     applyPasswordPolicy?: boolean;
-    isAccountLinkingEnabled: boolean;
     querier: Querier;
 }): Promise<
     | {

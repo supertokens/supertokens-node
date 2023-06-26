@@ -73,7 +73,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
@@ -93,6 +94,78 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === true);
                 assert(user.id === tpUser.user.id);
+            }
+        });
+
+        it("verifyEmailUsingToken links account only if the associated email is verified", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            {
+                let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+                await EmailVerification.verifyEmailUsingToken(token.token, false);
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+            }
+
+            let token = await EmailVerification.createEmailVerificationToken(
+                epUser.loginMethods[0].recipeUserId,
+                "test2@example.com"
+            );
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+            }
+
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token);
+            assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+                assert(user.id === epUser.id);
             }
         });
 
@@ -190,7 +263,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
@@ -268,6 +342,124 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 assert(user.isPrimaryUser === false);
             }
         });
+
+        it("verifyEmailUsingToken does not create a primary user if account linking is disabled and attemptAccountLinking is false", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+            }
+
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token, false);
+            assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+            }
+        });
+
+        it("verifyEmailUsingToken does not link accounts if attemptAccountLinking is false even if account linking callback allows it", async function () {
+            await startST();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirdParty.Google({
+                                    clientId: "",
+                                    clientSecret: "",
+                                }),
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async function (input) {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            assert(tpUser.user.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+
+            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            assert(epUser.isPrimaryUser === false);
+
+            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+            }
+
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token, false);
+            assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
+
+            {
+                let user = await supertokens.getUser(epUser.id);
+                assert(user.isPrimaryUser === false);
+                assert(user.id === epUser.id);
+            }
+        });
     });
 
     describe("isEmailVerified tests", function () {
@@ -309,14 +501,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
-            {
-                let token = await EmailVerification.createEmailVerificationToken(
-                    supertokens.convertToRecipeUserId(tpUser.user.id)
-                );
-                await EmailVerification.verifyEmailUsingToken(token.token);
-            }
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", true);
+            assert(tpUser.user.isPrimaryUser === true);
             let epUser = (await EmailPassword.signUp("test2@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
@@ -376,14 +562,8 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com");
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
-            {
-                let token = await EmailVerification.createEmailVerificationToken(
-                    supertokens.convertToRecipeUserId(tpUser.user.id)
-                );
-                await EmailVerification.verifyEmailUsingToken(token.token);
-            }
+            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", true);
+            assert(tpUser.user.isPrimaryUser === true);
 
             let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);

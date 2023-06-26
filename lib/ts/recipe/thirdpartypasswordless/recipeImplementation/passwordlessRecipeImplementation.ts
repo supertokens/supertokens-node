@@ -12,32 +12,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
         createNewCodeForDevice: async function (input) {
             return await recipeInterface.createNewCodeForDevice(input);
         },
-        getUserByEmail: async function (input) {
-            let users = await recipeInterface.getUsersByEmail(input);
-            for (let i = 0; i < users.length; i++) {
-                let u = users[i];
-                if (!("thirdParty" in u)) {
-                    return u;
-                }
-            }
-            return undefined;
-        },
-        getUserById: async function (input) {
-            let user = await recipeInterface.getUserById(input);
-            if (user !== undefined && "thirdParty" in user) {
-                // this is a thirdparty user.
-                return undefined;
-            }
-            return user;
-        },
-        getUserByPhoneNumber: async function (input) {
-            let user = await recipeInterface.getUserByPhoneNumber(input);
-            if (user !== undefined && "thirdParty" in user) {
-                // this is a thirdparty user.
-                return undefined;
-            }
-            return user;
-        },
         listCodesByDeviceId: async function (input) {
             return await recipeInterface.listCodesByDeviceId(input);
         },

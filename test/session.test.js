@@ -640,7 +640,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await SessionFunctions.revokeSession(s.helpers, res.session.handle);
         assert(res2 === true);
 
-        let res3 = await SessionFunctions.getAllSessionHandlesForUser(s.helpers, "someUniqueUserId");
+        let res3 = await SessionFunctions.getAllSessionHandlesForUser(s.helpers, "someUniqueUserId", true);
         assert(res3.length === 0);
 
         //create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions
@@ -1265,5 +1265,19 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         const data = await session.getSessionDataFromDatabase();
 
         assert.equal(data.test, 1);
+    });
+
+    it("invalid connectionURI should not cause init to throw", () => {
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:0000",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
     });
 });

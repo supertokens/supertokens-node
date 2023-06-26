@@ -613,7 +613,7 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
         }
 
         if (user.recipe === "thirdparty" && thirdparty !== null) {
-            await thirdparty.signInUp(user.provider, user.userId, user.email);
+            await thirdparty.signInUp(user.provider, user.userId, user.email, false);
         }
     }
 };

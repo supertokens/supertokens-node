@@ -22,6 +22,7 @@ export default class Wrapper {
     >;
     static verifyEmailUsingToken(
         token: string,
+        attemptAccountLinking?: boolean,
         userContext?: any
     ): Promise<
         | {

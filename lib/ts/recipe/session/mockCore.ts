@@ -7,6 +7,10 @@ let sessionHandles: {
     sessionHandle: string;
 }[] = [];
 
+export async function mockReset() {
+    sessionHandles = [];
+}
+
 export async function mockGetRefreshAPIResponse(requestBody: any, querier: any) {
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
     if (response.status === "OK") {
@@ -15,6 +19,12 @@ export async function mockGetRefreshAPIResponse(requestBody: any, querier: any) 
                 response.session.userId = sessionHandles[i].primaryUserId;
                 response.session.recipeUserId = sessionHandles[i].recipeUserId;
             }
+        }
+        if (response.session.recipeUserId === undefined) {
+            // this is only there cause there are some tests (like "should help migrating a v2 token using protected props")
+            // which create the session in the test directly from the core. Therefore
+            // there is no session handle in the mocked map
+            response.session.recipeUserId = response.session.userId;
         }
         return response;
     } else if (response.status === "UNAUTHORISED") {
@@ -95,6 +105,12 @@ export async function mockGetSessionInformation(sessionHandle: string, querier: 
                 response.recipeUserId = sessionHandles[i].recipeUserId;
             }
         }
+        if (response.recipeUserId === undefined) {
+            // this is only there cause there are some tests (like "should help migrating a v2 token using protected props when called using session handle")
+            // which create the session in the test directly from the core. Therefore
+            // there is no session handle in the mocked map
+            response.recipeUserId = response.userId;
+        }
         return response;
     } else {
         return response;
@@ -141,6 +157,15 @@ export async function mockGetAllSessionHandlesForUser(input: {
         }
     }
     return result;
+}
+
+export async function mockRevokeSession(sessionHandle: string, querier: Querier) {
+    sessionHandles = sessionHandles.filter((sh) => sh.sessionHandle !== sessionHandle);
+
+    let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+        sessionHandles: [sessionHandle],
+    });
+    return response.sessionHandlesRevoked.length === 1;
 }
 
 export async function mockRevokeAllSessionsForUser(input: {

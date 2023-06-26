@@ -90,6 +90,7 @@ export type RecipeInterface = {
 
     verifyEmailUsingToken(input: {
         token: string;
+        attemptAccountLinking: boolean;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
 

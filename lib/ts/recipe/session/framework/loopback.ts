@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { InterceptorOrKey, InvocationContext, Next } from "@loopback/core";
@@ -25,7 +26,18 @@ export function verifySession(options?: VerifySessionOptions): InterceptorOrKey 
         let middlewareCtx = await ctx.get<MiddlewareContext>("middleware.http.context");
         let request = new LoopbackRequest(middlewareCtx);
         let response = new LoopbackResponse(middlewareCtx);
-        (middlewareCtx as Context).session = await sessionRecipe.verifySession(options, request, response);
+        try {
+            (middlewareCtx as Context).session = await sessionRecipe.verifySession(options, request, response);
+        } catch (err) {
+            try {
+                const supertokens = SuperTokens.getInstanceOrThrowError();
+                await supertokens.errorHandler(err, request, response);
+                return;
+            } catch {
+                // We catch and ignore since we want to re-throw the original error if handling wasn't successful
+                throw err;
+            }
+        }
         return await next();
     };
 }

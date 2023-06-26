@@ -31,6 +31,7 @@ export type Helpers = {
     getRecipeImpl: () => RecipeInterface;
 };
 
+const JWKCacheCooldownInMs = 500;
 export const JWKCacheMaxAgeInMs = 60000;
 
 export const protectedProps = [
@@ -54,7 +55,7 @@ export default function getRecipeInterface(
         .getAllCoreUrlsForPath("/.well-known/jwks.json")
         .map((url) =>
             createRemoteJWKSet(new URL(url), {
-                cooldownDuration: 500,
+                cooldownDuration: JWKCacheCooldownInMs,
                 cacheMaxAge: JWKCacheMaxAgeInMs,
             })
         );
@@ -391,11 +392,18 @@ export default function getRecipeInterface(
         getAllSessionHandlesForUser: function ({
             userId,
             fetchSessionsForAllLinkedAccounts,
+            userContext,
         }: {
             userId: string;
             fetchSessionsForAllLinkedAccounts: boolean;
+            userContext: any;
         }): Promise<string[]> {
-            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, fetchSessionsForAllLinkedAccounts);
+            return SessionFunctions.getAllSessionHandlesForUser(
+                helpers,
+                userId,
+                fetchSessionsForAllLinkedAccounts,
+                userContext
+            );
         },
 
         revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
