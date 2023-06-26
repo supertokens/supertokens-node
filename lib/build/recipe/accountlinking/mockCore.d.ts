@@ -39,6 +39,9 @@ export declare function mockCanLinkAccounts({
           primaryUserId: string;
           description: string;
       }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
+      }
 >;
 export declare function mockLinkAccounts({
     recipeUserId,
@@ -60,6 +63,9 @@ export declare function mockLinkAccounts({
           status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
           primaryUserId: string;
           description: string;
+      }
+    | {
+          status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
       }
 >;
 export declare function mockCanCreatePrimaryUser(

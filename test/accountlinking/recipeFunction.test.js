@@ -227,6 +227,53 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(sessions.length === 0);
     });
 
+    it("link accounts success, even if using recipe user id that is linked to the primary user id", async function () {
+        await startST();
+        let primaryUserInCallback;
+        let newAccountInfoInCallback;
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init(),
+                AccountLinking.init({
+                    onAccountLinked: (primaryUser, newAccountInfo) => {
+                        primaryUserInCallback = primaryUser;
+                        newAccountInfoInCallback = newAccountInfo;
+                    },
+                }),
+            ],
+        });
+
+        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        assert(user.isPrimaryUser === false);
+        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        assert(user2.isPrimaryUser === false);
+
+        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked === false);
+
+        let user3 = (await EmailPassword.signUp("test3@example.com", "password123")).user;
+        assert(user3.isPrimaryUser === false);
+
+        response = await AccountLinking.linkAccounts(user3.loginMethods[0].recipeUserId, user2.id);
+        assert(response.status === "OK");
+        assert(response.accountsAlreadyLinked === false);
+
+        let linkedUser = await supertokens.getUser(user.id);
+        assert(linkedUser.loginMethods.length === 3);
+    });
+
     it("link accounts success - already linked", async function () {
         await startST();
         let primaryUserInCallback;
@@ -353,12 +400,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        try {
-            await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
-            assert(false);
-        } catch (err) {
-            assert(err.message === "Input primary user is not a primary user");
-        }
+        let resp = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        assert(resp.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER");
     });
 
     it("account linking failure - account info user already associated with a primary user", async function () {

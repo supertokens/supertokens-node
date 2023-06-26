@@ -258,6 +258,15 @@ export default class Recipe extends RecipeModule {
                 // returning the user ID of the linked user
                 // which the result has.
                 return linkAccountsResult.primaryUserId;
+            } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+                // this can be possible during a race condition wherein the primary user
+                // that we fetched somehow is no more a primary user. This can happen if
+                // the unlink function was called in parallel on that user. So we can just recurse
+                return await this.createPrimaryUserIdOrLinkAccounts({
+                    recipeUserId,
+                    checkAccountsToLinkTableAsWell,
+                    userContext,
+                });
             } else {
                 // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                 // it can come here if the recipe user ID
@@ -986,6 +995,17 @@ export default class Recipe extends RecipeModule {
                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR",
                 description: "New user is already linked to another account or is a primary user.",
             };
+        } else if (linkAccountResponse.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+            // this can happen due to some race condition where in the existing user, was a primary user
+            // and then by the time it comes here, it is somehow not a primary user anymore. So we just do
+            // recursion cause it will try and make the input user a primary user again
+            return await this.linkAccountWithUserFromSession({
+                session,
+                newUser,
+                createRecipeUserFunc,
+                verifyCredentialsFunc,
+                userContext,
+            });
         } else {
             // status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
             // this means that the account info of the newUser already belongs to some other primary user ID.

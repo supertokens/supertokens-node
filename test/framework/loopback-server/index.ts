@@ -67,7 +67,9 @@ let app = new RestApplication({
     },
 });
 
-app.middleware(middleware);
+if (process.env.TEST_SKIP_MIDDLEWARE !== "true") {
+    app.middleware(middleware);
+}
 app.controller(Create);
 app.controller(CreateThrowing);
 app.controller(Verify);
