@@ -170,7 +170,7 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this.apiImpl, tenantId, options, userContext);
+            return await generateEmailVerifyTokenAPI(this.apiImpl, options, userContext);
         } else {
             return await emailVerifyAPI(this.apiImpl, tenantId, options, userContext);
         }

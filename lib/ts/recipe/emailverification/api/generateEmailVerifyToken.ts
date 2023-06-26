@@ -19,7 +19,6 @@ import Session from "../../session";
 
 export default async function generateEmailVerifyToken(
     apiImplementation: APIInterface,
-    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -36,7 +35,6 @@ export default async function generateEmailVerifyToken(
     );
 
     const result = await apiImplementation.generateEmailVerifyTokenPOST({
-        tenantId,
         options,
         session: session!,
         userContext,

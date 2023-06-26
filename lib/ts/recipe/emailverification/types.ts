@@ -151,7 +151,6 @@ export type APIInterface = {
     generateEmailVerifyTokenPOST:
         | undefined
         | ((input: {
-              tenantId: string;
               options: APIOptions;
               userContext: any;
               session: SessionContainerInterface;

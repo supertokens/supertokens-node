@@ -81,7 +81,6 @@ export default function getAPIInterface(): APIInterface {
 
         generateEmailVerifyTokenPOST: async function ({
             options,
-            tenantId,
             userContext,
             session,
         }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
@@ -90,6 +89,7 @@ export default function getAPIInterface(): APIInterface {
             }
 
             const userId = session.getUserId();
+            const tenantId = session.getAccessTokenPayload().tId; // TODO use `getTenantId` once implemented
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
                 userId,
