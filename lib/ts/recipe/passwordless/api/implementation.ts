@@ -101,6 +101,8 @@ export default function getAPIImplementation(): APIInterface {
                     input.options.recipeId +
                     "&preAuthSessionId=" +
                     response.preAuthSessionId +
+                    "&tenantId=" +
+                    input.tenantId +
                     "#" +
                     response.linkCode;
             }
@@ -228,6 +230,8 @@ export default function getAPIImplementation(): APIInterface {
                             input.options.recipeId +
                             "&preAuthSessionId=" +
                             response.preAuthSessionId +
+                            "&tenantId=" +
+                            input.tenantId +
                             "#" +
                             response.linkCode;
                     }
