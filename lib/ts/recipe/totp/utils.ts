@@ -20,19 +20,19 @@ import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from ".
 export function validateAndNormaliseUserInput(
     _: TotpRecipe,
     appInfo: NormalisedAppinfo,
-    config: TypeInput
+    config?: TypeInput
 ): TypeNormalisedInput {
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
+        ...config?.override,
     };
 
     return {
-        issuer: config.issuer ?? appInfo.appName,
-        defaultPeriod: config.defaultPeriod ?? 30,
-        defaultSkew: config.defaultSkew ?? 1,
-        getUserIdentifierInfoForUserId: config.getUserIdentifierInfoForUserId,
+        issuer: config?.issuer ?? appInfo.appName,
+        defaultPeriod: config?.defaultPeriod ?? 30,
+        defaultSkew: config?.defaultSkew ?? 1, // 3 periods (2*skew+1) will be checked
+        getUserIdentifierInfoForUserId: config?.getUserIdentifierInfoForUserId,
         override,
     };
 }

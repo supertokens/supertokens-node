@@ -25,7 +25,7 @@ export default async function verifyCode(apiImplementation: APIInterface, option
         return false;
     }
 
-    let session = await Session.getSession(options.req, options.res);
+    let session = await Session.getSession(options.req, options.res, { overrideGlobalClaimValidators: (_) => [] });
     const { totp } = await options.req.getJSONBody();
 
     if (totp === undefined) {

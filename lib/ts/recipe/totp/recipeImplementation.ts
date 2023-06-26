@@ -28,11 +28,12 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
     return {
         createDevice: async function (input) {
-            const { userContext, userIdentifierInfo, ...rest } = input;
+            const { userId, deviceName, skew, period, userIdentifierInfo } = input;
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/totp/device"), {
-                ...rest,
-                skew: input.skew ?? config.defaultSkew,
-                period: input.period ?? config.defaultPeriod,
+                userId,
+                deviceName,
+                skew: skew ?? config.defaultSkew,
+                period: period ?? config.defaultPeriod,
             });
             if (response.status !== "OK") {
                 return response;
@@ -46,7 +47,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 userIdentifier,
                 secret: response.secret,
                 qrCodeString: encodeURI(
-                    `otpauth://totp/${issuerName}${userIdentifier ? ":" + userIdentifier : ""}` +
+                    `otpauth://totp/${issuerName}${userIdentifier === undefined ? ":" + userIdentifier : ""}` +
                         `?secret=${response.secret}&issuer=${issuerName}`
                 ),
             };

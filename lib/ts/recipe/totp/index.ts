@@ -21,44 +21,55 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static createDevice(input: { userId: string; deviceName: string; skew: number; period: number }) {
+    static createDevice(input: {
+        userId: string;
+        deviceName: string;
+        skew?: number;
+        period?: number;
+        userContext?: any;
+    }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
-            userContext: {},
+            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
         });
     }
 
-    static verifyDevice(input: { userId: string; deviceName: string; totp: string }) {
+    static verifyDevice(input: { userId: string; deviceName: string; totp: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyDevice({
-            userContext: {},
+            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
         });
     }
 
-    static verifyCode(input: { userId: string; totp: string }) {
+    static verifyCode(input: { userId: string; totp: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCode({
-            userContext: {},
+            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
         });
     }
 
-    static updateDevice(input: { userId: string; existingDeviceName: string; newDeviceName: string }) {
+    static updateDevice(input: {
+        userId: string;
+        existingDeviceName: string;
+        newDeviceName: string;
+        userContext?: any;
+    }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
-            userContext: {},
+            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
         });
     }
 
-    static removeDevice(input: { userId: string; deviceName: string }) {
+    static removeDevice(input: { userId: string; deviceName: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.removeDevice({
-            userContext: {},
+            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
         });
     }
 
-    static listDevices(input: { userId: string }) {
+    static listDevices(input: { userId: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
-            userContext: {},
+            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
         });
     }

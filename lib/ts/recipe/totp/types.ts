@@ -62,11 +62,7 @@ export type RecipeInterface = {
         userId: string;
         totp: string;
         userContext: any;
-    }) => Promise<
-        | { status: "OK" | "INVALID_TOTP_ERROR" }
-        | { status: "TOTP_NOT_ENABLED_ERROR" }
-        | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }
-    >;
+    }) => Promise<{ status: "OK" | "INVALID_TOTP_ERROR" } | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }>;
     verifyDevice: (input: {
         userId: string;
         deviceName: string;
@@ -74,7 +70,6 @@ export type RecipeInterface = {
         userContext: any;
     }) => Promise<
         | { status: "OK"; wasAlreadyVerified: boolean }
-        | { status: "TOTP_NOT_ENABLED_ERROR" }
         | { status: "INVALID_TOTP_ERROR" | "UNKNOWN_DEVICE_ERROR" }
         | { status: "LIMIT_REACHED_ERROR"; retryAfterMs: number }
     >;
@@ -83,19 +78,16 @@ export type RecipeInterface = {
         existingDeviceName: string;
         newDeviceName: string;
         userContext: any;
-    }) => Promise<{ status: "OK" | "TOTP_NOT_ENABLED_ERROR" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR" }>;
+    }) => Promise<{ status: "OK" | "DEVICE_ALREADY_EXISTS_ERROR" | "UNKNOWN_DEVICE_ERROR" }>;
     removeDevice: (input: {
         userId: string;
         deviceName: string;
         userContext: any;
-    }) => Promise<{ status: "OK"; didDeviceExist: boolean } | { status: "TOTP_NOT_ENABLED_ERROR" }>;
+    }) => Promise<{ status: "OK"; didDeviceExist: boolean }>;
     listDevices: (input: {
         userId: string;
         userContext: any;
-    }) => Promise<
-        | { status: "OK"; devices: { name: string; period: number; skew: number; verified: boolean }[] }
-        | { status: "TOTP_NOT_ENABLED_ERROR" }
-    >;
+    }) => Promise<{ status: "OK"; devices: { name: string; period: number; skew: number; verified: boolean }[] }>;
 };
 
 export type APIOptions = {
@@ -111,11 +103,18 @@ export type APIOptions = {
 export type APIInterface = {
     createDevicePOST?: (input: {
         session: SessionContainer;
-        deviceName: string;
+        deviceName?: string;
         options: APIOptions;
         userContext: any;
     }) => Promise<
-        | { status: "OK"; issuerName: string; secret: string; userIdentifier?: string; qrCodeString: string }
+        | {
+              status: "OK";
+              issuerName: string;
+              deviceName: string;
+              secret: string;
+              userIdentifier?: string;
+              qrCodeString: string;
+          }
         | { status: "DEVICE_ALREADY_EXISTS_ERROR" }
     >;
     verifyCodePOST?: (input: {

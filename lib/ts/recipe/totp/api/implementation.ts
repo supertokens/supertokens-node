@@ -14,82 +14,84 @@
  */
 
 import { APIInterface } from "../types";
-import STError from "../error";
 import TotpRecipe from "../recipe";
+import SessionError from "../../session/error";
+// import { MfaClaim, completeFactorInSession } from '../../mfa';
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        createDevicePOST: async function (input) {
-            const { session, options, ...rest } = input;
-            let userIdentifierInfo = undefined;
+        createDevicePOST: async function ({ session, options, deviceName, userContext }) {
+            let userIdentifierInfo: string | undefined = undefined;
             const emailOrPhoneInfo = await TotpRecipe.getInstanceOrThrowError().getUserIdentifierInfoForUserId(
                 session.getUserId(),
-                input.userContext
+                userContext
             );
             if (emailOrPhoneInfo.status === "OK") {
                 userIdentifierInfo = emailOrPhoneInfo.info;
+            } else if (emailOrPhoneInfo.status === "UNKNOWN_USER_ID_ERROR") {
+                throw new SessionError({
+                    type: SessionError.UNAUTHORISED,
+                    message: "Unknown User ID provided",
+                });
             }
-            const args = { ...rest, userId: session.getUserId(), userIdentifierInfo };
-            let response = await input.options.recipeImplementation.createDevice(args);
+
+            let existingDeviceCount = 0;
+            let verifiedDeviceCount = 0;
+            if (deviceName === undefined) {
+                // We need to set the device name:
+                const listDevicesResponse = await options.recipeImplementation.listDevices({
+                    userId: session.getUserId(),
+                    userContext,
+                });
+                const devices = listDevicesResponse.status === "OK" ? listDevicesResponse.devices : [];
+                existingDeviceCount = devices.length;
+                verifiedDeviceCount = devices.filter((device) => device.verified).length;
+                deviceName = `TOTP Device ${existingDeviceCount + 1}`; // Assuming no one creates a device in the same format
+            }
+
+            if (verifiedDeviceCount > 0) {
+                // TODO: We need to assert that all factors have been completed
+                // before actually creating the device.
+                // await session.assertClaims(MfaClaim.validators.hasCompletedAllFactors(), userContext);
+            }
+
+            const args = { deviceName, userId: session.getUserId(), userIdentifierInfo, userContext };
+            let response = await options.recipeImplementation.createDevice(args);
+            return { ...response, deviceName };
+        },
+
+        verifyCodePOST: async function ({ session, options, totp, userContext }) {
+            const args = { userId: session.getUserId(), totp, userContext };
+            let response = await options.recipeImplementation.verifyCode(args);
+
+            // TODO: Uncomment when MFA is implemented
+            // userContext.flow = 'signin';
+            // await completeFactorInSession(session, 'totp', userContext);
 
             return response;
         },
 
-        verifyCodePOST: async function (input) {
-            const { session, options, ...rest } = input;
-            const args = { ...rest, userId: session.getUserId() };
-            let response = await input.options.recipeImplementation.verifyCode(args);
+        verifyDevicePOST: async function ({ session, options, deviceName, totp, userContext }) {
+            const args = { userId: session.getUserId(), deviceName, totp, userContext };
+            let response = await options.recipeImplementation.verifyDevice(args);
 
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: "TOTP_NOT_ENABLED_ERROR",
-                    message: "TOTP is not enabled for this user",
-                });
-            }
-            return response;
-        },
-
-        verifyDevicePOST: async function (input) {
-            const { session, options, ...rest } = input;
-            const args = { ...rest, userId: session.getUserId() };
-            let response = await input.options.recipeImplementation.verifyDevice(args);
-
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: STError.TOTP_NOT_ENABLED_ERROR,
-                    message: "TOTP is not enabled for this user",
-                });
-            }
+            // TODO: Uncomment when MFA is implemented
+            // userContext.flow = 'signup';
+            // await completeFactorInSession(session, 'totp', userContext);
 
             return response;
         },
 
-        removeDevicePOST: async function (input) {
-            const { session, options, ...rest } = input;
-            const args = { ...rest, userId: session.getUserId() };
-            let response = await input.options.recipeImplementation.removeDevice(args);
-
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: "TOTP_NOT_ENABLED_ERROR",
-                    message: "TOTP is not enabled for this user",
-                });
-            }
+        removeDevicePOST: async function ({ session, options, deviceName, userContext }) {
+            const args = { userId: session.getUserId(), deviceName, userContext };
+            let response = await options.recipeImplementation.removeDevice(args);
 
             return response;
         },
 
-        listDevicesGET: async function (input) {
-            const { session, options, ...rest } = input;
-            const args = { ...rest, userId: session.getUserId() };
-            let response = await input.options.recipeImplementation.listDevices(args);
-
-            if (response.status === "TOTP_NOT_ENABLED_ERROR") {
-                throw new STError({
-                    type: "TOTP_NOT_ENABLED_ERROR",
-                    message: "TOTP is not enabled for this user",
-                });
-            }
+        listDevicesGET: async function ({ session, options, userContext }) {
+            const args = { userId: session.getUserId(), userContext };
+            let response = await options.recipeImplementation.listDevices(args);
 
             return response;
         },
