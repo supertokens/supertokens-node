@@ -208,10 +208,9 @@ export default class Session implements SessionContainerInterface {
     // Any update to this function should also be reflected in the respective JWT version
     async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
         let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
-            session: this,
-            accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
             recipeUserId: this.getRecipeUserId(userContext),
+            accessTokenPayload: this.getAccessTokenPayload(userContext),
             claimValidators,
             userContext,
         });

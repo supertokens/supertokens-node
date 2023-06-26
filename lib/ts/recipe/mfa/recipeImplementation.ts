@@ -32,37 +32,28 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return config.defaultFirstFactors;
         },
 
-        completeFactorInSession: async function (input) {
-            // const  await input.session.getClaimValue(MFAClaim)
-            let value = (await input.session.getClaimValue(MfaClaim, input.userContext)) ?? { c: {}, next: [] };
+        completeFactorInSession: async function ({ session, factorId, userContext }) {
+            let value = (await session.getClaimValue(MfaClaim, userContext)) ?? { c: {}, next: [] };
 
             const MFARecipeImpl = MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
 
-            // if (Object.keys(value.c).length === 0) {
-            // Should happen before calling any user creating API otherwise user won't login but
-            // will be created
-            //     const expectedFirstFactors = await MFARecipeImpl.getFirstFactors({tenantId: 'public', userContext: input.userContext});
-            //     if (expectedFirstFactors.indexOf(input.factorId) === -1) {
-            //         throw new Error(`First factor must be one of ${expectedFirstFactors.join(", ")}`);
-            //     }
-            // }
-
             const completedFactors = Object.keys(value.c);
             const enabledByUser = await MFARecipeImpl.getAllFactorsEnabledForUser({
-                tenantId: "public",
-                userId: input.session.getUserId(),
-                userContext: input.userContext,
+                tenantId: "public", // TODO: Paas a variable
+                userId: session.getUserId(),
+                userContext: userContext,
             });
 
             const nextFactors = await MFARecipeImpl.getNextFactors({
-                session: input.session,
+                session,
                 completedFactors,
                 enabledByUser,
-                userContext: input.userContext,
+                userContext,
             });
 
+            // Mark the factor as completed at current timestamp
             value.next = [];
-            value.c[input.factorId] = new Date().getTime();
+            value.c[factorId] = new Date().getTime();
 
             // Insert items from nextFactors into value.next if they don't already exist in value.c
             for (const factorId of nextFactors) {
@@ -71,7 +62,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 }
             }
 
-            await input.session.setClaimValue(MfaClaim, value, input.userContext);
+            await session.setClaimValue(MfaClaim, value, userContext);
         },
 
         isFactorAlreadySetup: async function (input) {
@@ -91,47 +82,55 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             }
 
             if (input.factorId === "totp") {
-                const totpDevices = await listDevices({ userId: input.session.getUserId() });
-                return totpDevices.status === "OK" && totpDevices.devices.length > 0; // FIXME: check for verified devices?
+                const res = await listDevices({ userId: input.session.getUserId() });
+                const verifiedDevicesCount = res.status === "OK" ? res.devices.filter((d) => d.verified).length : 0;
+                return verifiedDevicesCount > 0;
             }
 
-            throw new Error(`Unknown factor id ${input.factorId}`); // FIXME: Should return a status instead of raising error?
+            // FIXME: Should return a status instead of raising error?
+            throw new Error(`Unknown factor id ${input.factorId}`);
         },
 
         getUserIdForFactor: async function (input) {
             return input.session.getUserId(); // FIXME
         },
 
-        setUserIdForFactor: async function (_input) {},
+        setUserIdForFactor: async function (_input) {
+            // FIXME
+        },
 
         getPrimaryUserIdForFactor: async function (_input) {
             return undefined; // FIXME
         },
 
         enableFactorForUser: async function (input) {
-            const { userContext, ...rest } = input;
+            const { tenantId, userId, factorId } = input;
             const response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/mfa/enable"), {
-                ...rest,
+                tenantId,
+                userId,
+                factorId,
             });
-            return response; // TODO: Verify type?
+            return response;
         },
 
         getAllFactorsEnabledForUser: async function (_input) {
-            // const { userContext, ...rest } = input;
-            // const response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/mfa/factors/list"), {
-            //     ...rest,
-            // });
-            // return response; // TODO: Verify type?
-            // return ["emailpassword", "passwordless"];
-            return ["thirdparty", "emailpassword"];
+            const { tenantId, userId } = _input;
+            const response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/mfa/factors/list"), {
+                tenantId,
+                userId,
+            });
+            // return ["thirdparty", "emailpassword"];
+            return response;
         },
 
         disableFactorForUser: async function (input) {
-            const { userContext, ...rest } = input;
+            const { tenantId, userId, factorId } = input;
             const response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/mfa/disable"), {
-                ...rest,
+                tenantId,
+                userId,
+                factorId,
             });
-            return response; // TODO: Verify type?
+            return response;
         },
     };
 }

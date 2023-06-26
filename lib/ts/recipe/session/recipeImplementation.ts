@@ -233,7 +233,6 @@ export default function getRecipeInterface(
         validateClaims: async function (
             this: RecipeInterface,
             input: {
-                session: SessionContainerInterface;
                 userId: string;
                 recipeUserId: RecipeUserId;
                 accessTokenPayload: any;
@@ -479,7 +478,8 @@ export default function getRecipeInterface(
             const accessTokenPayloadUpdate = await input.claim.build(
                 sessionInfo.userId,
                 sessionInfo.recipeUserId,
-                sessionInfo.customClaimsInAccessTokenPayload, // FIXME: This is not the correct
+                // FIXME: This is not the correct. Full payload should be passed?
+                sessionInfo.customClaimsInAccessTokenPayload,
                 input.userContext
             );
 

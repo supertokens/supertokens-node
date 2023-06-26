@@ -593,6 +593,7 @@ export default function getAPIInterface(): APIInterface {
                 );
                 if (linkAccountResponse.status !== "OK") {
                     throw new Error("Error in linking accounts. Contact support.");
+                    // return {status: "CANNOT_LINK_ACCOUNTS_ERROR"};
                 }
             }
 

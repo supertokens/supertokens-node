@@ -14,11 +14,12 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import TotpRecipe from "./recipe";
+import MfaRecipe from "./recipe";
+import STError from "./error";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(
-    _: TotpRecipe,
+    _: MfaRecipe,
     _appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
@@ -32,4 +33,20 @@ export function validateAndNormaliseUserInput(
         ...config,
         override,
     };
+}
+
+export async function checkAllowedAsFirstFactor(tenantId: string, factorId: string, userContext?: any) {
+    const allowedFirstFactors = await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getFirstFactors({
+        tenantId,
+        userContext: userContext ?? {},
+    });
+
+    const isAllowed = allowedFirstFactors.indexOf(factorId) !== -1;
+
+    if (!isAllowed) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "The provided factor is not allowed as a first factor. Please check your recipe configuration.",
+        });
+    }
 }

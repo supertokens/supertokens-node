@@ -174,6 +174,9 @@ export default function getAPIImplementation(): APIInterface {
                 });
             }
 
+            // Not linking account here because user can't be verified here
+            // without the code.
+
             return {
                 status: "OK",
                 deviceId: response.deviceId,

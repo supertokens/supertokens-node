@@ -288,7 +288,6 @@ export type RecipeInterface = {
     >;
 
     validateClaims(input: {
-        session: SessionContainerInterface | undefined; // FIXME
         userId: string;
         recipeUserId: RecipeUserId;
         accessTokenPayload: any;

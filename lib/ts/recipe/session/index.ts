@@ -160,7 +160,6 @@ export default class SessionWrapper {
                 : globalClaimValidators;
 
         let claimValidationResponse = await recipeImpl.validateClaims({
-            session: undefined, // FIXME!
             userId: sessionInfo.userId,
             recipeUserId: sessionInfo.recipeUserId,
             accessTokenPayload: sessionInfo.customClaimsInAccessTokenPayload,

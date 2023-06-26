@@ -139,11 +139,6 @@ export default class MfaRecipe extends RecipeModule {
     };
 
     handleError = async (err: STError, _: BaseRequest, _res: BaseResponse): Promise<void> => {
-        // if (err.fromRecipe === MfaRecipe.RECIPE_ID) {
-        //     if (err.type === TotpError.TOTP_NOT_ENABLED_ERROR) {
-        //         sendNon200ResponseWithMessage(res, "MFA is not enabled for the user", 403); // bad req
-        //     }
-        // }
         throw err;
     };
 

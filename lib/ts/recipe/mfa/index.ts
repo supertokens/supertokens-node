@@ -16,41 +16,63 @@
 import MfaRecipe from "./recipe";
 import SuperTokensError from "./error";
 import { SessionContainer } from "../session";
-import STError from "./error";
+import { checkAllowedAsFirstFactor as checkAllowedAsFirstFactorUtil } from "./utils";
 
 export default class Wrapper {
     static init = MfaRecipe.init;
 
     static Error = SuperTokensError;
 
+    static async enableFactorForUser(session: SessionContainer, factorId: string, userContext?: any) {
+        return await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.enableFactorForUser({
+            tenantId: "public", // TODO: Pass a variable
+            userId: session.getUserId(),
+            factorId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async disableFactorForUser(session: SessionContainer, factorId: string, userContext?: any) {
+        return await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.disableFactorForUser({
+            tenantId: "public", // TODO: Pass a variable
+            userId: session.getUserId(),
+            factorId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async getAllFactorsEnabledForUser(session: SessionContainer, userContext?: any) {
+        return await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllFactorsEnabledForUser({
+            tenantId: "public", // TODO: Pass a variable
+            userId: session.getUserId(),
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static async isFactorAlreadySetup(session: SessionContainer, factorId: string, userContext?: any) {
+        return await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.isFactorAlreadySetup({
+            session,
+            factorId,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
     static async completeFactorInSession(session: SessionContainer, factorId: string, userContext?: any) {
         return await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.completeFactorInSession({
             session,
             factorId,
-            userContext: userContext ?? {},
+            userContext: userContext === undefined ? {} : userContext,
         });
-    }
-
-    static async checkAllowedAsFirstFactor(tenantId: string, factorId: string, userContext?: any) {
-        const allowedFirstFactors = await MfaRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getFirstFactors({
-            tenantId,
-            userContext: userContext ?? {},
-        });
-
-        const isAllowed = allowedFirstFactors.indexOf(factorId) !== -1;
-
-        if (!isAllowed) {
-            throw new STError({
-                type: "BAD_INPUT_ERROR",
-                message:
-                    "The provided factor is not allowed as a first factor. Please check your recipe configuration.",
-            });
-        }
     }
 }
 
 export let init = Wrapper.init;
 export let Error = Wrapper.Error;
 
+export let enableFactorForUser = Wrapper.enableFactorForUser;
+export let disableFactorForUser = Wrapper.disableFactorForUser;
+export let getAllFactorsEnabledForUser = Wrapper.getAllFactorsEnabledForUser;
+export let isFactorAlreadySetup = Wrapper.isFactorAlreadySetup;
+
 export let completeFactorInSession = Wrapper.completeFactorInSession;
-export let checkAllowedAsFirstFactor = Wrapper.checkAllowedAsFirstFactor;
+export let checkAllowedAsFirstFactor = checkAllowedAsFirstFactorUtil;

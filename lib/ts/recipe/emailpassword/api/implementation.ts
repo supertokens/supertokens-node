@@ -818,7 +818,9 @@ export default function getAPIImplementation(): APIInterface {
                     userContext
                 );
                 if (linkAccountResponse.status !== "OK") {
+                    // Recipe user id OR account info are already linked with another primary user id
                     throw new Error("Error in linking accounts. Contact support.");
+                    // return {status: "CANNOT_LINK_ACCOUNTS_ERROR"};
                 }
             }
 
@@ -939,8 +941,9 @@ export default function getAPIImplementation(): APIInterface {
                     userContext
                 );
                 if (linkAccountResponse.status !== "OK") {
-                    // TODO..
-                    throw new Error("Error in linking accounts.");
+                    // Recipe user id OR account info are already linked with another primary user id
+                    throw new Error("Error in linking accounts. Contact support.");
+                    // return {status: "CANNOT_LINK_ACCOUNTS_ERROR"}; // TODO: DO this in other APIs as well
                 }
             }
 
