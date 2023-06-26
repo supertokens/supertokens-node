@@ -16,13 +16,12 @@ export default class Wrapper {
         input: (
             | {
                   email: string;
-                  tenantId?: string;
               }
             | {
                   phoneNumber: string;
-                  tenantId?: string;
               }
         ) & {
+            tenantId?: string;
             userInputCode?: string;
             userContext?: any;
         }

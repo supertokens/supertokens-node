@@ -34,13 +34,11 @@ export default class Wrapper {
         input: (
             | {
                   email: string;
-                  tenantId?: string;
               }
             | {
                   phoneNumber: string;
-                  tenantId?: string;
               }
-        ) & { userInputCode?: string; userContext?: any }
+        ) & { tenantId?: string; userInputCode?: string; userContext?: any }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             userContext: {},
