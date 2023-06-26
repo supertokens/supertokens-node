@@ -83,7 +83,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result.email !== undefined && user.email === result.email);
             assert(result.phoneNumber === undefined);
             assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 3);
+            assert(Object.keys(result).length === 4);
         }
 
         {
@@ -107,7 +107,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result.email !== undefined && user.email === result.email);
             assert(result.phoneNumber === undefined);
             assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 3);
+            assert(Object.keys(result).length === 4);
         }
 
         {
@@ -131,7 +131,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result.phoneNumber !== undefined && user.phoneNumber === result.phoneNumber);
             assert(result.email === undefined);
             assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 3);
+            assert(Object.keys(result).length === 4);
         }
     });
 
@@ -344,7 +344,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(resp.user.phoneNumber === undefined);
             assert(typeof resp.user.timeJoined === "number");
             assert(Object.keys(resp).length === 3);
-            assert(Object.keys(resp.user).length === 3);
+            assert(Object.keys(resp.user).length === 4);
         }
 
         {
@@ -937,6 +937,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         assert(result.user.phoneNumber === "+12345678901");
         assert(typeof result.user.id === "string");
         assert(typeof result.user.timeJoined === "number");
-        assert(Object.keys(result.user).length === 3);
+        assert(Object.keys(result.user).length === 4);
     });
 });

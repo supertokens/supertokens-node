@@ -127,7 +127,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(typeof validUserInputCodeResponse.user.id === "string");
         assert(typeof validUserInputCodeResponse.user.email === "string");
         assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
         assert(Object.keys(validUserInputCodeResponse).length === 3);
     });
 
@@ -222,7 +222,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(typeof validUserInputCodeResponse.user.id === "string");
         assert(typeof validUserInputCodeResponse.user.phoneNumber === "string");
         assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
         assert(Object.keys(validUserInputCodeResponse).length === 3);
     });
 
@@ -764,7 +764,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             assert(typeof validLinkCodeResponse.user.id === "string");
             assert(typeof validLinkCodeResponse.user.email === "string");
             assert(typeof validLinkCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validLinkCodeResponse.user).length === 3);
+            assert(Object.keys(validLinkCodeResponse.user).length === 4);
             assert(Object.keys(validLinkCodeResponse).length === 3);
         }
     });
@@ -860,7 +860,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             assert(typeof validUserInputCodeResponse.user.id === "string");
             assert(typeof validUserInputCodeResponse.user.email === "string");
             assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+            assert(Object.keys(validUserInputCodeResponse.user).length === 4);
             assert(Object.keys(validUserInputCodeResponse).length === 3);
         }
 

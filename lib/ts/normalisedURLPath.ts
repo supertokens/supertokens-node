@@ -39,7 +39,8 @@ export default class NormalisedURLPath {
     };
 
     isARecipePath = () => {
-        return this.value === "/recipe" || this.value.startsWith("/recipe/");
+        const parts = this.value.split("/");
+        return parts[1] === "recipe" || parts[2] === "recipe";
     };
 }
 
