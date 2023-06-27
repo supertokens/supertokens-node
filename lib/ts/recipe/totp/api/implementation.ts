@@ -35,24 +35,22 @@ export default function getAPIImplementation(): APIInterface {
                 });
             }
 
-            let existingDeviceCount = 0;
-            let verifiedDeviceCount = 0;
-            if (deviceName === undefined) {
-                // We need to set the device name:
-                const listDevicesResponse = await options.recipeImplementation.listDevices({
-                    userId: session.getUserId(),
-                    userContext,
-                });
-                const devices = listDevicesResponse.devices;
-                existingDeviceCount = devices.length;
-                verifiedDeviceCount = devices.filter((device) => device.verified).length;
-                deviceName = `TOTP Device ${existingDeviceCount + 1}`; // Assuming no one creates a device in the same format
-            }
+            const listDevicesResponse = await options.recipeImplementation.listDevices({
+                userId: session.getUserId(),
+                userContext,
+            });
+            const devices = listDevicesResponse.devices;
+            const verifiedDeviceCount = devices.filter((device) => device.verified).length;
 
             if (verifiedDeviceCount > 0) {
                 // TODO: We need to assert that all factors have been completed
                 // before actually creating the device.
                 // await session.assertClaims(MfaClaim.validators.hasCompletedAllFactors(), userContext);
+            }
+
+            if (deviceName === undefined) {
+                // We need to set the device name:
+                deviceName = `TOTP Device ${devices.length + 1}`; // Assuming no one creates a device in the same format
             }
 
             const args = { deviceName, userId: session.getUserId(), userIdentifierInfo, userContext };

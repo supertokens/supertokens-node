@@ -29,22 +29,22 @@ export default class Wrapper {
         userContext?: any;
     }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createDevice({
-            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 
     static verifyDevice(input: { userId: string; deviceName: string; totp: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyDevice({
-            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 
     static verifyCode(input: { userId: string; totp: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyCode({
-            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 
@@ -55,22 +55,22 @@ export default class Wrapper {
         userContext?: any;
     }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateDevice({
-            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 
     static removeDevice(input: { userId: string; deviceName: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.removeDevice({
-            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 
     static listDevices(input: { userId: string; userContext?: any }) {
         return TotpRecipe.getInstanceOrThrowError().recipeInterfaceImpl.listDevices({
-            userContext: input.userContext === undefined ? {} : input.userContext,
             ...input,
+            userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
 }
