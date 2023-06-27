@@ -427,6 +427,7 @@ export type TypePasswordlessEmailDeliveryInput = {
     urlWithLinkCode?: string;
     codeLifetime: number;
     preAuthSessionId: string;
+    tenantId?: string;
 };
 
 export type TypePasswordlessSmsDeliveryInput = {
@@ -436,4 +437,5 @@ export type TypePasswordlessSmsDeliveryInput = {
     urlWithLinkCode?: string;
     codeLifetime: number;
     preAuthSessionId: string;
+    tenantId?: string;
 };

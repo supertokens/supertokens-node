@@ -142,7 +142,7 @@ export default class Wrapper {
         });
     }
 
-    static async sendEmail(input: TypeEmailVerificationEmailDeliveryInput & { tenantId?: string; userContext?: any }) {
+    static async sendEmail(input: TypeEmailVerificationEmailDeliveryInput & { userContext?: any }) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},

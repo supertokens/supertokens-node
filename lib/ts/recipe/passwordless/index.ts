@@ -212,7 +212,7 @@ export default class Wrapper {
         });
     }
 
-    static async sendEmail(input: TypePasswordlessEmailDeliveryInput & { tenantId?: string; userContext?: any }) {
+    static async sendEmail(input: TypePasswordlessEmailDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
@@ -220,7 +220,7 @@ export default class Wrapper {
         });
     }
 
-    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { tenantId?: string; userContext?: any }) {
+    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
             userContext: {},
             ...input,

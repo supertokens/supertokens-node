@@ -51,7 +51,6 @@ export default class Wrapper {
     }>;
     static sendEmail(
         input: TypeEmailVerificationEmailDeliveryInput & {
-            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;

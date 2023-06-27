@@ -152,7 +152,7 @@ export declare type TypeNormalisedInput = (
 };
 export declare type RecipeInterface = {
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
     getUserByPhoneNumber: (input: {
         phoneNumber: string;
         tenantId: string;
@@ -161,6 +161,7 @@ export declare type RecipeInterface = {
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<User | undefined>;
     thirdPartySignInUp(input: {
@@ -178,6 +179,7 @@ export declare type RecipeInterface = {
                 [key: string]: any;
             };
         };
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -199,6 +201,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -207,8 +210,8 @@ export declare type RecipeInterface = {
     }>;
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
-        tenantId?: string;
         clientType?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";

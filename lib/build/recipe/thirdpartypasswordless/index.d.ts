@@ -16,8 +16,8 @@ export default class Wrapper {
     static Error: typeof SuperTokensError;
     static thirdPartyGetProvider(
         thirdPartyId: string,
-        tenantId: string | undefined,
         clientType: string | undefined,
+        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -28,6 +28,7 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -37,10 +38,11 @@ export default class Wrapper {
     static getUserByThirdPartyInfo(
         thirdPartyId: string,
         thirdPartyUserId: string,
+        tenantId?: string,
         userContext?: any
     ): Promise<User | undefined>;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
+    static getUsersByEmail(email: string, tenantId?: string, userContext?: any): Promise<User[]>;
     static createCode(
         input: (
             | {
@@ -201,13 +203,11 @@ export default class Wrapper {
     }>;
     static sendEmail(
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
-            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;
     static sendSms(
         input: TypePasswordlessSmsDeliveryInput & {
-            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;

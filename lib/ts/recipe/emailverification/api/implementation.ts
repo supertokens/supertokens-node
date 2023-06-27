@@ -135,6 +135,7 @@ export default function getAPIInterface(): APIInterface {
                     appInfo: options.appInfo,
                     token: response.token,
                     recipeId: options.recipeId,
+                    tenantId,
                 });
 
                 logDebugMessage(`Sending email verification email to ${emailInfo}`);

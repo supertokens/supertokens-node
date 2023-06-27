@@ -174,13 +174,11 @@ export default class Wrapper {
     }>;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {
-            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;
     static sendSms(
         input: TypePasswordlessSmsDeliveryInput & {
-            tenantId?: string;
             userContext?: any;
         }
     ): Promise<void>;

@@ -34,13 +34,13 @@ export default class Wrapper {
 
     static async thirdPartyGetProvider(
         thirdPartyId: string,
-        tenantId: string | undefined,
         clientType: string | undefined,
+        tenantId?: string,
         userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
             thirdPartyId,
-            tenantId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             clientType,
             userContext,
         });
@@ -50,20 +50,28 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        tenantId?: string,
         userContext: any = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
             thirdPartyId,
             thirdPartyUserId,
             email,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
+    static getUserByThirdPartyInfo(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        tenantId?: string,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -72,8 +80,12 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
+    static getUsersByEmail(email: string, tenantId?: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({
+            email,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext,
+        });
     }
 
     static createCode(
@@ -249,9 +261,7 @@ export default class Wrapper {
         });
     }
 
-    static async sendEmail(
-        input: TypeThirdPartyPasswordlessEmailDeliveryInput & { tenantId?: string; userContext?: any }
-    ) {
+    static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
@@ -259,7 +269,7 @@ export default class Wrapper {
         });
     }
 
-    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { tenantId?: string; userContext?: any }) {
+    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
             userContext: {},
             ...input,

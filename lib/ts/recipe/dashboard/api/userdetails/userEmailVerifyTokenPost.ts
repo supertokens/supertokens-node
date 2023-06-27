@@ -37,10 +37,12 @@ export const userEmailVerifyTokenPost = async (
         };
     }
 
+    const tenantId = "";
     let emailVerifyLink = getEmailVerifyLink({
         appInfo: options.appInfo,
         token: emailVerificationToken.token,
         recipeId: EmailVerificationRecipe.RECIPE_ID,
+        tenantId,
     });
 
     await EmailVerification.sendEmail({

@@ -74,16 +74,17 @@ export declare type TypeNormalisedInput = {
 };
 export declare type RecipeInterface = {
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<User | undefined>;
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
-        tenantId?: string;
         clientType?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -126,6 +127,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -135,6 +137,7 @@ export declare type RecipeInterface = {
     emailPasswordSignUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -148,6 +151,7 @@ export declare type RecipeInterface = {
     emailPasswordSignIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -160,6 +164,7 @@ export declare type RecipeInterface = {
     >;
     createResetPasswordToken(input: {
         userId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -173,6 +178,7 @@ export declare type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {

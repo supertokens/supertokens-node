@@ -97,18 +97,19 @@ export type TypeNormalisedInput = {
 export type RecipeInterface = {
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
 
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
 
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<User | undefined>;
 
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
-        tenantId?: string;
         clientType?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
 
@@ -137,29 +138,34 @@ export type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 
     emailPasswordSignUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
     emailPasswordSignIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     createResetPasswordToken(input: {
         userId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {

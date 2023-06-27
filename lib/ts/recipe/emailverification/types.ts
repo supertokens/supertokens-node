@@ -164,6 +164,7 @@ export type TypeEmailVerificationEmailDeliveryInput = {
         email: string;
     };
     emailVerifyLink: string;
+    tenantId?: string;
 };
 
 export type GetEmailForUserIdFunc = (
