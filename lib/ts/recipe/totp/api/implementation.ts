@@ -43,7 +43,7 @@ export default function getAPIImplementation(): APIInterface {
                     userId: session.getUserId(),
                     userContext,
                 });
-                const devices = listDevicesResponse.status === "OK" ? listDevicesResponse.devices : [];
+                const devices = listDevicesResponse.devices;
                 existingDeviceCount = devices.length;
                 verifiedDeviceCount = devices.filter((device) => device.verified).length;
                 deviceName = `TOTP Device ${existingDeviceCount + 1}`; // Assuming no one creates a device in the same format
