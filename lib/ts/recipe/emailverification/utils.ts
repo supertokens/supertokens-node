@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -69,7 +70,12 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: string; recipeId: string }): string {
+export function getEmailVerifyLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    tenantId?: string;
+}): string {
     return (
         input.appInfo.websiteDomain.getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
@@ -77,6 +83,8 @@ export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: s
         "?token=" +
         input.token +
         "&rid=" +
-        input.recipeId
+        input.recipeId +
+        "&tenantId=" +
+        (input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId)
     );
 }
