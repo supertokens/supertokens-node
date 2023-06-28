@@ -1,5 +1,12 @@
 // @ts-nocheck
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, ProviderInput } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    ProviderInput,
+    ProviderConfig,
+    ProviderClientConfig,
+    ProviderConfigForClientType,
+} from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -172,10 +179,10 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
@@ -189,10 +196,10 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
@@ -389,10 +396,10 @@ export declare type APIInterface = {
                         [key: string]: any;
                     };
                     rawUserInfoFromProvider: {
-                        fromIdTokenPayload: {
+                        fromIdTokenPayload?: {
                             [key: string]: any;
                         };
-                        fromUserInfoAPI: {
+                        fromUserInfoAPI?: {
                             [key: string]: any;
                         };
                     };
@@ -516,3 +523,7 @@ export declare type APIInterface = {
 };
 export declare type TypeThirdPartyPasswordlessEmailDeliveryInput = TypePasswordlessEmailDeliveryInput;
 export declare type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;
+export declare type ThirdPartyProviderInput = ProviderInput;
+export declare type ThirdPartyProviderConfig = ProviderConfig;
+export declare type ThirdPartyProviderClientConfig = ProviderClientConfig;
+export declare type ThirdPartyProviderConfigForClientType = ProviderConfigForClientType;

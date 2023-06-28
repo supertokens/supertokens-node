@@ -12,7 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, ProviderInput } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    ProviderInput,
+    ProviderClientConfig,
+    ProviderConfigForClientType,
+    ProviderConfig,
+} from "../thirdparty/types";
 import {
     NormalisedFormField,
     TypeFormField,
@@ -119,8 +126,8 @@ export type RecipeInterface = {
         email: string;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: { [key: string]: any };
-            fromUserInfoAPI: { [key: string]: any };
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
         };
         userContext: any;
     }): Promise<{
@@ -129,8 +136,8 @@ export type RecipeInterface = {
         user: User;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: { [key: string]: any };
-            fromUserInfoAPI: { [key: string]: any };
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
         };
     }>;
 
@@ -296,8 +303,8 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };
                     rawUserInfoFromProvider: {
-                        fromIdTokenPayload: { [key: string]: any };
-                        fromUserInfoAPI: { [key: string]: any };
+                        fromIdTokenPayload?: { [key: string]: any };
+                        fromUserInfoAPI?: { [key: string]: any };
                     };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
@@ -358,3 +365,7 @@ export type APIInterface = {
 };
 
 export type TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput;
+export type ThirdPartyProviderInput = ProviderInput;
+export type ThirdPartyProviderConfig = ProviderConfig;
+export type ThirdPartyProviderClientConfig = ProviderClientConfig;
+export type ThirdPartyProviderConfigForClientType = ProviderConfigForClientType;

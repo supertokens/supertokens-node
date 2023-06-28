@@ -71,8 +71,8 @@ export default function getRecipeInterface(
             email: string;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
             userContext: any;
@@ -82,8 +82,8 @@ export default function getRecipeInterface(
             user: User;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
         }> {
             if (originalThirdPartyImplementation === undefined) {

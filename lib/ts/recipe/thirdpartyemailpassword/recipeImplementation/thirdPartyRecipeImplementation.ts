@@ -28,8 +28,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
             userContext: any;
@@ -39,8 +39,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             user: User;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
         }> {
             let result = await recipeInterface.thirdPartySignInUp(input);

@@ -22,7 +22,7 @@ import { GeneralErrorResponse } from "../../types";
 export type UserInfo = {
     thirdPartyUserId: string;
     email?: { id: string; isVerified: boolean };
-    rawUserInfoFromProvider: { fromIdTokenPayload: { [key: string]: any }; fromUserInfoAPI: { [key: string]: any } };
+    rawUserInfoFromProvider: { fromIdTokenPayload?: { [key: string]: any }; fromUserInfoAPI?: { [key: string]: any } };
 };
 
 export type UserInfoMap = {
@@ -168,8 +168,8 @@ export type RecipeInterface = {
         email: string;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: { [key: string]: any };
-            fromUserInfoAPI: { [key: string]: any };
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
         };
         tenantId: string;
         userContext: any;
@@ -179,8 +179,8 @@ export type RecipeInterface = {
         user: User;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: { [key: string]: any };
-            fromUserInfoAPI: { [key: string]: any };
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
         };
     }>;
 
@@ -250,8 +250,8 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };
                     rawUserInfoFromProvider: {
-                        fromIdTokenPayload: { [key: string]: any };
-                        fromUserInfoAPI: { [key: string]: any };
+                        fromIdTokenPayload?: { [key: string]: any };
+                        fromUserInfoAPI?: { [key: string]: any };
                     };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
