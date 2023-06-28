@@ -76,7 +76,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -210,7 +209,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -219,7 +217,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -230,7 +227,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -293,7 +289,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -304,7 +299,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -376,7 +370,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
+
             {},
             {}
         );
@@ -387,7 +381,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -458,7 +451,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -506,7 +498,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );
@@ -609,7 +600,6 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
-            "public",
             {},
             {}
         );

@@ -105,9 +105,9 @@ export default function getRecipeInterface(
                 helpers,
                 userId,
                 disableAntiCsrf === true,
-                tenantId,
                 accessTokenPayload,
-                sessionDataInDatabase
+                sessionDataInDatabase,
+                tenantId
             );
             logDebugMessage("createNewSession: Finished");
 
@@ -123,7 +123,7 @@ export default function getRecipeInterface(
                 payload,
                 undefined,
                 true,
-                payload.tId
+                tenantId
             );
         },
 

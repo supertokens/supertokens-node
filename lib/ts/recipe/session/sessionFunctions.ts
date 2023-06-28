@@ -21,6 +21,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 /**
  * @description call this to "login" a user.
@@ -29,13 +30,17 @@ export async function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
-    tenantId: string,
     accessTokenPayload: any = {},
-    sessionDataInDatabase: any = {}
+    sessionDataInDatabase: any = {},
+    tenantId?: string
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionDataInDatabase =
         sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
+
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
 
     const requestBody = {
         userId,
@@ -237,9 +242,13 @@ export async function getSession(
 export async function getSessionInformation(
     helpers: Helpers,
     sessionHandle: string,
-    tenantId: string
+    tenantId?: string
 ): Promise<SessionInformation | undefined> {
     let apiVersion = await helpers.querier.getAPIVersion();
+
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
 
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");
@@ -316,7 +325,11 @@ export async function refreshSession(
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  */
-export async function revokeAllSessionsForUser(helpers: Helpers, userId: string, tenantId: string): Promise<string[]> {
+export async function revokeAllSessionsForUser(helpers: Helpers, userId: string, tenantId?: string): Promise<string[]> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
+
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
         userId,
     });
@@ -329,8 +342,12 @@ export async function revokeAllSessionsForUser(helpers: Helpers, userId: string,
 export async function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
-    tenantId: string
+    tenantId?: string
 ): Promise<string[]> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
+
     let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/user`), {
         userId,
     });
@@ -341,7 +358,11 @@ export async function getAllSessionHandlesForUser(
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export async function revokeSession(helpers: Helpers, sessionHandle: string, tenantId: string): Promise<boolean> {
+export async function revokeSession(helpers: Helpers, sessionHandle: string, tenantId?: string): Promise<boolean> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
+
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
         sessionHandles: [sessionHandle],
     });
@@ -355,8 +376,12 @@ export async function revokeSession(helpers: Helpers, sessionHandle: string, ten
 export async function revokeMultipleSessions(
     helpers: Helpers,
     sessionHandles: string[],
-    tenantId: string
+    tenantId?: string
 ): Promise<string[]> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
+
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
         sessionHandles,
     });
@@ -370,8 +395,12 @@ export async function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
     newSessionData: any,
-    tenantId: string
+    tenantId?: string
 ): Promise<boolean> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
+
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
     let response = await helpers.querier.sendPutRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/data`), {
         sessionHandle,
@@ -387,8 +416,12 @@ export async function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
     newAccessTokenPayload: any,
-    tenantId: string
+    tenantId?: string
 ): Promise<boolean> {
+    if (tenantId === undefined) {
+        tenantId = DEFAULT_TENANT_ID;
+    }
+
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
     let response = await helpers.querier.sendPutRequest(new NormalisedURLPath(`/${tenantId}/recipe/jwt/data`), {
