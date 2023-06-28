@@ -44,11 +44,12 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         privateKey: string
     ): Promise<string> {
         const alg = "ES256";
-        return await new jose.SignJWT({})
+
+        return new jose.SignJWT({})
             .setProtectedHeader({ alg, kid: keyId, typ: "JWT" })
             .setIssuer(teamId)
             .setIssuedAt()
-            .setExpirationTime("0.5 year")
+            .setExpirationTime("180days")
             .setAudience("https://appleid.apple.com")
             .setSubject(getActualClientIdFromDevelopmentClientId(clientId))
             .sign(crypto.createPrivateKey(privateKey.replace(/\\n/g, "\n")));
