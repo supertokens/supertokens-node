@@ -164,8 +164,15 @@ export default function getAPIImplementation(): APIInterface {
             }
             let user = response.user;
 
-            // TODO tenantId in create session
-            let session = await Session.createNewSession(options.req, options.res, user.id, {}, {}, userContext);
+            let session = await Session.createNewSession(
+                options.req,
+                options.res,
+                user.id,
+                {},
+                {},
+                tenantId,
+                userContext
+            );
             return {
                 status: "OK",
                 session,
@@ -206,8 +213,15 @@ export default function getAPIImplementation(): APIInterface {
             }
             let user = response.user;
 
-            // TODO tenantId in create session
-            let session = await Session.createNewSession(options.req, options.res, user.id, {}, {}, userContext);
+            let session = await Session.createNewSession(
+                options.req,
+                options.res,
+                user.id,
+                {},
+                {},
+                tenantId,
+                userContext
+            );
             return {
                 status: "OK",
                 session,

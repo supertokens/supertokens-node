@@ -89,6 +89,7 @@ export default function getAPIInterface(): APIInterface {
                 response.user.id,
                 {},
                 {},
+                tenantId,
                 userContext
             );
             return {
