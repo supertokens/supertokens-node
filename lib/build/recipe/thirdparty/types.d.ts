@@ -164,10 +164,10 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
@@ -181,10 +181,10 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
@@ -260,10 +260,10 @@ export declare type APIInterface = {
                         [key: string]: any;
                     };
                     rawUserInfoFromProvider: {
-                        fromIdTokenPayload: {
+                        fromIdTokenPayload?: {
                             [key: string]: any;
                         };
-                        fromUserInfoAPI: {
+                        fromUserInfoAPI?: {
                             [key: string]: any;
                         };
                     };

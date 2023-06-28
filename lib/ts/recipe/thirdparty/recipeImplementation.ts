@@ -19,8 +19,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             email: string;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
             tenantId: string;
         }): Promise<{
@@ -29,8 +29,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             user: User;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
         }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {

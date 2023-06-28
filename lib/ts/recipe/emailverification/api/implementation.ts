@@ -89,7 +89,7 @@ export default function getAPIInterface(): APIInterface {
             }
 
             const userId = session.getUserId();
-            const tenantId = session.getAccessTokenPayload().tId; // TODO use `getTenantId` once implemented
+            const tenantId = session.getAccessTokenPayload().tId;
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
                 userId,

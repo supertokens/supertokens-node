@@ -126,8 +126,8 @@ export type RecipeInterface = {
         email: string;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: { [key: string]: any };
-            fromUserInfoAPI: { [key: string]: any };
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
         };
         userContext: any;
     }): Promise<{
@@ -136,8 +136,8 @@ export type RecipeInterface = {
         user: User;
         oAuthTokens: { [key: string]: any };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: { [key: string]: any };
-            fromUserInfoAPI: { [key: string]: any };
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
         };
     }>;
 
@@ -303,8 +303,8 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };
                     rawUserInfoFromProvider: {
-                        fromIdTokenPayload: { [key: string]: any };
-                        fromUserInfoAPI: { [key: string]: any };
+                        fromIdTokenPayload?: { [key: string]: any };
+                        fromUserInfoAPI?: { [key: string]: any };
                     };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }

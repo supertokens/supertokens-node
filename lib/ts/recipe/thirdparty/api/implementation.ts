@@ -54,16 +54,7 @@ export default function getAPIInterface(): APIInterface {
                 thirdPartyUserId: userInfo.thirdPartyUserId,
                 email: emailInfo.id,
                 oAuthTokens: oAuthTokensToUse,
-                rawUserInfoFromProvider: {
-                    fromIdTokenPayload:
-                        userInfo.rawUserInfoFromProvider.fromIdTokenPayload === undefined
-                            ? {}
-                            : userInfo.rawUserInfoFromProvider.fromIdTokenPayload,
-                    fromUserInfoAPI:
-                        userInfo.rawUserInfoFromProvider.fromUserInfoAPI === undefined
-                            ? {}
-                            : userInfo.rawUserInfoFromProvider.fromUserInfoAPI,
-                },
+                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
                 tenantId,
                 userContext,
             });
@@ -106,16 +97,7 @@ export default function getAPIInterface(): APIInterface {
                 user: response.user,
                 session,
                 oAuthTokens: oAuthTokensToUse,
-                rawUserInfoFromProvider: {
-                    fromIdTokenPayload:
-                        userInfo.rawUserInfoFromProvider.fromIdTokenPayload === undefined
-                            ? {}
-                            : userInfo.rawUserInfoFromProvider.fromIdTokenPayload,
-                    fromUserInfoAPI:
-                        userInfo.rawUserInfoFromProvider.fromUserInfoAPI === undefined
-                            ? {}
-                            : userInfo.rawUserInfoFromProvider.fromUserInfoAPI,
-                },
+                rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
             };
         },
 
