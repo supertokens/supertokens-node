@@ -11,10 +11,10 @@ export declare type UserInfo = {
         isVerified: boolean;
     };
     rawUserInfoFromProvider: {
-        fromIdTokenPayload: {
+        fromIdTokenPayload?: {
             [key: string]: any;
         };
-        fromUserInfoAPI: {
+        fromUserInfoAPI?: {
             [key: string]: any;
         };
     };

@@ -22,7 +22,7 @@ import { GeneralErrorResponse } from "../../types";
 export type UserInfo = {
     thirdPartyUserId: string;
     email?: { id: string; isVerified: boolean };
-    rawUserInfoFromProvider: { fromIdTokenPayload: { [key: string]: any }; fromUserInfoAPI: { [key: string]: any } };
+    rawUserInfoFromProvider: { fromIdTokenPayload?: { [key: string]: any }; fromUserInfoAPI?: { [key: string]: any } };
 };
 
 export type UserInfoMap = {
