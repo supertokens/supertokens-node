@@ -85,6 +85,7 @@ export default function getAPIImplementation(): APIInterface {
                 type: "PASSWORD_RESET",
                 user,
                 passwordResetLink,
+                tenantId,
                 userContext,
             });
 

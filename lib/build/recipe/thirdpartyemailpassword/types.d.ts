@@ -1,5 +1,12 @@
 // @ts-nocheck
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, ProviderInput } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    ProviderInput,
+    ProviderClientConfig,
+    ProviderConfigForClientType,
+    ProviderConfig,
+} from "../thirdparty/types";
 import {
     NormalisedFormField,
     TypeFormField,
@@ -74,16 +81,17 @@ export declare type TypeNormalisedInput = {
 };
 export declare type RecipeInterface = {
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<User | undefined>;
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
-        tenantId?: string;
         clientType?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -98,10 +106,10 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
@@ -114,10 +122,10 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
@@ -126,6 +134,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -135,6 +144,7 @@ export declare type RecipeInterface = {
     emailPasswordSignUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -148,6 +158,7 @@ export declare type RecipeInterface = {
     emailPasswordSignIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -160,6 +171,7 @@ export declare type RecipeInterface = {
     >;
     createResetPasswordToken(input: {
         userId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -173,6 +185,7 @@ export declare type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -211,6 +224,7 @@ export declare type APIInterface = {
         | ((input: {
               provider: TypeProvider;
               redirectURIOnProviderDashboard: string;
+              tenantId: string;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
@@ -277,6 +291,7 @@ export declare type APIInterface = {
         | ((
               input: {
                   provider: TypeProvider;
+                  tenantId: string;
                   options: ThirdPartyAPIOptions;
                   userContext: any;
               } & (
@@ -303,10 +318,10 @@ export declare type APIInterface = {
                         [key: string]: any;
                     };
                     rawUserInfoFromProvider: {
-                        fromIdTokenPayload: {
+                        fromIdTokenPayload?: {
                             [key: string]: any;
                         };
-                        fromUserInfoAPI: {
+                        fromUserInfoAPI?: {
                             [key: string]: any;
                         };
                     };
@@ -367,3 +382,7 @@ export declare type APIInterface = {
           }) => Promise<void>);
 };
 export declare type TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput;
+export declare type ThirdPartyProviderInput = ProviderInput;
+export declare type ThirdPartyProviderConfig = ProviderConfig;
+export declare type ThirdPartyProviderClientConfig = ProviderClientConfig;
+export declare type ThirdPartyProviderConfigForClientType = ProviderConfigForClientType;

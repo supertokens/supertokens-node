@@ -16,12 +16,12 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import MultitenancyRecipe from "../../multitenancy/recipe";
 import { RecipeDisabledForTenantError } from "../../multitenancy";
 import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -32,7 +32,6 @@ export default async function authorisationUrlAPI(
     const thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
     const redirectURIOnProviderDashboard = options.req.getKeyValueFromQuery("redirectURIOnProviderDashboard");
     const clientType = options.req.getKeyValueFromQuery("clientType");
-    let tenantId = options.req.getKeyValueFromQuery("tenantId");
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -48,16 +47,10 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
-    tenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
-        tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-        userContext,
-    });
-
     const providerResponse = await options.recipeImplementation.getProvider({
         thirdPartyId,
-        tenantId,
         clientType,
+        tenantId,
         userContext,
     });
 
@@ -74,6 +67,7 @@ export default async function authorisationUrlAPI(
     let result = await apiImplementation.authorisationUrlGET({
         provider,
         redirectURIOnProviderDashboard,
+        tenantId,
         options,
         userContext,
     });

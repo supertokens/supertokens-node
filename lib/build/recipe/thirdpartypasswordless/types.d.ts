@@ -1,5 +1,12 @@
 // @ts-nocheck
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, ProviderInput } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    ProviderInput,
+    ProviderConfig,
+    ProviderClientConfig,
+    ProviderConfigForClientType,
+} from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -152,11 +159,16 @@ export declare type TypeNormalisedInput = (
 };
 export declare type RecipeInterface = {
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
-    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
+    getUsersByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User[]>;
+    getUserByPhoneNumber: (input: {
+        phoneNumber: string;
+        tenantId: string;
+        userContext: any;
+    }) => Promise<User | undefined>;
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<User | undefined>;
     thirdPartySignInUp(input: {
@@ -167,13 +179,14 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -183,10 +196,10 @@ export declare type RecipeInterface = {
             [key: string]: any;
         };
         rawUserInfoFromProvider: {
-            fromIdTokenPayload: {
+            fromIdTokenPayload?: {
                 [key: string]: any;
             };
-            fromUserInfoAPI: {
+            fromUserInfoAPI?: {
                 [key: string]: any;
             };
         };
@@ -195,6 +208,7 @@ export declare type RecipeInterface = {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -203,8 +217,8 @@ export declare type RecipeInterface = {
     }>;
     thirdPartyGetProvider(input: {
         thirdPartyId: string;
-        tenantId?: string;
         clientType?: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -221,6 +235,7 @@ export declare type RecipeInterface = {
               }
         ) & {
             userInputCode?: string;
+            tenantId: string;
             userContext: any;
         }
     ) => Promise<{
@@ -236,6 +251,7 @@ export declare type RecipeInterface = {
     createNewCodeForDevice: (input: {
         deviceId: string;
         userInputCode?: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<
         | {
@@ -258,11 +274,13 @@ export declare type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  tenantId: string;
                   userContext: any;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
+                  tenantId: string;
                   userContext: any;
               }
     ) => Promise<
@@ -292,10 +310,12 @@ export declare type RecipeInterface = {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext: any;
               }
     ) => Promise<{
@@ -303,15 +323,25 @@ export declare type RecipeInterface = {
     }>;
     revokeCode: (input: {
         codeId: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
     }>;
-    listCodesByEmail: (input: { email: string; userContext: any }) => Promise<DeviceType[]>;
-    listCodesByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<DeviceType[]>;
-    listCodesByDeviceId: (input: { deviceId: string; userContext: any }) => Promise<DeviceType | undefined>;
+    listCodesByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByPhoneNumber: (input: {
+        phoneNumber: string;
+        tenantId: string;
+        userContext: any;
+    }) => Promise<DeviceType[]>;
+    listCodesByDeviceId: (input: {
+        deviceId: string;
+        tenantId: string;
+        userContext: any;
+    }) => Promise<DeviceType | undefined>;
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<DeviceType | undefined>;
 };
@@ -323,6 +353,7 @@ export declare type APIInterface = {
         | ((input: {
               provider: TypeProvider;
               redirectURIOnProviderDashboard: string;
+              tenantId: string;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
@@ -338,6 +369,7 @@ export declare type APIInterface = {
         | ((
               input: {
                   provider: TypeProvider;
+                  tenantId: string;
                   options: ThirdPartyAPIOptions;
                   userContext: any;
               } & (
@@ -364,10 +396,10 @@ export declare type APIInterface = {
                         [key: string]: any;
                     };
                     rawUserInfoFromProvider: {
-                        fromIdTokenPayload: {
+                        fromIdTokenPayload?: {
                             [key: string]: any;
                         };
-                        fromUserInfoAPI: {
+                        fromUserInfoAPI?: {
                             [key: string]: any;
                         };
                     };
@@ -395,6 +427,7 @@ export declare type APIInterface = {
                         phoneNumber: string;
                     }
               ) & {
+                  tenantId: string;
                   options: PasswordlessAPIOptions;
                   userContext: any;
               }
@@ -414,6 +447,7 @@ export declare type APIInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
               } & {
+                  tenantId: string;
                   options: PasswordlessAPIOptions;
                   userContext: any;
               }
@@ -437,6 +471,7 @@ export declare type APIInterface = {
                         preAuthSessionId: string;
                     }
               ) & {
+                  tenantId: string;
                   options: PasswordlessAPIOptions;
                   userContext: any;
               }
@@ -461,6 +496,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: PasswordlessAPIOptions;
               userContext: any;
           }) => Promise<
@@ -474,6 +510,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               phoneNumber: string;
+              tenantId: string;
               options: PasswordlessAPIOptions;
               userContext: any;
           }) => Promise<
@@ -486,3 +523,7 @@ export declare type APIInterface = {
 };
 export declare type TypeThirdPartyPasswordlessEmailDeliveryInput = TypePasswordlessEmailDeliveryInput;
 export declare type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;
+export declare type ThirdPartyProviderInput = ProviderInput;
+export declare type ThirdPartyProviderConfig = ProviderConfig;
+export declare type ThirdPartyProviderClientConfig = ProviderClientConfig;
+export declare type ThirdPartyProviderConfigForClientType = ProviderConfigForClientType;

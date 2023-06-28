@@ -6,6 +6,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         getUserByThirdPartyInfo: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            tenantId: string;
             userContext: any;
         }): Promise<User | undefined> {
             let user = await recipeInterface.getUserByThirdPartyInfo(input);
@@ -27,9 +28,10 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email: string;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
+            tenantId: string;
             userContext: any;
         }): Promise<{
             status: "OK";
@@ -37,8 +39,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             user: User;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
         }> {
             let result = await recipeInterface.thirdPartySignInUp(input);
@@ -64,6 +66,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             let result = await recipeInterface.thirdPartyManuallyCreateOrUpdateUser(input);
@@ -85,8 +88,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
 
         getProvider: async function (input: {
             thirdPartyId: string;
-            tenantId?: string;
             clientType?: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }> {
             return await recipeInterface.thirdPartyGetProvider(input);
@@ -107,7 +110,11 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             };
         },
 
-        getUsersByEmail: async function (input: { email: string; userContext: any }): Promise<User[]> {
+        getUsersByEmail: async function (input: {
+            email: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<User[]> {
             let users = await recipeInterface.getUsersByEmail(input);
 
             // we filter out all non thirdparty users.

@@ -3,6 +3,7 @@ import OverrideableBuilder from "supertokens-js-override";
 export declare type EmailDeliveryInterface<T> = {
     sendEmail: (
         input: T & {
+            tenantId: string;
             userContext: any;
         }
     ) => Promise<void>;

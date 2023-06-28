@@ -16,7 +16,7 @@ export default function getAPIInterface(): APIInterface {
         },
 
         signInUpPOST: async function (input) {
-            const { provider, options, userContext } = input;
+            const { provider, tenantId, options, userContext } = input;
             let oAuthTokensToUse: any = {};
 
             if ("redirectURIInfo" in input && input.redirectURIInfo !== undefined) {
@@ -55,6 +55,7 @@ export default function getAPIInterface(): APIInterface {
                 email: emailInfo.id,
                 oAuthTokens: oAuthTokensToUse,
                 rawUserInfoFromProvider: userInfo.rawUserInfoFromProvider,
+                tenantId,
                 userContext,
             });
 
@@ -67,6 +68,7 @@ export default function getAPIInterface(): APIInterface {
                         {
                             userId: response.user.id,
                             email: response.user.email,
+                            tenantId,
                             userContext,
                         }
                     );
@@ -74,6 +76,7 @@ export default function getAPIInterface(): APIInterface {
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             token: tokenResponse.token,
+                            tenantId,
                             userContext,
                         });
                     }

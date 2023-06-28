@@ -19,6 +19,7 @@ import { APIInterface, APIOptions } from "..";
 
 export default async function resendCode(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -47,6 +48,7 @@ export default async function resendCode(
     let result = await apiImplementation.resendCodePOST({
         deviceId,
         preAuthSessionId,
+        tenantId,
         options,
         userContext,
     });

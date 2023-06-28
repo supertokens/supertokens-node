@@ -20,6 +20,7 @@ import Session from "../../session";
 
 export default async function emailVerify(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<boolean> {
@@ -55,6 +56,7 @@ export default async function emailVerify(
 
         let response = await apiImplementation.verifyEmailPOST({
             token,
+            tenantId,
             options,
             session,
             userContext,

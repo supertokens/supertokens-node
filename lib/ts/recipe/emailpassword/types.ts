@@ -272,6 +272,7 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
         email: string;
     };
     passwordResetLink: string;
+    tenantId?: string;
 };
 
 export type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;

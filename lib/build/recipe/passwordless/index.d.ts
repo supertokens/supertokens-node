@@ -21,6 +21,7 @@ export default class Wrapper {
                   phoneNumber: string;
               }
         ) & {
+            tenantId?: string;
             userInputCode?: string;
             userContext?: any;
         }
@@ -37,6 +38,7 @@ export default class Wrapper {
     static createNewCodeForDevice(input: {
         deviceId: string;
         userInputCode?: string;
+        tenantId?: string;
         userContext?: any;
     }): Promise<
         | {
@@ -59,11 +61,13 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  tenantId?: string;
                   userContext?: any;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
+                  tenantId?: string;
                   userContext?: any;
               }
     ): Promise<
@@ -82,8 +86,12 @@ export default class Wrapper {
           }
     >;
     static getUserById(input: { userId: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByEmail(input: { email: string; userContext?: any }): Promise<User | undefined>;
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
+    static getUserByEmail(input: { email: string; tenantId?: string; userContext?: any }): Promise<User | undefined>;
+    static getUserByPhoneNumber(input: {
+        phoneNumber: string;
+        tenantId?: string;
+        userContext?: any;
+    }): Promise<User | undefined>;
     static updateUser(input: {
         userId: string;
         email?: string | null;
@@ -96,10 +104,12 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId?: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId?: string;
                   userContext?: any;
               }
     ): Promise<{
@@ -107,31 +117,41 @@ export default class Wrapper {
     }>;
     static revokeCode(input: {
         codeId: string;
+        tenantId?: string;
         userContext?: any;
     }): Promise<{
         status: "OK";
     }>;
-    static listCodesByEmail(input: { email: string; userContext?: any }): Promise<import("./types").DeviceType[]>;
+    static listCodesByEmail(input: {
+        email: string;
+        tenantId?: string;
+        userContext?: any;
+    }): Promise<import("./types").DeviceType[]>;
     static listCodesByPhoneNumber(input: {
         phoneNumber: string;
+        tenantId?: string;
         userContext?: any;
     }): Promise<import("./types").DeviceType[]>;
     static listCodesByDeviceId(input: {
         deviceId: string;
+        tenantId?: string;
         userContext?: any;
     }): Promise<import("./types").DeviceType | undefined>;
     static listCodesByPreAuthSessionId(input: {
         preAuthSessionId: string;
+        tenantId?: string;
         userContext?: any;
     }): Promise<import("./types").DeviceType | undefined>;
     static createMagicLink(
         input:
             | {
                   email: string;
+                  tenantId?: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId?: string;
                   userContext?: any;
               }
     ): Promise<string>;
@@ -139,10 +159,12 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId?: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId?: string;
                   userContext?: any;
               }
     ): Promise<{

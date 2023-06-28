@@ -12,26 +12,28 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             email,
             oAuthTokens,
             rawUserInfoFromProvider,
+            tenantId,
         }: {
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
+            tenantId: string;
         }): Promise<{
             status: "OK";
             createdNewUser: boolean;
             user: User;
             oAuthTokens: { [key: string]: any };
             rawUserInfoFromProvider: {
-                fromIdTokenPayload: { [key: string]: any };
-                fromUserInfoAPI: { [key: string]: any };
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
             };
         }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+            let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
                 thirdPartyId,
                 thirdPartyUserId,
                 email: { id: email },
@@ -49,12 +51,14 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             thirdPartyId,
             thirdPartyUserId,
             email,
+            tenantId,
         }: {
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            tenantId: string;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+            let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
                 thirdPartyId,
                 thirdPartyUserId,
                 email: { id: email },
@@ -77,10 +81,10 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             }
         },
 
-        getUsersByEmail: async function ({ email }: { email: string }): Promise<User[]> {
+        getUsersByEmail: async function ({ email, tenantId }: { email: string; tenantId: string }): Promise<User[]> {
             let users: User[] = [];
             users = (
-                await querier.sendGetRequest(new NormalisedURLPath("/recipe/users/by-email"), {
+                await querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/users/by-email`), {
                     email,
                 })
             ).users;
@@ -91,11 +95,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
         getUserByThirdPartyInfo: async function ({
             thirdPartyId,
             thirdPartyUserId,
+            tenantId,
         }: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            tenantId: string;
         }): Promise<User | undefined> {
-            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
+            let response = await querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/user`), {
                 thirdPartyId,
                 thirdPartyUserId,
             });

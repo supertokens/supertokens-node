@@ -16,6 +16,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -24,14 +25,14 @@ export default class Wrapper {
 
     static async getProvider(
         thirdPartyId: string,
-        tenantId: string | undefined,
         clientType: string | undefined,
+        tenantId?: string,
         userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getProvider({
             thirdPartyId,
-            tenantId,
             clientType,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -40,12 +41,14 @@ export default class Wrapper {
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
+        tenantId?: string,
         userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
             thirdPartyId,
             thirdPartyUserId,
             email,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -54,14 +57,24 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
+    static getUsersByEmail(email: string, tenantId?: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({
+            email,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext,
+        });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
+    static getUserByThirdPartyInfo(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        tenantId?: string,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }

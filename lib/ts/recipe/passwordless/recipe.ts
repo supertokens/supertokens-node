@@ -171,7 +171,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        ___: string | undefined, // TODO tenantId
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
@@ -190,15 +190,15 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === CONSUME_CODE_API) {
-            return await consumeCodeAPI(this.apiImpl, options, userContext);
+            return await consumeCodeAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === CREATE_CODE_API) {
-            return await createCodeAPI(this.apiImpl, options, userContext);
+            return await createCodeAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === DOES_EMAIL_EXIST_API) {
-            return await emailExistsAPI(this.apiImpl, options, userContext);
+            return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === DOES_PHONE_NUMBER_EXIST_API) {
-            return await phoneNumberExistsAPI(this.apiImpl, options, userContext);
+            return await phoneNumberExistsAPI(this.apiImpl, tenantId, options, userContext);
         } else {
-            return await resendCodeAPI(this.apiImpl, options, userContext);
+            return await resendCodeAPI(this.apiImpl, tenantId, options, userContext);
         }
     };
 
@@ -220,10 +220,12 @@ export default class Recipe extends RecipeModule {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<string> => {
@@ -237,11 +239,13 @@ export default class Recipe extends RecipeModule {
                 ? {
                       email: input.email,
                       userInputCode,
+                      tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
                       userInputCode,
+                      tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
         );
@@ -256,6 +260,8 @@ export default class Recipe extends RecipeModule {
             this.getRecipeId() +
             "&preAuthSessionId=" +
             codeInfo.preAuthSessionId +
+            "&tenantId=" +
+            input.tenantId +
             "#" +
             codeInfo.linkCode;
 
@@ -266,10 +272,12 @@ export default class Recipe extends RecipeModule {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) => {
@@ -277,10 +285,12 @@ export default class Recipe extends RecipeModule {
             "email" in input
                 ? {
                       email: input.email,
+                      tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
+                      tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
         );
@@ -290,12 +300,14 @@ export default class Recipe extends RecipeModule {
                 ? {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
+                      tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
                 : {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
+                      tenantId: input.tenantId,
                       userContext: input.userContext,
                   }
         );

@@ -6,6 +6,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         signUp: async function (input: {
             email: string;
             password: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await recipeInterface.emailPasswordSignUp(input);
@@ -14,6 +15,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         signIn: async function (input: {
             email: string;
             password: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return recipeInterface.emailPasswordSignIn(input);
@@ -28,7 +30,11 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return user;
         },
 
-        getUserByEmail: async function (input: { email: string; userContext: any }): Promise<User | undefined> {
+        getUserByEmail: async function (input: {
+            email: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<User | undefined> {
             let result = await recipeInterface.getUsersByEmail(input);
             for (let i = 0; i < result.length; i++) {
                 if (result[i].thirdParty === undefined) {
@@ -40,12 +46,18 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
 
         createResetPasswordToken: async function (input: {
             userId: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return recipeInterface.createResetPasswordToken(input);
         },
 
-        resetPasswordUsingToken: async function (input: { token: string; newPassword: string; userContext: any }) {
+        resetPasswordUsingToken: async function (input: {
+            token: string;
+            newPassword: string;
+            tenantId: string;
+            userContext: any;
+        }) {
             return recipeInterface.resetPasswordUsingToken(input);
         },
 

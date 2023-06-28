@@ -82,6 +82,7 @@ export type RecipeInterface = {
     createEmailVerificationToken(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -93,6 +94,7 @@ export type RecipeInterface = {
 
     verifyEmailUsingToken(input: {
         token: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
 
@@ -101,6 +103,7 @@ export type RecipeInterface = {
     revokeEmailVerificationTokens(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK" }>;
 
@@ -123,6 +126,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
               session?: SessionContainerInterface;
@@ -160,6 +164,7 @@ export type TypeEmailVerificationEmailDeliveryInput = {
         email: string;
     };
     emailVerifyLink: string;
+    tenantId?: string;
 };
 
 export type GetEmailForUserIdFunc = (

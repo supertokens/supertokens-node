@@ -69,7 +69,12 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: string; recipeId: string }): string {
+export function getEmailVerifyLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    tenantId: string;
+}): string {
     return (
         input.appInfo.websiteDomain.getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
@@ -77,6 +82,8 @@ export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: s
         "?token=" +
         input.token +
         "&rid=" +
-        input.recipeId
+        input.recipeId +
+        "&tenantId=" +
+        input.tenantId
     );
 }

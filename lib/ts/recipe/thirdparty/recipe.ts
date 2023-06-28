@@ -145,7 +145,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        _: string | undefined, // TODO tenantId
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
@@ -163,9 +163,9 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_IN_UP_API) {
-            return await signInUpAPI(this.apiImpl, options, userContext);
+            return await signInUpAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === AUTHORISATION_API) {
-            return await authorisationUrlAPI(this.apiImpl, options, userContext);
+            return await authorisationUrlAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === APPLE_REDIRECT_HANDLER) {
             return await appleRedirectHandler(this.apiImpl, options, userContext);
         }

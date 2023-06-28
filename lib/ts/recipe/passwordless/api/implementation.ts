@@ -12,11 +12,13 @@ export default function getAPIImplementation(): APIInterface {
                           preAuthSessionId: input.preAuthSessionId,
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
+                          tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
                     : {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
+                          tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
             );
@@ -34,6 +36,7 @@ export default function getAPIImplementation(): APIInterface {
                         {
                             userId: user.id,
                             email: user.email,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         }
                     );
@@ -41,6 +44,7 @@ export default function getAPIImplementation(): APIInterface {
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                             token: tokenResponse.token,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     }
@@ -73,6 +77,7 @@ export default function getAPIImplementation(): APIInterface {
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
                                   : await input.options.config.getCustomUserInputCode(input.userContext),
+                          tenantId: input.tenantId,
                       }
                     : {
                           userContext: input.userContext,
@@ -81,6 +86,7 @@ export default function getAPIImplementation(): APIInterface {
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
                                   : await input.options.config.getCustomUserInputCode(input.userContext),
+                          tenantId: input.tenantId,
                       }
             );
 
@@ -97,6 +103,8 @@ export default function getAPIImplementation(): APIInterface {
                     input.options.recipeId +
                     "&preAuthSessionId=" +
                     response.preAuthSessionId +
+                    "&tenantId=" +
+                    input.tenantId +
                     "#" +
                     response.linkCode;
             }
@@ -119,6 +127,7 @@ export default function getAPIImplementation(): APIInterface {
                     preAuthSessionId: response.preAuthSessionId,
                     urlWithLinkCode: magicLink,
                     userInputCode,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
             } else {
@@ -130,6 +139,7 @@ export default function getAPIImplementation(): APIInterface {
                     preAuthSessionId: response.preAuthSessionId,
                     urlWithLinkCode: magicLink,
                     userInputCode,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
             }
@@ -145,6 +155,7 @@ export default function getAPIImplementation(): APIInterface {
             let response = await input.options.recipeImplementation.getUserByEmail({
                 userContext: input.userContext,
                 email: input.email,
+                tenantId: input.tenantId,
             });
 
             return {
@@ -156,6 +167,7 @@ export default function getAPIImplementation(): APIInterface {
             let response = await input.options.recipeImplementation.getUserByPhoneNumber({
                 userContext: input.userContext,
                 phoneNumber: input.phoneNumber,
+                tenantId: input.tenantId,
             });
 
             return {
@@ -167,6 +179,7 @@ export default function getAPIImplementation(): APIInterface {
             let deviceInfo = await input.options.recipeImplementation.listCodesByDeviceId({
                 userContext: input.userContext,
                 deviceId: input.deviceId,
+                tenantId: input.tenantId,
             });
 
             if (deviceInfo === undefined) {
@@ -194,6 +207,7 @@ export default function getAPIImplementation(): APIInterface {
                         input.options.config.getCustomUserInputCode === undefined
                             ? undefined
                             : await input.options.config.getCustomUserInputCode(input.userContext),
+                    tenantId: input.tenantId,
                 });
 
                 if (response.status === "USER_INPUT_CODE_ALREADY_USED_ERROR") {
@@ -220,6 +234,8 @@ export default function getAPIImplementation(): APIInterface {
                             input.options.recipeId +
                             "&preAuthSessionId=" +
                             response.preAuthSessionId +
+                            "&tenantId=" +
+                            input.tenantId +
                             "#" +
                             response.linkCode;
                     }
@@ -243,6 +259,7 @@ export default function getAPIImplementation(): APIInterface {
                             preAuthSessionId: response.preAuthSessionId,
                             urlWithLinkCode: magicLink,
                             userInputCode,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     } else {
@@ -254,6 +271,7 @@ export default function getAPIImplementation(): APIInterface {
                             preAuthSessionId: response.preAuthSessionId,
                             urlWithLinkCode: magicLink,
                             userInputCode,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     }
