@@ -22,6 +22,7 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
+        tenantId?: string,
         userContext?: any
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
@@ -29,6 +30,7 @@ export default class SessionWrapper {
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
+        tenantId?: string,
         userContext?: any
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(
@@ -38,6 +40,7 @@ export default class SessionWrapper {
             sessionInfo: SessionInformation,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -127,7 +130,11 @@ export default class SessionWrapper {
         options?: VerifySessionOptions,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
-    static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
+    static getSessionInformation(
+        sessionHandle: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<SessionInformation | undefined>;
     static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
     static refreshSessionWithoutRequestResponse(
         refreshToken: string,
@@ -135,14 +142,20 @@ export default class SessionWrapper {
         antiCsrfToken?: string,
         userContext?: any
     ): Promise<SessionContainer>;
-    static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
-    static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
-    static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
-    static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
-    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;
+    static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
+    static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
+    static revokeSession(sessionHandle: string, tenantId?: string, userContext?: any): Promise<boolean>;
+    static revokeMultipleSessions(sessionHandles: string[], tenantId?: string, userContext?: any): Promise<string[]>;
+    static updateSessionDataInDatabase(
+        sessionHandle: string,
+        newSessionData: any,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<boolean>;
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
+        tenantId?: string,
         userContext?: any
     ): Promise<boolean>;
     static createJWT(
@@ -171,16 +184,23 @@ export default class SessionWrapper {
         issuer: string;
         jwks_uri: string;
     }>;
-    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<boolean>;
+    static fetchAndSetClaim(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<boolean>;
     static setClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
         value: T,
+        tenantId?: string,
         userContext?: any
     ): Promise<boolean>;
     static getClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
+        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -191,7 +211,12 @@ export default class SessionWrapper {
               value: T | undefined;
           }
     >;
-    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<boolean>;
+    static removeClaim(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;

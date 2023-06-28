@@ -31,12 +31,14 @@ export default class Session implements SessionContainerInterface {
         protected userId: string,
         protected userDataInAccessToken: any,
         protected reqResInfo: ReqResInfo | undefined,
-        protected accessTokenUpdated: boolean
+        protected accessTokenUpdated: boolean,
+        protected tenantId: string
     ) {}
 
     async revokeSession(userContext?: any) {
         await this.helpers.getRecipeImpl().revokeSession({
             sessionHandle: this.sessionHandle,
+            tenantId: this.tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
 
@@ -54,6 +56,7 @@ export default class Session implements SessionContainerInterface {
     async getSessionDataFromDatabase(userContext?: any): Promise<any> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
+            tenantId: this.tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
@@ -71,6 +74,7 @@ export default class Session implements SessionContainerInterface {
             !(await this.helpers.getRecipeImpl().updateSessionDataInDatabase({
                 sessionHandle: this.sessionHandle,
                 newSessionData,
+                tenantId: this.tenantId,
                 userContext: userContext === undefined ? {} : userContext,
             }))
         ) {
@@ -86,6 +90,10 @@ export default class Session implements SessionContainerInterface {
 
     getUserId(_userContext?: any) {
         return this.userId;
+    }
+
+    getTenantId(_userContext?: any) {
+        return this.tenantId;
     }
 
     getAccessTokenPayload(_userContext?: any) {
@@ -172,6 +180,7 @@ export default class Session implements SessionContainerInterface {
     async getTimeCreated(userContext?: any): Promise<number> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
+            tenantId: this.tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
@@ -187,6 +196,7 @@ export default class Session implements SessionContainerInterface {
     async getExpiry(userContext?: any): Promise<number> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
+            tenantId: this.tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {

@@ -12,6 +12,7 @@ export default class Session implements SessionContainerInterface {
     protected userDataInAccessToken: any;
     protected reqResInfo: ReqResInfo | undefined;
     protected accessTokenUpdated: boolean;
+    protected tenantId: string;
     constructor(
         helpers: Helpers,
         accessToken: string,
@@ -22,12 +23,14 @@ export default class Session implements SessionContainerInterface {
         userId: string,
         userDataInAccessToken: any,
         reqResInfo: ReqResInfo | undefined,
-        accessTokenUpdated: boolean
+        accessTokenUpdated: boolean,
+        tenantId: string
     );
     revokeSession(userContext?: any): Promise<void>;
     getSessionDataFromDatabase(userContext?: any): Promise<any>;
     updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<void>;
     getUserId(_userContext?: any): string;
+    getTenantId(_userContext?: any): string;
     getAccessTokenPayload(_userContext?: any): any;
     getHandle(): string;
     getAccessToken(): string;

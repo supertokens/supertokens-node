@@ -90,11 +90,13 @@ export default function getRecipeInterface(
             accessTokenPayload = {},
             sessionDataInDatabase = {},
             disableAntiCsrf,
+            tenantId,
         }: {
             userId: string;
             disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
+            tenantId: string;
             userContext: any;
         }): Promise<SessionContainerInterface> {
             logDebugMessage("createNewSession: Started");
@@ -103,6 +105,7 @@ export default function getRecipeInterface(
                 helpers,
                 userId,
                 disableAntiCsrf === true,
+                tenantId,
                 accessTokenPayload,
                 sessionDataInDatabase
             );
@@ -119,7 +122,8 @@ export default function getRecipeInterface(
                 response.session.userId,
                 payload,
                 undefined,
-                true
+                true,
+                payload.tId
             );
         },
 
@@ -218,7 +222,8 @@ export default function getRecipeInterface(
                 response.session.userId,
                 payload,
                 undefined,
-                response.accessToken !== undefined
+                response.accessToken !== undefined,
+                payload.tId
             );
 
             return session;
@@ -306,10 +311,12 @@ export default function getRecipeInterface(
 
         getSessionInformation: async function ({
             sessionHandle,
+            tenantId,
         }: {
             sessionHandle: string;
+            tenantId: string;
         }): Promise<SessionInformation | undefined> {
-            return SessionFunctions.getSessionInformation(helpers, sessionHandle);
+            return SessionFunctions.getSessionInformation(helpers, sessionHandle, tenantId);
         },
 
         refreshSession: async function (
@@ -347,7 +354,8 @@ export default function getRecipeInterface(
                 response.session.userId,
                 payload,
                 undefined,
-                true
+                true,
+                payload.tId
             );
         },
 
@@ -389,30 +397,50 @@ export default function getRecipeInterface(
             return response;
         },
 
-        revokeAllSessionsForUser: function ({ userId }: { userId: string }) {
-            return SessionFunctions.revokeAllSessionsForUser(helpers, userId);
+        revokeAllSessionsForUser: function ({ userId, tenantId }: { userId: string; tenantId: string }) {
+            return SessionFunctions.revokeAllSessionsForUser(helpers, userId, tenantId);
         },
 
-        getAllSessionHandlesForUser: function ({ userId }: { userId: string }): Promise<string[]> {
-            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId);
+        getAllSessionHandlesForUser: function ({
+            userId,
+            tenantId,
+        }: {
+            userId: string;
+            tenantId: string;
+        }): Promise<string[]> {
+            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, tenantId);
         },
 
-        revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
-            return SessionFunctions.revokeSession(helpers, sessionHandle);
+        revokeSession: function ({
+            sessionHandle,
+            tenantId,
+        }: {
+            sessionHandle: string;
+            tenantId: string;
+        }): Promise<boolean> {
+            return SessionFunctions.revokeSession(helpers, sessionHandle, tenantId);
         },
 
-        revokeMultipleSessions: function ({ sessionHandles }: { sessionHandles: string[] }) {
-            return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles);
+        revokeMultipleSessions: function ({
+            sessionHandles,
+            tenantId,
+        }: {
+            sessionHandles: string[];
+            tenantId: string;
+        }) {
+            return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles, tenantId);
         },
 
         updateSessionDataInDatabase: function ({
             sessionHandle,
             newSessionData,
+            tenantId,
         }: {
             sessionHandle: string;
             newSessionData: any;
+            tenantId: string;
         }): Promise<boolean> {
-            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData);
+            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData, tenantId);
         },
 
         mergeIntoAccessTokenPayload: async function (
@@ -420,14 +448,16 @@ export default function getRecipeInterface(
             {
                 sessionHandle,
                 accessTokenPayloadUpdate,
+                tenantId,
                 userContext,
             }: {
                 sessionHandle: string;
                 accessTokenPayloadUpdate: JSONObject;
+                tenantId: string;
                 userContext: any;
             }
         ) {
-            const sessionInfo = await this.getSessionInformation({ sessionHandle, userContext });
+            const sessionInfo = await this.getSessionInformation({ sessionHandle, tenantId, userContext });
             if (sessionInfo === undefined) {
                 return false;
             }
@@ -443,7 +473,7 @@ export default function getRecipeInterface(
                 }
             }
 
-            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
+            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload, tenantId);
         },
 
         fetchAndSetClaim: async function <T>(
@@ -451,11 +481,13 @@ export default function getRecipeInterface(
             input: {
                 sessionHandle: string;
                 claim: SessionClaim<T>;
+                tenantId: string;
                 userContext?: any;
             }
         ) {
             const sessionInfo = await this.getSessionInformation({
                 sessionHandle: input.sessionHandle,
+                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
             if (sessionInfo === undefined) {
@@ -466,6 +498,7 @@ export default function getRecipeInterface(
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
+                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
         },
@@ -476,6 +509,7 @@ export default function getRecipeInterface(
                 sessionHandle: string;
                 claim: SessionClaim<T>;
                 value: T;
+                tenantId: string;
                 userContext?: any;
             }
         ) {
@@ -483,16 +517,18 @@ export default function getRecipeInterface(
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
+                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
         },
 
         getClaimValue: async function <T>(
             this: RecipeInterface,
-            input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }
+            input: { sessionHandle: string; claim: SessionClaim<T>; tenantId: string; userContext?: any }
         ) {
             const sessionInfo = await this.getSessionInformation({
                 sessionHandle: input.sessionHandle,
+                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
 
@@ -510,13 +546,14 @@ export default function getRecipeInterface(
 
         removeClaim: function (
             this: RecipeInterface,
-            input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }
+            input: { sessionHandle: string; claim: SessionClaim<any>; tenantId: string; userContext?: any }
         ) {
             const accessTokenPayloadUpdate = input.claim.removeFromPayloadByMerge_internal({}, input.userContext);
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
+                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
         },

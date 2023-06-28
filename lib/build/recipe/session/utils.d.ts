@@ -34,7 +34,8 @@ export declare function sendTokenTheftDetectedResponse(
     sessionHandle: string,
     _: string,
     __: BaseRequest,
-    response: BaseResponse
+    response: BaseResponse,
+    tenantId: string
 ): Promise<void>;
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;
 export declare function getURLProtocol(url: string): string;

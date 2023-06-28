@@ -9,6 +9,7 @@ export declare function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
+    tenantId: string,
     accessTokenPayload?: any,
     sessionDataInDatabase?: any
 ): Promise<CreateOrRefreshAPIResponse>;
@@ -40,7 +41,8 @@ export declare function getSession(
  */
 export declare function getSessionInformation(
     helpers: Helpers,
-    sessionHandle: string
+    sessionHandle: string,
+    tenantId: string
 ): Promise<SessionInformation | undefined>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
@@ -56,31 +58,41 @@ export declare function refreshSession(
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  */
-export declare function revokeAllSessionsForUser(helpers: Helpers, userId: string): Promise<string[]>;
+export declare function revokeAllSessionsForUser(helpers: Helpers, userId: string, tenantId: string): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  */
-export declare function getAllSessionHandlesForUser(helpers: Helpers, userId: string): Promise<string[]>;
+export declare function getAllSessionHandlesForUser(
+    helpers: Helpers,
+    userId: string,
+    tenantId: string
+): Promise<string[]>;
 /**
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export declare function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean>;
+export declare function revokeSession(helpers: Helpers, sessionHandle: string, tenantId: string): Promise<boolean>;
 /**
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
  */
-export declare function revokeMultipleSessions(helpers: Helpers, sessionHandles: string[]): Promise<string[]>;
+export declare function revokeMultipleSessions(
+    helpers: Helpers,
+    sessionHandles: string[],
+    tenantId: string
+): Promise<string[]>;
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
 export declare function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
-    newSessionData: any
+    newSessionData: any,
+    tenantId: string
 ): Promise<boolean>;
 export declare function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
-    newAccessTokenPayload: any
+    newAccessTokenPayload: any,
+    tenantId: string
 ): Promise<boolean>;

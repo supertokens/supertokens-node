@@ -29,6 +29,7 @@ export async function createNewSession(
     helpers: Helpers,
     userId: string,
     disableAntiCsrf: boolean,
+    tenantId: string,
     accessTokenPayload: any = {},
     sessionDataInDatabase: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
@@ -43,7 +44,10 @@ export async function createNewSession(
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
-    const response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
+    const response = await helpers.querier.sendPostRequest(
+        new NormalisedURLPath(`/${tenantId}/recipe/session`),
+        requestBody
+    );
 
     delete response.status;
     return response;
@@ -232,7 +236,8 @@ export async function getSession(
  */
 export async function getSessionInformation(
     helpers: Helpers,
-    sessionHandle: string
+    sessionHandle: string,
+    tenantId: string
 ): Promise<SessionInformation | undefined> {
     let apiVersion = await helpers.querier.getAPIVersion();
 
@@ -240,7 +245,7 @@ export async function getSessionInformation(
         throw new Error("Please use core version >= 3.5 to call this function.");
     }
 
-    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
+    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/session`), {
         sessionHandle,
     });
 
@@ -311,8 +316,8 @@ export async function refreshSession(
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  */
-export async function revokeAllSessionsForUser(helpers: Helpers, userId: string): Promise<string[]> {
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeAllSessionsForUser(helpers: Helpers, userId: string, tenantId: string): Promise<string[]> {
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
         userId,
     });
     return response.sessionHandlesRevoked;
@@ -321,8 +326,12 @@ export async function revokeAllSessionsForUser(helpers: Helpers, userId: string)
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  */
-export async function getAllSessionHandlesForUser(helpers: Helpers, userId: string): Promise<string[]> {
-    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
+export async function getAllSessionHandlesForUser(
+    helpers: Helpers,
+    userId: string,
+    tenantId: string
+): Promise<string[]> {
+    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/user`), {
         userId,
     });
     return response.sessionHandles;
@@ -332,8 +341,8 @@ export async function getAllSessionHandlesForUser(helpers: Helpers, userId: stri
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export async function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean> {
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeSession(helpers: Helpers, sessionHandle: string, tenantId: string): Promise<boolean> {
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
         sessionHandles: [sessionHandle],
     });
     return response.sessionHandlesRevoked.length === 1;
@@ -343,8 +352,12 @@ export async function revokeSession(helpers: Helpers, sessionHandle: string): Pr
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
  */
-export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: string[]): Promise<string[]> {
-    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeMultipleSessions(
+    helpers: Helpers,
+    sessionHandles: string[],
+    tenantId: string
+): Promise<string[]> {
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
         sessionHandles,
     });
     return response.sessionHandlesRevoked;
@@ -356,10 +369,11 @@ export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: s
 export async function updateSessionDataInDatabase(
     helpers: Helpers,
     sessionHandle: string,
-    newSessionData: any
+    newSessionData: any,
+    tenantId: string
 ): Promise<boolean> {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
-    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/data"), {
+    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/data`), {
         sessionHandle,
         userDataInDatabase: newSessionData,
     });
@@ -372,11 +386,12 @@ export async function updateSessionDataInDatabase(
 export async function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
-    newAccessTokenPayload: any
+    newAccessTokenPayload: any,
+    tenantId: string
 ): Promise<boolean> {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath(`/${tenantId}/recipe/jwt/data`), {
         sessionHandle,
         userDataInJWT: newAccessTokenPayload,
     });

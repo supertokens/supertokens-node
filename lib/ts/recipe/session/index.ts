@@ -29,6 +29,7 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 // For Express
 export default class SessionWrapper {
     static init = Recipe.init;
@@ -41,6 +42,7 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
+        tenantId?: string,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -57,6 +59,7 @@ export default class SessionWrapper {
             config,
             appInfo,
             sessionDataInDatabase,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
         });
     }
 
@@ -65,6 +68,7 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
+        tenantId?: string,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -90,6 +94,7 @@ export default class SessionWrapper {
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             disableAntiCsrf,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -101,6 +106,7 @@ export default class SessionWrapper {
             sessionInfo: SessionInformation,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        tenantId?: string,
         userContext: any = {}
     ): Promise<
         | {
@@ -115,6 +121,7 @@ export default class SessionWrapper {
 
         const sessionInfo = await recipeImpl.getSessionInformation({
             sessionHandle,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
         if (sessionInfo === undefined) {
@@ -147,6 +154,7 @@ export default class SessionWrapper {
                 !(await recipeImpl.mergeIntoAccessTokenPayload({
                     sessionHandle,
                     accessTokenPayloadUpdate: claimValidationResponse.accessTokenPayloadUpdate,
+                    tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
                     userContext,
                 }))
             ) {
@@ -297,9 +305,10 @@ export default class SessionWrapper {
         return session;
     }
 
-    static getSessionInformation(sessionHandle: string, userContext: any = {}) {
+    static getSessionInformation(sessionHandle: string, tenantId?: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
             sessionHandle,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -325,32 +334,48 @@ export default class SessionWrapper {
             userContext,
         });
     }
-    static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
+    static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
+            userId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext,
+        });
     }
 
-    static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
+    static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
 
-    static revokeSession(sessionHandle: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle, userContext });
+    static revokeSession(sessionHandle: string, tenantId?: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({
+            sessionHandle,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            userContext,
+        });
     }
 
-    static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {
+    static revokeMultipleSessions(sessionHandles: string[], tenantId?: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({
             sessionHandles,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
 
-    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext: any = {}) {
+    static updateSessionDataInDatabase(
+        sessionHandle: string,
+        newSessionData: any,
+        tenantId?: string,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionDataInDatabase({
             sessionHandle,
             newSessionData,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -358,11 +383,13 @@ export default class SessionWrapper {
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
+        tenantId?: string,
         userContext: any = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
             sessionHandle,
             accessTokenPayloadUpdate,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -386,10 +413,16 @@ export default class SessionWrapper {
         });
     }
 
-    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
+    static fetchAndSetClaim(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        tenantId?: string,
+        userContext: any = {}
+    ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
             sessionHandle,
             claim,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -398,12 +431,14 @@ export default class SessionWrapper {
         sessionHandle: string,
         claim: SessionClaim<T>,
         value: T,
+        tenantId?: string,
         userContext: any = {}
     ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
             sessionHandle,
             claim,
             value,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -411,6 +446,7 @@ export default class SessionWrapper {
     static getClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
+        tenantId?: string,
         userContext: any = {}
     ): Promise<
         | {
@@ -424,14 +460,21 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimValue({
             sessionHandle,
             claim,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
 
-    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
+    static removeClaim(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        tenantId?: string,
+        userContext: any = {}
+    ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
             sessionHandle,
             claim,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }

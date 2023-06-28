@@ -130,7 +130,9 @@ export interface ErrorHandlerMiddleware {
     (message: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+    (sessionHandle: string, userId: string, tenantId: string, request: BaseRequest, response: BaseResponse): Promise<
+        void
+    >;
 }
 export interface InvalidClaimErrorHandlerMiddleware {
     (validatorErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse): Promise<void>;
@@ -157,6 +159,7 @@ export declare type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
@@ -183,19 +186,25 @@ export declare type RecipeInterface = {
      *
      * Returns undefined if the sessionHandle does not exist
      */
-    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
-    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
-    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
-    revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
-    revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
+    getSessionInformation(input: {
+        sessionHandle: string;
+        tenantId: string;
+        userContext: any;
+    }): Promise<SessionInformation | undefined>;
+    revokeAllSessionsForUser(input: { userId: string; tenantId: string; userContext: any }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: { userId: string; tenantId: string; userContext: any }): Promise<string[]>;
+    revokeSession(input: { sessionHandle: string; tenantId: string; userContext: any }): Promise<boolean>;
+    revokeMultipleSessions(input: { sessionHandles: string[]; tenantId: string; userContext: any }): Promise<string[]>;
     updateSessionDataInDatabase(input: {
         sessionHandle: string;
         newSessionData: any;
+        tenantId: string;
         userContext: any;
     }): Promise<boolean>;
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
+        tenantId: string;
         userContext: any;
     }): Promise<boolean>;
     /**
@@ -239,16 +248,23 @@ export declare type RecipeInterface = {
         status: "OK";
         invalidClaims: ClaimValidationError[];
     }>;
-    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
+    fetchAndSetClaim(input: {
+        sessionHandle: string;
+        claim: SessionClaim<any>;
+        tenantId: string;
+        userContext: any;
+    }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         value: T;
+        tenantId: string;
         userContext: any;
     }): Promise<boolean>;
     getClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -259,7 +275,12 @@ export declare type RecipeInterface = {
               value: T | undefined;
           }
     >;
-    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
+    removeClaim(input: {
+        sessionHandle: string;
+        claim: SessionClaim<any>;
+        tenantId: string;
+        userContext: any;
+    }): Promise<boolean>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
