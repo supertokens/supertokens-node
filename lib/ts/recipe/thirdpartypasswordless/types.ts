@@ -12,7 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, ProviderInput } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    ProviderInput,
+    ProviderConfig,
+    ProviderClientConfig,
+    ProviderConfigForClientType,
+} from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -538,3 +545,8 @@ export type APIInterface = {
 export type TypeThirdPartyPasswordlessEmailDeliveryInput = TypePasswordlessEmailDeliveryInput;
 
 export type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;
+
+export type ThirdPartyProviderInput = ProviderInput;
+export type ThirdPartyProviderConfig = ProviderConfig;
+export type ThirdPartyProviderClientConfig = ProviderClientConfig;
+export type ThirdPartyProviderConfigForClientType = ProviderConfigForClientType;
