@@ -287,6 +287,7 @@ export interface SessionContainerInterface {
     getSessionDataFromDatabase(userContext?: any): Promise<any>;
     updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
+    getTenantId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAllSessionTokensDangerously(): {

@@ -343,6 +343,8 @@ export interface SessionContainerInterface {
 
     getUserId(userContext?: any): string;
 
+    getTenantId(userContext?: any): string;
+
     getAccessTokenPayload(userContext?: any): any;
 
     getHandle(userContext?: any): string;
