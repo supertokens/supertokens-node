@@ -73,13 +73,6 @@ export default class Wrapper {
         });
     }
 
-    static getPasswordResetTokenInfo(token: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getPasswordResetTokenInfo({
-            token,
-            userContext,
-        });
-    }
-
     static updateEmailOrPassword(input: {
         recipeUserId: RecipeUserId;
         email?: string;
@@ -140,8 +133,6 @@ export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
-
-export let getPasswordResetTokenInfo = Wrapper.getPasswordResetTokenInfo;
 
 export let Google = Wrapper.Google;
 

@@ -33,10 +33,6 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return recipeInterface.consumePasswordResetToken(input);
         },
 
-        getPasswordResetTokenInfo: async function (input: { token: string; userContext: any }) {
-            return recipeInterface.getPasswordResetTokenInfo(input);
-        },
-
         createNewRecipeUser: async function (input: {
             email: string;
             password: string;

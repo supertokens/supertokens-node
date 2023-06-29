@@ -134,19 +134,6 @@ export declare type RecipeInterface = {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
-    getPasswordResetTokenInfo(input: {
-        token: string;
-        userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-    >;
     updateEmailOrPassword(input: {
         recipeUserId: RecipeUserId;
         email?: string;

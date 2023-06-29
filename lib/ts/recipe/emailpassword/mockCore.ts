@@ -12,30 +12,6 @@ export async function mockReset() {
     passwordResetTokens = {};
 }
 
-export async function mockGetPasswordResetInfo(
-    token: string
-): Promise<
-    | {
-          status: "OK";
-          userId: string;
-          email: string;
-      }
-    | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
-> {
-    if (passwordResetTokens[token] === undefined) {
-        return {
-            status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-        };
-    }
-    let userId = passwordResetTokens[token].userId;
-    let email = passwordResetTokens[token].email;
-    return {
-        status: "OK",
-        userId,
-        email,
-    };
-}
-
 export async function mockCreatePasswordResetToken(
     email: string,
     userId: string

@@ -142,18 +142,6 @@ export type RecipeInterface = {
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
 
-    getPasswordResetTokenInfo(input: {
-        token: string;
-        userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
-    >;
-
     updateEmailOrPassword(input: {
         recipeUserId: RecipeUserId; // the id should only be a recipeUserId cause if we give just an id
         // and a password, and if there are multiple emailpassword accounts, we do not know

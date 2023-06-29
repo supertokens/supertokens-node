@@ -77,19 +77,6 @@ export default class Wrapper {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }
     >;
-    static getPasswordResetTokenInfo(
-        token: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              email: string;
-              userId: string;
-          }
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-    >;
     static updateEmailOrPassword(input: {
         recipeUserId: RecipeUserId;
         email?: string;
@@ -131,7 +118,6 @@ export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
-export declare let getPasswordResetTokenInfo: typeof Wrapper.getPasswordResetTokenInfo;
 export declare let Google: typeof import("../thirdparty/providers/google").default;
 export declare let Github: typeof import("../thirdparty/providers/github").default;
 export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;

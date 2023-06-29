@@ -11,7 +11,6 @@ import {
     mockConsumePasswordResetToken,
     mockCreatePasswordResetToken,
     mockUpdateEmailOrPassword,
-    mockGetPasswordResetInfo,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 
@@ -177,27 +176,6 @@ export default function getRecipeInterface(
                 );
             } else {
                 return mockConsumePasswordResetToken(token);
-            }
-        },
-
-        getPasswordResetTokenInfo: async function ({
-            token,
-        }: {
-            token: string;
-        }): Promise<
-            | {
-                  status: "OK";
-                  userId: string;
-                  email: string;
-              }
-            | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
-        > {
-            if (process.env.MOCK !== "true") {
-                return await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
-                    token,
-                });
-            } else {
-                return mockGetPasswordResetInfo(token);
             }
         },
 

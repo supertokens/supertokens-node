@@ -89,10 +89,6 @@ export default function getRecipeInterface(
             return originalEmailPasswordImplementation.consumePasswordResetToken.bind(DerivedEP(this))(input);
         },
 
-        getPasswordResetTokenInfo: async function (input: { token: string; userContext: any }) {
-            return originalEmailPasswordImplementation.getPasswordResetTokenInfo.bind(DerivedEP(this))(input);
-        },
-
         createNewEmailPasswordRecipeUser: async function (input: {
             email: string;
             password: string;
