@@ -19,13 +19,7 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import type { SessionContainerInterface } from "../session/types";
-import type {
-    TypeNormalisedInput,
-    RecipeInterface,
-    TypeInput,
-    AccountInfoWithRecipeId,
-    RecipeLevelUser,
-} from "./types";
+import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeImplementation from "./recipeImplementation";
@@ -160,18 +154,6 @@ export default class Recipe extends RecipeModule {
             return recipeUser.id;
         }
 
-        let loginMethod: (RecipeLevelUser & { verified: boolean }) | undefined = undefined;
-        for (let i = 0; i < recipeUser.loginMethods.length; i++) {
-            if (recipeUser.loginMethods[i].recipeUserId.getAsString() === recipeUserId.getAsString()) {
-                loginMethod = recipeUser.loginMethods[i];
-                break;
-            }
-        }
-
-        if (loginMethod === undefined) {
-            throw new Error("Should never come here");
-        }
-
         // now we try and find a linking candidate.
         let primaryUser = await this.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
             recipeUserId,
@@ -195,7 +177,7 @@ export default class Recipe extends RecipeModule {
                 return recipeUserId.getAsString();
             }
 
-            if (shouldDoAccountLinking.shouldRequireVerification && !loginMethod.verified) {
+            if (shouldDoAccountLinking.shouldRequireVerification && !recipeUser.loginMethods[0].verified) {
                 return recipeUserId.getAsString();
             }
 
@@ -221,6 +203,11 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
         } else {
+            if (primaryUser.id === recipeUser.id) {
+                // This can only happen cause of a race condition cause we already check
+                // if the input recipeUserId is a primary user early on in the function.
+                return recipeUserId.getAsString();
+            }
             // this means that we found a primary user ID which can be linked to this recipe user ID. So we try and link them.
 
             // we can use the 0 index cause this user is
@@ -236,7 +223,7 @@ export default class Recipe extends RecipeModule {
                 return recipeUserId.getAsString();
             }
 
-            if (shouldDoAccountLinking.shouldRequireVerification && !loginMethod.verified) {
+            if (shouldDoAccountLinking.shouldRequireVerification && !recipeUser.loginMethods[0].verified) {
                 return recipeUserId.getAsString();
             }
 
@@ -448,7 +435,7 @@ export default class Recipe extends RecipeModule {
         // disallow cause if after sign in, this user sends an email verification email
         // to the email, then the primary user may click on it by mistake and get their account
         // taken over.
-        // If there exists another primary user, and that user's email is not verified,
+        // - If there exists another primary user, and that user's email is not verified,
         // then we disallow sign in cause that primary user may be owned by an attacker
         // and after this email is verified, it will link to that account causing account
         // takeover.
