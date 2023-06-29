@@ -478,10 +478,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                         }
                     })
             );
-            assert.strictEqual(
-                response.message,
-                "API input error: Please make sure to pass a valid JSON input in the request body"
-            );
+            assert.strictEqual(response.message, "Please provide exactly one of email or phoneNumber");
         }
     });
 

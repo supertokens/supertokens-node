@@ -380,10 +380,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert.strictEqual(
-            badInputResponse.message,
-            "API input error: Please make sure to pass a valid JSON input in the request body"
-        );
+        assert.strictEqual(badInputResponse.message, "Missing input param: formFields");
     });
 
     /*

@@ -13,14 +13,10 @@ export declare function parseJSONBodyFromRequest(req: IncomingMessage): Promise<
 export declare function parseURLEncodedFormData(req: IncomingMessage): Promise<any>;
 export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: (Request | NextApiRequest) & {
-        __supertokensFromNextJS?: true;
-    }
+    request: Request | NextApiRequest
 ): Promise<void>;
 export declare function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: (Request | NextApiRequest) & {
-        __supertokensFromNextJS?: true;
-    }
+    request: Request | NextApiRequest
 ): Promise<void>;
 export declare function setHeaderForExpressLikeResponse(
     res: Response,

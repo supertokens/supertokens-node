@@ -156,7 +156,7 @@ export async function parseURLEncodedFormData(req: IncomingMessage) {
 
 export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
+    request: Request | NextApiRequest
 ) {
     // according to https://github.com/supertokens/supertokens-node/issues/33
     if (method === "post" || method === "put") {
@@ -191,9 +191,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     }
 }
 
-export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
-) {
+export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request | NextApiRequest) {
     if (typeof request.body === "string") {
         try {
             request.body = Object.fromEntries(new URLSearchParams(request.body).entries());
@@ -213,7 +211,7 @@ export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
         (Object.keys(request.body).length === 0 && request.readable)
     ) {
         try {
-            // parsing it again to make sure that the request is parsed atleast once by a json parser
+            // parsing it again to make sure that the request is parsed atleast once by a form data parser
             request.body = await parseURLEncodedFormData(request);
         } catch {
             throw new STError({

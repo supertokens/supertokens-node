@@ -12,8 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, TypeProviderGetResponse } from "../types";
 import * as jose from "jose";
+
+import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
 import SuperTokens from "../../../supertokens";
 import { APPLE_REDIRECT_HANDLER } from "../constants";
@@ -99,6 +100,8 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             ...additionalParams,
         };
 
+        const jwks = jose.createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
+
         async function getProfileInfo(accessTokenAPIResponse: {
             access_token: string;
             expires_in: number;
@@ -112,14 +115,10 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             - Verify that the iss field contains https://appleid.apple.com
             - Verify that the aud field is the developer’s client_id
             - Verify that the time is earlier than the exp value of the token */
-            const payload = await verifyIdTokenFromJWKSEndpoint(
-                accessTokenAPIResponse.id_token,
-                "https://appleid.apple.com/auth/keys",
-                {
-                    issuer: "https://appleid.apple.com",
-                    audience: getActualClientIdFromDevelopmentClientId(config.clientId),
-                }
-            );
+            const payload = await verifyIdTokenFromJWKSEndpoint(accessTokenAPIResponse.id_token, jwks, {
+                issuer: "https://appleid.apple.com",
+                audience: getActualClientIdFromDevelopmentClientId(config.clientId),
+            });
             if (payload === null) {
                 throw new Error("no user info found from user's id token received from apple");
             }

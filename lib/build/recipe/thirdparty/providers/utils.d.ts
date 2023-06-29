@@ -2,6 +2,6 @@
 import * as jose from "jose";
 export declare function verifyIdTokenFromJWKSEndpoint(
     idToken: string,
-    jwksUri: string,
+    jwks: jose.JWTVerifyGetKey,
     otherOptions: jose.JWTVerifyOptions
 ): Promise<any>;

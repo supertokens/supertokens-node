@@ -12,6 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import * as jose from "jose";
+
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { verifyIdTokenFromJWKSEndpoint } from "./utils";
 import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
@@ -64,15 +66,13 @@ export default function GW(config: TypeThirdPartyProviderGoogleWorkspacesConfig)
             ...additionalParams,
         };
 
+        const jwks = jose.createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
+
         async function getProfileInfo(authCodeResponse: { id_token: string }) {
-            let payload: any = await verifyIdTokenFromJWKSEndpoint(
-                authCodeResponse.id_token,
-                "https://www.googleapis.com/oauth2/v3/certs",
-                {
-                    audience: getActualClientIdFromDevelopmentClientId(config.clientId),
-                    issuer: ["https://accounts.google.com", "accounts.google.com"],
-                }
-            );
+            let payload: any = await verifyIdTokenFromJWKSEndpoint(authCodeResponse.id_token, jwks, {
+                audience: getActualClientIdFromDevelopmentClientId(config.clientId),
+                issuer: ["https://accounts.google.com", "accounts.google.com"],
+            });
 
             if (payload.email === undefined) {
                 throw new Error("Could not get email. Please use a different login method");
