@@ -1,0 +1,43 @@
+name: "Test examples"
+on: push
+jobs:
+    setup:
+        runs-on: ubuntu-latest
+        outputs:
+            matrix: ${{ steps.set-matrix.outputs.matrix }}
+        steps:
+            - uses: actions/checkout@v2
+            - run: bash test/findExamplesWithTests.sh
+            - id: set-matrix
+              run: echo "::set-output name=matrix::{\"include\":$(bash test/findExamplesWithTests.sh)}"
+    test:
+        needs: setup
+        runs-on: ubuntu-latest
+        strategy:
+            matrix: ${{fromJson(needs.setup.outputs.matrix)}}
+            fail-fast: false
+        env:
+            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.example_testing_supabase_public_url }}
+            NEXT_PUBLIC_SUPABASE_KEY: ${{ secrets.example_testing_supabase_public_key }}
+            SUPABASE_SIGNING_SECRET: ${{ secrets.example_testing_supabase_signing_secret }}
+        defaults:
+            run:
+                working-directory: ${{ matrix.examplePath }}
+        steps:
+            - uses: actions/checkout@v2
+            - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
+            - run: npm install
+            - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
+            - run: npm run build || true
+            - run: |
+                  (HOST= npm start & bash ../../test/waitForServerStartup.sh) && ( \
+                    (echo "=========== Test attempt 1 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 2 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
+                    (echo "=========== Test attempt 3 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) \
+                  )
+            - name: The job has failed
+              if: ${{ failure() }}
+              uses: actions/upload-artifact@v3
+              with:
+                  name: screenshots
+                  path: ./**/*screenshot.jpeg
