@@ -24,7 +24,7 @@ const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible } = require("../utils");
 
-describe(`apisFunctions: ${printPath("[test/thirdpartypasswordless/apis.test.js]")}`, function () {
+describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -478,7 +478,7 @@ describe(`apisFunctions: ${printPath("[test/thirdpartypasswordless/apis.test.js]
                         }
                     })
             );
-            assert(response.message === "Please provide exactly one of email or phoneNumber");
+            assert.strictEqual(response.message, "Please provide exactly one of email or phoneNumber");
         }
     });
 

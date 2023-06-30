@@ -13,7 +13,7 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import fetch from "cross-fetch";
 
 type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
@@ -63,23 +63,27 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
         }) {
             let accessToken = accessTokenAPIResponse.access_token;
             let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
+            let response = await fetch("https://api.github.com/user", {
                 method: "get",
-                url: "https://api.github.com/user",
                 headers: {
                     Authorization: authHeader,
                     Accept: "application/vnd.github.v3+json",
                 },
             });
-            let emailsInfoResponse = await axios({
-                url: "https://api.github.com/user/emails",
+            if (response.status >= 400) {
+                throw response;
+            }
+            let emailsInfoResponse = await fetch("https://api.github.com/user/emails", {
                 headers: {
                     Authorization: authHeader,
                     Accept: "application/vnd.github.v3+json",
                 },
             });
-            let userInfo = response.data;
-            let emailsInfo = emailsInfoResponse.data;
+            if (emailsInfoResponse.status >= 400) {
+                throw response;
+            }
+            let userInfo = await response.json();
+            let emailsInfo = await emailsInfoResponse.json();
             let id = userInfo.id.toString(); // github userId will be a number
             /*
                 if user has choosen not to show their email publicly, userInfo here will

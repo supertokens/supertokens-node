@@ -15,53 +15,28 @@
 
 import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
-import axios, { AxiosError } from "axios";
-import { logDebugMessage } from "../../logger";
+import { postWithFetch } from "../../utils";
 
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (user: User, emailVerifyURLWithToken: string) => {
         if (process.env.TEST_MODE === "testing") {
             return;
         }
-        try {
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.io/0/st/auth/email/verify",
-                data: {
-                    email: user.email,
-                    appName: appInfo.appName,
-                    emailVerifyURL: emailVerifyURLWithToken,
-                },
-                headers: {
-                    "api-version": 0,
-                },
-            });
-            logDebugMessage(`Email sent to ${user.email}`);
-        } catch (error) {
-            logDebugMessage("Error sending verification email");
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                if (err.response) {
-                    logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
-                } else {
-                    logDebugMessage(`Error: ${err.message}`);
-                }
-            } else {
-                logDebugMessage(`Error: ${JSON.stringify(error)}`);
+        await postWithFetch(
+            "https://api.supertokens.io/0/st/auth/email/verify",
+            {
+                "api-version": "0",
+                "content-type": "application/json; charset=utf-8",
+            },
+            {
+                email: user.email,
+                appName: appInfo.appName,
+                emailVerifyURL: emailVerifyURLWithToken,
+            },
+            {
+                successLog: `Email sent to ${user.email}`,
+                errorLogHeader: "Error sending verification email",
             }
-            logDebugMessage("Logging the input below:");
-            logDebugMessage(
-                JSON.stringify(
-                    {
-                        email: user.email,
-                        appName: appInfo.appName,
-                        emailVerifyURL: emailVerifyURLWithToken,
-                    },
-                    null,
-                    2
-                )
-            );
-        }
+        );
     };
 }

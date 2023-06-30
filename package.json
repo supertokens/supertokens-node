@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "14.1.2",
+    "version": "14.1.3",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -34,22 +34,21 @@
     },
     "homepage": "https://github.com/supertokens/supertokens-node#readme",
     "dependencies": {
-        "axios": "0.21.4",
-        "body-parser": "1.20.1",
-        "co-body": "6.1.0",
+        "content-type": "^1.0.5",
         "cookie": "0.4.0",
+        "cross-fetch": "^3.1.6",
         "debug": "^4.3.3",
+        "inflation": "^2.0.0",
         "jose": "^4.13.1",
-        "jsonwebtoken": "^9.0.0",
-        "jwks-rsa": "^2.0.5",
         "libphonenumber-js": "^1.9.44",
         "nodemailer": "^6.7.2",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
-        "twilio": "^4.7.2",
-        "verify-apple-id-token": "^3.0.1"
+        "twilio": "^4.7.2"
     },
     "devDependencies": {
+        "@types/inflation": "^2.0.1",
+        "body-parser": "1.20.1",
         "@hapi/hapi": "^20.2.0",
         "@koa/router": "^10.1.1",
         "@loopback/core": "2.16.2",
@@ -57,10 +56,10 @@
         "@loopback/rest": "9.3.0",
         "@types/aws-lambda": "8.10.77",
         "@types/co-body": "^5.1.1",
+        "@types/content-type": "^1.1.5",
         "@types/cookie": "0.3.3",
         "@types/express": "4.16.1",
         "@types/hapi__hapi": "20.0.8",
-        "@types/jsonwebtoken": "9.0.0",
         "@types/koa": "^2.13.4",
         "@types/koa-bodyparser": "^4.3.3",
         "@types/nodemailer": "^6.4.4",

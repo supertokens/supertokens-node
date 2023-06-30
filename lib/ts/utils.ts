@@ -6,6 +6,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 import { HEADER_RID } from "./constants";
+import fetch from "cross-fetch";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -177,4 +178,51 @@ export function getFromObjectCaseInsensitive<T>(key: string, object: Record<stri
     }
 
     return object[matchedKeys[0]];
+}
+
+export async function postWithFetch(
+    url: string,
+    headers: Record<string, string>,
+    body: any,
+    { successLog, errorLogHeader }: { successLog: string; errorLogHeader: string }
+): Promise<{ resp: { status: number; body: any } } | { error: any }> {
+    let error;
+    let resp: { status: number; body: any };
+    try {
+        const fetchResp = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers,
+        });
+        const respText = await fetchResp.text();
+        resp = {
+            status: fetchResp.status,
+            body: JSON.parse(respText),
+        };
+        if (fetchResp.status < 300) {
+            logDebugMessage(successLog);
+            return { resp };
+        }
+        logDebugMessage(errorLogHeader);
+        logDebugMessage(`Error status: ${fetchResp.status}`);
+        logDebugMessage(`Error response: ${respText}`);
+    } catch (caught) {
+        error = caught;
+        logDebugMessage(errorLogHeader);
+        if (error instanceof Error) {
+            logDebugMessage(`Error: ${error.message}`);
+        } else {
+            logDebugMessage(`Error: ${JSON.stringify(error)}`);
+        }
+    }
+    logDebugMessage("Logging the input below:");
+    logDebugMessage(JSON.stringify(body, null, 2));
+    if (error !== undefined) {
+        return {
+            error,
+        };
+    }
+    return {
+        resp: resp!,
+    };
 }

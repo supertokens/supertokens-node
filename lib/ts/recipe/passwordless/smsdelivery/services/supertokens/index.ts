@@ -15,9 +15,8 @@
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
-import axios, { AxiosError } from "axios";
 import Supertokens from "../../../../../supertokens";
-import { logDebugMessage } from "../../../../../logger";
+import { postWithFetch } from "../../../../../utils";
 
 export default class SupertokensService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     private apiKey: string;
@@ -29,54 +28,35 @@ export default class SupertokensService implements SmsDeliveryInterface<TypePass
     sendSms = async (input: TypePasswordlessSmsDeliveryInput) => {
         let supertokens = Supertokens.getInstanceOrThrowError();
         let appName = supertokens.appInfo.appName;
-        try {
-            await axios({
-                method: "post",
-                url: SUPERTOKENS_SMS_SERVICE_URL,
-                data: {
-                    apiKey: this.apiKey,
-                    smsInput: {
-                        type: input.type,
-                        phoneNumber: input.phoneNumber,
-                        userInputCode: input.userInputCode,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        codeLifetime: input.codeLifetime,
-                        appName,
-                    },
+        const res = await postWithFetch(
+            SUPERTOKENS_SMS_SERVICE_URL,
+            {
+                "api-version": "0",
+                "content-type": "application/json; charset=utf-8",
+            },
+            {
+                apiKey: this.apiKey,
+                smsInput: {
+                    type: input.type,
+                    phoneNumber: input.phoneNumber,
+                    userInputCode: input.userInputCode,
+                    urlWithLinkCode: input.urlWithLinkCode,
+                    codeLifetime: input.codeLifetime,
+                    appName,
                 },
-                headers: {
-                    "api-version": "0",
-                },
-            });
-        } catch (error) {
-            logDebugMessage("Error sending SMS");
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                if (err.response) {
-                    logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
-                } else {
-                    logDebugMessage(`Error: ${err.message}`);
-                }
-            } else {
-                logDebugMessage(`Error: ${JSON.stringify(error)}`);
+            },
+            {
+                successLog: `Passwordless login SMS sent to ${input.phoneNumber}`,
+                errorLogHeader: "Error sending SMS",
             }
-            logDebugMessage("Logging the input below:");
-            logDebugMessage(
-                JSON.stringify(
-                    {
-                        type: input.type,
-                        phoneNumber: input.phoneNumber,
-                        userInputCode: input.userInputCode,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        codeLifetime: input.codeLifetime,
-                        appName,
-                    },
-                    null,
-                    2
-                )
-            );
-            throw error;
+        );
+
+        if ("error" in res) {
+            throw res.error;
+        }
+
+        if (res.resp.status >= 400) {
+            throw new Error(res.resp.body);
         }
     };
 }

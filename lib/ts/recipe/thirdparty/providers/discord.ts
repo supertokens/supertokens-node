@@ -13,7 +13,7 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import fetch from "cross-fetch";
 
 type TypeThirdPartyProviderDiscordConfig = {
     clientId: string;
@@ -65,14 +65,16 @@ export default function Discord(config: TypeThirdPartyProviderDiscordConfig): Ty
         }) {
             let accessToken = accessTokenAPIResponse.access_token;
             let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
+            let response = await fetch("https://discord.com/api/users/@me", {
                 method: "get",
-                url: "https://discord.com/api/users/@me",
                 headers: {
                     Authorization: authHeader,
                 },
             });
-            let userInfo = response.data;
+            if (response.status >= 400) {
+                throw response;
+            }
+            let userInfo = await response.json();
             return {
                 id: userInfo.id,
                 email:

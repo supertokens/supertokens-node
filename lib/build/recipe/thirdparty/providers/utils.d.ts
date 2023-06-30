@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { VerifyOptions } from "jsonwebtoken";
+import * as jose from "jose";
 export declare function verifyIdTokenFromJWKSEndpoint(
     idToken: string,
-    jwksUri: string,
-    otherOptions: VerifyOptions
+    jwks: jose.JWTVerifyGetKey,
+    otherOptions: jose.JWTVerifyOptions
 ): Promise<any>;

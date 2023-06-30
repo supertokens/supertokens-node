@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [14.1.3] - 2023-06-07
+
+### Changes
+
+-   Updated/replaced dependencies & refactored to be compatible with vercel edge runtimes.
+
 ## [14.1.2] - 2023-06-07
 
 ### Fixes

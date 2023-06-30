@@ -13,7 +13,7 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import fetch from "cross-fetch";
 
 type TypeThirdPartyProviderFacebookConfig = {
     clientId: string;
@@ -55,16 +55,18 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
             token_type: string;
         }) {
             let accessToken = accessTokenAPIResponse.access_token;
-            let response = await axios({
-                method: "get",
-                url: "https://graph.facebook.com/me",
-                params: {
-                    access_token: accessToken,
-                    fields: "id,email",
-                    format: "json",
-                },
-            });
-            let userInfo = response.data;
+            let response = await fetch(
+                "https://graph.facebook.com/me?" +
+                    new URLSearchParams([
+                        ["access_token", accessToken],
+                        ["fields", "id,email"],
+                        ["format", "json"],
+                    ]).toString()
+            );
+            if (response.status >= 400) {
+                throw response;
+            }
+            let userInfo = await response.json();
             let id = userInfo.id;
             let email = userInfo.email;
             if (email === undefined || email === null) {

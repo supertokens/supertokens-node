@@ -12,13 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import * as jose from "jose";
+
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import { sign as jwtSign } from "jsonwebtoken";
-import STError from "../error";
 import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
 import SuperTokens from "../../../supertokens";
 import { APPLE_REDIRECT_HANDLER } from "../constants";
-import verifyAppleToken from "verify-apple-id-token";
+import { verifyIdTokenFromJWKSEndpoint } from "./utils";
+import crypto from "crypto";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -37,45 +38,41 @@ type TypeThirdPartyProviderAppleConfig = {
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
     const id = "apple";
 
-    function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): string {
-        return jwtSign(
-            {
-                iss: teamId,
-                iat: Math.floor(Date.now() / 1000),
-                exp: Math.floor(Date.now() / 1000) + 86400 * 180, // 6 months
-                aud: "https://appleid.apple.com",
-                sub: getActualClientIdFromDevelopmentClientId(clientId),
-            },
-            privateKey.replace(/\\n/g, "\n"),
-            { algorithm: "ES256", keyid: keyId }
-        );
-    }
-    try {
-        // trying to generate a client secret, in case client has not passed the values correctly
-        getClientSecret(
-            config.clientId,
-            config.clientSecret.keyId,
-            config.clientSecret.teamId,
-            config.clientSecret.privateKey
-        );
-    } catch (error) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: error.message,
-        });
+    async function getClientSecret(
+        clientId: string,
+        keyId: string,
+        teamId: string,
+        privateKey: string
+    ): Promise<string> {
+        const alg = "ES256";
+
+        return new jose.SignJWT({})
+            .setProtectedHeader({ alg, kid: keyId, typ: "JWT" })
+            .setIssuer(teamId)
+            .setIssuedAt()
+            .setExpirationTime("180days")
+            .setAudience("https://appleid.apple.com")
+            .setSubject(getActualClientIdFromDevelopmentClientId(clientId))
+            .sign(crypto.createPrivateKey(privateKey.replace(/\\n/g, "\n")));
     }
 
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
+    // trying to generate a client secret, in case client has not passed the values correctly
+    const clientSecretPromise = getClientSecret(
+        config.clientId,
+        config.clientSecret.keyId,
+        config.clientSecret.teamId,
+        config.clientSecret.privateKey
+    );
+
+    async function get(
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined
+    ): Promise<TypeProviderGetResponse> {
         let accessTokenAPIURL = "https://appleid.apple.com/auth/token";
-        let clientSecret = getClientSecret(
-            config.clientId,
-            config.clientSecret.keyId,
-            config.clientSecret.teamId,
-            config.clientSecret.privateKey
-        );
+
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
-            client_secret: clientSecret,
+            client_secret: await clientSecretPromise,
             grant_type: "authorization_code",
         };
         if (authCodeFromRequest !== undefined) {
@@ -103,6 +100,8 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             ...additionalParams,
         };
 
+        const jwks = jose.createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
+
         async function getProfileInfo(accessTokenAPIResponse: {
             access_token: string;
             expires_in: number;
@@ -116,9 +115,9 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             - Verify that the iss field contains https://appleid.apple.com
             - Verify that the aud field is the developer’s client_id
             - Verify that the time is earlier than the exp value of the token */
-            const payload = await verifyAppleToken({
-                idToken: accessTokenAPIResponse.id_token,
-                clientId: getActualClientIdFromDevelopmentClientId(config.clientId),
+            const payload = await verifyIdTokenFromJWKSEndpoint(accessTokenAPIResponse.id_token, jwks, {
+                issuer: "https://appleid.apple.com",
+                audience: getActualClientIdFromDevelopmentClientId(config.clientId),
             });
             if (payload === null) {
                 throw new Error("no user info found from user's id token received from apple");

@@ -14,7 +14,7 @@
  */
 
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import fetch from "cross-fetch";
 
 type TypeThirdPartyProviderBitbucketConfig = {
     clientId: string;
@@ -68,24 +68,28 @@ export default function Bitbucket(config: TypeThirdPartyProviderBitbucketConfig)
         }) {
             let accessToken = accessTokenAPIResponse.access_token;
             let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
+            let response = await fetch("https://api.bitbucket.org/2.0/user", {
                 method: "get",
-                url: "https://api.bitbucket.org/2.0/user",
                 headers: {
                     Authorization: authHeader,
                 },
             });
-            let userInfo = response.data;
+            if (response.status >= 400) {
+                throw response;
+            }
+            let userInfo = await response.json();
             let id = userInfo.uuid;
 
-            let emailRes = await axios({
+            let emailRes = await fetch("https://api.bitbucket.org/2.0/user/emails", {
                 method: "get",
-                url: "https://api.bitbucket.org/2.0/user/emails",
                 headers: {
                     Authorization: authHeader,
                 },
             });
-            let emailData = emailRes.data;
+            if (emailRes.status >= 400) {
+                throw response;
+            }
+            let emailData = await emailRes.json();
             let email = undefined;
             let isVerified = false;
             emailData.values.forEach((emailInfo: any) => {

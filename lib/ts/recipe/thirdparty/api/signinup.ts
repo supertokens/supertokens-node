@@ -66,7 +66,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    let provider = findRightProvider(options.providers, thirdPartyId, clientId);
+    let provider = await findRightProvider(options.providers, thirdPartyId, clientId);
     if (provider === undefined) {
         if (clientId === undefined) {
             throw new STError({

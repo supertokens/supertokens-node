@@ -1,8 +1,7 @@
+import fetch from "cross-fetch";
+
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
 import Session from "../../session";
-import { URLSearchParams } from "url";
-import * as axios from "axios";
-import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
 import EmailVerification from "../../emailverification/recipe";
@@ -24,7 +23,7 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let providerInfo = provider.get(undefined, undefined, userContext);
+            let providerInfo = await provider.get(undefined, undefined, userContext);
 
             let params: { [key: string]: string } = {};
             let keys = Object.keys(providerInfo.authorisationRedirect.params);
@@ -100,7 +99,7 @@ export default function getAPIInterface(): APIInterface {
             let accessTokenAPIResponse: any;
 
             {
-                let providerInfo = provider.get(undefined, undefined, userContext);
+                let providerInfo = await provider.get(undefined, undefined, userContext);
                 if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
                     redirectURI = DEV_OAUTH_REDIRECT_URL;
                 } else if (providerInfo.getRedirectURI !== undefined) {
@@ -110,12 +109,10 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let providerInfo = provider.get(redirectURI, code, userContext);
+            let providerInfo = await provider.get(redirectURI, code, userContext);
 
             if (authCodeResponse !== undefined) {
-                accessTokenAPIResponse = {
-                    data: authCodeResponse,
-                };
+                accessTokenAPIResponse = authCodeResponse;
             } else {
                 // we should use code to get the authCodeResponse body
                 if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
@@ -128,18 +125,18 @@ export default function getAPIInterface(): APIInterface {
                     });
                 }
 
-                accessTokenAPIResponse = await axios.default({
+                const atResp = await fetch(providerInfo.accessTokenAPI.url, {
                     method: "post",
-                    url: providerInfo.accessTokenAPI.url,
-                    data: qs.stringify(providerInfo.accessTokenAPI.params),
+                    body: new URLSearchParams(providerInfo.accessTokenAPI.params).toString(),
                     headers: {
                         "content-type": "application/x-www-form-urlencoded",
                         accept: "application/json", // few providers like github don't send back json response by default
                     },
                 });
+                accessTokenAPIResponse = await atResp.json();
             }
 
-            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
+            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse, userContext);
 
             let emailInfo = userInfo.email;
             if (emailInfo === undefined) {
@@ -189,7 +186,7 @@ export default function getAPIInterface(): APIInterface {
                 createdNewUser: response.createdNewUser,
                 user: response.user,
                 session,
-                authCodeResponse: accessTokenAPIResponse.data,
+                authCodeResponse: accessTokenAPIResponse,
             };
         },
 
