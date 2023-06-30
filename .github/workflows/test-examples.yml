@@ -30,7 +30,7 @@ jobs:
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
             - run: npm run build || true
             - run: |
-                  (HOST= npm start & bash ../../test/waitForServerStartup.sh) && ( \
+                  (HOST= npm start & bash ${GITHUB_WORKSPACE}/test/waitForServerStartup.sh) && ( \
                     (echo "=========== Test attempt 1 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
                     (echo "=========== Test attempt 2 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) || \
                     (echo "=========== Test attempt 3 ===========" && npx mocha --no-config --timeout 80000 test/**/*.test.js) \
