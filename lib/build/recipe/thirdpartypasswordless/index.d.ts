@@ -3,7 +3,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     RecipeInterface,
-    User,
     APIInterface,
     PasswordlessAPIOptions,
     ThirdPartyAPIOptions,
@@ -11,6 +10,7 @@ import {
 } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -89,7 +89,7 @@ export default class Wrapper {
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -101,7 +101,7 @@ export default class Wrapper {
           }
     >;
     static updatePasswordlessUser(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
@@ -167,7 +167,7 @@ export default class Wrapper {
     ): Promise<{
         status: string;
         createdNewUser: boolean;
-        user: import("../passwordless/types").User;
+        user: import("../emailpassword").User;
     }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
@@ -211,6 +211,6 @@ export declare let Discord: typeof import("../thirdparty/providers/discord").def
 export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
 export declare let Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
 export declare let GitLab: typeof import("../thirdparty/providers/gitlab").default;
-export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
+export type { RecipeInterface, TypeProvider, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

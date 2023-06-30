@@ -3,12 +3,12 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     RecipeInterface,
-    User,
     APIOptions,
     APIInterface,
     TypePasswordlessEmailDeliveryInput,
     TypePasswordlessSmsDeliveryInput,
 } from "./types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -70,7 +70,7 @@ export default class Wrapper {
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -82,7 +82,7 @@ export default class Wrapper {
           }
     >;
     static updateUser(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
@@ -145,7 +145,7 @@ export default class Wrapper {
     ): Promise<{
         status: string;
         createdNewUser: boolean;
-        user: User;
+        user: import("../emailpassword").User;
     }>;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {
@@ -172,6 +172,6 @@ export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
 export declare let signInUp: typeof Wrapper.signInUp;
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

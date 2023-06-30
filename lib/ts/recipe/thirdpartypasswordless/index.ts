@@ -18,7 +18,6 @@ import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
 import {
     RecipeInterface,
-    User,
     APIInterface,
     PasswordlessAPIOptions,
     ThirdPartyAPIOptions,
@@ -26,6 +25,7 @@ import {
 } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -89,7 +89,7 @@ export default class Wrapper {
     }
 
     static updatePasswordlessUser(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
@@ -253,7 +253,7 @@ export let GitLab = Wrapper.GitLab;
 
 // export let ActiveDirectory = Wrapper.ActiveDirectory;
 
-export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
+export type { RecipeInterface, TypeProvider, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 
 export let sendEmail = Wrapper.sendEmail;
 

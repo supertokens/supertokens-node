@@ -444,8 +444,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             otherPrimaryUser.id
         );
 
-        assert(response.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
-        assert(response.primaryUserId === user.id);
+        assert.strictEqual(response.status, "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
+        assert.strictEqual(response.primaryUserId, user.id);
     });
 
     it("unlinking accounts success and removes session", async function () {

@@ -96,11 +96,10 @@ export async function mockSignIn(input: {
         return response.data;
     }
 
-    let user = response.data.user;
     return {
         status: "OK",
         user: (await mockGetUser({
-            userId: user.id,
+            userId: response.data.user.id,
         }))!,
     };
 }

@@ -1,5 +1,17 @@
 import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
+import {
+    mockConsumeCode,
+    mockCreateCode,
+    mockCreateNewCodeForDevice,
+    mockListCodesByDeviceId,
+    mockListCodesByEmail,
+    mockListCodesByPhoneNumber,
+    mockListCodesByPreAuthSessionId,
+    mockUpdateUser,
+    mockRevokeAllCodes,
+    mockRevokeCode,
+} from "./mockCore";
 import NormalisedURLPath from "../../normalisedURLPath";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
@@ -13,75 +25,131 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
     return {
         consumeCode: async function (input) {
-            let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/signinup/code/consume"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/signinup/code/consume"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockConsumeCode(input);
+            }
             return response;
         },
         createCode: async function (input) {
-            let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/signinup/code"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/signinup/code"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockCreateCode(input);
+            }
             return response;
         },
         createNewCodeForDevice: async function (input) {
-            let response = await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/signinup/code"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/signinup/code"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockCreateNewCodeForDevice(input);
+            }
             return response;
         },
         listCodesByDeviceId: async function (input) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/signinup/codes"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendGetRequest(
+                    new NormalisedURLPath("/recipe/signinup/codes"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockListCodesByDeviceId(input);
+            }
             return response.devices.length === 1 ? response.devices[0] : undefined;
         },
         listCodesByEmail: async function (input) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/signinup/codes"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendGetRequest(
+                    new NormalisedURLPath("/recipe/signinup/codes"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockListCodesByEmail(input);
+            }
             return response.devices;
         },
         listCodesByPhoneNumber: async function (input) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/signinup/codes"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendGetRequest(
+                    new NormalisedURLPath("/recipe/signinup/codes"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockListCodesByPhoneNumber(input);
+            }
             return response.devices;
         },
         listCodesByPreAuthSessionId: async function (input) {
-            let response = await querier.sendGetRequest(
-                new NormalisedURLPath("/recipe/signinup/codes"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendGetRequest(
+                    new NormalisedURLPath("/recipe/signinup/codes"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockListCodesByPreAuthSessionId(input);
+            }
             return response.devices.length === 1 ? response.devices[0] : undefined;
         },
         revokeAllCodes: async function (input) {
-            await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/signinup/codes/remove"),
-                copyAndRemoveUserContext(input)
-            );
+            if (process.env.MOCK !== "true") {
+                await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/signinup/codes/remove"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                await mockRevokeAllCodes(input);
+            }
             return {
                 status: "OK",
             };
         },
         revokeCode: async function (input) {
-            await querier.sendPostRequest(
-                new NormalisedURLPath("/recipe/signinup/code/remove"),
-                copyAndRemoveUserContext(input)
-            );
+            if (process.env.MOCK !== "true") {
+                await querier.sendPostRequest(
+                    new NormalisedURLPath("/recipe/signinup/code/remove"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                await mockRevokeCode(input);
+            }
             return { status: "OK" };
         },
         updateUser: async function (input) {
-            let response = await querier.sendPutRequest(
-                new NormalisedURLPath("/recipe/user"),
-                copyAndRemoveUserContext(input)
-            );
+            let response;
+
+            if (process.env.MOCK !== "true") {
+                response = await querier.sendPutRequest(
+                    new NormalisedURLPath("/recipe/user"),
+                    copyAndRemoveUserContext(input)
+                );
+            } else {
+                response = await mockUpdateUser(input);
+            }
             return response;
         },
     };

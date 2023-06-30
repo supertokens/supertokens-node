@@ -17,12 +17,12 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     RecipeInterface,
-    User,
     APIOptions,
     APIInterface,
     TypePasswordlessEmailDeliveryInput,
     TypePasswordlessSmsDeliveryInput,
 } from "./types";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -70,7 +70,7 @@ export default class Wrapper {
     }
 
     static updateUser(input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;
@@ -189,7 +189,7 @@ export let createMagicLink = Wrapper.createMagicLink;
 
 export let signInUp = Wrapper.signInUp;
 
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface };
 
 export let sendEmail = Wrapper.sendEmail;
 

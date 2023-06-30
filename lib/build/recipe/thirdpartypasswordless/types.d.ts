@@ -16,25 +16,9 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
-import { GeneralErrorResponse, User as GlobalUser } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type DeviceType = DeviceTypeOriginal;
-export declare type User = (
-    | {
-          email?: string;
-          phoneNumber?: string;
-      }
-    | {
-          email: string;
-          thirdParty: {
-              id: string;
-              userId: string;
-          };
-      }
-) & {
-    id: string;
-    recipeUserId: string;
-    timeJoined: number;
-};
 export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
@@ -255,7 +239,7 @@ export declare type RecipeInterface = {
           }
     >;
     updatePasswordlessUser: (input: {
-        userId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext: any;
@@ -359,6 +343,10 @@ export declare type APIInterface = {
                     preAuthSessionId: string;
                     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
                 }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
     resendCodePOST:
@@ -411,7 +399,7 @@ export declare type APIInterface = {
                     status: "RESTART_FLOW_ERROR";
                 }
               | {
-                    status: "SIGNUP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
           >);
