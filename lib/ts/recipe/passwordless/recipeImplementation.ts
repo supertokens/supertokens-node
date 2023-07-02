@@ -13,6 +13,8 @@ import {
     mockRevokeCode,
 } from "./mockCore";
 import NormalisedURLPath from "../../normalisedURLPath";
+import EmailVerification from "../emailverification/recipe";
+import { User } from "../../types";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContext(input: any): any {
@@ -34,6 +36,34 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 );
             } else {
                 response = await mockConsumeCode(input);
+            }
+            if (response.status === "OK") {
+                const loginMethod = response.user.loginMethods.find(
+                    (m: User["loginMethods"][number]) => m.recipeId === "passwordless"
+                )!;
+                if (loginMethod === undefined) {
+                    throw new Error("This should never happen: login method not found after signin");
+                }
+                if (loginMethod.email !== undefined) {
+                    const emailVerificationInstance = EmailVerification.getInstance();
+                    if (emailVerificationInstance) {
+                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                            {
+                                recipeUserId: loginMethod.recipeUserId,
+                                email: loginMethod.email,
+                                userContext: input.userContext,
+                            }
+                        );
+
+                        if (tokenResponse.status === "OK") {
+                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                token: tokenResponse.token,
+                                attemptAccountLinking: false,
+                                userContext: input.userContext,
+                            });
+                        }
+                    }
+                }
             }
             return response;
         },

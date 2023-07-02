@@ -1,7 +1,6 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
-import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
 import { getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
@@ -90,27 +89,6 @@ export default function getAPIImplementation(): APIInterface {
                 throw new Error("Should never come here");
             }
 
-            if (loginMethod.email !== undefined) {
-                // TODO: this goes in the recipe implementation file. before we attempt account linking.
-                const emailVerificationInstance = EmailVerification.getInstance();
-                if (emailVerificationInstance) {
-                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                        {
-                            recipeUserId: loginMethod.recipeUserId,
-                            email: loginMethod.email,
-                            userContext: input.userContext,
-                        }
-                    );
-
-                    if (tokenResponse.status === "OK") {
-                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                            token: tokenResponse.token,
-                            attemptAccountLinking: false,
-                            userContext: input.userContext,
-                        });
-                    }
-                }
-            }
             if (existingUsers.length > 0) {
                 // Here we do this check after sign in is done cause:
                 // - We first want to check if the credentials are correct first or not
