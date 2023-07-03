@@ -80,6 +80,7 @@ describe("SuperTokens Example Basic tests", function () {
                 { name: "password", value: testPW },
             ]);
             await submitForm(page);
+            await page.waitForNavigation();
             const user = await EmailPassword.getUserByEmail(email);
             const callApiBtn = await page.waitForSelector(".sessionButton");
             let setAlertContent;
