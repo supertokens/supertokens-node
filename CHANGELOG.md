@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [14.1.3] - 2023-06-07
+## [14.1.3] - 2023-07-03
 
 ### Changes
 
 -   Updated/replaced dependencies & refactored to be compatible with vercel edge runtimes.
+
+### Fixes
+
+-   Now properly ignoring missing anti-csrf tokens in optional session validation
 
 ## [14.1.2] - 2023-06-07
 
