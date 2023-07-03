@@ -30,7 +30,7 @@ import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-// For Express
+
 export default class SessionWrapper {
     static init = Recipe.init;
 
@@ -106,7 +106,6 @@ export default class SessionWrapper {
             sessionInfo: SessionInformation,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        tenantId?: string,
         userContext: any = {}
     ): Promise<
         | {
@@ -121,7 +120,6 @@ export default class SessionWrapper {
 
         const sessionInfo = await recipeImpl.getSessionInformation({
             sessionHandle,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
         if (sessionInfo === undefined) {
@@ -154,7 +152,6 @@ export default class SessionWrapper {
                 !(await recipeImpl.mergeIntoAccessTokenPayload({
                     sessionHandle,
                     accessTokenPayloadUpdate: claimValidationResponse.accessTokenPayloadUpdate,
-                    tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
                     userContext,
                 }))
             ) {
@@ -305,10 +302,9 @@ export default class SessionWrapper {
         return session;
     }
 
-    static getSessionInformation(sessionHandle: string, tenantId?: string, userContext: any = {}) {
+    static getSessionInformation(sessionHandle: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
             sessionHandle,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -337,7 +333,8 @@ export default class SessionWrapper {
     static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
             userId,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
+            revokeAcrossAllTenants: tenantId === undefined,
             userContext,
         });
     }
@@ -346,36 +343,29 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            fetchAcrossAllTenants: tenantId === undefined,
             userContext,
         });
     }
 
-    static revokeSession(sessionHandle: string, tenantId?: string, userContext: any = {}) {
+    static revokeSession(sessionHandle: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({
             sessionHandle,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
 
-    static revokeMultipleSessions(sessionHandles: string[], tenantId?: string, userContext: any = {}) {
+    static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({
             sessionHandles,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
 
-    static updateSessionDataInDatabase(
-        sessionHandle: string,
-        newSessionData: any,
-        tenantId?: string,
-        userContext: any = {}
-    ) {
+    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionDataInDatabase({
             sessionHandle,
             newSessionData,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -383,13 +373,11 @@ export default class SessionWrapper {
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
-        tenantId?: string,
         userContext: any = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
             sessionHandle,
             accessTokenPayloadUpdate,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }

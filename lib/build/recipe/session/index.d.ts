@@ -40,7 +40,6 @@ export default class SessionWrapper {
             sessionInfo: SessionInformation,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -130,11 +129,7 @@ export default class SessionWrapper {
         options?: VerifySessionOptions,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
-    static getSessionInformation(
-        sessionHandle: string,
-        tenantId?: string,
-        userContext?: any
-    ): Promise<SessionInformation | undefined>;
+    static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
     static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
     static refreshSessionWithoutRequestResponse(
         refreshToken: string,
@@ -144,18 +139,12 @@ export default class SessionWrapper {
     ): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
-    static revokeSession(sessionHandle: string, tenantId?: string, userContext?: any): Promise<boolean>;
-    static revokeMultipleSessions(sessionHandles: string[], tenantId?: string, userContext?: any): Promise<string[]>;
-    static updateSessionDataInDatabase(
-        sessionHandle: string,
-        newSessionData: any,
-        tenantId?: string,
-        userContext?: any
-    ): Promise<boolean>;
+    static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
+    static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
+    static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;
     static mergeIntoAccessTokenPayload(
         sessionHandle: string,
         accessTokenPayloadUpdate: JSONObject,
-        tenantId?: string,
         userContext?: any
     ): Promise<boolean>;
     static createJWT(

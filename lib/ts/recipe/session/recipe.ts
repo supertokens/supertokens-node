@@ -211,7 +211,6 @@ export default class SessionRecipe extends RecipeModule {
                 return await this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,
-                    err.payload.tId,
                     request,
                     response
                 );

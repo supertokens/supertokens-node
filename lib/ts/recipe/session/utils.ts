@@ -70,10 +70,9 @@ export async function sendTokenTheftDetectedResponse(
     sessionHandle: string,
     _: string,
     __: BaseRequest,
-    response: BaseResponse,
-    tenantId: string
+    response: BaseResponse
 ) {
-    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, tenantId, userContext: {} });
+    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} });
     sendNon200ResponseWithMessage(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }
 
@@ -178,18 +177,10 @@ export function validateAndNormaliseUserInput(
         onTokenTheftDetected: async (
             sessionHandle: string,
             userId: string,
-            tenantId: string,
             request: BaseRequest,
             response: BaseResponse
         ) => {
-            return await sendTokenTheftDetectedResponse(
-                recipeInstance,
-                sessionHandle,
-                userId,
-                request,
-                response,
-                tenantId
-            );
+            return await sendTokenTheftDetectedResponse(recipeInstance, sessionHandle, userId, request, response);
         },
         onTryRefreshToken: async (message: string, request: BaseRequest, response: BaseResponse) => {
             return await sendTryRefreshTokenResponse(recipeInstance, message, request, response);

@@ -223,7 +223,7 @@ export default function getRecipeInterface(
                 payload,
                 undefined,
                 response.accessToken !== undefined,
-                payload.tId
+                response.session.tenantId
             );
 
             return session;
@@ -311,12 +311,10 @@ export default function getRecipeInterface(
 
         getSessionInformation: async function ({
             sessionHandle,
-            tenantId,
         }: {
             sessionHandle: string;
-            tenantId: string;
         }): Promise<SessionInformation | undefined> {
-            return SessionFunctions.getSessionInformation(helpers, sessionHandle, tenantId);
+            return SessionFunctions.getSessionInformation(helpers, sessionHandle);
         },
 
         refreshSession: async function (
@@ -397,50 +395,46 @@ export default function getRecipeInterface(
             return response;
         },
 
-        revokeAllSessionsForUser: function ({ userId, tenantId }: { userId: string; tenantId: string }) {
-            return SessionFunctions.revokeAllSessionsForUser(helpers, userId, tenantId);
+        revokeAllSessionsForUser: function ({
+            userId,
+            tenantId,
+            revokeAcrossAllTenants,
+        }: {
+            userId: string;
+            tenantId?: string;
+            revokeAcrossAllTenants?: boolean;
+        }) {
+            return SessionFunctions.revokeAllSessionsForUser(helpers, userId, tenantId, revokeAcrossAllTenants);
         },
 
         getAllSessionHandlesForUser: function ({
             userId,
             tenantId,
+            fetchAcrossAllTenants,
         }: {
             userId: string;
-            tenantId: string;
+            tenantId?: string;
+            fetchAcrossAllTenants?: boolean;
         }): Promise<string[]> {
-            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, tenantId);
+            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, tenantId, fetchAcrossAllTenants);
         },
 
-        revokeSession: function ({
-            sessionHandle,
-            tenantId,
-        }: {
-            sessionHandle: string;
-            tenantId: string;
-        }): Promise<boolean> {
-            return SessionFunctions.revokeSession(helpers, sessionHandle, tenantId);
+        revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
+            return SessionFunctions.revokeSession(helpers, sessionHandle);
         },
 
-        revokeMultipleSessions: function ({
-            sessionHandles,
-            tenantId,
-        }: {
-            sessionHandles: string[];
-            tenantId: string;
-        }) {
-            return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles, tenantId);
+        revokeMultipleSessions: function ({ sessionHandles }: { sessionHandles: string[] }) {
+            return SessionFunctions.revokeMultipleSessions(helpers, sessionHandles);
         },
 
         updateSessionDataInDatabase: function ({
             sessionHandle,
             newSessionData,
-            tenantId,
         }: {
             sessionHandle: string;
             newSessionData: any;
-            tenantId: string;
         }): Promise<boolean> {
-            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData, tenantId);
+            return SessionFunctions.updateSessionDataInDatabase(helpers, sessionHandle, newSessionData);
         },
 
         mergeIntoAccessTokenPayload: async function (
@@ -448,16 +442,14 @@ export default function getRecipeInterface(
             {
                 sessionHandle,
                 accessTokenPayloadUpdate,
-                tenantId,
                 userContext,
             }: {
                 sessionHandle: string;
                 accessTokenPayloadUpdate: JSONObject;
-                tenantId: string;
                 userContext: any;
             }
         ) {
-            const sessionInfo = await this.getSessionInformation({ sessionHandle, tenantId, userContext });
+            const sessionInfo = await this.getSessionInformation({ sessionHandle, userContext });
             if (sessionInfo === undefined) {
                 return false;
             }
@@ -473,7 +465,7 @@ export default function getRecipeInterface(
                 }
             }
 
-            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload, tenantId);
+            return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 
         fetchAndSetClaim: async function <T>(
@@ -487,7 +479,6 @@ export default function getRecipeInterface(
         ) {
             const sessionInfo = await this.getSessionInformation({
                 sessionHandle: input.sessionHandle,
-                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
             if (sessionInfo === undefined) {
@@ -498,7 +489,6 @@ export default function getRecipeInterface(
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
-                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
         },
@@ -517,7 +507,6 @@ export default function getRecipeInterface(
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
-                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
         },
@@ -528,7 +517,6 @@ export default function getRecipeInterface(
         ) {
             const sessionInfo = await this.getSessionInformation({
                 sessionHandle: input.sessionHandle,
-                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
 
@@ -553,7 +541,6 @@ export default function getRecipeInterface(
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
-                tenantId: input.tenantId,
                 userContext: input.userContext,
             });
         },

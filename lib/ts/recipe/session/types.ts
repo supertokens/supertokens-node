@@ -160,9 +160,7 @@ export interface ErrorHandlerMiddleware {
 }
 
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, tenantId: string, request: BaseRequest, response: BaseResponse): Promise<
-        void
-    >;
+    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 
 export interface InvalidClaimErrorHandlerMiddleware {
@@ -224,32 +222,36 @@ export type RecipeInterface = {
      *
      * Returns undefined if the sessionHandle does not exist
      */
-    getSessionInformation(input: {
-        sessionHandle: string;
-        tenantId: string;
+    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
+
+    revokeAllSessionsForUser(input: {
+        userId: string;
+        tenantId?: string;
+        revokeAcrossAllTenants?: boolean;
         userContext: any;
-    }): Promise<SessionInformation | undefined>;
+    }): Promise<string[]>;
 
-    revokeAllSessionsForUser(input: { userId: string; tenantId: string; userContext: any }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: {
+        userId: string;
+        tenantId?: string;
+        fetchAcrossAllTenants?: boolean;
+        userContext: any;
+    }): Promise<string[]>;
 
-    getAllSessionHandlesForUser(input: { userId: string; tenantId: string; userContext: any }): Promise<string[]>;
+    revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
 
-    revokeSession(input: { sessionHandle: string; tenantId: string; userContext: any }): Promise<boolean>;
-
-    revokeMultipleSessions(input: { sessionHandles: string[]; tenantId: string; userContext: any }): Promise<string[]>;
+    revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
 
     // Returns false if the sessionHandle does not exist
     updateSessionDataInDatabase(input: {
         sessionHandle: string;
         newSessionData: any;
-        tenantId: string;
         userContext: any;
     }): Promise<boolean>;
 
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
-        tenantId: string;
         userContext: any;
     }): Promise<boolean>;
 

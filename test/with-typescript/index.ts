@@ -1365,12 +1365,6 @@ Session.validateClaimsForSessionHandle("asdf", (globalClaimValidators) => [
 Session.validateClaimsForSessionHandle(
     "asdf",
     (globalClaimValidators, info) => [...globalClaimValidators, boolClaim.validators.isTrue(info.expiry)],
-    "tenant"
-);
-Session.validateClaimsForSessionHandle(
-    "asdf",
-    (globalClaimValidators, info) => [...globalClaimValidators, boolClaim.validators.isTrue(info.expiry)],
-    "tenant",
     { test: 1 }
 );
 
