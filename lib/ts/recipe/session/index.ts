@@ -333,7 +333,7 @@ export default class SessionWrapper {
     static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
             userId,
-            tenantId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             revokeAcrossAllTenants: tenantId === undefined,
             userContext,
         });
