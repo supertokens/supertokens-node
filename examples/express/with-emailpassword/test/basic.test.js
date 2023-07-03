@@ -73,7 +73,6 @@ describe("SuperTokens Example Basic tests", function () {
             await Promise.all([page.goto(websiteDomain), page.waitForNavigation({ waitUntil: "networkidle0" })]);
 
             // redirected to /auth
-            console.log("redirect auth");
             await toggleSignInSignUp(page);
             await setInputValues(page, [
                 { name: "email", value: email },
