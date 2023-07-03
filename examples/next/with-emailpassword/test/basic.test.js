@@ -59,7 +59,7 @@ describe("SuperTokens Example Basic tests", function () {
     before(async function () {
         browser = await puppeteer.launch({
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
-            headless: false,
+            headless: true,
         });
         page = await browser.newPage();
     });
