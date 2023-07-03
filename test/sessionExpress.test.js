@@ -389,6 +389,100 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
+    it("express verify optional session with VIA_CUSTOM_HEADER", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" })],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", verifySession(), async (req, res) => {
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res2.accessToken])
+                .set("anti-csrf", res2.antiCsrf)
+                .end((err, res) => {
+                    resolve();
+                })
+        );
+
+        let res3 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(res3.status === 401);
+        assert.deepStrictEqual(res3.text, '{"message":"token theft detected"}');
+
+        let cookies = extractInfoFromResponse(res3);
+        assert.strictEqual(cookies.antiCsrf, undefined);
+        assert.strictEqual(cookies.accessToken, "");
+        assert.strictEqual(cookies.refreshToken, "");
+        assert.strictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    });
+
     //check basic usage of session
     it("test basic usage of express sessions", async function () {
         await startST();
@@ -1955,6 +2049,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });
+        app.post("/session/verify-optional", verifySession({ sessionRequired: false }), async (req, res) => {
+            let sessionResponse = req.session;
+            res.status(200).json({ hasSession: !!sessionResponse });
+        });
         app.post("/session/verifyAntiCsrfFalse", verifySession({ antiCsrfCheck: false }), async (req, res) => {
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
@@ -2009,6 +2107,36 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res3.body.userId, "id1");
         }
 
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify-optional")
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res2.status, 401);
+            assert.deepStrictEqual(res2.text, '{"message":"try refresh token"}');
+
+            let res3 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify-optional")
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.notStrictEqual(res3.text, '{"message":"try refresh token"}');
+            assert.deepStrictEqual(res3.body.hasSession, false);
+        }
         {
             let res2 = await new Promise((resolve) =>
                 request(app)
