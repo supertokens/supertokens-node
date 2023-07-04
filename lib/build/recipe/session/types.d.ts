@@ -22,6 +22,7 @@ export declare type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
+        tenantId: string;
     };
     accessToken: TokenInfo;
     refreshToken: TokenInfo;
@@ -223,6 +224,7 @@ export declare type RecipeInterface = {
                   handle: string;
                   userId: string;
                   userDataInJWT: any;
+                  tenantId: string;
               };
               accessToken?: {
                   token: string;
@@ -250,23 +252,16 @@ export declare type RecipeInterface = {
         status: "OK";
         invalidClaims: ClaimValidationError[];
     }>;
-    fetchAndSetClaim(input: {
-        sessionHandle: string;
-        claim: SessionClaim<any>;
-        tenantId: string;
-        userContext: any;
-    }): Promise<boolean>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         value: T;
-        tenantId: string;
         userContext: any;
     }): Promise<boolean>;
     getClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
-        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -277,12 +272,7 @@ export declare type RecipeInterface = {
               value: T | undefined;
           }
     >;
-    removeClaim(input: {
-        sessionHandle: string;
-        claim: SessionClaim<any>;
-        tenantId: string;
-        userContext: any;
-    }): Promise<boolean>;
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
@@ -350,6 +340,7 @@ export declare type SessionInformation = {
     expiry: number;
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
+    tenantId: string;
 };
 export declare type ClaimValidationResult =
     | {

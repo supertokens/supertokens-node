@@ -54,8 +54,25 @@ export async function createNewSession(
         requestBody
     );
 
-    delete response.status;
-    return response;
+    return {
+        session: {
+            handle: response.session.handle,
+            userId: response.session.userId,
+            userDataInJWT: response.session.userDataInJWT,
+            tenantId: response.session.tenantId,
+        },
+        accessToken: {
+            token: response.accessToken.token,
+            createdTime: response.accessToken.createdTime,
+            expiry: response.accessToken.expiry,
+        },
+        refreshToken: {
+            token: response.refreshToken.token,
+            createdTime: response.refreshToken.createdTime,
+            expiry: response.refreshToken.expiry,
+        },
+        antiCsrfToken: response.antiCsrfToken,
+    };
 }
 
 /**
@@ -224,7 +241,7 @@ export async function getSession(
                     response.accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
                     accessTokenInfo?.expiryTime || // if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
                     parsedAccessToken.payload["expiryTime"], // if the token didn't pass validation, but we got here, it means it was a v2 token that we didn't have the key cached for.
-                tenantId: parsedAccessToken.version >= 4 ? parsedAccessToken.payload["tId"] : DEFAULT_TENANT_ID,
+                tenantId: response.session?.tenantId || accessTokenInfo?.tenantId || DEFAULT_TENANT_ID,
                 userDataInJWT: response.session.userDataInJWT,
             },
         };
@@ -263,13 +280,15 @@ export async function getSessionInformation(
 
     if (response.status === "OK") {
         // Change keys to make them more readable
-        response["sessionDataInDatabase"] = response.userDataInDatabase;
-        response["customClaimsInAccessTokenPayload"] = response.userDataInJWT;
-
-        delete response.userDataInDatabase;
-        delete response.userDataInJWT;
-
-        return response;
+        return {
+            sessionHandle: response.sessionHandle,
+            timeCreated: response.timeCreated,
+            expiry: response.expiry,
+            userId: response.userId,
+            sessionDataInDatabase: response.userDataInDatabase,
+            customClaimsInAccessTokenPayload: response.userDataInJWT,
+            tenantId: response.tenantId,
+        };
     } else {
         return undefined;
     }
@@ -303,8 +322,25 @@ export async function refreshSession(
 
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
     if (response.status === "OK") {
-        delete response.status;
-        return response;
+        return {
+            session: {
+                handle: response.session.handle,
+                userId: response.session.userId,
+                userDataInJWT: response.session.userDataInJWT,
+                tenantId: response.session.tenantId,
+            },
+            accessToken: {
+                token: response.accessToken.token,
+                createdTime: response.accessToken.createdTime,
+                expiry: response.accessToken.expiry,
+            },
+            refreshToken: {
+                token: response.refreshToken.token,
+                createdTime: response.refreshToken.createdTime,
+                expiry: response.refreshToken.expiry,
+            },
+            antiCsrfToken: response.antiCsrfToken,
+        };
     } else if (response.status === "UNAUTHORISED") {
         logDebugMessage("refreshSession: Returning UNAUTHORISED because of core response");
         throw new STError({

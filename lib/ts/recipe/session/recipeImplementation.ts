@@ -371,6 +371,7 @@ export default function getRecipeInterface(
                       handle: string;
                       userId: string;
                       userDataInJWT: any;
+                      tenantId: string;
                   };
                   accessToken?: {
                       token: string;
@@ -392,7 +393,16 @@ export default function getRecipeInterface(
             if (response.status === "UNAUTHORISED") {
                 return undefined;
             }
-            return response;
+            return {
+                status: response.status,
+                session: {
+                    handle: response.session.handle,
+                    userId: response.session.userId,
+                    userDataInJWT: response.session.userDataInJWT,
+                    tenantId: response.session.tenantId,
+                },
+                accessToken: response.accessToken,
+            };
         },
 
         revokeAllSessionsForUser: function ({
@@ -473,7 +483,6 @@ export default function getRecipeInterface(
             input: {
                 sessionHandle: string;
                 claim: SessionClaim<T>;
-                tenantId: string;
                 userContext?: any;
             }
         ) {
@@ -484,7 +493,11 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, input.userContext);
+            const accessTokenPayloadUpdate = await input.claim.build(
+                sessionInfo.userId,
+                sessionInfo.tenantId,
+                input.userContext
+            );
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
@@ -499,7 +512,6 @@ export default function getRecipeInterface(
                 sessionHandle: string;
                 claim: SessionClaim<T>;
                 value: T;
-                tenantId: string;
                 userContext?: any;
             }
         ) {
@@ -513,7 +525,7 @@ export default function getRecipeInterface(
 
         getClaimValue: async function <T>(
             this: RecipeInterface,
-            input: { sessionHandle: string; claim: SessionClaim<T>; tenantId: string; userContext?: any }
+            input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }
         ) {
             const sessionInfo = await this.getSessionInformation({
                 sessionHandle: input.sessionHandle,
@@ -534,7 +546,7 @@ export default function getRecipeInterface(
 
         removeClaim: function (
             this: RecipeInterface,
-            input: { sessionHandle: string; claim: SessionClaim<any>; tenantId: string; userContext?: any }
+            input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }
         ) {
             const accessTokenPayloadUpdate = input.claim.removeFromPayloadByMerge_internal({}, input.userContext);
 

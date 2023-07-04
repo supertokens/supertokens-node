@@ -39,6 +39,7 @@ export type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
+        tenantId: string;
     };
     accessToken: TokenInfo;
     refreshToken: TokenInfo;
@@ -269,6 +270,7 @@ export type RecipeInterface = {
                   handle: string;
                   userId: string;
                   userDataInJWT: any;
+                  tenantId: string;
               };
               accessToken?: {
                   token: string;
@@ -299,24 +301,17 @@ export type RecipeInterface = {
         invalidClaims: ClaimValidationError[];
     }>;
 
-    fetchAndSetClaim(input: {
-        sessionHandle: string;
-        claim: SessionClaim<any>;
-        tenantId: string;
-        userContext: any;
-    }): Promise<boolean>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         value: T;
-        tenantId: string;
         userContext: any;
     }): Promise<boolean>;
 
     getClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
-        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -328,12 +323,7 @@ export type RecipeInterface = {
           }
     >;
 
-    removeClaim(input: {
-        sessionHandle: string;
-        claim: SessionClaim<any>;
-        tenantId: string;
-        userContext: any;
-    }): Promise<boolean>;
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
 };
 
 export interface SessionContainerInterface {
@@ -423,6 +413,7 @@ export type SessionInformation = {
     expiry: number;
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
+    tenantId: string;
 };
 
 export type ClaimValidationResult = { isValid: true } | { isValid: false; reason?: JSONValue };

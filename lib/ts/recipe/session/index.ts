@@ -401,16 +401,10 @@ export default class SessionWrapper {
         });
     }
 
-    static fetchAndSetClaim(
-        sessionHandle: string,
-        claim: SessionClaim<any>,
-        tenantId?: string,
-        userContext: any = {}
-    ): Promise<boolean> {
+    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
             sessionHandle,
             claim,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -419,14 +413,12 @@ export default class SessionWrapper {
         sessionHandle: string,
         claim: SessionClaim<T>,
         value: T,
-        tenantId?: string,
         userContext: any = {}
     ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
             sessionHandle,
             claim,
             value,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -434,7 +426,6 @@ export default class SessionWrapper {
     static getClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
-        tenantId?: string,
         userContext: any = {}
     ): Promise<
         | {
@@ -448,21 +439,14 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimValue({
             sessionHandle,
             claim,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
 
-    static removeClaim(
-        sessionHandle: string,
-        claim: SessionClaim<any>,
-        tenantId?: string,
-        userContext: any = {}
-    ): Promise<boolean> {
+    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
             sessionHandle,
             claim,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }

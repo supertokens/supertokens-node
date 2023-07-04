@@ -173,23 +173,16 @@ export default class SessionWrapper {
         issuer: string;
         jwks_uri: string;
     }>;
-    static fetchAndSetClaim(
-        sessionHandle: string,
-        claim: SessionClaim<any>,
-        tenantId?: string,
-        userContext?: any
-    ): Promise<boolean>;
+    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<boolean>;
     static setClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
         value: T,
-        tenantId?: string,
         userContext?: any
     ): Promise<boolean>;
     static getClaimValue<T>(
         sessionHandle: string,
         claim: SessionClaim<T>,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -200,12 +193,7 @@ export default class SessionWrapper {
               value: T | undefined;
           }
     >;
-    static removeClaim(
-        sessionHandle: string,
-        claim: SessionClaim<any>,
-        tenantId?: string,
-        userContext?: any
-    ): Promise<boolean>;
+    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
