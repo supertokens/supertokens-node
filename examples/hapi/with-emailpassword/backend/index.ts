@@ -1,3 +1,5 @@
+"use strict";
+
 import Hapi from "@hapi/hapi";
 import supertokens from "supertokens-node";
 import { getWebsiteDomain, SuperTokensConfig } from "./config";
