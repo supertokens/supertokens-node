@@ -121,10 +121,7 @@ function getTestEmail() {
 }
 
 async function getSignInOrSignUpSwitchLink(page) {
-    return waitForSTElement(
-        page,
-        "div > div > [data-supertokens~='headerSubtitle'] > div > [data-supertokens~='link']"
-    );
+    return waitForSTElement(page, "[data-supertokens~='link']");
 }
 
 async function toggleSignInSignUp(page) {
