@@ -28,6 +28,7 @@ export type Response = {
             timeJoined: number;
             firstName?: string;
             lastName?: string;
+            tenantIds: string[];
         } & (
             | {
                   email: string;
