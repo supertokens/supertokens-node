@@ -1955,6 +1955,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });
+        app.post("/session/verify-optional", verifySession({ sessionRequired: false }), async (req, res) => {
+            let sessionResponse = req.session;
+            res.status(200).json({ hasSession: !!sessionResponse });
+        });
         app.post("/session/verifyAntiCsrfFalse", verifySession({ antiCsrfCheck: false }), async (req, res) => {
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
@@ -2009,6 +2013,36 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res3.body.userId, "id1");
         }
 
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify-optional")
+                    .set("Cookie", ["sAccessToken=" + res.accessToken])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res2.status, 401);
+            assert.deepStrictEqual(res2.text, '{"message":"try refresh token"}');
+
+            let res3 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify-optional")
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.notStrictEqual(res3.text, '{"message":"try refresh token"}');
+            assert.deepStrictEqual(res3.body.hasSession, false);
+        }
         {
             let res2 = await new Promise((resolve) =>
                 request(app)
