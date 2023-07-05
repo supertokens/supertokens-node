@@ -1,0 +1,15 @@
+{
+    "name": "supertokens-node",
+    "version": "0.0.1",
+    "private": true,
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "npx ts-node-dev --project ./tsconfig.json ./index.ts"
+    },
+    "dependencies": {},
+    "devDependencies": {},
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
