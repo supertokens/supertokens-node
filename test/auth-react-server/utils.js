@@ -14,7 +14,7 @@
  */
 const { exec } = require("child_process");
 let fs = require("fs");
-import fetch from "cross-fetch";
+const { default: fetch } = require("cross-fetch");
 
 module.exports.executeCommand = async function (cmd) {
     return new Promise((resolve, reject) => {

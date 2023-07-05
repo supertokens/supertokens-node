@@ -333,6 +333,11 @@ app.get(
     }
 );
 
+app.get("/check-rid-no-session", async (req, res) => {
+    let rid = req.headers["rid"];
+    res.send(!rid || !rid.startsWith("anti-csrf") ? "fail" : "success");
+});
+
 app.get(
     "/update-jwt",
     (req, res, next) => verifySession()(req, res, next),
