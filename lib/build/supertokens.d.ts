@@ -27,13 +27,14 @@ export default class SuperTokens {
         userContext: any
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
-    getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
+    getUserCount: (includeRecipeIds?: string[] | undefined, tenantId?: string | undefined) => Promise<number>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: object;
+        tenantId?: string;
     }) => Promise<{
         users: {
             recipeId: string;

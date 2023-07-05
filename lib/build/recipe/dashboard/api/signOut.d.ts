@@ -1,3 +1,3 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../types";
-export default function signOut(_: APIInterface, options: APIOptions, __: any): Promise<boolean>;
+export default function signOut(_: APIInterface, ___: string, options: APIOptions, __: any): Promise<boolean>;

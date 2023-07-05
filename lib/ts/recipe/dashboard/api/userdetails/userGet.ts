@@ -36,6 +36,7 @@ type Response =
 
 export const userGet: APIFunction = async (
     _: APIInterface,
+    ___: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {

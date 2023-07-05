@@ -19,7 +19,6 @@ import {
     maxVersion,
     normaliseHttpMethod,
     sendNon200ResponseWithMessage,
-    updateTenantId,
     getRidFromHeader,
 } from "./utils";
 import { Querier } from "./querier";
@@ -33,6 +32,7 @@ import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 import MultitenancyRecipe from "./recipe/multitenancy/recipe";
+import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -146,7 +146,7 @@ export default class SuperTokens {
         return Array.from(headerSet);
     };
 
-    getUserCount = async (includeRecipeIds?: string[]): Promise<number> => {
+    getUserCount = async (includeRecipeIds?: string[], tenantId?: string): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
@@ -158,9 +158,14 @@ export default class SuperTokens {
         if (includeRecipeIds !== undefined) {
             includeRecipeIdsStr = includeRecipeIds.join(",");
         }
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/users/count"), {
-            includeRecipeIds: includeRecipeIdsStr,
-        });
+
+        let response = await querier.sendGetRequest(
+            new NormalisedURLPath(`${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/users/count`),
+            {
+                includeRecipeIds: includeRecipeIdsStr,
+                includeAllTenants: tenantId === undefined,
+            }
+        );
         return Number(response.count);
     };
 
@@ -170,6 +175,7 @@ export default class SuperTokens {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: object;
+        tenantId?: string;
     }): Promise<{
         users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
@@ -185,7 +191,10 @@ export default class SuperTokens {
         if (input.includeRecipeIds !== undefined) {
             includeRecipeIdsStr = input.includeRecipeIds.join(",");
         }
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+        if (input.tenantId === undefined) {
+            input.tenantId = DEFAULT_TENANT_ID;
+        }
+        let response = await querier.sendGetRequest(new NormalisedURLPath(`/${input.tenantId}/users`), {
             ...input.query,
             includeRecipeIds: includeRecipeIdsStr,
             timeJoinedOrder: input.timeJoinedOrder,
@@ -195,7 +204,7 @@ export default class SuperTokens {
 
         const users: { recipeId: string; user: any }[] = response.users;
         return {
-            users: users.map(updateTenantId),
+            users,
             nextPaginationToken: response.nextPaginationToken,
         };
     };

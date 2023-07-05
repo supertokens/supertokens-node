@@ -26,6 +26,7 @@ import {
     SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
+    TENANTS_LIST_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -61,6 +62,7 @@ import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import MultitenancyRecipe from "../../recipe/multitenancy/recipe";
+import listTenants from "./api/listTenants";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -249,7 +251,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        _: string | undefined, // TODO tenantId
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
@@ -332,6 +334,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = signOut;
         } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
             apiFunction = analyticsPost;
+        } else if (id === TENANTS_LIST_API) {
+            apiFunction = listTenants;
         }
 
         // If the id doesnt match any APIs return false
@@ -339,7 +343,7 @@ export default class Recipe extends RecipeModule {
             return false;
         }
 
-        return await apiKeyProtector(this.apiImpl, options, apiFunction, userContext);
+        return await apiKeyProtector(this.apiImpl, tenantId, options, apiFunction, userContext);
     };
 
     handleError = async (err: error, _: BaseRequest, __: BaseResponse): Promise<void> => {

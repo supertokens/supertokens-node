@@ -17,6 +17,7 @@ import { sendUnauthorisedAccess } from "../utils";
 
 export default async function apiKeyProtector(
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     apiFunction: APIFunction,
     userContext: any
@@ -32,7 +33,7 @@ export default async function apiKeyProtector(
         return true;
     }
 
-    const response = await apiFunction(apiImplementation, options, userContext);
+    const response = await apiFunction(apiImplementation, tenantId, options, userContext);
     options.res.sendJSONResponse(response);
     return true;
 }

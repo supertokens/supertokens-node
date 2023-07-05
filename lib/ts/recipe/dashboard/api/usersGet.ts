@@ -28,6 +28,7 @@ export type Response = {
             timeJoined: number;
             firstName?: string;
             lastName?: string;
+            tenantIds: string[];
         } & (
             | {
                   email: string;
@@ -47,7 +48,12 @@ export type Response = {
     }[];
 };
 
-export default async function usersGet(_: APIInterface, options: APIOptions, userContext: any): Promise<Response> {
+export default async function usersGet(
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");
 
@@ -78,6 +84,7 @@ export default async function usersGet(_: APIInterface, options: APIOptions, use
         timeJoinedOrder: timeJoinedOrder,
         limit: parseInt(limit),
         paginationToken,
+        tenantId,
     });
 
     // If the UserMetaData recipe has been initialised, fetch first and last name

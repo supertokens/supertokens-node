@@ -6,7 +6,12 @@ type Response = {
     status: "OK";
 };
 
-export const userEmailVerifyPut = async (_: APIInterface, options: APIOptions, userContext: any): Promise<Response> => {
+export const userEmailVerifyPut = async (
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const verified = requestBody.verified;
@@ -26,7 +31,12 @@ export const userEmailVerifyPut = async (_: APIInterface, options: APIOptions, u
     }
 
     if (verified) {
-        const tokenResponse = await EmailVerification.createEmailVerificationToken(userId, undefined, userContext);
+        const tokenResponse = await EmailVerification.createEmailVerificationToken(
+            userId,
+            undefined,
+            tenantId,
+            userContext
+        );
 
         if (tokenResponse.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
             return {
@@ -34,7 +44,11 @@ export const userEmailVerifyPut = async (_: APIInterface, options: APIOptions, u
             };
         }
 
-        const verifyResponse = await EmailVerification.verifyEmailUsingToken(tokenResponse.token, userContext);
+        const verifyResponse = await EmailVerification.verifyEmailUsingToken(
+            tokenResponse.token,
+            tenantId,
+            userContext
+        );
 
         if (verifyResponse.status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR") {
             // This should never happen because we consume the token immediately after creating it

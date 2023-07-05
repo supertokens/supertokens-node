@@ -10,6 +10,7 @@ export declare type Response = {
             timeJoined: number;
             firstName?: string;
             lastName?: string;
+            tenantIds: string[];
         } & (
             | {
                   email: string;
@@ -28,7 +29,12 @@ export declare type Response = {
         );
     }[];
 };
-export default function usersGet(_: APIInterface, options: APIOptions, userContext: any): Promise<Response>;
+export default function usersGet(
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response>;
 export declare function getSearchParamsFromURL(
     path: string
 ): {

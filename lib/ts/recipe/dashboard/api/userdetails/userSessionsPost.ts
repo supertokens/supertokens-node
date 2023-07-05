@@ -6,7 +6,12 @@ type Response = {
     status: "OK";
 };
 
-export const userSessionsPost = async (_: APIInterface, options: APIOptions, userContext: any): Promise<Response> => {
+export const userSessionsPost = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const sessionHandles = requestBody.sessionHandles;
 
