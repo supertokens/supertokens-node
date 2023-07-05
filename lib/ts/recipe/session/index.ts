@@ -29,7 +29,8 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
-// For Express
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+
 export default class SessionWrapper {
     static init = Recipe.init;
 
@@ -41,6 +42,7 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
+        tenantId?: string,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -57,6 +59,7 @@ export default class SessionWrapper {
             config,
             appInfo,
             sessionDataInDatabase,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
         });
     }
 
@@ -65,6 +68,7 @@ export default class SessionWrapper {
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
+        tenantId?: string,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -90,6 +94,7 @@ export default class SessionWrapper {
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             disableAntiCsrf,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -325,19 +330,29 @@ export default class SessionWrapper {
             userContext,
         });
     }
-    static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
+    static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
+            userId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            revokeAcrossAllTenants: tenantId === undefined,
+            userContext,
+        });
     }
 
-    static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
+    static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            fetchAcrossAllTenants: tenantId === undefined,
             userContext,
         });
     }
 
     static revokeSession(sessionHandle: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle, userContext });
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({
+            sessionHandle,
+            userContext,
+        });
     }
 
     static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {

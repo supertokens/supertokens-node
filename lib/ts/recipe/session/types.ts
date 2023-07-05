@@ -39,6 +39,7 @@ export type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
+        tenantId: string;
     };
     accessToken: TokenInfo;
     refreshToken: TokenInfo;
@@ -191,6 +192,7 @@ export type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -223,9 +225,19 @@ export type RecipeInterface = {
      */
     getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
 
-    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    revokeAllSessionsForUser(input: {
+        userId: string;
+        tenantId: string;
+        revokeAcrossAllTenants?: boolean;
+        userContext: any;
+    }): Promise<string[]>;
 
-    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: {
+        userId: string;
+        tenantId: string;
+        fetchAcrossAllTenants?: boolean;
+        userContext: any;
+    }): Promise<string[]>;
 
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
 
@@ -258,6 +270,7 @@ export type RecipeInterface = {
                   handle: string;
                   userId: string;
                   userDataInJWT: any;
+                  tenantId: string;
               };
               accessToken?: {
                   token: string;
@@ -321,6 +334,8 @@ export interface SessionContainerInterface {
     updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
 
     getUserId(userContext?: any): string;
+
+    getTenantId(userContext?: any): string;
 
     getAccessTokenPayload(userContext?: any): any;
 
@@ -398,6 +413,7 @@ export type SessionInformation = {
     expiry: number;
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
+    tenantId: string;
 };
 
 export type ClaimValidationResult = { isValid: true } | { isValid: false; reason?: JSONValue };

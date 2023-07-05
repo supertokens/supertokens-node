@@ -946,6 +946,7 @@ let sessionConfig: SessionTypeInput = {
                         getAccessTokenPayload: session.getAccessTokenPayload,
                         getSessionDataFromDatabase: session.getSessionDataFromDatabase,
                         getUserId: session.getUserId,
+                        getTenantId: session.getTenantId,
                         revokeSession: session.revokeSession,
                         updateSessionDataInDatabase: session.updateSessionDataInDatabase,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,

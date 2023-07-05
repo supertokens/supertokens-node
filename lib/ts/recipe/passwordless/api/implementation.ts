@@ -57,6 +57,7 @@ export default function getAPIImplementation(): APIInterface {
                 user.id,
                 {},
                 {},
+                input.tenantId,
                 input.userContext
             );
 

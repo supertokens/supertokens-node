@@ -22,6 +22,7 @@ export declare type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
+        tenantId: string;
     };
     accessToken: TokenInfo;
     refreshToken: TokenInfo;
@@ -157,6 +158,7 @@ export declare type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
@@ -184,8 +186,18 @@ export declare type RecipeInterface = {
      * Returns undefined if the sessionHandle does not exist
      */
     getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
-    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
-    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    revokeAllSessionsForUser(input: {
+        userId: string;
+        tenantId: string;
+        revokeAcrossAllTenants?: boolean;
+        userContext: any;
+    }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: {
+        userId: string;
+        tenantId: string;
+        fetchAcrossAllTenants?: boolean;
+        userContext: any;
+    }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
     updateSessionDataInDatabase(input: {
@@ -212,6 +224,7 @@ export declare type RecipeInterface = {
                   handle: string;
                   userId: string;
                   userDataInJWT: any;
+                  tenantId: string;
               };
               accessToken?: {
                   token: string;
@@ -266,6 +279,7 @@ export interface SessionContainerInterface {
     getSessionDataFromDatabase(userContext?: any): Promise<any>;
     updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
+    getTenantId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAllSessionTokensDangerously(): {
@@ -326,6 +340,7 @@ export declare type SessionInformation = {
     expiry: number;
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
+    tenantId: string;
 };
 export declare type ClaimValidationResult =
     | {

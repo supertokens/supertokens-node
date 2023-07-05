@@ -10,7 +10,8 @@ export declare function createNewSession(
     userId: string,
     disableAntiCsrf: boolean,
     accessTokenPayload?: any,
-    sessionDataInDatabase?: any
+    sessionDataInDatabase?: any,
+    tenantId?: string
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
@@ -27,6 +28,7 @@ export declare function getSession(
         userId: string;
         userDataInJWT: any;
         expiryTime: number;
+        tenantId: string;
     };
     accessToken?: {
         token: string;
@@ -56,11 +58,21 @@ export declare function refreshSession(
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  */
-export declare function revokeAllSessionsForUser(helpers: Helpers, userId: string): Promise<string[]>;
+export declare function revokeAllSessionsForUser(
+    helpers: Helpers,
+    userId: string,
+    tenantId?: string,
+    revokeAcrossAllTenants?: boolean
+): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  */
-export declare function getAllSessionHandlesForUser(helpers: Helpers, userId: string): Promise<string[]>;
+export declare function getAllSessionHandlesForUser(
+    helpers: Helpers,
+    userId: string,
+    tenantId?: string,
+    fetchAcrossAllTenants?: boolean
+): Promise<string[]>;
 /**
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete

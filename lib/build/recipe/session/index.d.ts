@@ -22,6 +22,7 @@ export default class SessionWrapper {
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
+        tenantId?: string,
         userContext?: any
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
@@ -29,6 +30,7 @@ export default class SessionWrapper {
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
+        tenantId?: string,
         userContext?: any
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(
@@ -135,8 +137,8 @@ export default class SessionWrapper {
         antiCsrfToken?: string,
         userContext?: any
     ): Promise<SessionContainer>;
-    static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
-    static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
+    static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
+    static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
     static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;

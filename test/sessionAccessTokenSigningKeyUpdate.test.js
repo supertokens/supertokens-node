@@ -370,6 +370,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             false,
+
             {},
             {}
         );

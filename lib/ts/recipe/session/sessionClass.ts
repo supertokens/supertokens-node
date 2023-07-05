@@ -31,7 +31,8 @@ export default class Session implements SessionContainerInterface {
         protected userId: string,
         protected userDataInAccessToken: any,
         protected reqResInfo: ReqResInfo | undefined,
-        protected accessTokenUpdated: boolean
+        protected accessTokenUpdated: boolean,
+        protected tenantId: string
     ) {}
 
     async revokeSession(userContext?: any) {
@@ -86,6 +87,10 @@ export default class Session implements SessionContainerInterface {
 
     getUserId(_userContext?: any) {
         return this.userId;
+    }
+
+    getTenantId(_userContext?: any) {
+        return this.tenantId;
     }
 
     getAccessTokenPayload(_userContext?: any) {
