@@ -14,6 +14,7 @@ type Response =
 
 export const userMetaDataGet: APIFunction = async (
     _: APIInterface,
+    ___: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {

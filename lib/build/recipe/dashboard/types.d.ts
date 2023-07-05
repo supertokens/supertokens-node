@@ -41,6 +41,7 @@ export declare type APIInterface = {
 };
 export declare type APIFunction = (
     apiImplementation: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ) => Promise<any>;
@@ -51,6 +52,7 @@ declare type CommonUserInformation = {
     timeJoined: number;
     firstName: string;
     lastName: string;
+    tenantIds: string[];
 };
 export declare type EmailPasswordUser = CommonUserInformation & {
     email: string;

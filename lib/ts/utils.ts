@@ -155,19 +155,6 @@ export function setRequestInUserContextIfNotDefined(userContext: any | undefined
     return userContext;
 }
 
-export function updateTenantId(user: { recipeId: string; user: any }): { recipeId: string; user: any } {
-    if (user.user.thirdParty !== undefined && user.user.thirdParty.userId.includes("|")) {
-        return {
-            ...user,
-            user: {
-                ...user.user,
-                tenantId: user.user.thirdParty.userId.split("|")[1],
-            },
-        };
-    }
-    return user;
-}
-
 export function getTopLevelDomainForSameSiteResolution(url: string): string {
     let urlObj = new URL(url);
     let hostname = urlObj.hostname;

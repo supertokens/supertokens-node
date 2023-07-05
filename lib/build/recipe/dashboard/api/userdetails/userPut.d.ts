@@ -18,5 +18,10 @@ declare type Response =
           status: "INVALID_PHONE_ERROR";
           error: string;
       };
-export declare const userPut: (_: APIInterface, options: APIOptions, userContext: any) => Promise<Response>;
+export declare const userPut: (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+) => Promise<Response>;
 export {};

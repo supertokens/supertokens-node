@@ -10,6 +10,7 @@ type Response = {
 
 export const userEmailVerifyTokenPost = async (
     _: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {
@@ -29,7 +30,12 @@ export const userEmailVerifyTokenPost = async (
         throw new Error("Should never come here");
     }
 
-    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(userId, undefined, userContext);
+    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(
+        userId,
+        undefined,
+        tenantId,
+        userContext
+    );
 
     if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
         return {
@@ -37,7 +43,6 @@ export const userEmailVerifyTokenPost = async (
         };
     }
 
-    const tenantId = "";
     let emailVerifyLink = getEmailVerifyLink({
         appInfo: options.appInfo,
         token: emailVerificationToken.token,

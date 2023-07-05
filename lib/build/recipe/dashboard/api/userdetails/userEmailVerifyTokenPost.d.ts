@@ -5,6 +5,7 @@ declare type Response = {
 };
 export declare const userEmailVerifyTokenPost: (
     _: APIInterface,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ) => Promise<Response>;

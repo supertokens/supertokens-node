@@ -51,7 +51,22 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        tenants: string[];
+        tenants: {
+            tenantId: string;
+            emailPassword: {
+                enabled: boolean;
+            };
+            passwordless: {
+                enabled: boolean;
+            };
+            thirdParty: {
+                enabled: boolean;
+                providers: ProviderConfig[];
+            };
+            coreConfig: {
+                [key: string]: any;
+            };
+        }[];
     }>;
     static createOrUpdateThirdPartyConfig(
         tenantId: string | undefined,

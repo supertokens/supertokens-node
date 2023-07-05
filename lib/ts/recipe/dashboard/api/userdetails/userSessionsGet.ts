@@ -18,6 +18,7 @@ type Response = {
 
 export const userSessionsGet: APIFunction = async (
     _: APIInterface,
+    ___: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {
@@ -30,7 +31,7 @@ export const userSessionsGet: APIFunction = async (
         });
     }
 
-    const response = await Session.getAllSessionHandlesForUser(userId, userContext);
+    const response = await Session.getAllSessionHandlesForUser(userId, undefined, userContext);
 
     let sessions: SessionType[] = [];
     let sessionInfoPromises: Promise<void>[] = [];

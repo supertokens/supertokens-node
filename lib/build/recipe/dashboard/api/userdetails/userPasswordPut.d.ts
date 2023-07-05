@@ -8,5 +8,10 @@ declare type Response =
           status: "INVALID_PASSWORD_ERROR";
           error: string;
       };
-export declare const userPasswordPut: (_: APIInterface, options: APIOptions, userContext: any) => Promise<Response>;
+export declare const userPasswordPut: (
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+) => Promise<Response>;
 export {};

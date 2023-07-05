@@ -4,4 +4,4 @@ export declare type Response = {
     status: "OK";
     count: number;
 };
-export default function usersCountGet(_: APIInterface, __: APIOptions, ___: any): Promise<Response>;
+export default function usersCountGet(_: APIInterface, ____: string, __: APIOptions, ___: any): Promise<Response>;

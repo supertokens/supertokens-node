@@ -345,7 +345,12 @@ const updatePhoneForRecipeId = async (
     throw new Error("Should never come here");
 };
 
-export const userPut = async (_: APIInterface, options: APIOptions, userContext: any): Promise<Response> => {
+export const userPut = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const recipeId = requestBody.recipeId;

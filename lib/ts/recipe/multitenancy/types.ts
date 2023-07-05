@@ -107,7 +107,20 @@ export type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        tenants: string[];
+        tenants: {
+            tenantId: string;
+            emailPassword: {
+                enabled: boolean;
+            };
+            passwordless: {
+                enabled: boolean;
+            };
+            thirdParty: {
+                enabled: boolean;
+                providers: ProviderConfig[];
+            };
+            coreConfig: { [key: string]: any };
+        }[];
     }>;
 
     // Third party provider management

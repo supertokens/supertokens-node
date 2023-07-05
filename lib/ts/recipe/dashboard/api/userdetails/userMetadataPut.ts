@@ -7,7 +7,12 @@ type Response = {
     status: "OK";
 };
 
-export const userMetadataPut = async (_: APIInterface, options: APIOptions, userContext: any): Promise<Response> => {
+export const userMetadataPut = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const data = requestBody.data;

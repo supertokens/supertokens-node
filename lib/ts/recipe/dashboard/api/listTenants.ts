@@ -12,25 +12,34 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
 import { APIInterface, APIOptions } from "../types";
-import SuperTokens from "../../../supertokens";
+import Multitenancy from "../../multitenancy";
+import { ProviderConfig } from "../../thirdparty/types";
 
 export type Response = {
     status: "OK";
-    count: number;
+    tenants: {
+        tenantId: string;
+        emailPassword: {
+            enabled: boolean;
+        };
+        passwordless: {
+            enabled: boolean;
+        };
+        thirdParty: {
+            enabled: boolean;
+            providers: ProviderConfig[];
+        };
+        coreConfig: { [key: string]: any };
+    }[];
 };
 
-export default async function usersCountGet(
+export default async function listTenants(
     _: APIInterface,
-    ____: string,
-    __: APIOptions,
-    ___: any
+    __: string,
+    ___: APIOptions,
+    userContext: any
 ): Promise<Response> {
-    const count = await SuperTokens.getInstanceOrThrowError().getUserCount();
-
-    return {
-        status: "OK",
-        count,
-    };
+    let tenantsRes = await Multitenancy.listAllTenants(userContext);
+    return tenantsRes;
 }

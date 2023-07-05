@@ -19,7 +19,12 @@ import NormalisedURLPath from "../../../../normalisedURLPath";
 
 type TagsResponse = { status: "OK"; tags: string[] };
 
-export const getSearchTags = async (_: APIInterface, options: APIOptions, __: any): Promise<TagsResponse> => {
+export const getSearchTags = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    __: any
+): Promise<TagsResponse> => {
     let querier = Querier.getNewInstanceOrThrowError(options.recipeId);
     let tagsResponse = await querier.sendGetRequest(new NormalisedURLPath("/user/search/tags"), {});
     return tagsResponse;
