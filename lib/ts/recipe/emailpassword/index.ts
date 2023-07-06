@@ -17,6 +17,7 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { getPasswordResetLink } from "./utils";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -86,6 +87,46 @@ export default class Wrapper {
         });
     }
 
+    static async generatePasswordResetLink(
+        userId: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+        let token = await createResetPasswordToken(userId, tenantId, userContext);
+        if (token.status === "UNKNOWN_USER_ID_ERROR") {
+            return token;
+        }
+
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        return {
+            status: "OK",
+            link: getPasswordResetLink({
+                appInfo: recipeInstance.getAppInfo(),
+                recipeId: recipeInstance.getRecipeId(),
+                token: token.token,
+                tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            }),
+        };
+    }
+
+    static async sendPasswordResetEmail(userId: string, tenantId?: string, userContext?: any) {
+        let link = await generatePasswordResetLink(userId, tenantId, userContext);
+        if (link.status === "UNKNOWN_USER_ID_ERROR") {
+            return link;
+        }
+        await sendEmail({
+            passwordResetLink: link.link,
+            type: "PASSWORD_RESET",
+            user: (await getUserById(userId, userContext))!,
+            tenantId,
+            userContext,
+        });
+
+        return {
+            status: "OK",
+        };
+    }
+
     static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
@@ -115,5 +156,9 @@ export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
+
+export let generatePasswordResetLink = Wrapper.generatePasswordResetLink;
+
+export let sendPasswordResetEmail = Wrapper.sendPasswordResetEmail;
 
 export let sendEmail = Wrapper.sendEmail;
