@@ -19,6 +19,7 @@ import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPart
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { getPasswordResetLink } from "../emailpassword/utils";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -129,6 +130,50 @@ export default class Wrapper {
         });
     }
 
+    static async createResetPasswordLink(
+        userId: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+        let token = await createResetPasswordToken(userId, tenantId, userContext);
+        if (token.status === "UNKNOWN_USER_ID_ERROR") {
+            return token;
+        }
+
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        return {
+            status: "OK",
+            link: getPasswordResetLink({
+                appInfo: recipeInstance.getAppInfo(),
+                recipeId: recipeInstance.getRecipeId(),
+                token: token.token,
+                tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            }),
+        };
+    }
+
+    static async sendResetPasswordEmail(
+        userId: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
+        let link = await createResetPasswordLink(userId, tenantId, userContext);
+        if (link.status === "UNKNOWN_USER_ID_ERROR") {
+            return link;
+        }
+        await sendEmail({
+            passwordResetLink: link.link,
+            type: "PASSWORD_RESET",
+            user: (await getUserById(userId, userContext))!,
+            tenantId,
+            userContext,
+        });
+
+        return {
+            status: "OK",
+        };
+    }
+
     static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
@@ -163,5 +208,9 @@ export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+
+export let createResetPasswordLink = Wrapper.createResetPasswordLink;
+
+export let sendResetPasswordEmail = Wrapper.sendResetPasswordEmail;
 
 export let sendEmail = Wrapper.sendEmail;

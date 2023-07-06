@@ -3,6 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
+import { getPasswordResetLink } from "../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -70,15 +71,12 @@ export default function getAPIImplementation(): APIInterface {
                 };
             }
 
-            let passwordResetLink =
-                options.appInfo.websiteDomain.getAsStringDangerous() +
-                options.appInfo.websiteBasePath.getAsStringDangerous() +
-                "/reset-password?token=" +
-                response.token +
-                "&rid=" +
-                options.recipeId +
-                "&tenantId=" +
-                tenantId;
+            let passwordResetLink = getPasswordResetLink({
+                appInfo: options.appInfo,
+                token: response.token,
+                recipeId: options.recipeId,
+                tenantId,
+            });
 
             logDebugMessage(`Sending password reset email to ${email}`);
             await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
