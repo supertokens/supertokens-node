@@ -109,7 +109,11 @@ export default class Wrapper {
         };
     }
 
-    static async sendPasswordResetEmail(userId: string, tenantId?: string, userContext?: any) {
+    static async sendPasswordResetEmail(
+        userId: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
         let link = await generatePasswordResetLink(userId, tenantId, userContext);
         if (link.status === "UNKNOWN_USER_ID_ERROR") {
             return link;

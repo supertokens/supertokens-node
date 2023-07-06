@@ -106,6 +106,26 @@ export default class Wrapper {
               failureReason: string;
           }
     >;
+    static generatePasswordResetLink(
+        userId: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              link: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
+    static sendPasswordResetEmail(
+        userId: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR";
+    }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext?: any;
@@ -125,4 +145,6 @@ export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordT
 export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+export declare let generatePasswordResetLink: typeof Wrapper.generatePasswordResetLink;
+export declare let sendPasswordResetEmail: typeof Wrapper.sendPasswordResetEmail;
 export declare let sendEmail: typeof Wrapper.sendEmail;

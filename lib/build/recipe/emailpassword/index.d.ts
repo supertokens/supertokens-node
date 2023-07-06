@@ -95,7 +95,7 @@ export default class Wrapper {
         tenantId?: string,
         userContext?: any
     ): Promise<{
-        status: string;
+        status: "OK" | "UNKNOWN_USER_ID_ERROR";
     }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
