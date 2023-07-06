@@ -20,6 +20,20 @@ export default class Wrapper {
               status: "EMAIL_ALREADY_VERIFIED_ERROR";
           }
     >;
+    static createEmailVerificationLink(
+        userId: string,
+        email?: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              link: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
     static verifyEmailUsingToken(
         token: string,
         tenantId?: string,

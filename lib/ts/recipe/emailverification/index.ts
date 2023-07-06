@@ -61,6 +61,43 @@ export default class Wrapper {
         });
     }
 
+    static async createEmailVerificationLink(
+        userId: string,
+        email?: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              link: string;
+          }
+        | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
+    > {
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        const appInfo = recipeInstance.getAppInfo();
+
+        let emailVerificationToken = await createEmailVerificationToken(userId, email, tenantId, userContext);
+        if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+            return {
+                status: "EMAIL_ALREADY_VERIFIED_ERROR",
+            };
+        }
+
+        return {
+            status: "OK",
+            link:
+                appInfo.websiteDomain.getAsStringDangerous() +
+                appInfo.websiteBasePath.getAsStringDangerous() +
+                "/verify-email" +
+                "?token=" +
+                emailVerificationToken.token +
+                "&rid=" +
+                recipeInstance.getRecipeId() +
+                "&tenantId=" +
+                tenantId,
+        };
+    }
+
     static async verifyEmailUsingToken(token: string, tenantId?: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
             token,

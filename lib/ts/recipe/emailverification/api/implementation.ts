@@ -4,7 +4,7 @@ import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
-import { getEmailVerifyLink } from "../utils";
+import EmailVerification from "../../emailverification";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -104,12 +104,12 @@ export default function getAPIInterface(): APIInterface {
                     status: "EMAIL_ALREADY_VERIFIED_ERROR",
                 };
             } else if (emailInfo.status === "OK") {
-                let response = await options.recipeImplementation.createEmailVerificationToken({
+                let response = await EmailVerification.createEmailVerificationLink(
                     userId,
-                    email: emailInfo.email,
+                    emailInfo.email,
                     tenantId,
-                    userContext,
-                });
+                    userContext
+                );
 
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
                     if ((await session.getClaimValue(EmailVerificationClaim)) !== true) {
@@ -131,13 +131,6 @@ export default function getAPIInterface(): APIInterface {
                     await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
                 }
 
-                let emailVerifyLink = getEmailVerifyLink({
-                    appInfo: options.appInfo,
-                    token: response.token,
-                    recipeId: options.recipeId,
-                    tenantId,
-                });
-
                 logDebugMessage(`Sending email verification email to ${emailInfo}`);
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                     type: "EMAIL_VERIFICATION",
@@ -145,7 +138,7 @@ export default function getAPIInterface(): APIInterface {
                         id: userId,
                         email: emailInfo.email,
                     },
-                    emailVerifyLink,
+                    emailVerifyLink: response.link,
                     tenantId,
                     userContext,
                 });
