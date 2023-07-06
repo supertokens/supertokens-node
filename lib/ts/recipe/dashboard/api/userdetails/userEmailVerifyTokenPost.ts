@@ -1,8 +1,6 @@
 import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
 import EmailVerification from "../../../emailverification";
-import EmailVerificationRecipe from "../../../emailverification/recipe";
-import { getEmailVerifyLink } from "../../../emailverification/utils";
 
 type Response = {
     status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
@@ -24,42 +22,5 @@ export const userEmailVerifyTokenPost = async (
         });
     }
 
-    let emailResponse = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(userId, userContext);
-
-    if (emailResponse.status !== "OK") {
-        throw new Error("Should never come here");
-    }
-
-    let emailVerificationToken = await EmailVerification.createEmailVerificationToken(
-        userId,
-        undefined,
-        tenantId,
-        userContext
-    );
-
-    if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-        return {
-            status: "EMAIL_ALREADY_VERIFIED_ERROR",
-        };
-    }
-
-    let emailVerifyLink = getEmailVerifyLink({
-        appInfo: options.appInfo,
-        token: emailVerificationToken.token,
-        recipeId: EmailVerificationRecipe.RECIPE_ID,
-        tenantId,
-    });
-
-    await EmailVerification.sendEmail({
-        type: "EMAIL_VERIFICATION",
-        user: {
-            id: userId,
-            email: emailResponse.email,
-        },
-        emailVerifyLink,
-    });
-
-    return {
-        status: "OK",
-    };
+    return await EmailVerification.sendEmailVerificationEmail(userId, undefined, tenantId, userContext);
 };
