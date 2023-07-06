@@ -87,7 +87,7 @@ export default class Wrapper {
         });
     }
 
-    static async generatePasswordResetLink(
+    static async createResetPasswordLink(
         userId: string,
         tenantId?: string,
         userContext?: any
@@ -109,12 +109,12 @@ export default class Wrapper {
         };
     }
 
-    static async sendPasswordResetEmail(
+    static async sendResetPasswordEmail(
         userId: string,
         tenantId?: string,
         userContext?: any
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
-        let link = await generatePasswordResetLink(userId, tenantId, userContext);
+        let link = await createResetPasswordLink(userId, tenantId, userContext);
         if (link.status === "UNKNOWN_USER_ID_ERROR") {
             return link;
         }
@@ -161,8 +161,8 @@ export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
 
-export let generatePasswordResetLink = Wrapper.generatePasswordResetLink;
+export let createResetPasswordLink = Wrapper.createResetPasswordLink;
 
-export let sendPasswordResetEmail = Wrapper.sendPasswordResetEmail;
+export let sendResetPasswordEmail = Wrapper.sendResetPasswordEmail;
 
 export let sendEmail = Wrapper.sendEmail;
