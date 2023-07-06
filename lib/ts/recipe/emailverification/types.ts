@@ -39,7 +39,7 @@ export type TypeInput = {
     /**
      * @deprecated Please use emailDelivery config instead
      */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, tenantId: string, userContext: any) => Promise<void>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,

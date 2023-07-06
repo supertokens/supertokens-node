@@ -129,6 +129,7 @@ export type RecipeInterface = {
             fromIdTokenPayload?: { [key: string]: any };
             fromUserInfoAPI?: { [key: string]: any };
         };
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";

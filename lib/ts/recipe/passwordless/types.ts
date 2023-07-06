@@ -41,7 +41,7 @@ export type User = {
 export type TypeInput = (
     | {
           contactMethod: "PHONE";
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (phoneNumber: string, tenantId: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           /**
@@ -59,12 +59,13 @@ export type TypeInput = (
                   // Unlikely, but someone could display this (or a derived thing) to identify the device
                   preAuthSessionId: string;
               },
+              tenantId: string,
               userContext: any
           ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           /**
@@ -82,12 +83,13 @@ export type TypeInput = (
                   // Unlikely, but someone could display this (or a derived thing) to identify the device
                   preAuthSessionId: string;
               },
+              tenantId: string,
               userContext: any
           ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           /**
@@ -105,9 +107,10 @@ export type TypeInput = (
                   // Unlikely, but someone could display this (or a derived thing) to identify the device
                   preAuthSessionId: string;
               },
+              tenantId: string,
               userContext: any
           ) => Promise<void>;
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (phoneNumber: string, tenantId: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           /**
@@ -125,6 +128,7 @@ export type TypeInput = (
                   // Unlikely, but someone could display this (or a derived thing) to identify the device
                   preAuthSessionId: string;
               },
+              tenantId: string,
               userContext: any
           ) => Promise<void>;
       }
@@ -136,7 +140,7 @@ export type TypeInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
 
     override?: {
         functions?: (
@@ -150,24 +154,24 @@ export type TypeInput = (
 export type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber: (phoneNumber: string, tenantId: string) => Promise<string | undefined> | string | undefined;
       }
     | {
           contactMethod: "EMAIL";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
 
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber: (phoneNumber: string, tenantId: string) => Promise<string | undefined> | string | undefined;
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
 
     getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
