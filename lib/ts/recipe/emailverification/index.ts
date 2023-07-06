@@ -18,6 +18,7 @@ import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { getEmailVerifyLink } from "./utils";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -85,16 +86,12 @@ export default class Wrapper {
 
         return {
             status: "OK",
-            link:
-                appInfo.websiteDomain.getAsStringDangerous() +
-                appInfo.websiteBasePath.getAsStringDangerous() +
-                "/verify-email" +
-                "?token=" +
-                emailVerificationToken.token +
-                "&rid=" +
-                recipeInstance.getRecipeId() +
-                "&tenantId=" +
-                tenantId,
+            link: getEmailVerifyLink({
+                appInfo,
+                token: emailVerificationToken.token,
+                recipeId: recipeInstance.getRecipeId(),
+                tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            }),
         };
     }
 

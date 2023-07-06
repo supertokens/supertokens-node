@@ -7,3 +7,9 @@ export declare function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput;
+export declare function getEmailVerifyLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    tenantId: string;
+}): string;
