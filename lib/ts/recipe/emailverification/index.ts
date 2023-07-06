@@ -95,6 +95,54 @@ export default class Wrapper {
         };
     }
 
+    static async sendEmailVerificationEmail(
+        userId: string,
+        email?: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
+    > {
+        if (email === undefined) {
+            const recipeInstance = Recipe.getInstanceOrThrowError();
+
+            const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
+            if (emailInfo.status === "OK") {
+                email = emailInfo.email;
+            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
+                return {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                };
+            } else {
+                throw new global.Error("Unknown User ID provided without email");
+            }
+        }
+
+        let emailVerificationLink = await this.createEmailVerificationLink(userId, email, tenantId, userContext);
+
+        if (emailVerificationLink.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+            return {
+                status: "EMAIL_ALREADY_VERIFIED_ERROR",
+            };
+        }
+
+        await sendEmail({
+            type: "EMAIL_VERIFICATION",
+            user: {
+                id: userId,
+                email: email!,
+            },
+            emailVerifyLink: emailVerificationLink.link,
+        });
+
+        return {
+            status: "OK",
+        };
+    }
+
     static async verifyEmailUsingToken(token: string, tenantId?: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
             token,
@@ -191,6 +239,10 @@ export let init = Wrapper.init;
 export let Error = Wrapper.Error;
 
 export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
+
+export let createEmailVerificationLink = Wrapper.createEmailVerificationLink;
+
+export let sendEmailVerificationEmail = Wrapper.sendEmailVerificationEmail;
 
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 

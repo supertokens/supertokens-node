@@ -34,6 +34,19 @@ export default class Wrapper {
               status: "EMAIL_ALREADY_VERIFIED_ERROR";
           }
     >;
+    static sendEmailVerificationEmail(
+        userId: string,
+        email?: string,
+        tenantId?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
     static verifyEmailUsingToken(
         token: string,
         tenantId?: string,
@@ -72,6 +85,8 @@ export default class Wrapper {
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
+export declare let createEmailVerificationLink: typeof Wrapper.createEmailVerificationLink;
+export declare let sendEmailVerificationEmail: typeof Wrapper.sendEmailVerificationEmail;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
