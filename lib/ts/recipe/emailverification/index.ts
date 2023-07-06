@@ -136,6 +136,7 @@ export default class Wrapper {
                 email: email!,
             },
             emailVerifyLink: emailVerificationLink.link,
+            tenantId,
         });
 
         return {
