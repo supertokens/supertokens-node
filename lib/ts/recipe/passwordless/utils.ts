@@ -48,7 +48,7 @@ export function validateAndNormaliseUserInput(
 
         /**
          * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we use the default
+         * if user has not passed emailService config, we use the default
          * createAndSendEmailUsingSupertokensService implementation
          */
         if (emailService === undefined) {
