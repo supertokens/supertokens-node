@@ -67,6 +67,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password?: string;
             userContext: any;
             applyPasswordPolicy: boolean;
+            tenantIdForPasswordPolicy: string;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";

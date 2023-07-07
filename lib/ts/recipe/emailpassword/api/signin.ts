@@ -34,7 +34,8 @@ export default async function signInAPI(
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.signInFeature.formFields,
-        (await options.req.getJSONBody()).formFields
+        (await options.req.getJSONBody()).formFields,
+        tenantId
     );
 
     let result = await apiImplementation.signInPOST({

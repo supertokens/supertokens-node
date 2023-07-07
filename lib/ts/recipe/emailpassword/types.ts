@@ -42,7 +42,7 @@ export type TypeNormalisedInput = {
 
 export type TypeInputFormField = {
     id: string;
-    validate?: (value: any) => Promise<string | undefined>;
+    validate?: (value: any, tenantId: string) => Promise<string | undefined>;
     optional?: boolean;
 };
 
@@ -54,7 +54,7 @@ export type TypeInputSignUp = {
 
 export type NormalisedFormField = {
     id: string;
-    validate: (value: any) => Promise<string | undefined>;
+    validate: (value: any, tenantId: string) => Promise<string | undefined>;
     optional: boolean;
 };
 
@@ -64,13 +64,6 @@ export type TypeNormalisedInputSignUp = {
 
 export type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
-};
-
-export type TypeInputResetPasswordUsingTokenFeature = {
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 
 export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
@@ -88,7 +81,6 @@ export type User = {
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -146,6 +138,7 @@ export type RecipeInterface = {
         password?: string;
         userContext: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy: string;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";

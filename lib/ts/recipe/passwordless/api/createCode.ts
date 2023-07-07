@@ -59,7 +59,7 @@ export default async function createCode(
         (options.config.contactMethod === "EMAIL" || options.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
         email = email.trim();
-        const validateError = await options.config.validateEmailAddress(email);
+        const validateError = await options.config.validateEmailAddress(email, tenantId);
         if (validateError !== undefined) {
             send200Response(options.res, {
                 status: "GENERAL_ERROR",
@@ -73,7 +73,7 @@ export default async function createCode(
         phoneNumber !== undefined &&
         (options.config.contactMethod === "PHONE" || options.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
-        const validateError = await options.config.validatePhoneNumber(phoneNumber);
+        const validateError = await options.config.validatePhoneNumber(phoneNumber, tenantId);
         if (validateError !== undefined) {
             send200Response(options.res, {
                 status: "GENERAL_ERROR",

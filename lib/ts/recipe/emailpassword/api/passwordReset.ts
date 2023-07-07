@@ -36,7 +36,8 @@ export default async function passwordReset(
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
-        (await options.req.getJSONBody()).formFields
+        (await options.req.getJSONBody()).formFields,
+        tenantId
     );
 
     let token = (await options.req.getJSONBody()).token;

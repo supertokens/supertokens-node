@@ -70,7 +70,7 @@ declare type CommonProviderConfig = {
         userContext: any;
     }) => Promise<void>;
     requireEmail?: boolean;
-    generateFakeEmail?: (input: { thirdPartyUserId: string; userContext: any }) => Promise<string>;
+    generateFakeEmail?: (input: { thirdPartyUserId: string; tenantId: string; userContext: any }) => Promise<string>;
 };
 export declare type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
 export declare type TypeProvider = {

@@ -63,7 +63,7 @@ export const userPasswordPut = async (
             (field) => field.id === FORM_FIELD_PASSWORD_ID
         );
 
-        let passwordValidationError = await passwordFormFields[0].validate(newPassword);
+        let passwordValidationError = await passwordFormFields[0].validate(newPassword, tenantId);
 
         if (passwordValidationError !== undefined) {
             return {
@@ -99,7 +99,7 @@ export const userPasswordPut = async (
         (field) => field.id === FORM_FIELD_PASSWORD_ID
     );
 
-    let passwordValidationError = await passwordFormFields[0].validate(newPassword);
+    let passwordValidationError = await passwordFormFields[0].validate(newPassword, tenantId);
 
     if (passwordValidationError !== undefined) {
         return {
