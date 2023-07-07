@@ -123,10 +123,13 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy?: string;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
+            tenantIdForPasswordPolicy:
+                input.tenantIdForPasswordPolicy === undefined ? DEFAULT_TENANT_ID : input.tenantIdForPasswordPolicy,
         });
     }
 
