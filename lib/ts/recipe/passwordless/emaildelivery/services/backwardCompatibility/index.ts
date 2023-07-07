@@ -18,7 +18,7 @@ import axios, { AxiosError } from "axios";
 import { NormalisedAppinfo } from "../../../../../types";
 import { logDebugMessage } from "../../../../../logger";
 
-async function defaultCreateAndSendCustomEmail(input: {
+async function createAndSendEmailUsingSupertokensService(input: {
     appInfo: NormalisedAppinfo;
     // Where the message should be delivered.
     email: string;
@@ -96,7 +96,7 @@ export default class BackwardCompatibilityService
     }
 
     sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
-        await defaultCreateAndSendCustomEmail({
+        await createAndSendEmailUsingSupertokensService({
             appInfo: this.appInfo,
             email: input.email,
             userInputCode: input.userInputCode,

@@ -46,7 +46,7 @@ export default class BackwardCompatibilityService
                 createAndSendEmailUsingSupertokensService(this.appInfo, user, input.passwordResetLink).catch((_) => {});
             } else {
                 // see https://github.com/supertokens/supertokens-node/pull/135
-                createAndSendEmailUsingSupertokensService(this.appInfo, user, input.passwordResetLink);
+                await createAndSendEmailUsingSupertokensService(this.appInfo, user, input.passwordResetLink);
             }
         } catch (_) {}
     };
