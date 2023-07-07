@@ -169,6 +169,7 @@ export default function getRecipeInterface(
                 password?: string;
                 userContext: any;
                 applyPasswordPolicy?: boolean;
+                tenantIdForPasswordPolicy: string;
             }
         ): Promise<
             | {
