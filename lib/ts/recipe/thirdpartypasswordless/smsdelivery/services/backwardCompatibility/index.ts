@@ -14,15 +14,14 @@
  */
 import { TypeThirdPartyPasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
-import { NormalisedAppinfo } from "../../../../../types";
 import PasswordlessBackwardCompatibilityService from "../../../../passwordless/smsdelivery/services/backwardCompatibility";
 
 export default class BackwardCompatibilityService
     implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
     private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService;
 
-    constructor(appInfo: NormalisedAppinfo) {
-        this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(appInfo);
+    constructor() {
+        this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService();
     }
 
     sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {

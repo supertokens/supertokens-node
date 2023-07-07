@@ -18,51 +18,53 @@ import { NormalisedAppinfo } from "../../types";
 import axios, { AxiosError } from "axios";
 import { logDebugMessage } from "../../logger";
 
-export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
-    return async (user: User, passwordResetURLWithToken: string) => {
-        // related issue: https://github.com/supertokens/supertokens-node/issues/38
-        if (process.env.TEST_MODE === "testing") {
-            return;
+export async function createAndSendEmailUsingSupertokensService(
+    appInfo: NormalisedAppinfo,
+    user: User,
+    passwordResetURLWithToken: string
+) {
+    // related issue: https://github.com/supertokens/supertokens-node/issues/38
+    if (process.env.TEST_MODE === "testing") {
+        return;
+    }
+    try {
+        await axios({
+            method: "POST",
+            url: "https://api.supertokens.io/0/st/auth/password/reset",
+            data: {
+                email: user.email,
+                appName: appInfo.appName,
+                passwordResetURL: passwordResetURLWithToken,
+            },
+            headers: {
+                "api-version": 0,
+            },
+        });
+        logDebugMessage(`Password reset email sent to ${user.email}`);
+    } catch (error) {
+        logDebugMessage("Error sending password reset email");
+        if (axios.isAxiosError(error)) {
+            const err = error as AxiosError;
+            if (err.response) {
+                logDebugMessage(`Error status: ${err.response.status}`);
+                logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
+            } else {
+                logDebugMessage(`Error: ${err.message}`);
+            }
+        } else {
+            logDebugMessage(`Error: ${JSON.stringify(error)}`);
         }
-        try {
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.io/0/st/auth/password/reset",
-                data: {
+        logDebugMessage("Logging the input below:");
+        logDebugMessage(
+            JSON.stringify(
+                {
                     email: user.email,
                     appName: appInfo.appName,
                     passwordResetURL: passwordResetURLWithToken,
                 },
-                headers: {
-                    "api-version": 0,
-                },
-            });
-            logDebugMessage(`Password reset email sent to ${user.email}`);
-        } catch (error) {
-            logDebugMessage("Error sending password reset email");
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                if (err.response) {
-                    logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
-                } else {
-                    logDebugMessage(`Error: ${err.message}`);
-                }
-            } else {
-                logDebugMessage(`Error: ${JSON.stringify(error)}`);
-            }
-            logDebugMessage("Logging the input below:");
-            logDebugMessage(
-                JSON.stringify(
-                    {
-                        email: user.email,
-                        appName: appInfo.appName,
-                        passwordResetURL: passwordResetURLWithToken,
-                    },
-                    null,
-                    2
-                )
-            );
-        }
-    };
+                null,
+                2
+            )
+        );
+    }
 }

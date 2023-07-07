@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
-import { createAndSendCustomEmail as defaultCreateAndSendCustomEmail } from "../../../passwordResetFunctions";
+import { TypeEmailPasswordEmailDeliveryInput, RecipeInterface } from "../../../types";
+import { createAndSendEmailUsingSupertokensService } from "../../../passwordResetFunctions";
 import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
@@ -22,36 +22,11 @@ export default class BackwardCompatibilityService
     private recipeInterfaceImpl: RecipeInterface;
     private isInServerlessEnv: boolean;
     private appInfo: NormalisedAppinfo;
-    private resetPasswordUsingTokenFeature: {
-        createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
-    };
 
-    constructor(
-        recipeInterfaceImpl: RecipeInterface,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        resetPasswordUsingTokenFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                passwordResetURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
+    constructor(recipeInterfaceImpl: RecipeInterface, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         this.recipeInterfaceImpl = recipeInterfaceImpl;
         this.isInServerlessEnv = isInServerlessEnv;
         this.appInfo = appInfo;
-        {
-            let inputCreateAndSendCustomEmail = resetPasswordUsingTokenFeature?.createAndSendCustomEmail;
-            this.resetPasswordUsingTokenFeature =
-                inputCreateAndSendCustomEmail !== undefined
-                    ? {
-                          createAndSendCustomEmail: inputCreateAndSendCustomEmail,
-                      }
-                    : {
-                          createAndSendCustomEmail: defaultCreateAndSendCustomEmail(this.appInfo),
-                      };
-        }
     }
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
@@ -68,16 +43,10 @@ export default class BackwardCompatibilityService
         user.email = input.user.email;
         try {
             if (!this.isInServerlessEnv) {
-                this.resetPasswordUsingTokenFeature
-                    .createAndSendCustomEmail(user, input.passwordResetLink, input.userContext)
-                    .catch((_) => {});
+                createAndSendEmailUsingSupertokensService(this.appInfo, user, input.passwordResetLink).catch((_) => {});
             } else {
                 // see https://github.com/supertokens/supertokens-node/pull/135
-                await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
-                    user,
-                    input.passwordResetLink,
-                    input.userContext
-                );
+                createAndSendEmailUsingSupertokensService(this.appInfo, user, input.passwordResetLink);
             }
         } catch (_) {}
     };

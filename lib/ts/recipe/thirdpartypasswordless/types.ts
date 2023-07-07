@@ -67,98 +67,14 @@ export type TypeInput = (
               phoneNumber: string,
               tenantId: string
           ) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          /**
-           * @deprecated Please use smsDelivery config instead
-           */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  // Where the message should be delivered.
-                  phoneNumber: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          /**
-           * @deprecated Please use emailDelivery config instead
-           */
-          createAndSendCustomEmail?: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          /**
-           * @deprecated Please use emailDelivery config instead
-           */
-          createAndSendCustomEmail?: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
-          validatePhoneNumber?: (
-              phoneNumber: string,
-              tenantId: string
-          ) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          /**
-           * @deprecated Please use smsDelivery config instead
-           */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  // Where the message should be delivered.
-                  phoneNumber: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
       }
 ) & {
     /**

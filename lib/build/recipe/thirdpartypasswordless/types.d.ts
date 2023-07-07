@@ -49,74 +49,14 @@ export declare type TypeInput = (
               phoneNumber: string,
               tenantId: string
           ) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use smsDelivery config instead
-           */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use emailDelivery config instead
-           */
-          createAndSendCustomEmail?: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use emailDelivery config instead
-           */
-          createAndSendCustomEmail?: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
-          validatePhoneNumber?: (
-              phoneNumber: string,
-              tenantId: string
-          ) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use smsDelivery config instead
-           */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              tenantId: string,
-              userContext: any
-          ) => Promise<void>;
       }
 ) & {
     /**
