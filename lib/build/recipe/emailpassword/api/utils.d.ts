@@ -2,7 +2,8 @@
 import { NormalisedFormField } from "../types";
 export declare function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],
-    formFieldsRaw: any
+    formFieldsRaw: any,
+    tenantId: string
 ): Promise<
     {
         id: string;

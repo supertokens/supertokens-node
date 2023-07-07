@@ -77,7 +77,10 @@ export default function getAPIImplementation(): APIInterface {
                           userInputCode:
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
-                                  : await input.options.config.getCustomUserInputCode(input.userContext),
+                                  : await input.options.config.getCustomUserInputCode(
+                                        input.tenantId,
+                                        input.userContext
+                                    ),
                           tenantId: input.tenantId,
                       }
                     : {
@@ -86,7 +89,10 @@ export default function getAPIImplementation(): APIInterface {
                           userInputCode:
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
-                                  : await input.options.config.getCustomUserInputCode(input.userContext),
+                                  : await input.options.config.getCustomUserInputCode(
+                                        input.tenantId,
+                                        input.userContext
+                                    ),
                           tenantId: input.tenantId,
                       }
             );
@@ -207,7 +213,7 @@ export default function getAPIImplementation(): APIInterface {
                     userInputCode:
                         input.options.config.getCustomUserInputCode === undefined
                             ? undefined
-                            : await input.options.config.getCustomUserInputCode(input.userContext),
+                            : await input.options.config.getCustomUserInputCode(input.tenantId, input.userContext),
                     tenantId: input.tenantId,
                 });
 

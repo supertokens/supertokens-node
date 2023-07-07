@@ -37,6 +37,7 @@ const updateEmailForRecipeId = async (
     recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
     userId: string,
     email: string,
+    tenantId: string,
     userContext: any
 ): Promise<
     | {
@@ -55,7 +56,7 @@ const updateEmailForRecipeId = async (
             (field) => field.id === FORM_FIELD_EMAIL_ID
         );
 
-        let validationError = await emailFormFields[0].validate(email);
+        let validationError = await emailFormFields[0].validate(email, tenantId);
 
         if (validationError !== undefined) {
             return {
@@ -86,7 +87,7 @@ const updateEmailForRecipeId = async (
             (field) => field.id === FORM_FIELD_EMAIL_ID
         );
 
-        let validationError = await emailFormFields[0].validate(email);
+        let validationError = await emailFormFields[0].validate(email, tenantId);
 
         if (validationError !== undefined) {
             return {
@@ -130,7 +131,7 @@ const updateEmailForRecipeId = async (
                 validationError = validationResult;
             }
         } else {
-            const validationResult = await passwordlessConfig.validateEmailAddress(email);
+            const validationResult = await passwordlessConfig.validateEmailAddress(email, tenantId);
 
             if (validationResult !== undefined) {
                 isValidEmail = false;
@@ -180,7 +181,7 @@ const updateEmailForRecipeId = async (
                 validationError = validationResult;
             }
         } else {
-            const validationResult = await passwordlessConfig.validateEmailAddress(email);
+            const validationResult = await passwordlessConfig.validateEmailAddress(email, tenantId);
 
             if (validationResult !== undefined) {
                 isValidEmail = false;
@@ -226,6 +227,7 @@ const updatePhoneForRecipeId = async (
     recipeId: "emailpassword" | "thirdparty" | "passwordless" | "thirdpartyemailpassword" | "thirdpartypasswordless",
     userId: string,
     phone: string,
+    tenantId: string,
     userContext: any
 ): Promise<
     | {
@@ -253,7 +255,7 @@ const updatePhoneForRecipeId = async (
                 validationError = validationResult;
             }
         } else {
-            const validationResult = await passwordlessConfig.validatePhoneNumber(phone);
+            const validationResult = await passwordlessConfig.validatePhoneNumber(phone, tenantId);
 
             if (validationResult !== undefined) {
                 isValidPhone = false;
@@ -303,7 +305,7 @@ const updatePhoneForRecipeId = async (
                 validationError = validationResult;
             }
         } else {
-            const validationResult = await passwordlessConfig.validatePhoneNumber(phone);
+            const validationResult = await passwordlessConfig.validatePhoneNumber(phone, tenantId);
 
             if (validationResult !== undefined) {
                 isValidPhone = false;
@@ -347,7 +349,7 @@ const updatePhoneForRecipeId = async (
 
 export const userPut = async (
     _: APIInterface,
-    ___: string,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {
@@ -443,6 +445,7 @@ export const userPut = async (
             userResponse.recipe,
             userId,
             email.trim(),
+            tenantId,
             userContext
         );
 
@@ -456,6 +459,7 @@ export const userPut = async (
             userResponse.recipe,
             userId,
             phone.trim(),
+            tenantId,
             userContext
         );
 

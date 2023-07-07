@@ -36,6 +36,7 @@ export default function getAPIInterface(): APIInterface {
                 userInfo.email = {
                     id: await provider.config.generateFakeEmail!({
                         thirdPartyUserId: userInfo.thirdPartyUserId,
+                        tenantId,
                         userContext,
                     }),
                     isVerified: true,

@@ -100,7 +100,6 @@ export type RecipeInterface = {
         payload?: any;
         validitySeconds?: number;
         useStaticSigningKey?: boolean;
-        tenantId: string;
         userContext: any;
     }): Promise<
         | {

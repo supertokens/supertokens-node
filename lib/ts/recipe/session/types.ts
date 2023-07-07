@@ -69,7 +69,6 @@ export type TypeInput = {
     getTokenTransferMethod?: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
-        tenantId: string;
         userContext: any;
     }) => TokenTransferMethod | "any";
 
@@ -119,7 +118,6 @@ export type TypeNormalisedInput = {
     getTokenTransferMethod: (input: {
         req: BaseRequest;
         forCreateNewSession: boolean;
-        tenantId: string;
         userContext: any;
     }) => TokenTransferMethod | "any";
 
@@ -184,7 +182,6 @@ export interface VerifySessionOptions {
     overrideGlobalClaimValidators?: (
         globalClaimValidators: SessionClaimValidator[],
         session: SessionContainerInterface,
-        tenantId: string,
         userContext: any
     ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }

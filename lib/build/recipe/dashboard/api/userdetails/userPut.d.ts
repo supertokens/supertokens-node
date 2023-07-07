@@ -20,7 +20,7 @@ declare type Response =
       };
 export declare const userPut: (
     _: APIInterface,
-    ___: string,
+    tenantId: string,
     options: APIOptions,
     userContext: any
 ) => Promise<Response>;

@@ -39,11 +39,7 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomEmail implementation which calls our supertokens API
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                appInfo,
-                isInServerlessEnv,
-                config.createAndSendCustomEmail
-            );
+            emailService = new BackwardCompatibilityService(appInfo, isInServerlessEnv);
         }
         return {
             ...config.emailDelivery,

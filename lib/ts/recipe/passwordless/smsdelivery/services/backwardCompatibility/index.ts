@@ -19,6 +19,7 @@ import axios, { AxiosError } from "axios";
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import Supertokens from "../../../../../supertokens";
 import { logDebugMessage } from "../../../../../logger";
+import { DEFAULT_TENANT_ID } from "../../../../multitenancy/constants";
 
 function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
@@ -31,7 +32,8 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
             urlWithLinkCode?: string;
             codeLifetime: number;
         },
-        _: any
+        _: string,
+        __: any
     ): Promise<void> => {
         let supertokens = Supertokens.getInstanceOrThrowError();
         let appName = supertokens.appInfo.appName;
@@ -130,28 +132,12 @@ export default class BackwardCompatibilityService implements SmsDeliveryInterfac
             // Unlikely, but someone could display this (or a derived thing) to identify the device
             preAuthSessionId: string;
         },
+        tenantId: string,
         userContext: any
     ) => Promise<void>;
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        createAndSendCustomSms?: (
-            input: {
-                // Where the message should be delivered.
-                phoneNumber: string;
-                // This has to be entered on the starting device  to finish sign in/up
-                userInputCode?: string;
-                // Full url that the end-user can click to finish sign in/up
-                urlWithLinkCode?: string;
-                codeLifetime: number;
-                // Unlikely, but someone could display this (or a derived thing) to identify the device
-                preAuthSessionId: string;
-            },
-            userContext: any
-        ) => Promise<void>
-    ) {
-        this.createAndSendCustomSms =
-            createAndSendCustomSms === undefined ? defaultCreateAndSendCustomSms(appInfo) : createAndSendCustomSms;
+    constructor(appInfo: NormalisedAppinfo) {
+        this.createAndSendCustomSms = defaultCreateAndSendCustomSms(appInfo);
     }
 
     sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
@@ -163,6 +149,7 @@ export default class BackwardCompatibilityService implements SmsDeliveryInterfac
                 preAuthSessionId: input.preAuthSessionId,
                 codeLifetime: input.codeLifetime,
             },
+            input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
             input.userContext
         );
     };

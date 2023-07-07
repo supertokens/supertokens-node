@@ -60,12 +60,7 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomEmail implementation which calls our supertokens API
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                recipeImpl,
-                appInfo,
-                isInServerlessEnv,
-                config?.resetPasswordUsingTokenFeature
-            );
+            emailService = new BackwardCompatibilityService(recipeImpl, appInfo, isInServerlessEnv);
         }
         return {
             ...config?.emailDelivery,

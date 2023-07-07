@@ -64,7 +64,6 @@ type CommonProviderConfig = {
     validateIdTokenPayload?: (input: {
         idTokenPayload: { [key: string]: any };
         clientConfig: ProviderConfigForClientType;
-        tenantId: string;
         userContext: any;
     }) => Promise<void>;
     requireEmail?: boolean;

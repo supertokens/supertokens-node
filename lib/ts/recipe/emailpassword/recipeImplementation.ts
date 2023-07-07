@@ -158,6 +158,7 @@ export default function getRecipeInterface(
             email?: string;
             password?: string;
             applyPasswordPolicy?: boolean;
+            tenantIdForPasswordPolicy?: string;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -168,7 +169,12 @@ export default function getRecipeInterface(
                 let formFields = getEmailPasswordConfig().signUpFeature.formFields;
                 if (input.password !== undefined) {
                     const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
-                    const error = await passwordField.validate(input.password);
+                    const error = await passwordField.validate(
+                        input.password,
+                        input.tenantIdForPasswordPolicy === undefined
+                            ? DEFAULT_TENANT_ID
+                            : input.tenantIdForPasswordPolicy
+                    );
                     if (error !== undefined) {
                         return {
                             status: "PASSWORD_POLICY_VIOLATED_ERROR",

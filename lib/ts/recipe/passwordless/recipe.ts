@@ -231,7 +231,7 @@ export default class Recipe extends RecipeModule {
     ): Promise<string> => {
         let userInputCode =
             this.config.getCustomUserInputCode !== undefined
-                ? await this.config.getCustomUserInputCode(input.userContext)
+                ? await this.config.getCustomUserInputCode(input.tenantId, input.userContext)
                 : undefined;
 
         const codeInfo = await this.recipeInterfaceImpl.createCode(

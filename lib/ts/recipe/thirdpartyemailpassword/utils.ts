@@ -33,8 +33,6 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.signUpFeature
     );
 
-    let resetPasswordUsingTokenFeature = config === undefined ? undefined : config.resetPasswordUsingTokenFeature;
-
     let providers = config === undefined || config.providers === undefined ? [] : config.providers;
 
     let override = {
@@ -53,12 +51,7 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomEmail implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                emailPasswordRecipeImpl,
-                appInfo,
-                isInServerlessEnv,
-                config?.resetPasswordUsingTokenFeature
-            );
+            emailService = new BackwardCompatibilityService(emailPasswordRecipeImpl, appInfo, isInServerlessEnv);
         }
         return {
             ...config?.emailDelivery,
@@ -82,7 +75,6 @@ export function validateAndNormaliseUserInput(
         getEmailDeliveryConfig,
         signUpFeature,
         providers,
-        resetPasswordUsingTokenFeature,
     };
 }
 

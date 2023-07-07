@@ -17,6 +17,7 @@ import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery
 import axios, { AxiosError } from "axios";
 import { NormalisedAppinfo } from "../../../../../types";
 import { logDebugMessage } from "../../../../../logger";
+import { DEFAULT_TENANT_ID } from "../../../../multitenancy/constants";
 
 function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (
@@ -29,7 +30,8 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
             urlWithLinkCode?: string;
             codeLifetime: number;
         },
-        _: any
+        _: string,
+        __: any
     ): Promise<void> => {
         if (process.env.TEST_MODE === "testing") {
             return;
@@ -105,30 +107,12 @@ export default class BackwardCompatibilityService
             // Unlikely, but someone could display this (or a derived thing) to identify the device
             preAuthSessionId: string;
         },
+        tenantId: string,
         userContext: any
     ) => Promise<void>;
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        createAndSendCustomEmail?: (
-            input: {
-                // Where the message should be delivered.
-                email: string;
-                // This has to be entered on the starting device  to finish sign in/up
-                userInputCode?: string;
-                // Full url that the end-user can click to finish sign in/up
-                urlWithLinkCode?: string;
-                codeLifetime: number;
-                // Unlikely, but someone could display this (or a derived thing) to identify the device
-                preAuthSessionId: string;
-            },
-            userContext: any
-        ) => Promise<void>
-    ) {
-        this.createAndSendCustomEmail =
-            createAndSendCustomEmail === undefined
-                ? defaultCreateAndSendCustomEmail(appInfo)
-                : createAndSendCustomEmail;
+    constructor(appInfo: NormalisedAppinfo) {
+        this.createAndSendCustomEmail = defaultCreateAndSendCustomEmail(appInfo);
     }
 
     sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
@@ -140,6 +124,7 @@ export default class BackwardCompatibilityService
                 preAuthSessionId: input.preAuthSessionId,
                 codeLifetime: input.codeLifetime,
             },
+            input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
             input.userContext
         );
     };

@@ -21,29 +21,8 @@ export default class BackwardCompatibilityService
     implements SmsDeliveryInterface<TypeThirdPartyPasswordlessSmsDeliveryInput> {
     private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService;
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        passwordlessFeature?: {
-            createAndSendCustomTextMessage?: (
-                input: {
-                    // Where the message should be delivered.
-                    phoneNumber: string;
-                    // This has to be entered on the starting device  to finish sign in/up
-                    userInputCode?: string;
-                    // Full url that the end-user can click to finish sign in/up
-                    urlWithLinkCode?: string;
-                    codeLifetime: number;
-                    // Unlikely, but someone could display this (or a derived thing) to identify the device
-                    preAuthSessionId: string;
-                },
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
-        this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(
-            appInfo,
-            passwordlessFeature?.createAndSendCustomTextMessage
-        );
+    constructor(appInfo: NormalisedAppinfo) {
+        this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(appInfo);
     }
 
     sendSms = async (input: TypeThirdPartyPasswordlessSmsDeliveryInput & { userContext: any }) => {

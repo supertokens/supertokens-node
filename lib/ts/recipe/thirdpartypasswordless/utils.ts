@@ -38,10 +38,7 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
          * createAndSendCustomEmail implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityEmailService(appInfo, {
-                createAndSendCustomEmail:
-                    config?.contactMethod !== "PHONE" ? config?.createAndSendCustomEmail : undefined,
-            });
+            emailService = new BackwardCompatibilityEmailService(appInfo);
         }
         return {
             ...config?.emailDelivery,
@@ -70,10 +67,7 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
          * createAndSendCustomTextMessage implementation
          */
         if (smsService === undefined) {
-            smsService = new BackwardCompatibilitySmsService(appInfo, {
-                createAndSendCustomTextMessage:
-                    config?.contactMethod !== "EMAIL" ? config?.createAndSendCustomTextMessage : undefined,
-            });
+            smsService = new BackwardCompatibilitySmsService(appInfo);
         }
         return {
             ...config?.smsDelivery,
