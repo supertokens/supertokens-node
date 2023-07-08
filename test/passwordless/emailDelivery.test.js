@@ -414,7 +414,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         assert.notStrictEqual(codeLifetime, undefined);
         assert(codeLifetime > 0);
         assert.strictEqual(result.status, 500);
-        assert(message === "Request failed with status code 500");
+        assert.strictEqual(message, "Request failed with status code 500");
     });
 
     it("test default backward compatibility api being called: resend code api", async function () {

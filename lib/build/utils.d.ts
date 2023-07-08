@@ -16,3 +16,25 @@ export declare function makeDefaultUserContextFromAPI(request: BaseRequest): any
 export declare function setRequestInUserContextIfNotDefined(userContext: any | undefined, request: BaseRequest): any;
 export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function getFromObjectCaseInsensitive<T>(key: string, object: Record<string, T>): T | undefined;
+export declare function postWithFetch(
+    url: string,
+    headers: Record<string, string>,
+    body: any,
+    {
+        successLog,
+        errorLogHeader,
+    }: {
+        successLog: string;
+        errorLogHeader: string;
+    }
+): Promise<
+    | {
+          resp: {
+              status: number;
+              body: any;
+          };
+      }
+    | {
+          error: any;
+      }
+>;

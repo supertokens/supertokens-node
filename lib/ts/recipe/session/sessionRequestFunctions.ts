@@ -115,6 +115,12 @@ export async function getSessionFromRequest({
         doAntiCsrfCheck = false;
     }
 
+    // If the token is not present we can ignore the antiCsrf settings.
+    // the getSession implementation will handle checking sessionOptional
+    if (accessToken === undefined) {
+        doAntiCsrfCheck = false;
+    }
+
     if (doAntiCsrfCheck && config.antiCsrf === "VIA_CUSTOM_HEADER") {
         if (config.antiCsrf === "VIA_CUSTOM_HEADER") {
             if (getRidFromHeader(req) === undefined) {

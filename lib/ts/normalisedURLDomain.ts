@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import { URL } from "url";
 import { isAnIpAddress } from "./utils";
 
 export default class NormalisedURLDomain {

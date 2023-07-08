@@ -14,7 +14,7 @@
  */
 const { exec } = require("child_process");
 let fs = require("fs");
-let axios = require("axios").default;
+const { default: fetch } = require("cross-fetch");
 
 module.exports.executeCommand = async function (cmd) {
     return new Promise((resolve, reject) => {
@@ -173,14 +173,16 @@ module.exports.customAuth0Provider = () => {
                 getProfileInfo: async (accessTokenAPIResponse) => {
                     let accessToken = accessTokenAPIResponse.access_token;
                     let authHeader = `Bearer ${accessToken}`;
-                    let response = await axios({
+                    let response = await fetch(`https://${process.env.AUTH0_DOMAIN}/userinfo`, {
                         method: "get",
-                        url: `https://${process.env.AUTH0_DOMAIN}/userinfo`,
                         headers: {
                             Authorization: authHeader,
                         },
                     });
-                    let userInfo = response.data;
+                    if (response.status >= 400) {
+                        throw new Error("Failed to fetch - status code: " + response.status);
+                    }
+                    let userInfo = await response.json();
                     return {
                         id: userInfo.sub,
                         email: {

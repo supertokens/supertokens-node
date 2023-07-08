@@ -1,5 +1,6 @@
 import { APIInterface } from "../";
 import Session from "../../session";
+
 import EmailVerification from "../../emailverification/recipe";
 
 export default function getAPIInterface(): APIInterface {

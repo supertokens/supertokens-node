@@ -31,7 +31,6 @@ import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
 import { parse } from "querystring";
-import { URL } from "url";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;

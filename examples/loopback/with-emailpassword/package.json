@@ -1,0 +1,47 @@
+{
+    "name": "with-emailpassword",
+    "version": "0.0.1",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start:frontend": "cd frontend && npm run start",
+        "start:frontend-live-demo-app": "cd frontend && npx serve -s build",
+        "start:backend": "cd backend && npm run start",
+        "start:backend-live-demo-app": "cd backend && ./startLiveDemoApp.sh",
+        "start": "npm-run-all --parallel start:frontend start:backend",
+        "start-live-demo-app": "npx npm-run-all --parallel start:frontend-live-demo-app start:backend-live-demo-app"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@loopback/core": "^5.1.0",
+        "@loopback/rest": "^13.1.0",
+        "loopback": "^3.28.0",
+        "supertokens-node": "file:../../../lib/build",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^4.7.2",
+        "axios": "^0.21.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-router-dom": "^6.2.1",
+        "react-scripts": "5.0.1",
+        "supertokens-auth-react": "latest",
+        "web-vitals": "^2.1.4"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "^5.16.5",
+        "@testing-library/react": "^13.4.0",
+        "@testing-library/user-event": "^13.5.0",
+        "@types/jest": "^27.5.2",
+        "@types/node": "^16.11.56",
+        "@types/react": "^18.0.18",
+        "@types/react-dom": "^18.0.6",
+        "isomorphic-fetch": "^3.0.0",
+        "jsdom-global": "^3.0.2",
+        "mocha": "^6.1.4",
+        "npm-run-all": "^4.1.5",
+        "puppeteer": "^11.0.0",
+        "supertokens-node": "^14.1.2"
+    }
+}

@@ -471,11 +471,29 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                         }
                     })
             );
-            assert(response.message === "Please provide exactly one of email or phoneNumber");
+            assert.strictEqual(response.message, "Please provide exactly one of email or phoneNumber");
         }
 
         {
             // sending neither email and phone in createCode API throws bad request
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({})
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.strictEqual(response.message, "Please provide exactly one of email or phoneNumber");
+        }
+
+        {
+            // sending empty body in createCode API throws bad request
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup/code")
@@ -488,7 +506,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                         }
                     })
             );
-            assert(response.message === "Please provide exactly one of email or phoneNumber");
+            assert.strictEqual(response.message, "Please provide exactly one of email or phoneNumber");
         }
     });
 

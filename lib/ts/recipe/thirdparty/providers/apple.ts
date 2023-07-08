@@ -15,20 +15,20 @@
 
 import { ProviderInput, TypeProvider } from "../types";
 import NewProvider, { getActualClientIdFromDevelopmentClientId } from "./custom";
-import { sign as jwtSign } from "jsonwebtoken";
+import * as jose from "jose";
+import crypto from "crypto";
 
-function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): string {
-    return jwtSign(
-        {
-            iss: teamId,
-            iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor(Date.now() / 1000) + 86400 * 180, // 6 months
-            aud: "https://appleid.apple.com",
-            sub: getActualClientIdFromDevelopmentClientId(clientId),
-        },
-        privateKey.replace(/\\n/g, "\n"),
-        { algorithm: "ES256", keyid: keyId }
-    );
+async function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): Promise<string> {
+    const alg = "ES256";
+
+    return new jose.SignJWT({})
+        .setProtectedHeader({ alg, kid: keyId, typ: "JWT" })
+        .setIssuer(teamId)
+        .setIssuedAt()
+        .setExpirationTime("180days")
+        .setAudience("https://appleid.apple.com")
+        .setSubject(getActualClientIdFromDevelopmentClientId(clientId))
+        .sign(crypto.createPrivateKey(privateKey.replace(/\\n/g, "\n")));
 }
 
 export default function Apple(input: ProviderInput): TypeProvider {
@@ -68,7 +68,7 @@ export default function Apple(input: ProviderInput): TypeProvider {
                     );
                 }
 
-                config.clientSecret = getClientSecret(
+                config.clientSecret = await getClientSecret(
                     config.clientId,
                     config.additionalConfig.keyId,
                     config.additionalConfig.teamId,
