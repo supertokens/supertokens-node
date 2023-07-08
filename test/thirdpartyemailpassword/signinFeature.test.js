@@ -43,7 +43,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                 thirdPartyId: "custom",
                 authorizationEndpoint: "https://test.com/oauth/auth",
                 tokenEndpoint: "https://test.com/oauth/token",
-                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
             },
             override: (oI) => {
                 return {
@@ -99,7 +99,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                                 thirdPartyId: "google",
                                 clients: [
                                     {
-                                        clientID: "test",
+                                        clientId: "test",
                                         clientSecret: "test-secret",
                                     },
                                 ],
@@ -678,7 +678,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -731,7 +731,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -758,7 +758,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -784,7 +784,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -810,7 +810,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -837,7 +837,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 

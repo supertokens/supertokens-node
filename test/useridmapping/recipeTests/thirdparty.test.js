@@ -42,7 +42,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
                                         thirdPartyId: "google",
                                         clients: [
                                             {
-                                                clientID: "test",
+                                                clientId: "test",
                                                 clientSecret: "test-secret",
                                             },
                                         ],
@@ -108,7 +108,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
                                         thirdPartyId: "google",
                                         clients: [
                                             {
-                                                clientID: "test",
+                                                clientId: "test",
                                                 clientSecret: "test",
                                             },
                                         ],
@@ -173,7 +173,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
                                         thirdPartyId: "google",
                                         clients: [
                                             {
-                                                clientID: "test",
+                                                clientId: "test",
                                                 clientSecret: "test",
                                             },
                                         ],
@@ -238,7 +238,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
                                         thirdPartyId: "google",
                                         clients: [
                                             {
-                                                clientID: "test",
+                                                clientId: "test",
                                                 clientSecret: "test",
                                             },
                                         ],
