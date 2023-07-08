@@ -233,7 +233,9 @@ export async function getSession(
 
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
+        delete response.status;
         return {
+            ...response,
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
