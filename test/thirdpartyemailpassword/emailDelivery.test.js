@@ -167,11 +167,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            email = input.email;
-                            passwordResetURL = passwordResetLink;
-                            timeJoined = input.timeJoined;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.user.email;
+                                passwordResetURL = input.passwordResetLink;
+                                timeJoined = input.user.timeJoined;
+                            },
                         },
                     },
                 }),
@@ -221,11 +223,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            functionCalled = true;
-                            email = input.email;
-                            passwordResetURL = passwordResetLink;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                functionCalled = true;
+                                email = input.user.email;
+                                passwordResetURL = input.passwordResetLink;
+                            },
                         },
                     },
                 }),
@@ -290,9 +294,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            functionCalled = true;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                functionCalled = true;
+                            },
                         },
                     },
                 }),
