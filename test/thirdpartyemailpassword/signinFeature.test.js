@@ -43,7 +43,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                 thirdPartyId: "custom",
                 authorizationEndpoint: "https://test.com/oauth/auth",
                 tokenEndpoint: "https://test.com/oauth/token",
-                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
             },
             override: (oI) => {
                 return {
@@ -99,7 +99,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                                 thirdPartyId: "google",
                                 clients: [
                                     {
-                                        clientID: "test",
+                                        clientId: "test",
                                         clientSecret: "test-secret",
                                     },
                                 ],

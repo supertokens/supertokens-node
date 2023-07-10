@@ -31,7 +31,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 thirdPartyId: "custom",
                 authorizationEndpoint: "https://test.com/oauth/auth",
                 tokenEndpoint: "https://test.com/oauth/token",
-                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
             },
             override: (oI) => {
                 return {
@@ -92,7 +92,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                                     thirdPartyId: "google",
                                     clients: [
                                         {
-                                            clientID: "4398792-test-id",
+                                            clientId: "4398792-test-id",
                                             clientSecret: "test-secret",
                                         },
                                     ],

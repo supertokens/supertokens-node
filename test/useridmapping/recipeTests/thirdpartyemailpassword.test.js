@@ -41,7 +41,7 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                                     thirdPartyId: "google",
                                     clients: [
                                         {
-                                            clientID: "google",
+                                            clientId: "google",
                                             clientSecret: "test",
                                         },
                                     ],

@@ -1521,7 +1521,7 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                                 thirdPartyId: "google",
                                 clients: [
                                     {
-                                        clientID: "test",
+                                        clientId: "test",
                                         clientSecret: "test-secret",
                                     },
                                 ],
@@ -1567,7 +1567,7 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                                 thirdPartyId: "custom",
                                 authorizationEndpoint: "https://test.com/oauth/auth",
                                 tokenEndpoint: "https://test.com/oauth/token",
-                                clients: [{ clientID: "supetokens", clientSecret: "secret", scope: ["test"] }],
+                                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
                             },
                             override: (oI) => {
                                 return {

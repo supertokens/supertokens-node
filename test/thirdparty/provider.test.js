@@ -76,7 +76,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "google",
                                     clients: [
                                         {
-                                            clientID: "test",
+                                            clientId: "test",
                                             clientSecret: "test-secret",
                                         },
                                     ],
@@ -169,7 +169,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "google",
                                     clients: [
                                         {
-                                            clientID: "test",
+                                            clientId: "test",
                                             clientSecret: "test-secret",
                                         },
                                     ],
@@ -242,7 +242,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "google",
                                     clients: [
                                         {
-                                            clientID: "test",
+                                            clientId: "test",
                                             clientSecret: "test-secret",
                                             scope: ["test-scope-1", "test-scope-2"],
                                         },
@@ -293,7 +293,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test minimum config for third party provider facebook", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
@@ -314,7 +314,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "facebook",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             clientSecret,
                                         },
                                     ],
@@ -388,7 +388,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test passing scopes in config for third party provider facebook", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
@@ -409,7 +409,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "facebook",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             clientSecret,
                                             scope: ["test-scope-1", "test-scope-2"],
                                         },
@@ -458,7 +458,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test minimum config for third party provider github", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
@@ -479,7 +479,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "github",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             clientSecret,
                                         },
                                     ],
@@ -553,7 +553,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test additional params, check they are present in authorisation url for third party provider github", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
@@ -574,7 +574,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "github",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             clientSecret,
                                         },
                                     ],
@@ -628,7 +628,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test passing scopes in config for third party provider github", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let clientSecret = "test-secret";
 
         STExpress.init({
@@ -649,7 +649,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "github",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             clientSecret,
                                             scope: ["test-scope-1", "test-scope-2"],
                                         },
@@ -698,7 +698,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test minimum config for third party provider apple", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let additionalConfig = {
             keyId: "test-key",
             privateKey,
@@ -723,7 +723,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "apple",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             additionalConfig,
                                         },
                                     ],
@@ -800,7 +800,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test passing additional params, check they are present in authorisation url for third party provider apple", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let additionalConfig = {
             keyId: "test-key",
             privateKey,
@@ -825,7 +825,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "apple",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             additionalConfig,
                                         },
                                     ],
@@ -880,7 +880,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test passing scopes in config for third party provider apple", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let additionalConfig = {
             keyId: "test-key",
             privateKey,
@@ -905,7 +905,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "apple",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             additionalConfig,
                                             scope: ["test-scope-1", "test-scope-2"],
                                         },
@@ -955,7 +955,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
     it("test passing invalid privateKey in config for third party provider apple", async function () {
         await startST();
 
-        let clientID = "test";
+        let clientId = "test";
         let additionalConfig = {
             keyId: "test-key",
             privateKey: "invalidKey",
@@ -979,7 +979,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                     thirdPartyId: "apple",
                                     clients: [
                                         {
-                                            clientID,
+                                            clientId,
                                             additionalConfig,
                                         },
                                     ],
@@ -1021,7 +1021,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                         thirdPartyId: "google",
                                         clients: [
                                             {
-                                                clientID: "test",
+                                                clientId: "test",
                                                 clientSecret: "test-secret",
                                             },
                                         ],
@@ -1032,7 +1032,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                                         thirdPartyId: "google",
                                         clients: [
                                             {
-                                                clientID: "test2",
+                                                clientId: "test2",
                                                 clientSecret: "test-secret2",
                                             },
                                         ],
