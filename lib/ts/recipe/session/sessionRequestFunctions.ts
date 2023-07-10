@@ -351,7 +351,7 @@ export async function createNewSessionInRequest({
     };
 
     for (const claim of claimsAddedByOtherRecipes) {
-        const update = await claim.build(userId, userContext);
+        const update = await claim.build(userId, tenantId, userContext);
         finalAccessTokenPayload = {
             ...finalAccessTokenPayload,
             ...update,
