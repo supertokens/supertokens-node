@@ -11,7 +11,6 @@ import {
     TypeNormalisedInput,
 } from "./types";
 export declare function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput;
-export declare function isApiPath(path: NormalisedURLPath, basePath: NormalisedURLPath): boolean;
 export declare function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined;
 export declare function sendUnauthorisedAccess(res: BaseResponse): void;
 export declare function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser;

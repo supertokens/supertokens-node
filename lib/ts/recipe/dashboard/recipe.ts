@@ -19,7 +19,7 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from "./utils";
+import { getApiIdIfMatched, getApiPathWithDashboardBase, validateAndNormaliseUserInput } from "./utils";
 import {
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
@@ -367,41 +367,29 @@ export default class Recipe extends RecipeModule {
 
         const basePathStr = this.getAppInfo().apiBasePath.getAsStringDangerous();
         const pathStr = path.getAsStringDangerous();
-        const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?(/.*)$`);
+        const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?/dashboard(/api/.*)$`);
 
         const match = pathStr.match(regex);
         let tenantId: string = DEFAULT_TENANT_ID;
         let remainingPath: NormalisedURLPath | undefined = undefined;
 
         if (match) {
-            tenantId = match[1];
-            remainingPath = new NormalisedURLPath(match[2]);
-        }
+            // this is a dashboard api
 
-        const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
-
-        if (
-            isApiPath(path, this.getAppInfo().apiBasePath) ||
-            (remainingPath !== undefined &&
-                isApiPath(path, this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(`/${tenantId}`))))
-        ) {
-            // check remainingPath first as path that contains tenantId might match as well
-            // since getApiIdIfMatched uses endsWith to match
-            if (remainingPath !== undefined) {
-                const id = getApiIdIfMatched(remainingPath, method);
-                if (id !== undefined) {
-                    const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
-                        tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-                        userContext,
-                    });
-                    return { id, tenantId: finalTenantId };
-                }
+            if (match[1] === undefined) {
+                tenantId = DEFAULT_TENANT_ID;
+            } else {
+                tenantId = match[1];
             }
 
-            const id = getApiIdIfMatched(path, method);
+            remainingPath = new NormalisedURLPath(match[2]);
+
+            const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+
+            const id = getApiIdIfMatched(remainingPath, method);
             if (id !== undefined) {
                 const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
-                    tenantIdFromFrontend: DEFAULT_TENANT_ID,
+                    tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
                     userContext,
                 });
                 return { id, tenantId: finalTenantId };
