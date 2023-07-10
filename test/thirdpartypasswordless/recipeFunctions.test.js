@@ -175,8 +175,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (emailInput) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -207,7 +211,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(result.email !== undefined && user.email === result.email);
             assert(result.phoneNumber === undefined);
             assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 3);
+            assert(result.tenantIds.length === 1);
+            assert(Object.keys(result).length === 4);
         }
 
         {
@@ -233,7 +238,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(userInfo.email === user.email);
             assert(userInfo.phoneNumber === undefined);
             assert(typeof userInfo.timeJoined === "number");
-            assert(Object.keys(userInfo).length === 3);
+            assert(userInfo.tenantIds.length === 1);
+            assert(Object.keys(userInfo).length === 4);
         }
 
         {
@@ -256,7 +262,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(result.phoneNumber !== undefined && user.phoneNumber === result.phoneNumber);
             assert(result.email === undefined);
             assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 3);
+            assert(result.tenantIds.length === 1);
+            assert(Object.keys(result).length === 4);
         }
     });
 
@@ -469,7 +476,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(resp.user.phoneNumber === undefined);
             assert(typeof resp.user.timeJoined === "number");
             assert(Object.keys(resp).length === 3);
-            assert(Object.keys(resp.user).length === 3);
+            assert(Object.keys(resp.user).length === 4);
         }
 
         {
@@ -1035,8 +1042,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1058,6 +1069,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         assert(result.user.phoneNumber === "+12345678901");
         assert(typeof result.user.id === "string");
         assert(typeof result.user.timeJoined === "number");
-        assert(Object.keys(result.user).length === 3);
+        assert(result.user.tenantIds.length === 1);
+        assert(Object.keys(result.user).length === 4);
     });
 });
