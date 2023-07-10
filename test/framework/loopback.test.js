@@ -20,8 +20,6 @@ let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
-const request = require("supertest");
-const axios = require("axios").default;
 let Dashboard = require("../../recipe/dashboard");
 const { createUsers } = require("../utils.js");
 const { Querier } = require("../../lib/build/querier");
@@ -29,6 +27,7 @@ const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
 const { Apple, Google, Github } = require("../../recipe/thirdparty");
+const { default: fetch } = require("cross-fetch");
 
 describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function () {
     beforeEach(async function () {
@@ -67,19 +66,18 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await this.app.start();
 
-        let result = await axios({
+        let result = await request({
             url: "/create",
             baseURL: "http://localhost:9876",
             method: "post",
         });
         let res = extractInfoFromResponse(result);
-
         assert(res.accessToken !== undefined);
         assert(res.antiCsrf !== undefined);
         assert(res.refreshToken !== undefined);
 
         try {
-            await axios({
+            await request({
                 url: "/session/verify",
                 baseURL: "http://localhost:9876",
                 method: "post",
@@ -94,7 +92,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         }
 
         try {
-            await axios({
+            await request({
                 url: "/session/verify",
                 baseURL: "http://localhost:9876",
                 method: "post",
@@ -111,7 +109,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             }
         }
 
-        result = await axios({
+        result = await request({
             url: "/session/verify",
             baseURL: "http://localhost:9876",
             method: "post",
@@ -122,7 +120,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         });
         assert.deepStrictEqual(result.data, { user: "userId" });
 
-        result = await axios({
+        result = await request({
             url: "/session/verify/optionalCSRF",
             baseURL: "http://localhost:9876",
             method: "post",
@@ -133,7 +131,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         assert.deepStrictEqual(result.data, { user: "userId" });
 
         try {
-            await axios({
+            await request({
                 url: "/auth/session/refresh",
                 baseURL: "http://localhost:9876",
                 method: "post",
@@ -147,7 +145,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
             }
         }
 
-        result = await axios({
+        result = await request({
             url: "/auth/session/refresh",
             baseURL: "http://localhost:9876",
             method: "post",
@@ -163,7 +161,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         assert(res2.antiCsrf !== undefined);
         assert(res2.refreshToken !== undefined);
 
-        result = await axios({
+        result = await request({
             url: "/session/verify",
             baseURL: "http://localhost:9876",
             method: "post",
@@ -177,7 +175,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         let res3 = extractInfoFromResponse(result);
         assert(res3.accessToken !== undefined);
 
-        result = await axios({
+        result = await request({
             url: "/session/revoke",
             baseURL: "http://localhost:9876",
             method: "post",
@@ -229,7 +227,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await this.app.start();
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/signup/email/exists?email=test@example.com",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -275,7 +273,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await this.app.start();
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users/count",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -326,7 +324,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await this.app.start();
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/search/tags",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -381,7 +379,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await createUsers(EmailPassword);
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -439,7 +437,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await createUsers(EmailPassword);
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -498,7 +496,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await createUsers(EmailPassword);
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -560,7 +558,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await createUsers(null, Passwordless);
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -622,7 +620,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await createUsers(null, Passwordless);
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -707,7 +705,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await createUsers(null, Passwordless, ThirdParty);
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -789,7 +787,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
 
         await createUsers(null, null, ThirdParty);
 
-        let result = await axios({
+        let result = await request({
             url: "/auth/dashboard/api/users",
             baseURL: "http://localhost:9876",
             method: "get",
@@ -807,3 +805,28 @@ describe(`Loopback: ${printPath("[test/framework/loopback.test.js]")}`, function
         assert(result.data.users.length === 3);
     });
 });
+
+async function request(init) {
+    const url = new URL(init.url, init.baseURL);
+    if (init.params) {
+        url.search = new URLSearchParams(init.params).toString();
+    }
+
+    /** @type {Response} */
+    const resp = await fetch(url, {
+        ...init,
+    });
+    const headers = Object.fromEntries(resp.headers.entries());
+    if (resp.headers.has("set-cookie")) {
+        let split = resp.headers.get("set-cookie").split(/, (\w+=)/);
+        headers["set-cookie"] = [split[0]];
+        for (let i = 1; i + 1 < split.length; i += 2) {
+            headers["set-cookie"].push(`${split[i]}${split[i + 1]}`);
+        }
+    }
+    return {
+        status: resp.status,
+        data: await resp.json(),
+        headers,
+    };
+}

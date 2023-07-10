@@ -16,6 +16,7 @@ const { exec } = require("child_process");
 const nock = require("nock");
 const request = require("supertest");
 let fs = require("fs");
+const { default: fetch } = require("cross-fetch");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
@@ -36,7 +37,6 @@ let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 const { wrapRequest } = require("../framework/express");
 const { join } = require("path");
-const axios = require("axios");
 
 const users = require("./users.json");
 
@@ -99,6 +99,7 @@ module.exports.extractInfoFromResponse = function (res) {
     if (!Array.isArray(cookies)) {
         cookies = [cookies];
     }
+
     cookies.forEach((i) => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
             /**
@@ -312,8 +313,14 @@ module.exports.startSTWithMultitenancy = async function (host = "localhost", por
     const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
         "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
 
-    await axios.put(`http://${host}:${port}/ee/license`, {
-        licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+    await fetch(`http://${host}:${port}/ee/license`, {
+        method: "PUT",
+        headers: {
+            "content-type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+            licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+        }),
     });
 };
 

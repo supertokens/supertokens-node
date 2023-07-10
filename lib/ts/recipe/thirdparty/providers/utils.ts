@@ -1,11 +1,10 @@
-import * as qs from "querystring";
+import fetch from "cross-fetch";
+import * as jose from "jose";
+
 import { ProviderConfigForClientType } from "../types";
-import axios from "axios";
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { logDebugMessage } from "../../../logger";
-import { verify, VerifyOptions } from "jsonwebtoken";
-import jwksClient from "jwks-rsa";
 
 export async function doGetRequest(
     url: string,
@@ -15,23 +14,26 @@ export async function doGetRequest(
     logDebugMessage(
         `GET request to ${url}, with query params ${JSON.stringify(queryParams)} and headers ${JSON.stringify(headers)}`
     );
-    try {
-        let response = await axios.get(url, {
-            params: queryParams,
-            headers: headers,
-        });
-
-        logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(response.data)}`);
-        return response.data;
-    } catch (err) {
-        if (axios.isAxiosError(err)) {
-            const response: any = err.response;
-            logDebugMessage(
-                `Received response with status ${response.status} and body ${JSON.stringify(response.data)}`
-            );
-        }
-        throw err;
+    if (headers?.["Accept"] === undefined) {
+        headers = {
+            ...headers,
+            Accept: "application/json", // few providers like github don't send back json response by default
+        };
     }
+    const finalURL = new URL(url);
+    finalURL.search = new URLSearchParams(queryParams).toString();
+    let response = await fetch(finalURL.toString(), {
+        headers: headers,
+    });
+
+    if (response.status >= 400) {
+        logDebugMessage(`Received response with status ${response.status} and body ${await response.text()}`);
+        throw new Error(`Received response with status ${response.status} and body ${await response.text()}`);
+    }
+    const respData = await response.json();
+
+    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
+    return respData;
 }
 
 export async function doPostRequest(
@@ -50,49 +52,29 @@ export async function doPostRequest(
         `POST request to ${url}, with params ${JSON.stringify(params)} and headers ${JSON.stringify(headers)}`
     );
 
-    try {
-        const body = qs.stringify(params);
-        let response = await axios.post(url, body, {
-            headers: headers,
-        });
+    const body = new URLSearchParams(params).toString();
+    let response = await fetch(url, {
+        method: "POST",
+        body,
+        headers,
+    });
 
-        logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(response.data)}`);
-        return response.data;
-    } catch (err) {
-        if (axios.isAxiosError(err)) {
-            const response: any = err.response;
-            logDebugMessage(
-                `Received response with status ${response.status} and body ${JSON.stringify(response.data)}`
-            );
-        }
-        throw err;
+    if (response.status >= 400) {
+        logDebugMessage(`Received response with status ${response.status} and body ${await response.text()}`);
+        throw new Error(`Received response with status ${response.status} and body ${await response.text()}`);
     }
+    const respData = await response.json();
+
+    logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
+    return respData;
 }
 
 export async function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
-    jwksUri: string,
-    otherOptions: VerifyOptions
+    jwks: jose.JWTVerifyGetKey,
+    otherOptions: jose.JWTVerifyOptions
 ): Promise<any> {
-    const client = jwksClient({
-        jwksUri,
-    });
-    function getKey(header: any, callback: any) {
-        client.getSigningKey(header.kid, function (_: any, key: any) {
-            var signingKey = key.publicKey || key.rsaPublicKey;
-            callback(null, signingKey);
-        });
-    }
-
-    let payload: any = await new Promise((resolve, reject) => {
-        verify(idToken, getKey, otherOptions, function (err, decoded) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(decoded);
-            }
-        });
-    });
+    const { payload } = await jose.jwtVerify(idToken, jwks, otherOptions);
 
     return payload;
 }

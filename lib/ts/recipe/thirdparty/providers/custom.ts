@@ -2,6 +2,7 @@ import { TypeProvider, ProviderInput, UserInfo, ProviderConfigForClientType } fr
 import { doGetRequest, doPostRequest, verifyIdTokenFromJWKSEndpointAndGetPayload } from "./utils";
 import pkceChallenge from "pkce-challenge";
 import { getProviderConfigForClient } from "./configUtils";
+import { JWTVerifyGetKey, createRemoteJWKSet } from "jose";
 
 const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
 const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
@@ -140,6 +141,8 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
         };
     }
 
+    let jwks: JWTVerifyGetKey | undefined;
+
     let impl: TypeProvider = {
         id: input.config.thirdPartyId,
         config: {
@@ -274,9 +277,12 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             };
 
             if (idToken && impl.config.jwksURI !== undefined) {
+                if (jwks === undefined) {
+                    jwks = createRemoteJWKSet(new URL(impl.config.jwksURI));
+                }
                 rawUserInfoFromProvider.fromIdTokenPayload = await verifyIdTokenFromJWKSEndpointAndGetPayload(
                     idToken,
-                    impl.config.jwksURI,
+                    jwks,
                     {
                         audience: getActualClientIdFromDevelopmentClientId(impl.config.clientId),
                     }

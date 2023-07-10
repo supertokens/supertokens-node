@@ -1,6 +1,6 @@
 // @ts-nocheck
+import * as jose from "jose";
 import { ProviderConfigForClientType } from "../types";
-import { VerifyOptions } from "jsonwebtoken";
 export declare function doGetRequest(
     url: string,
     queryParams?: {
@@ -21,8 +21,8 @@ export declare function doPostRequest(
 ): Promise<any>;
 export declare function verifyIdTokenFromJWKSEndpointAndGetPayload(
     idToken: string,
-    jwksUri: string,
-    otherOptions: VerifyOptions
+    jwks: jose.JWTVerifyGetKey,
+    otherOptions: jose.JWTVerifyOptions
 ): Promise<any>;
 export declare function discoverOIDCEndpoints(
     config: ProviderConfigForClientType

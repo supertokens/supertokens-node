@@ -13,8 +13,9 @@
  * under the License.
  */
 
-import { ProviderInput, TypeProvider } from "../types";
+import { TypeProvider, ProviderInput } from "../types";
 import NewProvider from "./custom";
+// import fetch from "cross-fetch";
 // import NormalisedURLDomain from "../../../normalisedURLDomain";
 
 // TODO implement
@@ -63,14 +64,16 @@ export default function GitLab(input: ProviderInput): TypeProvider {
     //     }) {
     //         let accessToken = accessTokenAPIResponse.access_token;
     //         let authHeader = `Bearer ${accessToken}`;
-    //         let response = await axios({
+    //         let response = await fetch(baseUrl + "/api/v4/user", {
     //             method: "get",
-    //             url: baseUrl + "/api/v4/user",
     //             headers: {
     //                 Authorization: authHeader,
     //             },
     //         });
-    //         let userInfo = response.data;
+    //         if (response.status >= 400) {
+    //             throw response;
+    //         }
+    //         let userInfo = await response.json();
     //         let id = userInfo.id + "";
     //         let email = userInfo.email;
     //         if (email === undefined || email === null) {

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [14.1.3] - 2023-07-03
+
+### Changes
+
+-   Updated/replaced dependencies & refactored to be compatible with vercel edge runtimes.
+
+### Fixes
+
+-   Now properly ignoring missing anti-csrf tokens in optional session validation
+
 ## [14.1.2] - 2023-06-07
 
 ### Fixes
@@ -102,12 +112,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### If you used the jwt feature of the session recipe
 
 1. Add `exposeAccessTokenToFrontendInCookieBasedAuth: true` to the Session recipe config on the backend if you need to access the JWT on the frontend.
-2. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
+2. Choose a prop from the following list. We'll use `sub` in the code below, but you can replace it with another from the list if you used it in a custom access token payload.
+    - `sub`
+    - `iat`
+    - `exp`
+    - `sessionHandle`
+3. On the frontend where you accessed the JWT before by: `(await Session.getAccessTokenPayloadSecurely()).jwt` update to:
 
 ```tsx
 let jwt = null;
 const accessTokenPayload = await Session.getAccessTokenPayloadSecurely();
-if (accessTokenPayload.jwt === undefined) {
+if (accessTokenPayload.sub !== undefined) {
     jwt = await Session.getAccessToken();
 } else {
     // This branch is only required if there are valid access tokens created before the update
@@ -116,12 +131,12 @@ if (accessTokenPayload.jwt === undefined) {
 }
 ```
 
-3. On the backend if you accessed the JWT before by `session.getAccessTokenPayload().jwt` please update to:
+4. On the backend if you accessed the JWT before by `session.getAccessTokenPayload().jwt` please update to:
 
 ```tsx
 let jwt = null;
 const accessTokenPayload = await session.getAccessTokenPayload();
-if (accessTokenPayload.jwt === undefined) {
+if (accessTokenPayload.sub !== undefined) {
     jwt = await session.getAccessToken();
 } else {
     // This branch is only required if there are valid access tokens created before the update
