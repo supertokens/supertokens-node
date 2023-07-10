@@ -527,7 +527,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response2.session != undefined);
-        assert(Object.keys(response2.session).length === 4);
+        assert(Object.keys(response2.session).length === 5);
 
         let response3 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
@@ -537,7 +537,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response3.session != undefined);
-        assert(Object.keys(response3.session).length === 4);
+        assert(Object.keys(response3.session).length === 5);
     });
 
     //check session verify for with / without anti-csrf present**
@@ -569,7 +569,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         );
 
         assert.notStrictEqual(response2.session, undefined);
-        assert.strictEqual(Object.keys(response2.session).length, 4); // TODO check why this changed
+        assert.strictEqual(Object.keys(response2.session).length, 5);
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         try {
@@ -1001,7 +1001,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response2.session != undefined);
-        assert(Object.keys(response2.session).length === 4);
+        assert(Object.keys(response2.session).length === 5);
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         let response3 = await SessionFunctions.getSession(
@@ -1012,7 +1012,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response3.session != undefined);
-        assert(Object.keys(response3.session).length === 4);
+        assert(Object.keys(response3.session).length === 5);
     });
 
     it("test that anti-csrf disabled and sameSite none does not throw an error", async function () {
@@ -1131,13 +1131,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res = await SessionFunctions.createNewSession(s.helpers, "", false, {}, null);
         let res2 = await SessionFunctions.getSessionInformation(s.helpers, res.session.handle);
 
-        assert(typeof res2.status === "string");
-        assert(res2.status === "OK");
         assert(typeof res2.userId === "string");
         assert(typeof res2.sessionDataInDatabase === "object");
         assert(typeof res2.expiry === "number");
         assert(typeof res2.customClaimsInAccessTokenPayload === "object");
         assert(typeof res2.timeCreated === "number");
+        assert.strictEqual(res2.tenantId, "public");
     });
 
     it("test that revoked session throws error when calling get session by session handle", async function () {
