@@ -208,9 +208,13 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user;
-                        emailToken = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInfo = input.user;
+                                emailToken = input.emailVerifyLink;
+                            },
+                        },
                     },
                 }),
                 ThirdPartyEmailPassword.init(),
@@ -266,9 +270,13 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user;
-                        emailToken = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInfo = input.user;
+                                emailToken = input.emailVerifyLink;
+                            },
+                        },
                     },
                 }),
                 ThirdPartyEmailPassword.init({
