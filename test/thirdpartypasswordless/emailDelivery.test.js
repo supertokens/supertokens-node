@@ -490,11 +490,15 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                 ThirdpartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: async (input) => {
-                        email = input.email;
-                        codeLifetime = input.codeLifetime;
-                        urlWithLinkCode = input.urlWithLinkCode;
-                        userInputCode = input.userInputCode;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.email;
+                                codeLifetime = input.codeLifetime;
+                                urlWithLinkCode = input.urlWithLinkCode;
+                                userInputCode = input.userInputCode;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
@@ -889,18 +893,18 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                 ThirdpartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: async (input) => {
-                        /**
-                         * when the function is called for the first time,
-                         * it will be for signinup
-                         */
-                        if (sendCustomEmailCalled) {
-                            email = input.email;
-                            codeLifetime = input.codeLifetime;
-                            urlWithLinkCode = input.urlWithLinkCode;
-                            userInputCode = input.userInputCode;
-                        }
-                        sendCustomEmailCalled = true;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                if (sendCustomEmailCalled) {
+                                    email = input.email;
+                                    codeLifetime = input.codeLifetime;
+                                    urlWithLinkCode = input.urlWithLinkCode;
+                                    userInputCode = input.userInputCode;
+                                }
+                                sendCustomEmailCalled = true;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
