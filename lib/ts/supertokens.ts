@@ -31,7 +31,6 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
-import MultitenancyRecipe from "./recipe/multitenancy/recipe";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
 export default class SuperTokens {
@@ -83,6 +82,7 @@ export default class SuperTokens {
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
         let multitenancyFound = false;
+        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);
             if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {

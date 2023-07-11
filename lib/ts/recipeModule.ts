@@ -18,7 +18,6 @@ import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
-import MultitenancyRecipe from "./recipe/multitenancy/recipe";
 
 export default abstract class RecipeModule {
     private recipeId: string;
@@ -58,6 +57,7 @@ export default abstract class RecipeModule {
             remainingPath = new NormalisedURLPath(match[2]);
         }
 
+        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
 
         for (let i = 0; i < apisHandled.length; i++) {
