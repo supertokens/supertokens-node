@@ -151,6 +151,128 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         assert.strictEqual(result.body.status, "OK");
     });
 
+    it("test backward compatibility: reset password", async function () {
+        await startST();
+        let email = undefined;
+        let passwordResetURL = undefined;
+        let timeJoined = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.user.email;
+                                passwordResetURL = input.passwordResetLink;
+                                timeJoined = input.user.timeJoined;
+                            },
+                        },
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await EmailPassword.signUp("test@example.com", "1234abcd");
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "emailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(email, "test@example.com");
+        assert.notStrictEqual(passwordResetURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
+    });
+
+    it("test backward compatibility: reset password (non existent user)", async function () {
+        await startST();
+        let functionCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                functionCalled = true;
+                            },
+                        },
+                    },
+                }),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "emailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(functionCalled, false);
+
+        await EmailPassword.signUp("test@example.com", "1234abcd");
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "emailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(functionCalled, true);
+    });
+
     it("test custom override: reset password", async function () {
         await startST();
         let email = undefined;
@@ -434,6 +556,61 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(emailVerifyURL, undefined);
         assert.strictEqual(result.body.status, "OK");
+    });
+
+    it("test backward compatibility: email verify", async function () {
+        await startST();
+        let email = undefined;
+        let emailVerifyURL = undefined;
+        let userIdInCb = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.user.email;
+                                userIdInCb = input.user.id;
+                                emailVerifyURL = input.emailVerifyLink;
+                            },
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(express.json());
+        app.use(middleware());
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, req.body.id, {}, {});
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let user = await EmailPassword.signUp("test@example.com", "1234abcd");
+        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
+
+        await supertest(app)
+            .post("/auth/user/email/verify/token")
+            .set("rid", "emailverification")
+            .set("Cookie", ["sAccessToken=" + res.accessToken])
+            .expect(200);
+        await delay(2);
+        assert.strictEqual(email, "test@example.com");
+        assert.strictEqual(userIdInCb, user.user.id);
+        assert.notStrictEqual(emailVerifyURL, undefined);
     });
 
     it("test custom override: email verify", async function () {
