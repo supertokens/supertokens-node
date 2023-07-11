@@ -19,7 +19,7 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { getApiIdIfMatched, getApiPathWithDashboardBase, validateAndNormaliseUserInput } from "./utils";
+import { getApiPathWithDashboardBase, validateAndNormaliseUserInput } from "./utils";
 import {
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
@@ -60,8 +60,6 @@ import signIn from "./api/signIn";
 import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
-import MultitenancyRecipe from "../../recipe/multitenancy/recipe";
 import listTenants from "./api/listTenants";
 
 export default class Recipe extends RecipeModule {
@@ -120,21 +118,10 @@ export default class Recipe extends RecipeModule {
     // abstract instance functions below...............
 
     getAPIsHandled = (): APIHandled[] => {
-        /**
-         * Normally this array is used by the SDK to decide whether or not the recipe
-         * handles a specific API path and method and then returns the ID.
-         *
-         * For the dashboard recipe this logic is fully custom and handled inside the
-         * `returnAPIIdIfCanHandleRequest` method of this class.
-         *
-         * For most frameworks this array is redundant because the `returnAPIIdIfCanHandleRequest` is used.
-         * But for frameworks such as Hapi that require all APIs to be declared up front, this array is used
-         * to make sure that the framework does not return a 404
-         */
         return [
             {
                 id: DASHBOARD_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_API)),
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase("/")),
                 disabled: false,
                 method: "get",
             },
@@ -246,6 +233,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "post",
             },
+            {
+                id: TENANTS_LIST_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANTS_LIST_API)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -356,52 +349,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is error => {
         return error.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    returnAPIIdIfCanHandleRequest = async (
-        path: NormalisedURLPath,
-        method: HTTPMethod,
-        userContext: any
-    ): Promise<{ id: string; tenantId: string } | undefined> => {
-        const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
-
-        const basePathStr = this.getAppInfo().apiBasePath.getAsStringDangerous();
-        const pathStr = path.getAsStringDangerous();
-        const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?/dashboard(/api/.*)$`);
-
-        const match = pathStr.match(regex);
-        let tenantId: string = DEFAULT_TENANT_ID;
-        let remainingPath: NormalisedURLPath | undefined = undefined;
-
-        if (match) {
-            // this is a dashboard api
-
-            if (match[1] === undefined) {
-                tenantId = DEFAULT_TENANT_ID;
-            } else {
-                tenantId = match[1];
-            }
-
-            remainingPath = new NormalisedURLPath(match[2]);
-
-            const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
-
-            const id = getApiIdIfMatched(remainingPath, method);
-            if (id !== undefined) {
-                const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
-                    tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
-                    userContext,
-                });
-                return { id, tenantId: finalTenantId };
-            }
-        }
-
-        if (path.startsWith(dashboardBundlePath)) {
-            return { id: DASHBOARD_API, tenantId: DEFAULT_TENANT_ID };
-        }
-
-        // tenantId is not supported for bundlePath, so not matching for it
-
-        return undefined;
     };
 }
