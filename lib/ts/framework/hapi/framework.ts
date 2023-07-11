@@ -239,27 +239,34 @@ const plugin: Plugin<{}> = {
             }
         });
         let supportedRoutes: ServerRoute[] = [];
-        let routeMethodSet = new Set<string>();
+        let methodsSupported = new Set<string>();
         for (let i = 0; i < supertokens.recipeModules.length; i++) {
             let apisHandled = supertokens.recipeModules[i].getAPIsHandled();
             for (let j = 0; j < apisHandled.length; j++) {
                 let api = apisHandled[j];
                 if (!api.disabled) {
-                    let path = `${supertokens.appInfo.apiBasePath.getAsStringDangerous()}${api.pathWithoutApiBasePath.getAsStringDangerous()}`;
-                    let methodAndPath = `${api.method}-${path}`;
-                    if (!routeMethodSet.has(methodAndPath)) {
-                        supportedRoutes.push({
-                            path,
-                            method: api.method,
-                            handler: (_, h) => {
-                                return h.continue;
-                            },
-                        });
-                        routeMethodSet.add(methodAndPath);
-                    }
+                    methodsSupported.add(api.method);
                 }
             }
         }
+        /**
+         * Hapi requires that all API paths are registered before the server starts listening.
+         * When using multi-tenancy the tenant id is passed as part of the request path. Because
+         * this id is dynamic and unkown when starting the server, it is not possible for us to
+         * declare all APIs with the tenant id in the path. Because of this requests with tenant id
+         * in the path would give a 404.
+         *
+         * To solve this we use wildcards after the base path for all the requests. This will make
+         * sure that Hapi forwards requests to our handler which will in turn forward to the
+         * middleware. The middleware processes the full request URL so the logic will remain intact.
+         */
+        supportedRoutes.push({
+            path: `${supertokens.appInfo.apiBasePath.getAsStringDangerous()}/{path*}`,
+            method: [...methodsSupported],
+            handler: (_, h) => {
+                return h.continue;
+            },
+        });
         server.route(supportedRoutes);
     },
 };
