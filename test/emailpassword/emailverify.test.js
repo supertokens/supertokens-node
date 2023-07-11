@@ -258,6 +258,69 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(Object.keys(JSON.parse(response3.text)).length === 1);
     });
 
+    // Provide your own email callback and make sure that is called
+    it("test that providing your own email callback and make sure it is called", async function () {
+        await startST();
+
+        let userInfo = null;
+        let emailToken = null;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInfo = input.user;
+                                emailToken = input.emailVerifyLink;
+                            },
+                        },
+                    },
+                }),
+                EmailPassword.init(),
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        let response2 = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.antiCsrf,
+            userId
+        );
+
+        assert(response2.status === 200);
+
+        assert(JSON.parse(response2.text).status === "OK");
+        assert(Object.keys(JSON.parse(response2.text)).length === 1);
+
+        assert(userInfo.id === userId);
+        assert(userInfo.email === "test@gmail.com");
+        assert(emailToken !== null);
+    });
+
     /*
     email verify API:
         POST:
