@@ -130,8 +130,8 @@ export default class SessionWrapper {
 
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
-            userId: sessionInfo?.userId,
-            tenantId: sessionInfo?.tenantId,
+            userId: sessionInfo.userId,
+            tenantId: sessionInfo.tenantId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
         });
