@@ -47,7 +47,7 @@ export type RecipeInterface = {
 
     // Tenant management
     createOrUpdateTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         config?: {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
@@ -67,7 +67,7 @@ export type RecipeInterface = {
         didExist: boolean;
     }>;
     getTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
@@ -105,7 +105,7 @@ export type RecipeInterface = {
 
     // Third party provider management
     createOrUpdateThirdPartyConfig: (input: {
-        tenantId?: string;
+        tenantId: string;
         config: ProviderConfig;
         skipValidation?: boolean;
         userContext: any;
@@ -114,7 +114,7 @@ export type RecipeInterface = {
         createdNew: boolean;
     }>;
     deleteThirdPartyConfig: (input: {
-        tenantId?: string;
+        tenantId: string;
         thirdPartyId: string;
         userContext: any;
     }) => Promise<{
@@ -124,7 +124,7 @@ export type RecipeInterface = {
 
     // User tenant association
     associateUserToTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         userContext: any;
     }) => Promise<
@@ -141,7 +141,7 @@ export type RecipeInterface = {
           }
     >;
     disassociateUserFromTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         userContext: any;
     }) => Promise<{
@@ -162,7 +162,7 @@ export type APIOptions = {
 
 export type APIInterface = {
     loginMethodsGET: (input: {
-        tenantId?: string;
+        tenantId: string;
         clientType?: string;
         options: APIOptions;
         userContext: any;

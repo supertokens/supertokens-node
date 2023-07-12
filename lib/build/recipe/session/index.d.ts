@@ -19,18 +19,18 @@ export default class SessionWrapper {
     static createNewSession(
         req: any,
         res: any,
+        tenantId: string,
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
-        tenantId?: string,
         userContext?: any
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
+        tenantId: string,
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         disableAntiCsrf?: boolean,
-        tenantId?: string,
         userContext?: any
     ): Promise<SessionContainer>;
     static validateClaimsForSessionHandle(

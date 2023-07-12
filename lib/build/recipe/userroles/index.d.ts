@@ -6,9 +6,9 @@ export default class Wrapper {
     static PermissionClaim: import("./permissionClaim").PermissionClaimClass;
     static UserRoleClaim: import("./userRoleClaim").UserRoleClaimClass;
     static addRoleToUser(
+        tenantId: string,
         userId: string,
         role: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -20,9 +20,9 @@ export default class Wrapper {
           }
     >;
     static removeUserRole(
+        tenantId: string,
         userId: string,
         role: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -34,16 +34,16 @@ export default class Wrapper {
           }
     >;
     static getRolesForUser(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
         roles: string[];
     }>;
     static getUsersThatHaveRole(
+        tenantId: string,
         role: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {

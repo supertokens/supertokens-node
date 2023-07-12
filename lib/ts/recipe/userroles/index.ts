@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { PermissionClaim } from "./permissionClaim";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
@@ -24,36 +23,36 @@ export default class Wrapper {
     static PermissionClaim = PermissionClaim;
     static UserRoleClaim = UserRoleClaim;
 
-    static async addRoleToUser(userId: string, role: string, tenantId?: string, userContext?: any) {
+    static async addRoleToUser(tenantId: string, userId: string, role: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addRoleToUser({
             userId,
             role,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async removeUserRole(userId: string, role: string, tenantId?: string, userContext?: any) {
+    static async removeUserRole(tenantId: string, userId: string, role: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeUserRole({
             userId,
             role,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async getRolesForUser(userId: string, tenantId?: string, userContext?: any) {
+    static async getRolesForUser(tenantId: string, userId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesForUser({
             userId,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async getUsersThatHaveRole(role: string, tenantId?: string, userContext?: any) {
+    static async getUsersThatHaveRole(tenantId: string, role: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersThatHaveRole({
             role,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

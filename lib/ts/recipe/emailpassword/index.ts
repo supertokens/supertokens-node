@@ -24,7 +24,7 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(email: string, password: string, tenantId?: string, userContext?: any) {
+    static signUp(tenantId: string, email: string, password: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
@@ -33,7 +33,7 @@ export default class Wrapper {
         });
     }
 
-    static signIn(email: string, password: string, tenantId?: string, userContext?: any) {
+    static signIn(tenantId: string, email: string, password: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
@@ -49,7 +49,7 @@ export default class Wrapper {
         });
     }
 
-    static getUserByEmail(email: string, tenantId?: string, userContext?: any) {
+    static getUserByEmail(tenantId: string, email: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({
             email,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
@@ -57,7 +57,7 @@ export default class Wrapper {
         });
     }
 
-    static createResetPasswordToken(userId: string, tenantId?: string, userContext?: any) {
+    static createResetPasswordToken(tenantId: string, userId: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
@@ -65,7 +65,7 @@ export default class Wrapper {
         });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, tenantId?: string, userContext?: any) {
+    static resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
             token,
             newPassword,
@@ -91,11 +91,11 @@ export default class Wrapper {
     }
 
     static async createResetPasswordLink(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-        let token = await createResetPasswordToken(userId, tenantId, userContext);
+        let token = await createResetPasswordToken(tenantId, userId, userContext);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
             return token;
         }
@@ -113,11 +113,11 @@ export default class Wrapper {
     }
 
     static async sendResetPasswordEmail(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
-        let link = await createResetPasswordLink(userId, tenantId, userContext);
+        let link = await createResetPasswordLink(tenantId, userId, userContext);
         if (link.status === "UNKNOWN_USER_ID_ERROR") {
             return link;
         }

@@ -32,9 +32,9 @@ export const userEmailVerifyPut = async (
 
     if (verified) {
         const tokenResponse = await EmailVerification.createEmailVerificationToken(
+            tenantId,
             userId,
             undefined,
-            tenantId,
             userContext
         );
 
@@ -45,8 +45,8 @@ export const userEmailVerifyPut = async (
         }
 
         const verifyResponse = await EmailVerification.verifyEmailUsingToken(
-            tokenResponse.token,
             tenantId,
+            tokenResponse.token,
             userContext
         );
 

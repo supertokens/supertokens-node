@@ -34,7 +34,7 @@ export default class SuperTokens {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: object;
-        tenantId?: string;
+        tenantId: string;
     }) => Promise<{
         users: {
             recipeId: string;

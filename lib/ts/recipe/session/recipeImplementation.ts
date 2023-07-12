@@ -103,11 +103,11 @@ export default function getRecipeInterface(
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
+                tenantId,
                 userId,
                 disableAntiCsrf === true,
                 accessTokenPayload,
-                sessionDataInDatabase,
-                tenantId
+                sessionDataInDatabase
             );
             logDebugMessage("createNewSession: Finished");
 
@@ -411,7 +411,7 @@ export default function getRecipeInterface(
             revokeAcrossAllTenants,
         }: {
             userId: string;
-            tenantId?: string;
+            tenantId: string;
             revokeAcrossAllTenants?: boolean;
         }) {
             return SessionFunctions.revokeAllSessionsForUser(helpers, userId, tenantId, revokeAcrossAllTenants);
@@ -423,7 +423,7 @@ export default function getRecipeInterface(
             fetchAcrossAllTenants,
         }: {
             userId: string;
-            tenantId?: string;
+            tenantId: string;
             fetchAcrossAllTenants?: boolean;
         }): Promise<string[]> {
             return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, tenantId, fetchAcrossAllTenants);

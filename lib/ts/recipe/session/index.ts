@@ -39,10 +39,10 @@ export default class SessionWrapper {
     static async createNewSession(
         req: any,
         res: any,
+        tenantId: string,
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
-        tenantId?: string,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -59,16 +59,16 @@ export default class SessionWrapper {
             config,
             appInfo,
             sessionDataInDatabase,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
         });
     }
 
     static async createNewSessionWithoutRequestResponse(
+        tenantId: string,
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
         disableAntiCsrf: boolean = false,
-        tenantId?: string,
         userContext: any = {}
     ) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -94,7 +94,7 @@ export default class SessionWrapper {
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             disableAntiCsrf,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext,
         });
     }

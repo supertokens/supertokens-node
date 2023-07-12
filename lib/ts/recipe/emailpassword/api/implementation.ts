@@ -165,10 +165,10 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
+                tenantId,
                 user.id,
                 {},
                 {},
-                tenantId,
                 userContext
             );
             return {
@@ -214,10 +214,10 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
+                tenantId,
                 user.id,
                 {},
                 {},
-                tenantId,
                 userContext
             );
             return {

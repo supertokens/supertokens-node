@@ -7,11 +7,11 @@ import { Helpers } from "./recipeImplementation";
  */
 export declare function createNewSession(
     helpers: Helpers,
+    tenantId: string,
     userId: string,
     disableAntiCsrf: boolean,
     accessTokenPayload?: any,
-    sessionDataInDatabase?: any,
-    tenantId?: string
+    sessionDataInDatabase?: any
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication

@@ -54,10 +54,10 @@ export default function getAPIImplementation(): APIInterface {
             const session = await Session.createNewSession(
                 input.options.req,
                 input.options.res,
+                input.tenantId,
                 user.id,
                 {},
                 {},
-                input.tenantId,
                 input.userContext
             );
 

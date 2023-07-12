@@ -6,7 +6,7 @@ import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static createOrUpdateTenant(
-        tenantId?: string,
+        tenantId: string,
         config?: {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
@@ -28,7 +28,7 @@ export default class Wrapper {
         didExist: boolean;
     }>;
     static getTenant(
-        tenantId?: string,
+        tenantId: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -68,7 +68,7 @@ export default class Wrapper {
         }[];
     }>;
     static createOrUpdateThirdPartyConfig(
-        tenantId: string | undefined,
+        tenantId: string,
         config: ProviderConfig,
         skipValidation?: boolean,
         userContext?: any
@@ -77,7 +77,7 @@ export default class Wrapper {
         createdNew: boolean;
     }>;
     static deleteThirdPartyConfig(
-        tenantId: string | undefined,
+        tenantId: string,
         thirdPartyId: string,
         userContext?: any
     ): Promise<{
@@ -85,7 +85,7 @@ export default class Wrapper {
         didConfigExist: boolean;
     }>;
     static associateUserToTenant(
-        tenantId: string | undefined,
+        tenantId: string,
         userId: string,
         userContext?: any
     ): Promise<
@@ -102,7 +102,7 @@ export default class Wrapper {
           }
     >;
     static disassociateUserFromTenant(
-        tenantId: string | undefined,
+        tenantId: string,
         userId: string,
         userContext?: any
     ): Promise<{
