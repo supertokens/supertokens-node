@@ -130,7 +130,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             return {
                 status: "OK",
                 provider,
-                thirdPartyEnabled: tenantConfig.thirdParty.enabled,
             };
         },
     };
