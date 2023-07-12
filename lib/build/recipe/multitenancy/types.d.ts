@@ -3,23 +3,8 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { ProviderConfig, ProviderInput } from "../thirdparty/types";
 import { GeneralErrorResponse } from "../../types";
-export interface TenantDoesNotExistErrorHandlerMiddleware {
-    (message: string, request: BaseRequest, response: BaseResponse): Promise<void>;
-}
-export interface RecipeDisabledForTenantErrorHandlerMiddleware {
-    (message: string, request: BaseRequest, response: BaseResponse): Promise<void>;
-}
-export interface ErrorHandlers {
-    onTenantDoesNotExistError?: TenantDoesNotExistErrorHandlerMiddleware;
-    onRecipeDisabledForTenantError?: RecipeDisabledForTenantErrorHandlerMiddleware;
-}
-export interface NormalisedErrorHandlers {
-    onTenantDoesNotExistError: TenantDoesNotExistErrorHandlerMiddleware;
-    onRecipeDisabledForTenantError: RecipeDisabledForTenantErrorHandlerMiddleware;
-}
 export declare type TypeInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
-    errorHandlers?: ErrorHandlers;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -30,7 +15,6 @@ export declare type TypeInput = {
 };
 export declare type TypeNormalisedInput = {
     getAllowedDomainsForTenantId?: (tenantId: string, userContext: any) => Promise<string[] | undefined>;
-    errorHandlers: NormalisedErrorHandlers;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

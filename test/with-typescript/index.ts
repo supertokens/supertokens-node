@@ -854,17 +854,6 @@ Multitenancy.init({
 });
 
 Multitenancy.init({
-    errorHandlers: {},
-});
-
-Multitenancy.init({
-    errorHandlers: {
-        onRecipeDisabledForTenantError: async function (message, userContext) {},
-        onTenantDoesNotExistError: async function (message, userContext) {},
-    },
-});
-
-Multitenancy.init({
     override: {
         apis: (oI) => {
             return {
