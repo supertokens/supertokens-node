@@ -227,14 +227,14 @@ export type RecipeInterface = {
 
     revokeAllSessionsForUser(input: {
         userId: string;
-        tenantId?: string;
+        tenantId: string;
         revokeAcrossAllTenants?: boolean;
         userContext: any;
     }): Promise<string[]>;
 
     getAllSessionHandlesForUser(input: {
         userId: string;
-        tenantId?: string;
+        tenantId: string;
         fetchAcrossAllTenants?: boolean;
         userContext: any;
     }): Promise<string[]>;
