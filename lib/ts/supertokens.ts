@@ -82,6 +82,9 @@ export default class SuperTokens {
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
         let multitenancyFound = false;
+        // Multitenancy recipe is an always initialized recipe and needs to be imported this way
+        // so that there is no circular dependency. Otherwise there would be cyclic dependency
+        // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
         let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         this.recipeModules = config.recipeList.map((func) => {
             const recipeModule = func(this.appInfo, this.isInServerlessEnv);

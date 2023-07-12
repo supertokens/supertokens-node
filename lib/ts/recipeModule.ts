@@ -57,6 +57,9 @@ export default abstract class RecipeModule {
             remainingPath = new NormalisedURLPath(match[2]);
         }
 
+        // Multitenancy recipe is an always initialized recipe and needs to be imported this way
+        // so that there is no circular dependency. Otherwise there would be cyclic dependency
+        // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
         let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
 
