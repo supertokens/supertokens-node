@@ -16,8 +16,6 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import { RecipeDisabledForTenantError } from "../../multitenancy";
-import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
@@ -53,15 +51,6 @@ export default async function authorisationUrlAPI(
         tenantId,
         userContext,
     });
-
-    if (!providerResponse.thirdPartyEnabled) {
-        throw new RecipeDisabledForTenantError({
-            type: "RECIPE_DISABLED_FOR_TENANT_ERROR",
-            message: `The third party recipe is disabled for ${
-                tenantId === undefined || tenantId === DEFAULT_TENANT_ID ? "default tenant" : tenantId
-            }`,
-        });
-    }
 
     const provider = providerResponse.provider;
     let result = await apiImplementation.authorisationUrlGET({

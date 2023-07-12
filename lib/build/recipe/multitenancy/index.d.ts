@@ -2,7 +2,6 @@
 import Recipe from "./recipe";
 import { RecipeInterface, APIOptions, APIInterface } from "./types";
 import { ProviderConfig } from "../thirdparty/types";
-import { RecipeDisabledForTenantError, TenantDoesNotExistError } from "./error";
 import { AllowedDomainsClaim } from "./allowedDomainsClaim";
 export default class Wrapper {
     static init: typeof Recipe.init;
@@ -120,6 +119,5 @@ export declare let createOrUpdateThirdPartyConfig: typeof Wrapper.createOrUpdate
 export declare let deleteThirdPartyConfig: typeof Wrapper.deleteThirdPartyConfig;
 export declare let associateUserToTenant: typeof Wrapper.associateUserToTenant;
 export declare let disassociateUserFromTenant: typeof Wrapper.disassociateUserFromTenant;
-export { RecipeDisabledForTenantError, TenantDoesNotExistError };
 export { AllowedDomainsClaim };
 export type { RecipeInterface, APIOptions, APIInterface };

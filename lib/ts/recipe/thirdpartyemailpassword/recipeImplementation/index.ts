@@ -86,7 +86,7 @@ export default function getRecipeInterface(
             clientType?: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }> {
+        }): Promise<{ status: "OK"; provider: TypeProvider }> {
             if (originalThirdPartyImplementation === undefined) {
                 throw new Error("No thirdparty provider configured");
             }

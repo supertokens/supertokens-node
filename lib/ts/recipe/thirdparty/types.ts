@@ -160,7 +160,7 @@ export type RecipeInterface = {
         tenantId: string;
         clientType?: string;
         userContext: any;
-    }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
+    }): Promise<{ status: "OK"; provider: TypeProvider }>;
 
     signInUp(input: {
         thirdPartyId: string;
