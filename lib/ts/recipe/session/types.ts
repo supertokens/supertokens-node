@@ -197,6 +197,7 @@ export type RecipeInterface = {
     }): Promise<SessionContainerInterface>;
 
     getGlobalClaimValidators(input: {
+        tenantId: string;
         userId: string;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
