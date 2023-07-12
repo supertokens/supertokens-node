@@ -1359,12 +1359,13 @@ Session.validateClaimsForSessionHandle(
     { test: 1 }
 );
 
-Session.validateClaimsInJWTPayload("userId", {});
-Session.validateClaimsInJWTPayload("userId", {}, (globalClaimValidators) => [
+Session.validateClaimsInJWTPayload("public", "userId", {});
+Session.validateClaimsInJWTPayload("public", "userId", {}, (globalClaimValidators) => [
     ...globalClaimValidators,
     boolClaim.validators.isTrue(),
 ]);
 Session.validateClaimsInJWTPayload(
+    "public",
     "userId",
     {},
     (globalClaimValidators, userId) => [...globalClaimValidators, stringClaim.validators.startsWith(userId)],

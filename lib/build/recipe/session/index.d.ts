@@ -51,6 +51,7 @@ export default class SessionWrapper {
           }
     >;
     static validateClaimsInJWTPayload(
+        tenantId: string,
         userId: string,
         jwtPayload: JSONObject,
         overrideGlobalClaimValidators?: (

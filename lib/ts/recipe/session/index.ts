@@ -131,6 +131,7 @@ export default class SessionWrapper {
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
             userId: sessionInfo?.userId,
+            tenantId: sessionInfo?.tenantId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
         });
@@ -167,6 +168,7 @@ export default class SessionWrapper {
     }
 
     static async validateClaimsInJWTPayload(
+        tenantId: string,
         userId: string,
         jwtPayload: JSONObject,
         overrideGlobalClaimValidators?: (
@@ -183,6 +185,7 @@ export default class SessionWrapper {
 
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
+            tenantId,
             userId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
