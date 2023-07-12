@@ -13,9 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, NormalisedErrorHandlers } from "./types";
-import { BaseRequest, BaseResponse } from "../../framework";
-import { sendNon200ResponseWithMessage } from "../../utils";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 
 export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalisedInput {
     let override = {
@@ -24,29 +22,8 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
         ...config?.override,
     };
 
-    const errorHandlers: NormalisedErrorHandlers = {
-        onTenantDoesNotExistError: async function (message: string, _: BaseRequest, response: BaseResponse) {
-            sendNon200ResponseWithMessage(response, message, 422);
-        },
-        onRecipeDisabledForTenantError: async function (message: string, _: BaseRequest, response: BaseResponse) {
-            sendNon200ResponseWithMessage(response, message, 403);
-        },
-    };
-
-    if (config !== undefined) {
-        if (config.errorHandlers !== undefined) {
-            if (config.errorHandlers.onTenantDoesNotExistError !== undefined) {
-                errorHandlers.onTenantDoesNotExistError = config.errorHandlers.onTenantDoesNotExistError;
-            }
-            if (config.errorHandlers.onRecipeDisabledForTenantError !== undefined) {
-                errorHandlers.onRecipeDisabledForTenantError = config.errorHandlers.onRecipeDisabledForTenantError;
-            }
-        }
-    }
-
     return {
         getAllowedDomainsForTenantId: config?.getAllowedDomainsForTenantId,
-        errorHandlers,
         override,
     };
 }

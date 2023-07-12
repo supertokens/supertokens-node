@@ -142,12 +142,7 @@ export default class Recipe extends RecipeModule {
         throw new Error("should never come here");
     };
 
-    handleError = async (err: STError, req: BaseRequest, res: BaseResponse): Promise<void> => {
-        if (err.type === "RECIPE_DISABLED_FOR_TENANT_ERROR") {
-            return await this.config.errorHandlers.onRecipeDisabledForTenantError(err.message, req, res);
-        } else if (err.type === "TENANT_DOES_NOT_EXIST_ERROR") {
-            return await this.config.errorHandlers.onTenantDoesNotExistError(err.message, req, res);
-        }
+    handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {
         throw err;
     };
 

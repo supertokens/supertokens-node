@@ -93,7 +93,6 @@ export declare type RecipeInterface = {
     }): Promise<{
         status: "OK";
         provider: TypeProvider;
-        thirdPartyEnabled: boolean;
     }>;
     thirdPartySignInUp(input: {
         thirdPartyId: string;

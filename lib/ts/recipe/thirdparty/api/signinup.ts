@@ -16,8 +16,6 @@
 import STError from "../error";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import { RecipeDisabledForTenantError } from "../../multitenancy";
-import { DEFAULT_TENANT_ID } from "../../multitenancy/constants";
 
 export default async function signInUpAPI(
     apiImplementation: APIInterface,
@@ -72,15 +70,6 @@ export default async function signInUpAPI(
         clientType,
         userContext,
     });
-
-    if (!providerResponse.thirdPartyEnabled) {
-        throw new RecipeDisabledForTenantError({
-            type: "RECIPE_DISABLED_FOR_TENANT_ERROR",
-            message: `The third party recipe is disabled for ${
-                tenantId === undefined || tenantId === DEFAULT_TENANT_ID ? "default tenant" : tenantId
-            }`,
-        });
-    }
 
     const provider = providerResponse.provider;
 

@@ -22,7 +22,6 @@ export default class Wrapper {
     ): Promise<{
         status: "OK";
         provider: TypeProvider;
-        thirdPartyEnabled: boolean;
     }>;
     static thirdPartyManuallyCreateOrUpdateUser(
         thirdPartyId: string,

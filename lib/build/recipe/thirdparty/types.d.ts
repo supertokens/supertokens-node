@@ -154,7 +154,6 @@ export declare type RecipeInterface = {
     }): Promise<{
         status: "OK";
         provider: TypeProvider;
-        thirdPartyEnabled: boolean;
     }>;
     signInUp(input: {
         thirdPartyId: string;

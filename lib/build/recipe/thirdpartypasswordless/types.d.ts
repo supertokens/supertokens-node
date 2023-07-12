@@ -179,7 +179,6 @@ export declare type RecipeInterface = {
     }): Promise<{
         status: "OK";
         provider: TypeProvider;
-        thirdPartyEnabled: boolean;
     }>;
     createCode: (
         input: (

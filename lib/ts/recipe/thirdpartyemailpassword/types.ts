@@ -115,7 +115,7 @@ export type RecipeInterface = {
         clientType?: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; provider: TypeProvider; thirdPartyEnabled: boolean }>;
+    }): Promise<{ status: "OK"; provider: TypeProvider }>;
 
     thirdPartySignInUp(input: {
         thirdPartyId: string;
