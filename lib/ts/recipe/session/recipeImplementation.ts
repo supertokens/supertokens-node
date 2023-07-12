@@ -103,11 +103,11 @@ export default function getRecipeInterface(
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
+                tenantId,
                 userId,
                 disableAntiCsrf === true,
                 accessTokenPayload,
-                sessionDataInDatabase,
-                tenantId
+                sessionDataInDatabase
             );
             logDebugMessage("createNewSession: Finished");
 

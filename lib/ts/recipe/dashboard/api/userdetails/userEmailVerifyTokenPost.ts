@@ -22,5 +22,5 @@ export const userEmailVerifyTokenPost = async (
         });
     }
 
-    return await EmailVerification.sendEmailVerificationEmail(userId, undefined, tenantId, userContext);
+    return await EmailVerification.sendEmailVerificationEmail(tenantId, userId, undefined, userContext);
 };

@@ -902,8 +902,8 @@ Multitenancy.init({
                     return await oI.listAllTenants({ userContext });
                 },
 
-                createOrUpdateThirdPartyConfig: async function ({ config, skipValidation, userContext }) {
-                    return await oI.createOrUpdateThirdPartyConfig({ config, skipValidation, userContext });
+                createOrUpdateThirdPartyConfig: async function ({ tenantId, config, skipValidation, userContext }) {
+                    return await oI.createOrUpdateThirdPartyConfig({ tenantId, config, skipValidation, userContext });
                 },
 
                 deleteThirdPartyConfig: async function ({ tenantId, thirdPartyId, userContext }) {
@@ -1256,12 +1256,14 @@ async function f() {
     let n2: number = await Supertokens.getUserCount();
 
     await Supertokens.getUsersOldestFirst({
+        tenantId: "public",
         includeRecipeIds: [""],
         limit: 1,
         paginationToken: "",
     });
 
     await Supertokens.getUsersNewestFirst({
+        tenantId: "public",
         includeRecipeIds: [""],
         limit: 1,
         paginationToken: "",
@@ -1296,7 +1298,7 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        let session = await Session.createNewSession(options.req, options.res, user.id);
+                        let session = await Session.createNewSession(options.req, options.res, "public", user.id);
                         return {
                             status: "OK",
                             session,
@@ -1369,6 +1371,7 @@ Session.validateClaimsInJWTPayload(
     { test: 1 }
 );
 EmailVerification.sendEmail({
+    tenantId: "public",
     emailVerifyLink: "",
     type: "EMAIL_VERIFICATION",
     user: {
@@ -1378,6 +1381,7 @@ EmailVerification.sendEmail({
 });
 
 ThirdPartyEmailPassword.sendEmail({
+    tenantId: "public",
     type: "PASSWORD_RESET",
     passwordResetLink: "",
     user: {
@@ -1386,6 +1390,7 @@ ThirdPartyEmailPassword.sendEmail({
     },
 });
 ThirdPartyEmailPassword.sendEmail({
+    tenantId: "public",
     type: "PASSWORD_RESET",
     passwordResetLink: "",
     user: {
@@ -1396,6 +1401,7 @@ ThirdPartyEmailPassword.sendEmail({
 });
 
 ThirdPartyPasswordless.sendEmail({
+    tenantId: "public",
     codeLifetime: 234,
     email: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1404,6 +1410,7 @@ ThirdPartyPasswordless.sendEmail({
     urlWithLinkCode: "",
 });
 ThirdPartyPasswordless.sendEmail({
+    tenantId: "public",
     codeLifetime: 234,
     email: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1412,6 +1419,7 @@ ThirdPartyPasswordless.sendEmail({
 });
 
 ThirdPartyPasswordless.sendSms({
+    tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1420,6 +1428,7 @@ ThirdPartyPasswordless.sendSms({
     urlWithLinkCode: "",
 });
 ThirdPartyPasswordless.sendSms({
+    tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1539,11 +1548,13 @@ Passwordless.init({
                 ...original,
                 consumeCode: async function (input) {
                     let device = await Passwordless.listCodesByPreAuthSessionId({
+                        tenantId: input.tenantId,
                         preAuthSessionId: input.preAuthSessionId,
                     });
                     if (device !== undefined && input.userContext.calledManually === undefined) {
                         if (device.phoneNumber === "TEST_PHONE_NUMBER") {
                             let user = await Passwordless.signInUp({
+                                tenantId: "test",
                                 phoneNumber: "TEST_PHONE_NUMBER",
                                 userContext: { calledManually: true },
                             });
@@ -1677,7 +1688,7 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
 async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
     const userId = "user-id"; // This would be fetched from somewhere
 
-    const session = await Session.createNewSessionWithoutRequestResponse(userId);
+    const session = await Session.createNewSessionWithoutRequestResponse("public", userId);
 
     const tokens = session.getAllSessionTokensDangerously();
     if (tokens.accessAndFrontTokenUpdated) {

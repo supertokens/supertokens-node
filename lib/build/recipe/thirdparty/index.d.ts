@@ -6,19 +6,19 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static getProvider(
+        tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
         provider: TypeProvider;
     }>;
     static manuallyCreateOrUpdateUser(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -26,11 +26,11 @@ export default class Wrapper {
         user: User;
     }>;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, tenantId?: string, userContext?: any): Promise<User[]>;
+    static getUsersByEmail(tenantId: string, email: string, userContext?: any): Promise<User[]>;
     static getUserByThirdPartyInfo(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<User | undefined>;
 }

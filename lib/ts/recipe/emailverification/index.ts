@@ -17,7 +17,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getEmailVerifyLink } from "./utils";
 
 export default class Wrapper {
@@ -28,9 +27,9 @@ export default class Wrapper {
     static EmailVerificationClaim = EmailVerificationClaim;
 
     static async createEmailVerificationToken(
+        tenantId: string,
         userId: string,
         email?: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -57,15 +56,15 @@ export default class Wrapper {
         return await recipeInstance.recipeInterfaceImpl.createEmailVerificationToken({
             userId,
             email: email!,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
     static async createEmailVerificationLink(
+        tenantId: string,
         userId: string,
         email?: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -77,7 +76,7 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         const appInfo = recipeInstance.getAppInfo();
 
-        let emailVerificationToken = await createEmailVerificationToken(userId, email, tenantId, userContext);
+        let emailVerificationToken = await createEmailVerificationToken(tenantId, userId, email, userContext);
         if (emailVerificationToken.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
             return {
                 status: "EMAIL_ALREADY_VERIFIED_ERROR",
@@ -90,15 +89,15 @@ export default class Wrapper {
                 appInfo,
                 token: emailVerificationToken.token,
                 recipeId: recipeInstance.getRecipeId(),
-                tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                tenantId,
             }),
         };
     }
 
     static async sendEmailVerificationEmail(
+        tenantId: string,
         userId: string,
         email?: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -121,7 +120,7 @@ export default class Wrapper {
             }
         }
 
-        let emailVerificationLink = await this.createEmailVerificationLink(userId, email, tenantId, userContext);
+        let emailVerificationLink = await this.createEmailVerificationLink(tenantId, userId, email, userContext);
 
         if (emailVerificationLink.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
             return {
@@ -144,10 +143,10 @@ export default class Wrapper {
         };
     }
 
-    static async verifyEmailUsingToken(token: string, tenantId?: string, userContext?: any) {
+    static async verifyEmailUsingToken(tenantId: string, token: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
             token,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -173,7 +172,7 @@ export default class Wrapper {
         });
     }
 
-    static async revokeEmailVerificationTokens(userId: string, email?: string, tenantId?: string, userContext?: any) {
+    static async revokeEmailVerificationTokens(tenantId: string, userId: string, email?: string, userContext?: any) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         // If the dev wants to delete the tokens for an old email address of the user they can pass the address
@@ -198,7 +197,7 @@ export default class Wrapper {
         return await recipeInstance.recipeInterfaceImpl.revokeEmailVerificationTokens({
             userId,
             email: email!,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -230,7 +229,7 @@ export default class Wrapper {
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
+            tenantId: input.tenantId,
         });
     }
 }

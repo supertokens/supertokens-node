@@ -120,7 +120,7 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        ___: string | undefined, // TODO tenantId
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _: NormalisedURLPath,
@@ -137,7 +137,7 @@ export default class Recipe extends RecipeModule {
             staticThirdPartyProviders: this.staticThirdPartyProviders,
         };
         if (id === LOGIN_METHODS_API) {
-            return await loginMethodsAPI(this.apiImpl, options, userContext);
+            return await loginMethodsAPI(this.apiImpl, tenantId, options, userContext);
         }
         throw new Error("should never come here");
     };

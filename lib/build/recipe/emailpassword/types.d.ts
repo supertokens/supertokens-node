@@ -259,6 +259,6 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
         email: string;
     };
     passwordResetLink: string;
-    tenantId?: string;
+    tenantId: string;
 };
 export declare type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;

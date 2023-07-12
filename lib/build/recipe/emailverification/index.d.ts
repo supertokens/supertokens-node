@@ -7,9 +7,9 @@ export default class Wrapper {
     static Error: typeof SuperTokensError;
     static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
+        tenantId: string,
         userId: string,
         email?: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -21,9 +21,9 @@ export default class Wrapper {
           }
     >;
     static createEmailVerificationLink(
+        tenantId: string,
         userId: string,
         email?: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -35,9 +35,9 @@ export default class Wrapper {
           }
     >;
     static sendEmailVerificationEmail(
+        tenantId: string,
         userId: string,
         email?: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -48,8 +48,8 @@ export default class Wrapper {
           }
     >;
     static verifyEmailUsingToken(
+        tenantId: string,
         token: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -62,9 +62,9 @@ export default class Wrapper {
     >;
     static isEmailVerified(userId: string, email?: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
+        tenantId: string,
         userId: string,
         email?: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: string;

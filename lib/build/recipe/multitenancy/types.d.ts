@@ -26,7 +26,7 @@ export declare type TypeNormalisedInput = {
 export declare type RecipeInterface = {
     getTenantId: (input: { tenantIdFromFrontend: string; userContext: any }) => Promise<string>;
     createOrUpdateTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         config?: {
             emailPasswordEnabled?: boolean;
             passwordlessEnabled?: boolean;
@@ -48,7 +48,7 @@ export declare type RecipeInterface = {
         didExist: boolean;
     }>;
     getTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
@@ -88,7 +88,7 @@ export declare type RecipeInterface = {
         }[];
     }>;
     createOrUpdateThirdPartyConfig: (input: {
-        tenantId?: string;
+        tenantId: string;
         config: ProviderConfig;
         skipValidation?: boolean;
         userContext: any;
@@ -97,7 +97,7 @@ export declare type RecipeInterface = {
         createdNew: boolean;
     }>;
     deleteThirdPartyConfig: (input: {
-        tenantId?: string;
+        tenantId: string;
         thirdPartyId: string;
         userContext: any;
     }) => Promise<{
@@ -105,7 +105,7 @@ export declare type RecipeInterface = {
         didConfigExist: boolean;
     }>;
     associateUserToTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         userContext: any;
     }) => Promise<
@@ -122,7 +122,7 @@ export declare type RecipeInterface = {
           }
     >;
     disassociateUserFromTenant: (input: {
-        tenantId?: string;
+        tenantId: string;
         userId: string;
         userContext: any;
     }) => Promise<{
@@ -141,7 +141,7 @@ export declare type APIOptions = {
 };
 export declare type APIInterface = {
     loginMethodsGET: (input: {
-        tenantId?: string;
+        tenantId: string;
         clientType?: string;
         options: APIOptions;
         userContext: any;

@@ -6,9 +6,9 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static signUp(
+        tenantId: string,
         email: string,
         password: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -20,9 +20,9 @@ export default class Wrapper {
           }
     >;
     static signIn(
+        tenantId: string,
         email: string,
         password: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -34,10 +34,10 @@ export default class Wrapper {
           }
     >;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUserByEmail(email: string, tenantId?: string, userContext?: any): Promise<User | undefined>;
+    static getUserByEmail(tenantId: string, email: string, userContext?: any): Promise<User | undefined>;
     static createResetPasswordToken(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -49,9 +49,9 @@ export default class Wrapper {
           }
     >;
     static resetPasswordUsingToken(
+        tenantId: string,
         token: string,
         newPassword: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -79,8 +79,8 @@ export default class Wrapper {
           }
     >;
     static createResetPasswordLink(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -92,8 +92,8 @@ export default class Wrapper {
           }
     >;
     static sendResetPasswordEmail(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR";

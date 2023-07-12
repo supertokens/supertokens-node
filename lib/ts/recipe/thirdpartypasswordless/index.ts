@@ -25,7 +25,6 @@ import {
 } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
-import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -33,45 +32,45 @@ export default class Wrapper {
     static Error = SuperTokensError;
 
     static async thirdPartyGetProvider(
+        tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        tenantId?: string,
         userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
             thirdPartyId,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             clientType,
             userContext,
         });
     }
 
     static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
-        tenantId?: string,
         userContext: any = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
             thirdPartyId,
             thirdPartyUserId,
             email,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext,
         });
     }
 
     static getUserByThirdPartyInfo(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
-        tenantId?: string,
         userContext: any = {}
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext,
         });
     }
@@ -80,10 +79,10 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string, tenantId?: string, userContext: any = {}) {
+    static getUsersByEmail(tenantId: string, email: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({
             email,
-            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            tenantId,
             userContext,
         });
     }
@@ -96,25 +95,23 @@ export default class Wrapper {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; tenantId?: string; userContext?: any }
+        ) & { userInputCode?: string; tenantId: string; userContext?: any }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
     static createNewCodeForDevice(input: {
         deviceId: string;
         userInputCode?: string;
-        tenantId?: string;
+        tenantId: string;
         userContext?: any;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewCodeForDevice({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
@@ -124,28 +121,26 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
-    static getUserByPhoneNumber(input: { phoneNumber: string; tenantId?: string; userContext?: any }) {
+    static getUserByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
@@ -165,59 +160,53 @@ export default class Wrapper {
         input:
             | {
                   email: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
-    static revokeCode(input: { codeId: string; tenantId?: string; userContext?: any }) {
+    static revokeCode(input: { codeId: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
-    static listCodesByEmail(input: { email: string; tenantId?: string; userContext?: any }) {
+    static listCodesByEmail(input: { email: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
-    static listCodesByPhoneNumber(input: { phoneNumber: string; tenantId?: string; userContext?: any }) {
+    static listCodesByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPhoneNumber({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
-    static listCodesByDeviceId(input: { deviceId: string; tenantId?: string; userContext?: any }) {
+    static listCodesByDeviceId(input: { deviceId: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
-    static listCodesByPreAuthSessionId(input: { preAuthSessionId: string; tenantId?: string; userContext?: any }) {
+    static listCodesByPreAuthSessionId(input: { preAuthSessionId: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPreAuthSessionId({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
@@ -225,19 +214,18 @@ export default class Wrapper {
         input:
             | {
                   email: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
         return Recipe.getInstanceOrThrowError().passwordlessRecipe.createMagicLink({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
@@ -245,19 +233,18 @@ export default class Wrapper {
         input:
             | {
                   email: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
-                  tenantId?: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
         return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
@@ -265,7 +252,6 @@ export default class Wrapper {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 
@@ -273,7 +259,6 @@ export default class Wrapper {
         return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
             userContext: {},
             ...input,
-            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 }

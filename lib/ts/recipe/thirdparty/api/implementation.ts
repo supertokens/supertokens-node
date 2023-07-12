@@ -88,10 +88,10 @@ export default function getAPIInterface(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
+                tenantId,
                 response.user.id,
                 {},
                 {},
-                tenantId,
                 userContext
             );
             return {

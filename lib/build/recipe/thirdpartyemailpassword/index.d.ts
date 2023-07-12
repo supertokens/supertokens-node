@@ -8,19 +8,19 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static thirdPartyGetProvider(
+        tenantId: string,
         thirdPartyId: string,
         clientType: string | undefined,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
         provider: TypeProvider;
     }>;
     static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -28,15 +28,15 @@ export default class Wrapper {
         user: User;
     }>;
     static getUserByThirdPartyInfo(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<User | undefined>;
     static emailPasswordSignUp(
+        tenantId: string,
         email: string,
         password: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -48,9 +48,9 @@ export default class Wrapper {
           }
     >;
     static emailPasswordSignIn(
+        tenantId: string,
         email: string,
         password: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -62,10 +62,10 @@ export default class Wrapper {
           }
     >;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUsersByEmail(email: string, tenantId?: string, userContext?: any): Promise<User[]>;
+    static getUsersByEmail(tenantId: string, email: string, userContext?: any): Promise<User[]>;
     static createResetPasswordToken(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -77,9 +77,9 @@ export default class Wrapper {
           }
     >;
     static resetPasswordUsingToken(
+        tenantId: string,
         token: string,
         newPassword: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -107,8 +107,8 @@ export default class Wrapper {
           }
     >;
     static createResetPasswordLink(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<
         | {
@@ -120,8 +120,8 @@ export default class Wrapper {
           }
     >;
     static sendResetPasswordEmail(
+        tenantId: string,
         userId: string,
-        tenantId?: string,
         userContext?: any
     ): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR";

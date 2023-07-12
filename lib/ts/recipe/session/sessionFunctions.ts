@@ -28,19 +28,15 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
  */
 export async function createNewSession(
     helpers: Helpers,
+    tenantId: string,
     userId: string,
     disableAntiCsrf: boolean,
     accessTokenPayload: any = {},
-    sessionDataInDatabase: any = {},
-    tenantId?: string
+    sessionDataInDatabase: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionDataInDatabase =
         sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
-
-    if (tenantId === undefined) {
-        tenantId = DEFAULT_TENANT_ID;
-    }
 
     const requestBody = {
         userId,

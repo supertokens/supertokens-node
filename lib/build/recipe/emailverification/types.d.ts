@@ -167,7 +167,7 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
         email: string;
     };
     emailVerifyLink: string;
-    tenantId?: string;
+    tenantId: string;
 };
 export declare type GetEmailForUserIdFunc = (
     userId: string,
