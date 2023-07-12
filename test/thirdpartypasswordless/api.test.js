@@ -59,12 +59,20 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -127,7 +135,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
         assert(typeof validUserInputCodeResponse.user.id === "string");
         assert(typeof validUserInputCodeResponse.user.email === "string");
         assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
         assert(Object.keys(validUserInputCodeResponse).length === 3);
     });
 
@@ -154,12 +162,20 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -222,7 +238,8 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
         assert(typeof validUserInputCodeResponse.user.id === "string");
         assert(typeof validUserInputCodeResponse.user.phoneNumber === "string");
         assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(validUserInputCodeResponse.user.tenantIds.length === 1);
+        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
         assert(Object.keys(validUserInputCodeResponse).length === 3);
     });
 
@@ -249,12 +266,20 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        isCreateAndSendCustomEmailCalled = true;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                isCreateAndSendCustomEmailCalled = true;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -336,12 +361,20 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        isCreateAndSendCustomTextMessageCalled = true;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                isCreateAndSendCustomTextMessageCalled = true;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -422,11 +455,19 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -507,13 +548,21 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -764,7 +813,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
             assert(typeof validLinkCodeResponse.user.id === "string");
             assert(typeof validLinkCodeResponse.user.email === "string");
             assert(typeof validLinkCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validLinkCodeResponse.user).length === 3);
+            assert(Object.keys(validLinkCodeResponse.user).length === 4);
             assert(Object.keys(validLinkCodeResponse).length === 3);
         }
     });
@@ -860,7 +909,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
             assert(typeof validUserInputCodeResponse.user.id === "string");
             assert(typeof validUserInputCodeResponse.user.email === "string");
             assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+            assert(Object.keys(validUserInputCodeResponse.user).length === 4);
             assert(Object.keys(validUserInputCodeResponse).length === 3);
         }
 
@@ -1135,8 +1184,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        magicLinkURL = new URL(input.urlWithLinkCode);
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                magicLinkURL = new URL(input.urlWithLinkCode);
+                            },
+                        },
                     },
                 }),
             ],
@@ -1379,8 +1432,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],

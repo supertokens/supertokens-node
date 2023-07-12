@@ -58,11 +58,19 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -110,11 +118,19 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                         isValidatePhoneNumberCalled = true;
                         return undefined;
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -200,12 +216,20 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        isCreateAndSendCustomEmailCalled = true;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                isCreateAndSendCustomEmailCalled = true;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -270,12 +294,20 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        isCreateAndSendCustomTextMessageCalled = true;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                isCreateAndSendCustomTextMessageCalled = true;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -336,8 +368,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -377,10 +413,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    validatePhoneNumber: (phoneNumber) => {
+                    validatePhoneNumber: (phoneNumber, tenantId) => {
                         isValidatePhoneNumberCalled = true;
                         return undefined;
                     },
@@ -443,10 +483,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                     Passwordless.init({
                         contactMethod: "PHONE",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                        createAndSendCustomTextMessage: (input) => {
-                            return;
+                        smsDelivery: {
+                            service: {
+                                sendSms: async (input) => {
+                                    return;
+                                },
+                            },
                         },
-                        validatePhoneNumber: (phoneNumber) => {
+                        validatePhoneNumber: (phoneNumber, tenantId) => {
                             isValidatePhoneNumberCalled = true;
                             return "test error";
                         },
@@ -503,18 +547,22 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE",
-                    createAndSendCustomTextMessage: (input) => {
-                        if (input.userInputCode !== undefined && input.urlWithLinkCode === undefined) {
-                            isUserInputCodeAndUrlWithLinkCodeValid = true;
-                        }
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                if (input.userInputCode !== undefined && input.urlWithLinkCode === undefined) {
+                                    isUserInputCodeAndUrlWithLinkCodeValid = true;
+                                }
 
-                        if (
-                            typeof input.codeLifetime === "number" &&
-                            typeof input.phoneNumber === "string" &&
-                            typeof input.preAuthSessionId === "string"
-                        ) {
-                            isOtherInputValid = true;
-                        }
+                                if (
+                                    typeof input.codeLifetime === "number" &&
+                                    typeof input.phoneNumber === "string" &&
+                                    typeof input.preAuthSessionId === "string"
+                                ) {
+                                    isOtherInputValid = true;
+                                }
+                            },
+                        },
                     },
                 }),
             ],
@@ -575,10 +623,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        if (input.userInputCode === undefined && input.urlWithLinkCode !== undefined) {
-                            isUserInputCodeAndUrlWithLinkCodeValid = true;
-                        }
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                if (input.userInputCode === undefined && input.urlWithLinkCode !== undefined) {
+                                    isUserInputCodeAndUrlWithLinkCodeValid = true;
+                                }
+                            },
+                        },
                     },
                 }),
             ],
@@ -637,10 +689,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        if (input.userInputCode !== undefined && input.urlWithLinkCode !== undefined) {
-                            isUserInputCodeAndUrlWithLinkCodeValid = true;
-                        }
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                if (input.userInputCode !== undefined && input.urlWithLinkCode !== undefined) {
+                                    isUserInputCodeAndUrlWithLinkCodeValid = true;
+                                }
+                            },
+                        },
                     },
                 }),
             ],
@@ -700,9 +756,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        isCreateAndSendCustomTextMessageCalled = true;
-                        throw new Error("test message");
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                isCreateAndSendCustomTextMessageCalled = true;
+                                throw new Error("test message");
+                            },
+                        },
                     },
                 }),
             ],
@@ -765,8 +825,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -807,8 +871,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                     validateEmailAddress: (email) => {
                         isValidateEmailAddressCalled = true;
@@ -934,18 +1002,22 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE",
-                    createAndSendCustomEmail: (input) => {
-                        if (input.userInputCode !== undefined && input.urlWithLinkCode === undefined) {
-                            isUserInputCodeAndUrlWithLinkCodeValid = true;
-                        }
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                if (input.userInputCode !== undefined && input.urlWithLinkCode === undefined) {
+                                    isUserInputCodeAndUrlWithLinkCodeValid = true;
+                                }
 
-                        if (
-                            typeof input.codeLifetime === "number" &&
-                            typeof input.email === "string" &&
-                            typeof input.preAuthSessionId === "string"
-                        ) {
-                            isOtherInputValid = true;
-                        }
+                                if (
+                                    typeof input.codeLifetime === "number" &&
+                                    typeof input.email === "string" &&
+                                    typeof input.preAuthSessionId === "string"
+                                ) {
+                                    isOtherInputValid = true;
+                                }
+                            },
+                        },
                     },
                 }),
             ],
@@ -1006,10 +1078,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        if (input.userInputCode === undefined && input.urlWithLinkCode !== undefined) {
-                            isUserInputCodeAndUrlWithLinkCodeValid = true;
-                        }
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                if (input.userInputCode === undefined && input.urlWithLinkCode !== undefined) {
+                                    isUserInputCodeAndUrlWithLinkCodeValid = true;
+                                }
+                            },
+                        },
                     },
                 }),
             ],
@@ -1068,10 +1144,14 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        if (input.userInputCode !== undefined && input.urlWithLinkCode !== undefined) {
-                            isUserInputCodeAndUrlWithLinkCodeValid = true;
-                        }
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                if (input.userInputCode !== undefined && input.urlWithLinkCode !== undefined) {
+                                    isUserInputCodeAndUrlWithLinkCodeValid = true;
+                                }
+                            },
+                        },
                     },
                 }),
             ],
@@ -1131,9 +1211,13 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        isCreateAndSendCustomEmailCalled = true;
-                        throw new Error("test message");
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                isCreateAndSendCustomEmailCalled = true;
+                                throw new Error("test message");
+                            },
+                        },
                     },
                 }),
             ],
@@ -1269,12 +1353,16 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE",
-                    getCustomUserInputCode: (input) => {
+                    getCustomUserInputCode: (tenantId) => {
                         customCode = generateRandomCode(5);
                         return customCode;
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userCodeSent = input.userInputCode;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userCodeSent = input.userInputCode;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1355,11 +1443,15 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE",
-                    getCustomUserInputCode: (input) => {
+                    getCustomUserInputCode: (tenantId) => {
                         return customCode;
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userCodeSent = input.userInputCode;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userCodeSent = input.userInputCode;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1443,8 +1535,12 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                     override: {
                         apis: (oI) => {

@@ -167,11 +167,13 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            email = input.email;
-                            passwordResetURL = passwordResetLink;
-                            timeJoined = input.timeJoined;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.user.email;
+                                passwordResetURL = input.passwordResetLink;
+                                timeJoined = input.user.timeJoined;
+                            },
                         },
                     },
                 }),
@@ -219,9 +221,11 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            functionCalled = true;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                functionCalled = true;
+                            },
                         },
                     },
                 }),
@@ -570,10 +574,14 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             },
             recipeList: [
                 EmailVerification.init({
-                    createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
-                        email = input.email;
-                        userIdInCb = input.id;
-                        emailVerifyURL = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.user.email;
+                                userIdInCb = input.user.id;
+                                emailVerifyURL = input.emailVerifyLink;
+                            },
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -771,70 +779,5 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         assert(getContentCalled);
         assert(sendRawEmailCalled);
         assert.notStrictEqual(emailVerifyURL, undefined);
-    });
-
-    it("test backward compatibility: reset password and sendEmail override", async function () {
-        await startST();
-        let email = undefined;
-        let passwordResetURL = undefined;
-        let timeJoined = undefined;
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    emailDelivery: {
-                        override: (oI) => {
-                            return {
-                                ...oI,
-                                sendEmail: async function (input) {
-                                    input.user.email = "override@example.com";
-                                    return oI.sendEmail(input);
-                                },
-                            };
-                        },
-                    },
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            email = input.email;
-                            passwordResetURL = passwordResetLink;
-                            timeJoined = input.timeJoined;
-                        },
-                    },
-                }),
-                Session.init(),
-            ],
-            telemetry: false,
-        });
-
-        const app = express();
-        app.use(middleware());
-        app.use(errorHandler());
-
-        await EmailPassword.signUp("test@example.com", "1234abcd");
-
-        await supertest(app)
-            .post("/auth/user/password/reset/token")
-            .set("rid", "emailpassword")
-            .send({
-                formFields: [
-                    {
-                        id: "email",
-                        value: "test@example.com",
-                    },
-                ],
-            })
-            .expect(200);
-
-        await delay(2);
-        assert.strictEqual(email, "override@example.com");
-        assert.notStrictEqual(passwordResetURL, undefined);
-        assert.notStrictEqual(timeJoined, undefined);
     });
 });

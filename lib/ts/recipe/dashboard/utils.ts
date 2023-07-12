@@ -14,25 +14,8 @@
  */
 
 import { BaseRequest, BaseResponse } from "../../framework";
-import NormalisedURLPath from "../../normalisedURLPath";
-import { HTTPMethod } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
-import {
-    DASHBOARD_API,
-    SEARCH_TAGS_API,
-    SIGN_IN_API,
-    SIGN_OUT_API,
-    USERS_COUNT_API,
-    USERS_LIST_GET_API,
-    USER_API,
-    USER_EMAIL_VERIFY_API,
-    USER_EMAIL_VERIFY_TOKEN_API,
-    USER_METADATA_API,
-    USER_PASSWORD_API,
-    USER_SESSIONS_API,
-    VALIDATE_KEY_API,
-    DASHBOARD_ANALYTICS_API,
-} from "./constants";
+import { DASHBOARD_API } from "./constants";
 import {
     APIInterface,
     EmailPasswordUser,
@@ -66,92 +49,6 @@ export function validateAndNormaliseUserInput(config?: TypeInput): TypeNormalise
         override,
         authMode: config !== undefined && config.apiKey ? "api-key" : "email-password",
     };
-}
-
-export function isApiPath(path: NormalisedURLPath, basePath: NormalisedURLPath): boolean {
-    const dashboardRecipeBasePath = basePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
-    if (!path.startsWith(dashboardRecipeBasePath)) {
-        return false;
-    }
-
-    let pathWithoutDashboardPath = path.getAsStringDangerous().split(DASHBOARD_API)[1];
-
-    if (pathWithoutDashboardPath.charAt(0) === "/") {
-        pathWithoutDashboardPath = pathWithoutDashboardPath.substring(1, pathWithoutDashboardPath.length);
-    }
-
-    if (pathWithoutDashboardPath.split("/")[0] === "api") {
-        return true;
-    }
-
-    return false;
-}
-
-export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined {
-    if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === "post") {
-        return VALIDATE_KEY_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(SIGN_IN_API) && method === "post") {
-        return SIGN_IN_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(SIGN_OUT_API) && method === "post") {
-        return SIGN_OUT_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(USERS_LIST_GET_API) && method === "get") {
-        return USERS_LIST_GET_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(USERS_COUNT_API) && method === "get") {
-        return USERS_COUNT_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(USER_API)) {
-        if (method === "get" || method === "delete" || method === "put") {
-            return USER_API;
-        }
-    }
-
-    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_API)) {
-        if (method === "get" || method === "put") {
-            return USER_EMAIL_VERIFY_API;
-        }
-    }
-
-    if (path.getAsStringDangerous().endsWith(USER_METADATA_API)) {
-        if (method === "get" || method === "put") {
-            return USER_METADATA_API;
-        }
-    }
-
-    if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API)) {
-        if (method === "get" || method === "post") {
-            return USER_SESSIONS_API;
-        }
-    }
-
-    if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
-        return USER_PASSWORD_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_TOKEN_API) && method === "post") {
-        return USER_EMAIL_VERIFY_TOKEN_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
-        return USER_PASSWORD_API;
-    }
-    if (path.getAsStringDangerous().endsWith(SEARCH_TAGS_API) && method === "get") {
-        return SEARCH_TAGS_API;
-    }
-
-    if (path.getAsStringDangerous().endsWith(DASHBOARD_ANALYTICS_API) && method === "post") {
-        return DASHBOARD_ANALYTICS_API;
-    }
-
-    return undefined;
 }
 
 export function sendUnauthorisedAccess(res: BaseResponse) {

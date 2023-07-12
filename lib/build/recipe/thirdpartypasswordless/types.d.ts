@@ -67,7 +67,7 @@ export declare type TypeInput = (
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     providers?: ProviderInput[];
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,

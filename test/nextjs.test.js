@@ -491,33 +491,33 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             await testApiHandler({
                 handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/callback/apple",
-                body: {
-                    state: "eyJyZWRpcmVjdFVSSSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9yZWRpcmVjdCJ9",
-                    code: "testing",
+                test: async ({ fetch }) => {
+                    let state = Buffer.from(JSON.stringify({ redirectURI: "http://localhost:3000/redirect" })).toString(
+                        "base64"
+                    );
+                    let formData = { state, code: "testing" };
+                    var encodedData = Object.keys(formData)
+                        .map(function (key) {
+                            return encodeURIComponent(key) + "=" + encodeURIComponent(formData[key]);
+                        })
+                        .join("&");
+
+                    const res = await fetch({
+                        method: "POST",
+                        headers: {
+                            rid: "thirdpartyemailpassword",
+                            "content-type": "application/x-www-form-urlencoded",
+                        },
+                        body: encodedData,
+                        redirect: "manual",
+                    });
+                    assert.deepStrictEqual(res.status, 303);
+                    assert.deepEqual(
+                        res.headers.get("location"),
+                        "http://localhost:3000/redirect?state=eyJyZWRpcmVjdFVSSSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9yZWRpcmVjdCJ9&code=testing"
+                    );
                 },
             });
-
-            const response = httpMocks.createResponse({
-                eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(Buffer.from(response._getData()).toString(), "");
-                assert.deepStrictEqual(response._getStatusCode(), 303);
-                assert.deepStrictEqual(
-                    response._getHeaders().location,
-                    "http://localhost:3000/redirect?state=eyJyZWRpcmVjdFVSSSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9yZWRpcmVjdCJ9&code=testing"
-                );
-                return done();
-            });
-
-            superTokensNextWrapper(
-                async (next) => {
-                    return middleware()(request, response, next);
-                },
-                request,
-                response
-            );
         });
     });
 

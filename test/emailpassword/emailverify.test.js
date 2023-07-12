@@ -38,11 +38,6 @@ const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
 
-/**
- * TODO: (later) in emailVerificationFunctions.ts:
- *        - (later) check that createAndSendCustomEmail works fine
- */
-
 describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -282,9 +277,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user;
-                        emailToken = emailVerificationURLWithToken;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInfo = input.user;
+                                emailToken = input.emailVerifyLink;
+                            },
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -350,8 +349,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                 }),
                 EmailPassword.init({}),
@@ -512,8 +516,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -596,8 +605,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -723,8 +737,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                 }),
                 EmailPassword.init(),
@@ -840,8 +859,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -918,8 +942,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                     override: {
                         functions: (oI) => {
@@ -996,8 +1025,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -1083,8 +1117,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 EmailPassword.init(),
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                     override: {
                         functions: (oI) => {
@@ -1261,8 +1300,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 EmailPassword.init(),
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
                     },
                 }),
                 Session.init({
@@ -1346,7 +1390,14 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 EmailPassword.init(),
                 EmailVerification.init({
                     mode: "OPTIONAL",
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {},
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.emailVerifyLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
+                    },
                 }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",

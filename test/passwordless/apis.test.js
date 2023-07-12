@@ -69,12 +69,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -164,12 +172,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -259,12 +275,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                isCreateAndSendCustomEmailCalled = true;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        isCreateAndSendCustomEmailCalled = true;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -346,12 +370,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        isCreateAndSendCustomTextMessageCalled = true;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                isCreateAndSendCustomTextMessageCalled = true;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -432,11 +464,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -535,13 +575,21 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -664,8 +712,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -724,8 +776,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -814,8 +870,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: () => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -933,8 +993,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1000,8 +1071,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1081,8 +1163,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1163,8 +1256,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        magicLinkURL = new URL(input.urlWithLinkCode);
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                magicLinkURL = new URL(input.urlWithLinkCode);
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1227,8 +1332,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1316,8 +1425,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1407,8 +1520,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1491,8 +1608,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1531,8 +1652,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                        createAndSendCustomEmail: (input) => {
-                            return;
+                        emailDelivery: {
+                            service: {
+                                sendEmail: async (input) => {
+                                    return;
+                                },
+                            },
                         },
                     }),
                 ],
@@ -1581,12 +1706,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                isCreateAndSendCustomEmailCalled = true;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        isCreateAndSendCustomEmailCalled = true;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],

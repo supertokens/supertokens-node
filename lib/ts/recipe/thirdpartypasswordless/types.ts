@@ -88,7 +88,7 @@ export type TypeInput = (
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
