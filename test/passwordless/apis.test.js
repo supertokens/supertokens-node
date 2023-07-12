@@ -799,6 +799,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         let codeInfo = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -893,6 +894,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         let codeInfo = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -1024,6 +1026,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -1380,10 +1383,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
             // create a passwordless user through email
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
@@ -1473,10 +1478,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
             // create a passwordless user through phone
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 
             await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
@@ -1544,6 +1551,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 
@@ -1632,6 +1640,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 

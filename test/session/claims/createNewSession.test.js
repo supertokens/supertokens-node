@@ -64,7 +64,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 10);
@@ -109,7 +109,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 9);
         });
@@ -153,7 +153,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId", payloadParam);
+            const res = await Session.createNewSession(mockRequest(), response, "public", "someId", payloadParam);
 
             // The passed object should be unchanged
             assert.strictEqual(Object.keys(payloadParam).length, 1);

@@ -79,7 +79,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -130,7 +130,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -198,7 +198,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -252,7 +252,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -1200,7 +1200,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        const session = await Session.createNewSession(mockRequest(), mockResponse(), "testId");
+        const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "testId");
 
         const data = await session.getSessionDataFromDatabase();
 

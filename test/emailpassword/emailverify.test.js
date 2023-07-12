@@ -130,7 +130,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let infoFromResponse = extractInfoFromResponse(response);
 
         let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
-        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+        await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 
@@ -1231,7 +1231,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         await EmailVerification.revokeEmailVerificationTokens(userId);
 
         {
-            let response = await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+            let response = await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
             assert.equal(response.status, "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR");
         }
     });
@@ -1274,7 +1274,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const verifyToken = await EmailVerification.createEmailVerificationToken(userId);
 
-        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+        await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         assert(await EmailVerification.isEmailVerified(userId));
 
@@ -1425,7 +1425,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let infoFromResponse = extractInfoFromResponse(response);
         let antiCsrfToken = infoFromResponse.antiCsrf;
         let token = await EmailVerification.createEmailVerificationToken(userId);
-        await EmailVerification.verifyEmailUsingToken(token.token);
+        await EmailVerification.verifyEmailUsingToken("public", token.token);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);

@@ -764,6 +764,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
         app.use(errorHandler());
 
         let codeInfo = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -854,6 +855,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
         app.use(errorHandler());
 
         let codeInfo = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -974,6 +976,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         {
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -1296,10 +1299,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
             // create a passwordless user through email
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
@@ -1385,10 +1390,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
             // create a passwordless user through phone
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 
             await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
@@ -1456,6 +1463,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         {
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 
@@ -1540,6 +1548,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         {
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 

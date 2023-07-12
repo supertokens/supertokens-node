@@ -77,7 +77,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -144,7 +144,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -208,7 +208,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -314,7 +314,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -407,7 +407,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -561,7 +561,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -720,7 +720,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
         const res = await new Promise((resolve) =>
@@ -767,7 +767,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
         const res = await new Promise((resolve) =>
@@ -809,7 +809,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -868,7 +868,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionHandle = "";
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(req, res, "", {}, {});
+            let session = await Session.createNewSession(req, res, "public", "", {}, {});
             sessionHandle = session.getHandle();
             res.status(200).send("");
         });
@@ -933,7 +933,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -1080,7 +1080,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -1158,7 +1158,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -1238,11 +1238,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
         app.post("/usercreate", async (req, res) => {
-            await Session.createNewSession(req, res, "someUniqueUserId", {}, {});
+            await Session.createNewSession(req, res, "public", "someUniqueUserId", {}, {});
             res.status(200).send("");
         });
         app.post("/session/revoke", async (req, res) => {
@@ -1370,7 +1370,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
         app.post("/updateSessionData", async (req, res) => {
@@ -1515,7 +1515,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "user1", {}, {});
+            await Session.createNewSession(req, res, "public", "user1", {}, {});
             res.status(200).send("");
         });
         app.post("/updateAccessTokenPayload", async (req, res) => {
@@ -1730,7 +1730,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.post("/create", async (req, res) => {
             res.header("testHeader", "testValue");
             res.header("Access-Control-Expose-Headers", "customValue");
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -1775,7 +1775,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -1948,7 +1948,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -2093,7 +2093,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -2159,7 +2159,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -2289,7 +2289,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -2469,7 +2469,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -2564,7 +2564,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/create", async (req, res, next) => {
             try {
-                await Session.createNewSession(req, res, "", {}, {});
+                await Session.createNewSession(req, res, "public", "", {}, {});
                 res.status(200).send("");
             } catch (err) {
                 next(err);
@@ -2639,7 +2639,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -2710,7 +2710,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -2768,7 +2768,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -2911,7 +2911,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -3003,7 +3003,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -3097,7 +3097,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 
@@ -3188,7 +3188,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             res.status(200).send("");
         });
 

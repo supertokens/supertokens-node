@@ -765,7 +765,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         await signUPRequest(app, "random1@gmail.com", "validpass123");
 
-        let usersOldest = await STExpress.getUsersOldestFirst();
+        let usersOldest = await STExpress.getUsersOldestFirst({ tenantId: "public" });
         assert(usersOldest.nextPaginationToken === undefined);
         assert(usersOldest.users.length === 3);
         assert(usersOldest.users[0].recipeId === "emailpassword");
