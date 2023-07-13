@@ -219,7 +219,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // retrieve the user
-            let response = await ThirdPartyRecipe.getUsersByEmail("test@example.com");
+            let response = await ThirdPartyRecipe.getUsersByEmail("public", "test@example.com");
             assert.strictEqual(response.length, 1);
             assert.strictEqual(response[0].id, externalId);
         });
@@ -287,7 +287,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // retrieve the user
-            let response = await ThirdPartyRecipe.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+            let response = await ThirdPartyRecipe.getUserByThirdPartyInfo("public", thirdPartyId, thirdPartyUserId);
             assert.ok(response != undefined);
             assert.strictEqual(response.id, externalId);
         });

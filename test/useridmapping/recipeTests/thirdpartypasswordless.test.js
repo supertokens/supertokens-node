@@ -106,6 +106,7 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 assert.strictEqual(codeInfo.status, "OK");
 
                 const consumeCodeResponse = await ThirdPartyPasswordlessRecipe.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: codeInfo.preAuthSessionId,
                     userInputCode: codeInfo.userInputCode,
                     deviceId: codeInfo.deviceId,

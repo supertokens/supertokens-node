@@ -59,7 +59,7 @@ describe(`getRolesForUser: ${printPath("[test/userroles/getRolesForUser.test.js]
             }
 
             // check that user has the roles
-            const result = await UserRolesRecipe.getRolesForUser(userId);
+            const result = await UserRolesRecipe.getRolesForUser("public", userId);
             assert.strictEqual(result.status, "OK");
             assert(areArraysEqual(roles, result.roles));
         });

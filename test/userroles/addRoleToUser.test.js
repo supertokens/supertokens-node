@@ -62,7 +62,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
 
             // check that user has role
             {
-                const result = await UserRolesRecipe.getRolesForUser(userId);
+                const result = await UserRolesRecipe.getRolesForUser("public", userId);
                 assert.strictEqual(result.status, "OK");
                 assert.strictEqual(result.roles.length, 1);
                 assert.strictEqual(result.roles[0], role);
@@ -117,7 +117,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
 
             // check that user has role
             {
-                const result = await UserRolesRecipe.getRolesForUser(userId);
+                const result = await UserRolesRecipe.getRolesForUser("public", userId);
                 assert.strictEqual(result.status, "OK");
                 assert.strictEqual(result.roles.length, 1);
                 assert.strictEqual(result.roles[0], role);

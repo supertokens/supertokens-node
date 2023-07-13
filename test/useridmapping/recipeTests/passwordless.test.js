@@ -233,6 +233,7 @@ describe(`userIdMapping with passwordless: ${printPath(
             });
 
             let response = await PasswordlessRecipe.getUserByEmail({
+                tenantId: "public",
                 email,
             });
             assert.ok(response !== undefined);
@@ -284,6 +285,7 @@ describe(`userIdMapping with passwordless: ${printPath(
             assert.strictEqual(codeInfo.status, "OK");
 
             const consumeCodeResponse = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -352,6 +354,7 @@ describe(`userIdMapping with passwordless: ${printPath(
             assert.strictEqual(codeInfo.status, "OK");
 
             const consumeCodeResponse = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,

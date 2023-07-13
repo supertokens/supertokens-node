@@ -117,7 +117,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -131,7 +131,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info using email, the id in the response should be the externalId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.ok(response !== undefined);
                 assert.strictEqual(response.id, externalId);
                 assert.strictEqual(response.email, email);
@@ -172,7 +172,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -224,7 +224,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -287,7 +287,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 

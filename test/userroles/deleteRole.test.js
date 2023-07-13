@@ -70,7 +70,7 @@ describe(`deleteRole: ${printPath("[test/userroles/deleteRole.test.js]")}`, func
                 assert.strictEqual(allRolesResponse.roles.length, 2);
                 assert(!allRolesResponse.roles.includes("role3"));
 
-                const allUserRoles = await UserRolesRecipe.getRolesForUser(userId);
+                const allUserRoles = await UserRolesRecipe.getRolesForUser("public", userId);
                 assert.strictEqual(allUserRoles.status, "OK");
                 assert.strictEqual(allUserRoles.roles.length, 2);
                 assert(!allUserRoles.roles.includes("role3"));
