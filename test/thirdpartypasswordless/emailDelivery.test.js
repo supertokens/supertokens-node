@@ -102,6 +102,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(errorHandler());
 
         let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com"
@@ -174,6 +175,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(errorHandler());
 
         let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com"
@@ -265,6 +267,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(errorHandler());
 
         let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com"
@@ -383,6 +386,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(errorHandler());
 
         let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com"

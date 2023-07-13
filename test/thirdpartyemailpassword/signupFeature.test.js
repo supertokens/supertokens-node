@@ -677,7 +677,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(
+            await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user"),
+            undefined
+        );
 
         const app = express();
 
@@ -710,7 +713,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
@@ -824,7 +827,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(
+            await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user"),
+            undefined
+        );
 
         const app = express();
 
@@ -858,7 +864,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             assert.strictEqual(response.statusCode, 200);
 
             let signUpUserInfo = response.body.user;
-            let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
+            let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user");
 
             assert.strictEqual(userInfo.email, signUpUserInfo.email);
             assert.strictEqual(userInfo.id, signUpUserInfo.id);

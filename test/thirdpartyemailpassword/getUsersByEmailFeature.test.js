@@ -63,7 +63,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         // given there are no users
 
         // when
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 
         // then
         assert.strictEqual(thirdPartyUsers.length, 0);
@@ -91,7 +91,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         await thirdPartyManuallyCreateOrUpdateUser("mock", "thirdPartyJohnDoe", "john.doe@example.com");
         await thirdPartyManuallyCreateOrUpdateUser("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 
         assert.strictEqual(thirdPartyUsers.length, 3);
 
