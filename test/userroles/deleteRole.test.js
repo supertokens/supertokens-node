@@ -8,7 +8,7 @@ const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 const { default: SessionRecipe } = require("../../lib/build/recipe/session/recipe");
 
-describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForRole.test.js]")}`, function () {
+describe(`deleteRole: ${printPath("[test/userroles/deleteRole.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -53,7 +53,7 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                     assert.strictEqual(result.status, "OK");
                     assert(result.createdNewRole);
 
-                    const response = await UserRolesRecipe.addRoleToUser(userId, roles[role]);
+                    const response = await UserRolesRecipe.addRoleToUser("public", userId, roles[role]);
                     assert.strictEqual(response.status, "OK");
                     assert(!response.didUserAlreadyHaveRole);
                 }

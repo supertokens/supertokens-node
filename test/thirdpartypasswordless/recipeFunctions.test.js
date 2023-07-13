@@ -70,6 +70,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // create a ThirdParty user with a verified email
         let response = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "customProvider",
             "verifiedUser",
             "test@example.com"
@@ -84,6 +85,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // create a ThirdParty user with an unverfied email and check that it is not verified
         let response2 = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "customProvider2",
             "NotVerifiedUser",
             "test@example.com"
@@ -127,6 +129,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // create a Passwordless user with email
         let response = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -145,6 +148,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // create a Passwordless user with phone and check that it is verified
         let response2 = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             phoneNumber: "+123456789012",
         });
 
@@ -177,7 +181,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     emailDelivery: {
                         service: {
-                            sendEmail: async (emailInput) => {
+                            sendEmail: async (input) => {
                                 return;
                             },
                         },
@@ -192,14 +196,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         {
-            let user = await ThirdPartyPasswordless.getUserById({
-                userId: "random",
-            });
+            let user = await ThirdPartyPasswordless.getUserById("random");
 
             assert(user === undefined);
 
             user = (
                 await ThirdPartyPasswordless.passwordlessSignInUp({
+                    tenantId: "public",
                     email: "test@example.com",
                 })
             ).user;
@@ -216,19 +219,18 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         {
-            let users = await ThirdPartyPasswordless.getUsersByEmail({
-                email: "random",
-            });
+            let users = await ThirdPartyPasswordless.getUsersByEmail("public", "random");
 
             assert(users.length === 0);
 
             let user = (
                 await ThirdPartyPasswordless.passwordlessSignInUp({
+                    tenantId: "public",
                     email: "test@example.com",
                 })
             ).user;
 
-            let result = await ThirdPartyPasswordless.getUsersByEmail(user.email);
+            let result = await ThirdPartyPasswordless.getUsersByEmail("public", user.email);
 
             assert(result.length === 1);
 
@@ -244,6 +246,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let user = await ThirdPartyPasswordless.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber: "random",
             });
 
@@ -251,11 +254,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
             user = (
                 await ThirdPartyPasswordless.passwordlessSignInUp({
+                    tenantId: "public",
                     phoneNumber: "+1234567890",
                 })
             ).user;
 
             let result = await ThirdPartyPasswordless.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber: user.phoneNumber,
             });
             assert(result.id === user.id);
@@ -613,6 +618,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let userInfo = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             email: "test@example.com",
         });
         {
@@ -639,6 +645,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         {
             // update user with an email that already exists
             let userInfo2 = await ThirdPartyPasswordless.passwordlessSignInUp({
+                tenantId: "public",
                 email: "test3@example.com",
             });
 
@@ -685,6 +692,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         let phoneNumber_3 = "+1234567893";
 
         let userInfo = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             phoneNumber: phoneNumber_1,
         });
 
@@ -703,6 +711,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         {
             // update user with a phoneNumber that already exists
             let userInfo2 = await ThirdPartyPasswordless.passwordlessSignInUp({
+                tenantId: "public",
                 phoneNumber: phoneNumber_3,
             });
 
@@ -949,6 +958,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         });
 
         let result = await ThirdPartyPasswordless.listCodesByPhoneNumber({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
         assert(result.length === 2);
@@ -998,6 +1008,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let result = await ThirdPartyPasswordless.listCodesByDeviceId({
+                tenantId: "public",
                 deviceId: codeInfo_1.deviceId,
             });
             assert(result.codes[0].codeId === codeInfo_1.codeId);
@@ -1005,6 +1016,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let result = await ThirdPartyPasswordless.listCodesByPreAuthSessionId({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
             });
             assert(result.codes[0].codeId === codeInfo_1.codeId);
@@ -1094,6 +1106,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let result = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             phoneNumber: "+12345678901",
         });
 

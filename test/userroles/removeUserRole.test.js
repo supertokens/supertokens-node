@@ -55,7 +55,7 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
 
             // add the role to a user
             {
-                const result = await UserRolesRecipe.addRoleToUser(userId, role);
+                const result = await UserRolesRecipe.addRoleToUser("public", userId, role);
                 assert.strictEqual(result.status, "OK");
                 assert(!result.didUserAlreadyHaveRole);
             }

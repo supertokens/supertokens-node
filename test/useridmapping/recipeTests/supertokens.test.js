@@ -48,7 +48,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
@@ -134,7 +134,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
             let users = [];
 
             for (let i = 0; i < email.length; i++) {
-                let signUpResponse = await EmailPasswordRecipe.signUp(email[i], password);
+                let signUpResponse = await EmailPasswordRecipe.signUp("public", email[i], password);
                 assert.strictEqual(signUpResponse.status, "OK");
                 users.push(signUpResponse.user);
             }

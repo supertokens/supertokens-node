@@ -53,7 +53,7 @@ describe(`getRolesForUser: ${printPath("[test/userroles/getRolesForUser.test.js]
                 assert.strictEqual(result.status, "OK");
                 assert(result.createdNewRole);
 
-                const response = await UserRolesRecipe.addRoleToUser(userId, roles[role]);
+                const response = await UserRolesRecipe.addRoleToUser("public", userId, roles[role]);
                 assert.strictEqual(response.status, "OK");
                 assert(!response.didUserAlreadyHaveRole);
             }

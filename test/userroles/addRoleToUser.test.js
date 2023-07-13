@@ -55,7 +55,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
 
             // add the role to a user
             {
-                const result = await UserRolesRecipe.addRoleToUser(userId, role);
+                const result = await UserRolesRecipe.addRoleToUser("public", userId, role);
                 assert.strictEqual(result.status, "OK");
                 assert(!result.didUserAlreadyHaveRole);
             }
@@ -103,14 +103,14 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
 
             // add the role to a user
             {
-                const result = await UserRolesRecipe.addRoleToUser(userId, role);
+                const result = await UserRolesRecipe.addRoleToUser("public", userId, role);
                 assert.strictEqual(result.status, "OK");
                 assert(!result.didUserAlreadyHaveRole);
             }
 
             // add the same role to the user
             {
-                const result = await UserRolesRecipe.addRoleToUser(userId, role);
+                const result = await UserRolesRecipe.addRoleToUser("public", userId, role);
                 assert.strictEqual(result.status, "OK");
                 assert(result.didUserAlreadyHaveRole);
             }
@@ -151,7 +151,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
 
             // add the unknown role to the user
             {
-                const result = await UserRolesRecipe.addRoleToUser(userId, role);
+                const result = await UserRolesRecipe.addRoleToUser("public", userId, role);
                 assert.strictEqual(result.status, "UNKNOWN_ROLE_ERROR");
             }
         });

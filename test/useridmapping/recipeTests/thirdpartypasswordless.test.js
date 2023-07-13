@@ -72,6 +72,7 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 const email = "test2@example.com";
                 // create a new ThirdParty user
                 let signUpResponse = await ThirdPartyPasswordlessRecipe.thirdPartyManuallyCreateOrUpdateUser(
+                    "public",
                     "google",
                     "tpId",
                     email

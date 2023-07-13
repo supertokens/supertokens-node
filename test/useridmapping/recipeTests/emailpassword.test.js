@@ -47,7 +47,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
@@ -110,7 +110,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
@@ -165,7 +165,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
@@ -217,7 +217,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
@@ -280,7 +280,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
