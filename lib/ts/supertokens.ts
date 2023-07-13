@@ -31,6 +31,7 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
+import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -161,10 +162,13 @@ export default class SuperTokens {
             includeRecipeIdsStr = includeRecipeIds.join(",");
         }
 
-        let response = await querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/users/count`), {
-            includeRecipeIds: includeRecipeIdsStr,
-            includeAllTenants: tenantId === undefined,
-        });
+        let response = await querier.sendGetRequest(
+            new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/users/count`),
+            {
+                includeRecipeIds: includeRecipeIdsStr,
+                includeAllTenants: tenantId === undefined,
+            }
+        );
         return Number(response.count);
     };
 

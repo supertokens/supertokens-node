@@ -79,7 +79,7 @@ describe("SuperTokens Example Basic tests", function () {
                 { name: "password", value: testPW },
             ]);
             await submitForm(page);
-            const user = await EmailPassword.getUserByEmail(email);
+            const user = await EmailPassword.getUserByEmail("public", email);
             const callApiBtn = await page.waitForSelector(".sessionButton");
             let setAlertContent;
             let alertContent = new Promise((res) => (setAlertContent = res));

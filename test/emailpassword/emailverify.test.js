@@ -129,7 +129,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
         await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
@@ -1226,7 +1226,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId, "test@gmail.com");
+        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, "test@gmail.com");
 
         await EmailVerification.revokeEmailVerificationTokens(userId);
 
@@ -1272,7 +1272,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        const verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        const verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
 
         await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
@@ -1424,7 +1424,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = response.body.user.id;
         let infoFromResponse = extractInfoFromResponse(response);
         let antiCsrfToken = infoFromResponse.antiCsrf;
-        let token = await EmailVerification.createEmailVerificationToken(userId);
+        let token = await EmailVerification.createEmailVerificationToken("public", userId);
         await EmailVerification.verifyEmailUsingToken("public", token.token);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);

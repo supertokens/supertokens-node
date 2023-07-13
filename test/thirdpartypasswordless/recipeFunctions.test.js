@@ -76,7 +76,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         );
 
         // verify the user's email
-        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(response.user.id);
+        let emailVerificationToken = await EmailVerification.createEmailVerificationToken("public", response.user.id);
         await EmailVerification.verifyEmailUsingToken("public", emailVerificationToken.token);
 
         // check that the ThirdParty user's email is verified
@@ -131,7 +131,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         });
 
         // verify the user's email
-        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(response.user.id);
+        let emailVerificationToken = await EmailVerification.createEmailVerificationToken("public", response.user.id);
         await EmailVerification.verifyEmailUsingToken("public", emailVerificationToken.token);
 
         // check that the Passwordless user's email is verified
@@ -139,7 +139,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // check that creating an email verification with a verified passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert(
-            (await EmailVerification.createEmailVerificationToken(response.user.id)).status ===
+            (await EmailVerification.createEmailVerificationToken("public", response.user.id)).status ===
                 "EMAIL_ALREADY_VERIFIED_ERROR"
         );
 
@@ -153,7 +153,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // check that creating an email verification with a phone-based passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert.equal(
-            (await EmailVerification.createEmailVerificationToken(response2.user.id)).status,
+            (await EmailVerification.createEmailVerificationToken("public", response2.user.id)).status,
             "EMAIL_ALREADY_VERIFIED_ERROR"
         );
     });
