@@ -913,7 +913,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         let thirdPartyRecipe = ThirdPartyRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdParty.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(await ThirdParty.getUserByThirdPartyInfo("public", "custom", "user"), undefined);
 
         const app = express();
 
@@ -946,7 +946,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdParty.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdParty.getUserByThirdPartyInfo("public", "custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);

@@ -89,7 +89,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("google");
+        let providerRes = await ThirdParty.getProvider("public", "google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -186,7 +186,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("google");
+        let providerRes = await ThirdParty.getProvider("public", "google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -256,7 +256,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("google");
+        let providerRes = await ThirdParty.getProvider("public", "google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -327,7 +327,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("facebook");
+        let providerRes = await ThirdParty.getProvider("public", "facebook");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "facebook");
@@ -423,7 +423,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("facebook");
+        let providerRes = await ThirdParty.getProvider("public", "facebook");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "facebook");
@@ -492,7 +492,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("github");
+        let providerRes = await ThirdParty.getProvider("public", "github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -591,7 +591,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("github");
+        let providerRes = await ThirdParty.getProvider("public", "github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -663,7 +663,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("github");
+        let providerRes = await ThirdParty.getProvider("public", "github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -736,7 +736,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("apple");
+        let providerRes = await ThirdParty.getProvider("public", "apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -842,7 +842,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("apple");
+        let providerRes = await ThirdParty.getProvider("public", "apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -919,7 +919,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             ],
         });
 
-        let providerRes = await ThirdParty.getProvider("apple");
+        let providerRes = await ThirdParty.getProvider("public", "apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -993,7 +993,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         try {
-            let providerRes = await ThirdParty.getProvider("apple");
+            let providerRes = await ThirdParty.getProvider("public", "apple");
             let providerInfo = providerRes.provider;
             assert(false);
         } catch (err) {
