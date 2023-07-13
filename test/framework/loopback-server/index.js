@@ -35,7 +35,7 @@ let Create = class Create {
         this.ctx = ctx;
     }
     async handler() {
-        await session_1.default.createNewSession(this.ctx, this.ctx, "userId", {}, {});
+        await session_1.default.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
         return {};
     }
 };
@@ -46,7 +46,7 @@ let CreateThrowing = class CreateThrowing {
         this.ctx = ctx;
     }
     async handler() {
-        await session_1.default.createNewSession(this.ctx, this.ctx, "userId", {}, {});
+        await session_1.default.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
         throw new session_1.default.Error({
             message: "unauthorised",
             type: session_1.default.Error.UNAUTHORISED,

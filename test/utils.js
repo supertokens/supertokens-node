@@ -608,23 +608,27 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
     for (let i = 0; i < usersArray.length; i++) {
         const user = usersArray[i];
         if (user.recipe === "emailpassword" && emailpassword !== null) {
-            await emailpassword.signUp(user.email, user.password);
+            await emailpassword.signUp("public", user.email, user.password);
         }
         if (user.recipe === "passwordless" && passwordless !== null) {
             if (user.email !== undefined) {
                 const codeResponse = await passwordless.createCode({
+                    tenantId: "public",
                     email: user.email,
                 });
                 await passwordless.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: codeResponse.preAuthSessionId,
                     deviceId: codeResponse.deviceId,
                     userInputCode: codeResponse.userInputCode,
                 });
             } else {
                 const codeResponse = await passwordless.createCode({
+                    tenantId: "public",
                     phoneNumber: user.phone,
                 });
                 await passwordless.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: codeResponse.preAuthSessionId,
                     deviceId: codeResponse.deviceId,
                     userInputCode: codeResponse.userInputCode,
@@ -633,7 +637,7 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
         }
 
         if (user.recipe === "thirdparty" && thirdparty !== null) {
-            await thirdparty.manuallyCreateOrUpdateUser(user.provider, user.userId, user.email);
+            await thirdparty.manuallyCreateOrUpdateUser("public", user.provider, user.userId, user.email);
         }
     }
 };
