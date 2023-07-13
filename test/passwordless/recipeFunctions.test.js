@@ -116,6 +116,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let user = await Passwordless.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber: "random",
             });
 
@@ -129,6 +130,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ).user;
 
             let result = await Passwordless.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber: user.phoneNumber,
             });
 
@@ -638,6 +640,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result = await Passwordless.revokeAllCodes({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -775,6 +778,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         });
 
         let result = await Passwordless.listCodesByEmail({
+            tenantId: "public",
             email: "test@example.com",
         });
         assert(result.length === 2);

@@ -1228,7 +1228,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, "test@gmail.com");
 
-        await EmailVerification.revokeEmailVerificationTokens(userId);
+        await EmailVerification.revokeEmailVerificationTokens("public", userId);
 
         {
             let response = await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
@@ -1361,11 +1361,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("testuserid"), { status: "OK" });
+        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("public", "testuserid"), {
+            status: "OK",
+        });
 
         let caughtError;
         try {
-            await EmailVerification.revokeEmailVerificationTokens("nouserid");
+            await EmailVerification.revokeEmailVerificationTokens("public", "nouserid");
         } catch (err) {
             caughtError = err;
         }

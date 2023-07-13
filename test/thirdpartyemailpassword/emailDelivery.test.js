@@ -312,6 +312,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(errorHandler());
 
         await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "custom-provider",
             "test-user-id",
             "test@example.com"

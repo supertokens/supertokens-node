@@ -107,8 +107,8 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByE
             return;
         }
 
-        await thirdPartyManuallyCreateOrUpdateUser("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await thirdPartyManuallyCreateOrUpdateUser("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await thirdPartyManuallyCreateOrUpdateUser("public", "mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await thirdPartyManuallyCreateOrUpdateUser("public", "mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
         const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 

@@ -87,8 +87,8 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
             return;
         }
 
-        await manuallyCreateOrUpdateUser("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await manuallyCreateOrUpdateUser("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await manuallyCreateOrUpdateUser("public", "mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await manuallyCreateOrUpdateUser("public", "mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
         const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 

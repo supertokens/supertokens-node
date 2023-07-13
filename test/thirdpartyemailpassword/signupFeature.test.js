@@ -756,6 +756,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 1);
 
         await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "google",
             "randomUserId",
             "test@example.com"
@@ -775,6 +776,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert(usersOldest.users[0].user.email === "random@gmail.com");
 
         let usersNewest = await STExpress.getUsersNewestFirst({
+            tenantId: "public",
             limit: 2,
         });
         assert(usersNewest.nextPaginationToken !== undefined);
@@ -783,6 +785,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert(usersNewest.users[0].user.email === "random1@gmail.com");
 
         let usersNewest2 = await STExpress.getUsersNewestFirst({
+            tenantId: "public",
             paginationToken: usersNewest.nextPaginationToken,
         });
         assert(usersNewest2.nextPaginationToken === undefined);
