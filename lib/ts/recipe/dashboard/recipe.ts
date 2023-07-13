@@ -171,6 +171,12 @@ export default class Recipe extends RecipeModule {
                 id: USER_API,
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
                 disabled: false,
+                method: "put",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
                 method: "delete",
             },
             {
