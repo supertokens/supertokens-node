@@ -257,7 +257,7 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
-    let session = await Session.createNewSession(req, res, userId);
+    let session = await Session.createNewSession(req, res, "public", userId);
     res.send(session.getUserId());
 });
 
