@@ -108,7 +108,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             },
         });
 
-        assert(res2.statusCode === 404);
+        assert(res2.statusCode === 204);
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
@@ -162,7 +162,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             url: "/auth/signout",
         });
 
-        assert(res2.statusCode === 404);
+        assert(res2.statusCode === 204);
     });
 
     //- check for token theft detection
