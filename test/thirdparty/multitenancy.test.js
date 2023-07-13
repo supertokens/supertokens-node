@@ -59,12 +59,12 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
 
         // Sign up
-        let user1a = await ThirdParty.manuallyCreateOrUpdateUser("google", "googleid1", "test@example.com", "t1");
-        let user1b = await ThirdParty.manuallyCreateOrUpdateUser("facebook", "fbid1", "test@example.com", "t1");
-        let user2a = await ThirdParty.manuallyCreateOrUpdateUser("google", "googleid1", "test@example.com", "t2");
-        let user2b = await ThirdParty.manuallyCreateOrUpdateUser("facebook", "fbid1", "test@example.com", "t2");
-        let user3a = await ThirdParty.manuallyCreateOrUpdateUser("google", "googleid1", "test@example.com", "t3");
-        let user3b = await ThirdParty.manuallyCreateOrUpdateUser("facebook", "fbid1", "test@example.com", "t3");
+        let user1a = await ThirdParty.manuallyCreateOrUpdateUser("t1", "google", "googleid1", "test@example.com");
+        let user1b = await ThirdParty.manuallyCreateOrUpdateUser("t1", "facebook", "fbid1", "test@example.com");
+        let user2a = await ThirdParty.manuallyCreateOrUpdateUser("t2", "google", "googleid1", "test@example.com");
+        let user2b = await ThirdParty.manuallyCreateOrUpdateUser("t2", "facebook", "fbid1", "test@example.com");
+        let user3a = await ThirdParty.manuallyCreateOrUpdateUser("t3", "google", "googleid1", "test@example.com");
+        let user3b = await ThirdParty.manuallyCreateOrUpdateUser("t3", "facebook", "fbid1", "test@example.com");
 
         assert.deepEqual(user1a.user.tenantIds, ["t1"]);
         assert.deepEqual(user1b.user.tenantIds, ["t1"]);
@@ -89,9 +89,9 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         assert.deepEqual(gUser3b, user3b.user);
 
         // get user by email
-        let gUserByEmail1 = await ThirdParty.getUsersByEmail("test@example.com", "t1");
-        let gUserByEmail2 = await ThirdParty.getUsersByEmail("test@example.com", "t2");
-        let gUserByEmail3 = await ThirdParty.getUsersByEmail("test@example.com", "t3");
+        let gUserByEmail1 = await ThirdParty.getUsersByEmail("t1", "test@example.com");
+        let gUserByEmail2 = await ThirdParty.getUsersByEmail("t2", "test@example.com");
+        let gUserByEmail3 = await ThirdParty.getUsersByEmail("t3", "test@example.com");
 
         assert(gUserByEmail1.length === 2);
         assert.deepEqual(gUserByEmail1[0], user1a.user);
@@ -104,12 +104,12 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         assert.deepEqual(gUserByEmail3[1], user3b.user);
 
         // get user by thirdparty id
-        let gUserByThirdPartyId1 = await ThirdParty.getUserByThirdPartyInfo("google", "googleid1", "t1");
-        let gUserByThirdPartyId2 = await ThirdParty.getUserByThirdPartyInfo("facebook", "fbid1", "t1");
-        let gUserByThirdPartyId3 = await ThirdParty.getUserByThirdPartyInfo("google", "googleid1", "t2");
-        let gUserByThirdPartyId4 = await ThirdParty.getUserByThirdPartyInfo("facebook", "fbid1", "t2");
-        let gUserByThirdPartyId5 = await ThirdParty.getUserByThirdPartyInfo("google", "googleid1", "t3");
-        let gUserByThirdPartyId6 = await ThirdParty.getUserByThirdPartyInfo("facebook", "fbid1", "t3");
+        let gUserByThirdPartyId1 = await ThirdParty.getUserByThirdPartyInfo("t1", "google", "googleid1");
+        let gUserByThirdPartyId2 = await ThirdParty.getUserByThirdPartyInfo("t1", "facebook", "fbid1");
+        let gUserByThirdPartyId3 = await ThirdParty.getUserByThirdPartyInfo("t2", "google", "googleid1");
+        let gUserByThirdPartyId4 = await ThirdParty.getUserByThirdPartyInfo("t2", "facebook", "fbid1");
+        let gUserByThirdPartyId5 = await ThirdParty.getUserByThirdPartyInfo("t3", "google", "googleid1");
+        let gUserByThirdPartyId6 = await ThirdParty.getUserByThirdPartyInfo("t3", "facebook", "fbid1");
 
         assert.deepEqual(gUserByThirdPartyId1, user1a.user);
         assert.deepEqual(gUserByThirdPartyId2, user1b.user);
@@ -164,22 +164,22 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
             clients: [{ clientId: "a" }],
         });
 
-        let provider1 = await ThirdParty.getProvider("google", undefined, "t1");
+        let provider1 = await ThirdParty.getProvider("t1", "google", undefined);
         assert(provider1.provider.config.thirdPartyId === "google");
 
-        let provider2 = await ThirdParty.getProvider("facebook", undefined, "t1");
+        let provider2 = await ThirdParty.getProvider("t1", "facebook", undefined);
         assert(provider2.provider.config.thirdPartyId === "facebook");
 
-        let provider3 = await ThirdParty.getProvider("facebook", undefined, "t2");
+        let provider3 = await ThirdParty.getProvider("t2", "facebook", undefined);
         assert(provider3.provider.config.thirdPartyId === "facebook");
 
-        let provider4 = await ThirdParty.getProvider("discord", undefined, "t2");
+        let provider4 = await ThirdParty.getProvider("t2", "discord", undefined);
         assert(provider4.provider.config.thirdPartyId === "discord");
 
-        let provider5 = await ThirdParty.getProvider("discord", undefined, "t3");
+        let provider5 = await ThirdParty.getProvider("t3", "discord", undefined);
         assert(provider5.provider.config.thirdPartyId === "discord");
 
-        let provider6 = await ThirdParty.getProvider("linkedin", undefined, "t3");
+        let provider6 = await ThirdParty.getProvider("t3", "linkedin", undefined);
         assert(provider6.provider.config.thirdPartyId === "linkedin");
     });
 });

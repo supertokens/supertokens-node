@@ -89,6 +89,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let user = await Passwordless.getUserByEmail({
+                tenantId: "public",
                 email: "random",
             });
 
@@ -102,6 +103,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ).user;
 
             let result = await Passwordless.getUserByEmail({
+                tenantId: "public",
                 email: user.email,
             });
 
@@ -704,6 +706,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result = await Passwordless.revokeCode({
+                tenantId: "public",
                 codeId: codeInfo_1.codeId,
             });
 
@@ -883,6 +886,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result = await Passwordless.listCodesByPreAuthSessionId({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
             });
             assert(result.codes[0].codeId === codeInfo_1.codeId);
