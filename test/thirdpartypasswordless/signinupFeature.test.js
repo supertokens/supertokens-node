@@ -1016,7 +1016,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             return;
         }
 
-        assert.strictEqual(await ThirdPartyPasswordless.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(await ThirdPartyPasswordless.getUserByThirdPartyInfo("public", "custom", "user"), undefined);
 
         const app = express();
 
@@ -1049,7 +1049,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyPasswordless.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdPartyPasswordless.getUserByThirdPartyInfo("public", "custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);

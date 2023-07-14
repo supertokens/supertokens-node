@@ -129,8 +129,8 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
-        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
+        await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 
@@ -1226,12 +1226,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId, "test@gmail.com");
+        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, "test@gmail.com");
 
-        await EmailVerification.revokeEmailVerificationTokens(userId);
+        await EmailVerification.revokeEmailVerificationTokens("public", userId);
 
         {
-            let response = await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+            let response = await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
             assert.equal(response.status, "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR");
         }
     });
@@ -1272,9 +1272,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        const verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        const verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
 
-        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+        await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         assert(await EmailVerification.isEmailVerified(userId));
 
@@ -1361,11 +1361,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("testuserid"), { status: "OK" });
+        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("public", "testuserid"), {
+            status: "OK",
+        });
 
         let caughtError;
         try {
-            await EmailVerification.revokeEmailVerificationTokens("nouserid");
+            await EmailVerification.revokeEmailVerificationTokens("public", "nouserid");
         } catch (err) {
             caughtError = err;
         }
@@ -1424,8 +1426,8 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = response.body.user.id;
         let infoFromResponse = extractInfoFromResponse(response);
         let antiCsrfToken = infoFromResponse.antiCsrf;
-        let token = await EmailVerification.createEmailVerificationToken(userId);
-        await EmailVerification.verifyEmailUsingToken(token.token);
+        let token = await EmailVerification.createEmailVerificationToken("public", userId);
+        await EmailVerification.verifyEmailUsingToken("public", token.token);
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, antiCsrfToken, userId);
         infoFromResponse = extractInfoFromResponse(response);
         assert.strictEqual(response.statusCode, 200);

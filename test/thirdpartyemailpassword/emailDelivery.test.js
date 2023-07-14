@@ -57,7 +57,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         let appName = undefined;
         let email = undefined;
@@ -113,7 +113,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         let appName = undefined;
         let email = undefined;
@@ -186,7 +186,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -260,7 +260,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         assert.strictEqual(email, undefined);
         assert.strictEqual(passwordResetURL, undefined);
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -312,6 +312,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(errorHandler());
 
         await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "custom-provider",
             "test-user-id",
             "test@example.com"
@@ -373,7 +374,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         process.env.TEST_MODE = "production";
 
@@ -477,7 +478,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -523,12 +524,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -582,12 +583,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -660,12 +661,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         process.env.TEST_MODE = "production";
@@ -765,12 +766,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         await supertest(app)

@@ -79,18 +79,21 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
         });
 
         let user1 = await Passwordless.consumeCode({
+            tenantId: "public",
             preAuthSessionId: code1.preAuthSessionId,
             deviceId: code1.deviceId,
             userInputCode: "123456",
             tenantId: "t1",
         });
         let user2 = await Passwordless.consumeCode({
+            tenantId: "public",
             preAuthSessionId: code2.preAuthSessionId,
             deviceId: code2.deviceId,
             userInputCode: "456789",
             tenantId: "t2",
         });
         let user3 = await Passwordless.consumeCode({
+            tenantId: "public",
             preAuthSessionId: code3.preAuthSessionId,
             deviceId: code3.deviceId,
             userInputCode: "789123",

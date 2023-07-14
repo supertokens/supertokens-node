@@ -64,6 +64,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
                 "google",
                 "tpId",
                 "test@example.com"
@@ -79,7 +80,12 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // sign in and check that the userId in the response is the externalId
-            let response = await ThirdPartyRecipe.manuallyCreateOrUpdateUser("google", "tpId", "test@example.com");
+            let response = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "tpId",
+                "test@example.com"
+            );
 
             assert.strictEqual(response.status, "OK");
             assert.strictEqual(response.createdNewUser, false);
@@ -130,6 +136,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
                 "google",
                 "tpId",
                 "test@example.com"
@@ -195,6 +202,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
             // create a thirdParty user
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
                 "google",
                 "tpId",
                 "test@example.com"
@@ -211,7 +219,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // retrieve the user
-            let response = await ThirdPartyRecipe.getUsersByEmail("test@example.com");
+            let response = await ThirdPartyRecipe.getUsersByEmail("public", "test@example.com");
             assert.strictEqual(response.length, 1);
             assert.strictEqual(response[0].id, externalId);
         });
@@ -262,6 +270,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const thirdPartyId = "google";
             const thirdPartyUserId = "tpId";
             let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
                 thirdPartyId,
                 thirdPartyUserId,
                 "test@example.com"
@@ -278,7 +287,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // retrieve the user
-            let response = await ThirdPartyRecipe.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+            let response = await ThirdPartyRecipe.getUserByThirdPartyInfo("public", thirdPartyId, thirdPartyUserId);
             assert.ok(response != undefined);
             assert.strictEqual(response.id, externalId);
         });

@@ -60,7 +60,7 @@ describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js
         await Multitenancy.createOrUpdateTenant("t2", { emailPasswordEnabled: true });
         await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
 
-        const user = await EmailPassword.signUp("test@example.com", "password1");
+        const user = await EmailPassword.signUp("public", "test@example.com", "password1");
         const userId = user.user.id;
 
         await Multitenancy.associateUserToTenant("t1", userId);
@@ -71,24 +71,24 @@ describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js
         await UserRolesRecipe.createNewRoleOrAddPermissions("role2", []);
         await UserRolesRecipe.createNewRoleOrAddPermissions("role3", []);
 
-        await UserRolesRecipe.addRoleToUser(userId, "role1", "t1");
-        await UserRolesRecipe.addRoleToUser(userId, "role2", "t1");
-        await UserRolesRecipe.addRoleToUser(userId, "role2", "t2");
-        await UserRolesRecipe.addRoleToUser(userId, "role3", "t2");
-        await UserRolesRecipe.addRoleToUser(userId, "role3", "t3");
-        await UserRolesRecipe.addRoleToUser(userId, "role1", "t3");
+        await UserRolesRecipe.addRoleToUser("t1", userId, "role1");
+        await UserRolesRecipe.addRoleToUser("t1", userId, "role2");
+        await UserRolesRecipe.addRoleToUser("t2", userId, "role2");
+        await UserRolesRecipe.addRoleToUser("t2", userId, "role3");
+        await UserRolesRecipe.addRoleToUser("t3", userId, "role3");
+        await UserRolesRecipe.addRoleToUser("t3", userId, "role1");
 
-        let rolesResponse = await UserRolesRecipe.getRolesForUser(userId, "t1");
+        let rolesResponse = await UserRolesRecipe.getRolesForUser("t1", userId);
         assert(rolesResponse.roles.length === 2);
         assert(rolesResponse.roles.includes("role1"));
         assert(rolesResponse.roles.includes("role2"));
 
-        rolesResponse = await UserRolesRecipe.getRolesForUser(userId, "t2");
+        rolesResponse = await UserRolesRecipe.getRolesForUser("t2", userId);
         assert(rolesResponse.roles.length === 2);
         assert(rolesResponse.roles.includes("role2"));
         assert(rolesResponse.roles.includes("role3"));
 
-        rolesResponse = await UserRolesRecipe.getRolesForUser(userId, "t3");
+        rolesResponse = await UserRolesRecipe.getRolesForUser("t3", userId);
         assert(rolesResponse.roles.length === 2);
         assert(rolesResponse.roles.includes("role1"));
         assert(rolesResponse.roles.includes("role3"));

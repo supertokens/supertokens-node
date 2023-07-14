@@ -97,7 +97,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("google");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -202,7 +202,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("google");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -280,7 +280,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("google");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "google");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "google");
@@ -359,7 +359,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("facebook");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "facebook");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "facebook");
@@ -463,7 +463,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("facebook");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "facebook");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "facebook");
@@ -540,7 +540,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("github");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -647,7 +647,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("github");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -727,7 +727,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("github");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "github");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "github");
@@ -808,7 +808,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("apple");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -922,7 +922,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("apple");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -1007,7 +1007,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             return;
         }
 
-        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("apple");
+        let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "apple");
         let providerInfo = providerRes.provider;
 
         assert.strictEqual(providerInfo.id, "apple");
@@ -1085,7 +1085,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
         });
 
         try {
-            let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("apple");
+            let providerRes = await ThirdPartyPasswordless.thirdPartyGetProvider("public", "apple");
             let providerInfo = providerRes.provider;
             assert(false);
         } catch (err) {

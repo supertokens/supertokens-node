@@ -139,8 +139,8 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
-        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId);
+        await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 

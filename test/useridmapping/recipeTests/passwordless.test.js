@@ -58,12 +58,14 @@ describe(`userIdMapping with passwordless: ${printPath(
             // create a Passwordless user
             const email = "test@example.com";
             const codeInfo = await PasswordlessRecipe.createCode({
+                tenantId: "public",
                 email,
             });
 
             assert.strictEqual(codeInfo.status, "OK");
 
             const consumeCodeResponse = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -82,12 +84,14 @@ describe(`userIdMapping with passwordless: ${printPath(
 
             // sign in again and check and the externalId is returned
             const codeInfo_2 = await PasswordlessRecipe.createCode({
+                tenantId: "public",
                 email,
             });
 
             assert.strictEqual(codeInfo_2.status, "OK");
 
             const consumeCodeResponse_2 = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_2.preAuthSessionId,
                 userInputCode: codeInfo_2.userInputCode,
                 deviceId: codeInfo_2.deviceId,
@@ -135,12 +139,14 @@ describe(`userIdMapping with passwordless: ${printPath(
             // create a Passwordless user
             const email = "test@example.com";
             const codeInfo = await PasswordlessRecipe.createCode({
+                tenantId: "public",
                 email,
             });
 
             assert.strictEqual(codeInfo.status, "OK");
 
             const consumeCodeResponse = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -202,12 +208,14 @@ describe(`userIdMapping with passwordless: ${printPath(
             // create a Passwordless user
             const email = "test@example.com";
             const codeInfo = await PasswordlessRecipe.createCode({
+                tenantId: "public",
                 email,
             });
 
             assert.strictEqual(codeInfo.status, "OK");
 
             const consumeCodeResponse = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -225,6 +233,7 @@ describe(`userIdMapping with passwordless: ${printPath(
             });
 
             let response = await PasswordlessRecipe.getUserByEmail({
+                tenantId: "public",
                 email,
             });
             assert.ok(response !== undefined);
@@ -269,12 +278,14 @@ describe(`userIdMapping with passwordless: ${printPath(
             // create a Passwordless user
             const phoneNumber = "+911234566789";
             const codeInfo = await PasswordlessRecipe.createCode({
+                tenantId: "public",
                 phoneNumber,
             });
 
             assert.strictEqual(codeInfo.status, "OK");
 
             const consumeCodeResponse = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -292,6 +303,7 @@ describe(`userIdMapping with passwordless: ${printPath(
             });
 
             let response = await PasswordlessRecipe.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber,
             });
             assert.ok(response !== undefined);
@@ -336,12 +348,14 @@ describe(`userIdMapping with passwordless: ${printPath(
             // create a Passwordless user
             const phoneNumber = "+911234566789";
             const codeInfo = await PasswordlessRecipe.createCode({
+                tenantId: "public",
                 phoneNumber,
             });
 
             assert.strictEqual(codeInfo.status, "OK");
 
             const consumeCodeResponse = await PasswordlessRecipe.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -367,6 +381,7 @@ describe(`userIdMapping with passwordless: ${printPath(
 
             // retrieve user
             let response = await PasswordlessRecipe.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber,
             });
             assert.strictEqual(response.id, externalId);

@@ -1488,6 +1488,7 @@ describe(`config tests: ${printPath("[test/passwordless/config.test.js]")}`, fun
         assert(userCodeSent === customCode);
 
         let createNewCodeForDeviceResponse = await Passwordless.createNewCodeForDevice({
+            tenantId: "public",
             deviceId: createCodeResponse.deviceId,
             userInputCode: customCode,
         });

@@ -65,7 +65,7 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 const email = "test@example.com";
                 const password = "testPass123";
 
-                let signUpResponse = await ThirdPartyEmailPasswordRecipe.emailPasswordSignUp(email, password);
+                let signUpResponse = await ThirdPartyEmailPasswordRecipe.emailPasswordSignUp("public", email, password);
                 assert.strictEqual(signUpResponse.status, "OK");
                 let user = signUpResponse.user;
                 let superTokensUserId = user.id;
@@ -91,6 +91,7 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 const email = "test2@example.com";
 
                 let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartyManuallyCreateOrUpdateUser(
+                    "public",
                     "google",
                     "tpId",
                     email

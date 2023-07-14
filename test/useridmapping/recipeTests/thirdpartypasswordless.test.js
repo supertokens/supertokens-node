@@ -72,6 +72,7 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 const email = "test2@example.com";
                 // create a new ThirdParty user
                 let signUpResponse = await ThirdPartyPasswordlessRecipe.thirdPartyManuallyCreateOrUpdateUser(
+                    "public",
                     "google",
                     "tpId",
                     email
@@ -99,12 +100,14 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 // create a Passwordless user
                 const phoneNumber = "+911234566789";
                 const codeInfo = await ThirdPartyPasswordlessRecipe.createCode({
+                    tenantId: "public",
                     phoneNumber,
                 });
 
                 assert.strictEqual(codeInfo.status, "OK");
 
                 const consumeCodeResponse = await ThirdPartyPasswordlessRecipe.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: codeInfo.preAuthSessionId,
                     userInputCode: codeInfo.userInputCode,
                     deviceId: codeInfo.deviceId,

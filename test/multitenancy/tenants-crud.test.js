@@ -314,7 +314,7 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         await Multitenancy.createOrUpdateTenant("t2", { emailPasswordEnabled: true });
         await Multitenancy.createOrUpdateTenant("t3", { emailPasswordEnabled: true });
 
-        const user = await EmailPassword.signUp("test@example.com", "password1");
+        const user = await EmailPassword.signUp("public", "test@example.com", "password1");
         const userId = user.user.id;
 
         await Multitenancy.associateUserToTenant("t1", userId);

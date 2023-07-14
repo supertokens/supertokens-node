@@ -1464,6 +1464,7 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
         assert(userCodeSent === customCode);
 
         let createNewCodeForDeviceResponse = await ThirdPartyPasswordless.createNewCodeForDevice({
+            tenantId: "public",
             deviceId: createCodeResponse.deviceId,
             userInputCode: customCode,
         });

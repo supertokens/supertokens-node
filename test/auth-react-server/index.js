@@ -193,7 +193,7 @@ app.get("/unverifyEmail", verifySession(), async (req, res) => {
 app.post("/setRole", verifySession(), async (req, res) => {
     let session = req.session;
     await UserRoles.createNewRoleOrAddPermissions(req.body.role, req.body.permissions);
-    await UserRoles.addRoleToUser(session.getUserId(), req.body.role);
+    await UserRoles.addRoleToUser("public", session.getUserId(), req.body.role);
     await session.fetchAndSetClaim(UserRoles.UserRoleClaim);
     await session.fetchAndSetClaim(UserRoles.PermissionClaim);
     res.send({ status: "OK" });

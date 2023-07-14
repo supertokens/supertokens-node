@@ -677,7 +677,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(
+            await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user"),
+            undefined
+        );
 
         const app = express();
 
@@ -710,7 +713,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
@@ -753,6 +756,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 1);
 
         await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "google",
             "randomUserId",
             "test@example.com"
@@ -765,13 +769,14 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         await signUPRequest(app, "random1@gmail.com", "validpass123");
 
-        let usersOldest = await STExpress.getUsersOldestFirst();
+        let usersOldest = await STExpress.getUsersOldestFirst({ tenantId: "public" });
         assert(usersOldest.nextPaginationToken === undefined);
         assert(usersOldest.users.length === 3);
         assert(usersOldest.users[0].recipeId === "emailpassword");
         assert(usersOldest.users[0].user.email === "random@gmail.com");
 
         let usersNewest = await STExpress.getUsersNewestFirst({
+            tenantId: "public",
             limit: 2,
         });
         assert(usersNewest.nextPaginationToken !== undefined);
@@ -780,6 +785,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert(usersNewest.users[0].user.email === "random1@gmail.com");
 
         let usersNewest2 = await STExpress.getUsersNewestFirst({
+            tenantId: "public",
             paginationToken: usersNewest.nextPaginationToken,
         });
         assert(usersNewest2.nextPaginationToken === undefined);
@@ -824,7 +830,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(
+            await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user"),
+            undefined
+        );
 
         const app = express();
 
@@ -858,7 +867,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             assert.strictEqual(response.statusCode, 200);
 
             let signUpUserInfo = response.body.user;
-            let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
+            let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("public", "custom", "user");
 
             assert.strictEqual(userInfo.email, signUpUserInfo.email);
             assert.strictEqual(userInfo.id, signUpUserInfo.id);
