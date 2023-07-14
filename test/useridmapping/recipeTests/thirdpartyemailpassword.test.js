@@ -91,6 +91,7 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 const email = "test2@example.com";
 
                 let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartyManuallyCreateOrUpdateUser(
+                    "public",
                     "google",
                     "tpId",
                     email

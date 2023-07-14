@@ -185,7 +185,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             });
 
             // sign in, check that the userId retrieved is the external userId
-            let signInResponse = await EmailPasswordRecipe.signIn(email, password);
+            let signInResponse = await EmailPasswordRecipe.signIn("public", email, password);
             assert.strictEqual(signInResponse.status, "OK");
             assert.strictEqual(signInResponse.user.id, externalId);
         });
@@ -248,7 +248,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             assert.strictEqual(resetPasswordUsingTokenResponse.userId, externalId);
 
             // check that the password is reset by signing in
-            let response = await EmailPasswordRecipe.signIn(email, newPassword);
+            let response = await EmailPasswordRecipe.signIn("public", email, newPassword);
             assert.strictEqual(response.status, "OK");
             assert.strictEqual(response.user.id, externalId);
         });
@@ -311,7 +311,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
                 // sign in with the new email
                 {
-                    const response = await EmailPasswordRecipe.signIn(updatedEmail, password);
+                    const response = await EmailPasswordRecipe.signIn("public", updatedEmail, password);
                     assert.strictEqual(response.status, "OK");
                     assert.strictEqual(response.user.id, externalId);
                 }
@@ -330,7 +330,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
                 // sign in with new password
                 {
-                    const response = await EmailPasswordRecipe.signIn(updatedEmail, updatedPassword);
+                    const response = await EmailPasswordRecipe.signIn("public", updatedEmail, updatedPassword);
                     assert.strictEqual(response.status, "OK");
                     assert.strictEqual(response.user.id, externalId);
                 }

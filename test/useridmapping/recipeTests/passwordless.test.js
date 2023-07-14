@@ -303,6 +303,7 @@ describe(`userIdMapping with passwordless: ${printPath(
             });
 
             let response = await PasswordlessRecipe.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber,
             });
             assert.ok(response !== undefined);
@@ -380,6 +381,7 @@ describe(`userIdMapping with passwordless: ${printPath(
 
             // retrieve user
             let response = await PasswordlessRecipe.getUserByPhoneNumber({
+                tenantId: "public",
                 phoneNumber,
             });
             assert.strictEqual(response.id, externalId);

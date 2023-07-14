@@ -100,6 +100,7 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 // create a Passwordless user
                 const phoneNumber = "+911234566789";
                 const codeInfo = await ThirdPartyPasswordlessRecipe.createCode({
+                    tenantId: "public",
                     phoneNumber,
                 });
 
