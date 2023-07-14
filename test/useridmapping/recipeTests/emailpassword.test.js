@@ -235,12 +235,16 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 externalUserId: externalId,
             });
             // create the password resestToken
-            let createResetPasswordTokenResponse = await EmailPasswordRecipe.createResetPasswordToken(externalId);
+            let createResetPasswordTokenResponse = await EmailPasswordRecipe.createResetPasswordToken(
+                "public",
+                externalId
+            );
             assert.strictEqual(createResetPasswordTokenResponse.status, "OK");
 
             // reset the password
             const newPassword = "newTestPass123";
             let resetPasswordUsingTokenResponse = await EmailPasswordRecipe.resetPasswordUsingToken(
+                "public",
                 createResetPasswordTokenResponse.token,
                 newPassword
             );
