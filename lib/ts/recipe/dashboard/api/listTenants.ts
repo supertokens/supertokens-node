@@ -28,8 +28,6 @@ type TenantListTenantType = {
         enabled: boolean;
         providers: ProviderConfig[];
     };
-    // This optional any is to allow deleting the key before sending the response to the frontend
-    coreConfig?: any;
 };
 
 export type Response = {
@@ -53,9 +51,11 @@ export default async function listTenants(
     for (let i = 0; i < tenantsRes.tenants.length; i++) {
         let currentTenant = tenantsRes.tenants[i];
         let modifiedTenant: TenantListTenantType = {
-            ...currentTenant,
+            tenantId: currentTenant.tenantId,
+            emailPassword: currentTenant.emailPassword,
+            passwordless: currentTenant.passwordless,
+            thirdParty: currentTenant.thirdParty,
         };
-        delete modifiedTenant["coreConfig"];
         finalTenants.push(modifiedTenant);
     }
 
