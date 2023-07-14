@@ -72,7 +72,7 @@ export const userPasswordPut = async (
             };
         }
 
-        const passwordResetToken = await EmailPassword.createResetPasswordToken(userId, tenantId, userContext);
+        const passwordResetToken = await EmailPassword.createResetPasswordToken(tenantId, userId, userContext);
 
         if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
             // Techincally it can but its an edge case so we assume that it wont
@@ -80,9 +80,9 @@ export const userPasswordPut = async (
         }
 
         const passwordResetResponse = await EmailPassword.resetPasswordUsingToken(
+            tenantId,
             passwordResetToken.token,
             newPassword,
-            tenantId,
             userContext
         );
 
@@ -108,7 +108,7 @@ export const userPasswordPut = async (
         };
     }
 
-    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(userId, tenantId, userContext);
+    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(tenantId, userId, userContext);
 
     if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
         // Techincally it can but its an edge case so we assume that it wont
@@ -116,9 +116,9 @@ export const userPasswordPut = async (
     }
 
     const passwordResetResponse = await ThirdPartyEmailPassword.resetPasswordUsingToken(
+        tenantId,
         passwordResetToken.token,
         newPassword,
-        tenantId,
         userContext
     );
 
