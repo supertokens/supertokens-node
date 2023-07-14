@@ -16,22 +16,23 @@ import { APIInterface, APIOptions } from "../types";
 import Multitenancy from "../../multitenancy";
 import { ProviderConfig } from "../../thirdparty/types";
 
+type TenantListTenantType = {
+    tenantId: string;
+    emailPassword: {
+        enabled: boolean;
+    };
+    passwordless: {
+        enabled: boolean;
+    };
+    thirdParty: {
+        enabled: boolean;
+        providers: ProviderConfig[];
+    };
+};
+
 export type Response = {
     status: "OK";
-    tenants: {
-        tenantId: string;
-        emailPassword: {
-            enabled: boolean;
-        };
-        passwordless: {
-            enabled: boolean;
-        };
-        thirdParty: {
-            enabled: boolean;
-            providers: ProviderConfig[];
-        };
-        coreConfig: { [key: string]: any };
-    }[];
+    tenants: TenantListTenantType[];
 };
 
 export default async function listTenants(
@@ -41,5 +42,25 @@ export default async function listTenants(
     userContext: any
 ): Promise<Response> {
     let tenantsRes = await Multitenancy.listAllTenants(userContext);
-    return tenantsRes;
+    let finalTenants: TenantListTenantType[] = [];
+
+    if (tenantsRes.status !== "OK") {
+        return tenantsRes;
+    }
+
+    for (let i = 0; i < tenantsRes.tenants.length; i++) {
+        let currentTenant = tenantsRes.tenants[i];
+        let modifiedTenant: TenantListTenantType = {
+            tenantId: currentTenant.tenantId,
+            emailPassword: currentTenant.emailPassword,
+            passwordless: currentTenant.passwordless,
+            thirdParty: currentTenant.thirdParty,
+        };
+        finalTenants.push(modifiedTenant);
+    }
+
+    return {
+        status: "OK",
+        tenants: finalTenants,
+    };
 }
