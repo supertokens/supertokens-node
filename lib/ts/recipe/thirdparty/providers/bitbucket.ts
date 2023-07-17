@@ -14,6 +14,8 @@
  */
 
 import { ProviderInput, TypeProvider } from "../types";
+import { doGetRequest } from "./utils";
+
 import NewProvider from "./custom";
 
 export default function Bitbucket(input: ProviderInput): TypeProvider {
@@ -29,11 +31,87 @@ export default function Bitbucket(input: ProviderInput): TypeProvider {
         input.config.tokenEndpoint = "https://bitbucket.org/site/oauth2/access_token";
     }
 
-    if (input.config.userInfoEndpoint === undefined) {
-        input.config.userInfoEndpoint = "https://api.bitbucket.org/2.0/user";
+    if (input.config.authorizationEndpointQueryParams === undefined) {
+        input.config.authorizationEndpointQueryParams = {
+            audience: "api.atlassian.com",
+        };
     }
 
-    // TODO overrides and working of this
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.scope === undefined) {
+                config.scope = ["account", "email"];
+            }
+
+            return config;
+        };
+
+        originalImplementation.getUserInfo = async function (input) {
+            const accessToken = input.oAuthTokens.access_token;
+
+            if (accessToken === undefined) {
+                throw new Error("Access token not found");
+            }
+
+            const headers: { [key: string]: string } = {
+                Authorization: `Bearer ${accessToken}`,
+            };
+            let rawUserInfoFromProvider: {
+                fromUserInfoAPI: any;
+                fromIdTokenPayload: any;
+            } = {
+                fromUserInfoAPI: {},
+                fromIdTokenPayload: {},
+            };
+
+            const userInfoFromAccessToken = await doGetRequest(
+                "https://api.bitbucket.org/2.0/user",
+                undefined,
+                headers
+            );
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+
+            const userInfoFromEmail = await doGetRequest(
+                "https://api.bitbucket.org/2.0/user/emails",
+                undefined,
+                headers
+            );
+
+            rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail;
+
+            let email = undefined;
+            let isVerified = false;
+            for (const emailInfo of userInfoFromEmail.values) {
+                if (emailInfo.is_primary) {
+                    email = emailInfo.email;
+                    isVerified = emailInfo.is_confirmed;
+                }
+            }
+
+            return {
+                thirdPartyUserId: rawUserInfoFromProvider.fromUserInfoAPI.uuid,
+                email:
+                    email === undefined
+                        ? undefined
+                        : {
+                              id: email,
+                              isVerified,
+                          },
+                rawUserInfoFromProvider,
+            };
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
 
     return NewProvider(input);
 }
