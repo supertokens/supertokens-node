@@ -133,6 +133,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             emailVerified: "email_verified",
             ...input.config.userInfoMap?.fromIdTokenPayload,
         },
+        ...input.config.userInfoMap,
     };
 
     if (input.config.generateFakeEmail === undefined) {
