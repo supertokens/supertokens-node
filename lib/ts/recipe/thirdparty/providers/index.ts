@@ -22,4 +22,4 @@ export let GoogleWorkspaces = ProviderGoogleWorkspaces;
 export let Linkedin = ProviderLinkedin;
 export let Okta = ProviderOkta;
 export let Bitbucket = ProviderBitbucket;
-export let GitLab = ProviderGitlab;
+export let Gitlab = ProviderGitlab;

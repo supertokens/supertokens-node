@@ -18,99 +18,135 @@ import NewProvider from "./custom";
 // import fetch from "cross-fetch";
 // import NormalisedURLDomain from "../../../normalisedURLDomain";
 
-// TODO implement
-export default function GitLab(input: ProviderInput): TypeProvider {
-    // const id = "gitlab";
+export default function Gitlab(input: ProviderInput): TypeProvider {
+    if (input.config.name === undefined) {
+        input.config.name = "Gitlab";
+    }
 
-    // function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-    //     let baseUrl =
-    //         config.gitlabBaseUrl === undefined
-    //             ? "https://gitlab.com" // no traling slash cause we add that in the path
-    //             : new NormalisedURLDomain(config.gitlabBaseUrl).getAsStringDangerous();
-    //     let accessTokenAPIURL = baseUrl + "/oauth/token";
-    //     let accessTokenAPIParams: { [key: string]: string } = {
-    //         client_id: config.clientId,
-    //         client_secret: config.clientSecret,
-    //         grant_type: "authorization_code",
-    //     };
-    //     if (authCodeFromRequest !== undefined) {
-    //         accessTokenAPIParams.code = authCodeFromRequest;
-    //     }
-    //     if (redirectURI !== undefined) {
-    //         accessTokenAPIParams.redirect_uri = redirectURI;
-    //     }
-    //     let authorisationRedirectURL = baseUrl + "/oauth/authorize";
-    //     let scopes = ["read_user"];
-    //     if (config.scope !== undefined) {
-    //         scopes = config.scope;
-    //         scopes = Array.from(new Set(scopes));
-    //     }
-    //     let additionalParams =
-    //         config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
-    //             ? {}
-    //             : config.authorisationRedirect.params;
-    //     let authorizationRedirectParams: { [key: string]: string } = {
-    //         scope: scopes.join(" "),
-    //         response_type: "code",
-    //         client_id: config.clientId,
-    //         ...additionalParams,
-    //     };
+    if (input.config.oidcDiscoveryEndpoint === undefined) {
+        input.config.oidcDiscoveryEndpoint = "https://gitlab.com";
+    }
 
-    //     async function getProfileInfo(accessTokenAPIResponse: {
-    //         access_token: string;
-    //         expires_in: number;
-    //         token_type: string;
-    //         refresh_token?: string;
-    //     }) {
-    //         let accessToken = accessTokenAPIResponse.access_token;
-    //         let authHeader = `Bearer ${accessToken}`;
-    //         let response = await fetch(baseUrl + "/api/v4/user", {
-    //             method: "get",
-    //             headers: {
-    //                 Authorization: authHeader,
-    //             },
-    //         });
-    //         if (response.status >= 400) {
-    //             throw response;
-    //         }
-    //         let userInfo = await response.json();
-    //         let id = userInfo.id + "";
-    //         let email = userInfo.email;
-    //         if (email === undefined || email === null) {
-    //             return {
-    //                 id,
-    //             };
-    //         }
-    //         let isVerified = userInfo.confirmed_at !== null && userInfo.confirmed_at !== undefined;
-    //         return {
-    //             id,
-    //             email: {
-    //                 id: email,
-    //                 isVerified,
-    //             },
-    //         };
-    //     }
+    const oOverride = input.override;
 
-    //     return {
-    //         accessTokenAPI: {
-    //             url: accessTokenAPIURL,
-    //             params: accessTokenAPIParams,
-    //         },
-    //         authorisationRedirect: {
-    //             url: authorisationRedirectURL,
-    //             params: authorizationRedirectParams,
-    //         },
-    //         getProfileInfo,
-    //         getClientId: () => {
-    //             return config.clientId;
-    //         },
-    //     };
-    // }
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
 
-    // return {
-    //     id,
-    //     get,
-    //     isDefault: config.isDefault,
-    // };
+            if (config.scope === undefined) {
+                config.scope = ["openid", "email"];
+            }
+
+            if (config.oidcDiscoveryEndpoint === undefined) {
+                if (config.additionalConfig !== undefined && config.additionalConfig.gitlabBaseUrl !== undefined) {
+                    config.oidcDiscoveryEndpoint = config.additionalConfig.gitlabBaseUrl;
+                } else {
+                    config.oidcDiscoveryEndpoint = "https://gitlab.com";
+                }
+            }
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
     return NewProvider(input);
 }
+// const id = "gitlab";
+
+// function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
+//     let baseUrl =
+//         config.gitlabBaseUrl === undefined
+//             ? "https://gitlab.com" // no traling slash cause we add that in the path
+//             : new NormalisedURLDomain(config.gitlabBaseUrl).getAsStringDangerous();
+//     let accessTokenAPIURL = baseUrl + "/oauth/token";
+//     let accessTokenAPIParams: { [key: string]: string } = {
+//         client_id: config.clientId,
+//         client_secret: config.clientSecret,
+//         grant_type: "authorization_code",
+//     };
+//     if (authCodeFromRequest !== undefined) {
+//         accessTokenAPIParams.code = authCodeFromRequest;
+//     }
+//     if (redirectURI !== undefined) {
+//         accessTokenAPIParams.redirect_uri = redirectURI;
+//     }
+//     let authorisationRedirectURL = baseUrl + "/oauth/authorize";
+//     let scopes = ["read_user"];
+//     if (config.scope !== undefined) {
+//         scopes = config.scope;
+//         scopes = Array.from(new Set(scopes));
+//     }
+//     let additionalParams =
+//         config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
+//             ? {}
+//             : config.authorisationRedirect.params;
+//     let authorizationRedirectParams: { [key: string]: string } = {
+//         scope: scopes.join(" "),
+//         response_type: "code",
+//         client_id: config.clientId,
+//         ...additionalParams,
+//     };
+
+//     async function getProfileInfo(accessTokenAPIResponse: {
+//         access_token: string;
+//         expires_in: number;
+//         token_type: string;
+//         refresh_token?: string;
+//     }) {
+//         let accessToken = accessTokenAPIResponse.access_token;
+//         let authHeader = `Bearer ${accessToken}`;
+//         let response = await fetch(baseUrl + "/api/v4/user", {
+//             method: "get",
+//             headers: {
+//                 Authorization: authHeader,
+//             },
+//         });
+//         if (response.status >= 400) {
+//             throw response;
+//         }
+//         let userInfo = await response.json();
+//         let id = userInfo.id + "";
+//         let email = userInfo.email;
+//         if (email === undefined || email === null) {
+//             return {
+//                 id,
+//             };
+//         }
+//         let isVerified = userInfo.confirmed_at !== null && userInfo.confirmed_at !== undefined;
+//         return {
+//             id,
+//             email: {
+//                 id: email,
+//                 isVerified,
+//             },
+//         };
+//     }
+
+//     return {
+//         accessTokenAPI: {
+//             url: accessTokenAPIURL,
+//             params: accessTokenAPIParams,
+//         },
+//         authorisationRedirect: {
+//             url: authorisationRedirectURL,
+//             params: authorizationRedirectParams,
+//         },
+//         getProfileInfo,
+//         getClientId: () => {
+//             return config.clientId;
+//         },
+//     };
+// }
+
+// return {
+//     id,
+//     get,
+//     isDefault: config.isDefault,
+// };
