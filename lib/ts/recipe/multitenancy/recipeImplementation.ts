@@ -34,6 +34,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 {}
             );
 
+            if (response.status === "TENANT_NOT_FOUND_ERROR") {
+                return undefined;
+            }
+
             return response;
         },
 

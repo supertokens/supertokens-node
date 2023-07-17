@@ -74,9 +74,7 @@ export default class Wrapper {
               };
               coreConfig: { [key: string]: any };
           }
-        | {
-              status: "TENANT_NOT_FOUND_ERROR";
-          }
+        | undefined
     > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.getTenant({

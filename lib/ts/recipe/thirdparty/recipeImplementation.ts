@@ -117,7 +117,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
             const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
 
-            if (tenantConfig.status === "TENANT_NOT_FOUND_ERROR") {
+            if (tenantConfig === undefined) {
                 throw new STError({
                     type: "BAD_INPUT_ERROR",
                     message: "Tenant not found",

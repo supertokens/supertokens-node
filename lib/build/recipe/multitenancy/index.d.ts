@@ -47,9 +47,7 @@ export default class Wrapper {
                   [key: string]: any;
               };
           }
-        | {
-              status: "TENANT_NOT_FOUND_ERROR";
-          }
+        | undefined
     >;
     static listAllTenants(
         userContext?: any

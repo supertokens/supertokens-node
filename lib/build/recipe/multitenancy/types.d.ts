@@ -67,9 +67,7 @@ export declare type RecipeInterface = {
                   [key: string]: any;
               };
           }
-        | {
-              status: "TENANT_NOT_FOUND_ERROR";
-          }
+        | undefined
     >;
     listAllTenants: (input: {
         userContext: any;

@@ -10,7 +10,7 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
-            if (tenantConfigRes.status === "TENANT_NOT_FOUND_ERROR") {
+            if (tenantConfigRes === undefined) {
                 throw new STError({
                     type: "BAD_INPUT_ERROR",
                     message: "Tenant not found",
