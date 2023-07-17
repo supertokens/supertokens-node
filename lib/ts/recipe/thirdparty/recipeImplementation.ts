@@ -3,6 +3,7 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
 import MultitenancyRecipe from "../multitenancy/recipe";
+import STError from "./error";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
@@ -115,6 +116,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
         getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {
             const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
             const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
+
+            if (tenantConfig.status === "TENANT_NOT_FOUND_ERROR") {
+                throw new STError({
+                    type: "BAD_INPUT_ERROR",
+                    message: "Tenant not found",
+                });
+            }
 
             const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
                 tenantConfig.thirdParty.providers,

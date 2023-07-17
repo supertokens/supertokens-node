@@ -1,5 +1,6 @@
 import { APIInterface } from "../";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
+import STError from "../error";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -8,6 +9,13 @@ export default function getAPIInterface(): APIInterface {
                 tenantId,
                 userContext,
             });
+
+            if (tenantConfigRes.status === "TENANT_NOT_FOUND_ERROR") {
+                throw new STError({
+                    type: "BAD_INPUT_ERROR",
+                    message: "Tenant not found",
+                });
+            }
 
             const providerInputsFromStatic = options.staticThirdPartyProviders;
             const providerConfigsFromCore = tenantConfigRes.thirdParty.providers;

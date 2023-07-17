@@ -59,20 +59,25 @@ export default class Wrapper {
     static async getTenant(
         tenantId: string,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        emailPassword: {
-            enabled: boolean;
-        };
-        passwordless: {
-            enabled: boolean;
-        };
-        thirdParty: {
-            enabled: boolean;
-            providers: ProviderConfig[];
-        };
-        coreConfig: { [key: string]: any };
-    }> {
+    ): Promise<
+        | {
+              status: "OK";
+              emailPassword: {
+                  enabled: boolean;
+              };
+              passwordless: {
+                  enabled: boolean;
+              };
+              thirdParty: {
+                  enabled: boolean;
+                  providers: ProviderConfig[];
+              };
+              coreConfig: { [key: string]: any };
+          }
+        | {
+              status: "TENANT_NOT_FOUND_ERROR";
+          }
+    > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.getTenant({
             tenantId,
