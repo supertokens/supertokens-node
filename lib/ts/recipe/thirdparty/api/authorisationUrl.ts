@@ -52,7 +52,14 @@ export default async function authorisationUrlAPI(
         userContext,
     });
 
-    const provider = providerResponse.provider;
+    if (providerResponse === undefined) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: `the provider ${thirdPartyId} could not be found in the configuration`,
+        });
+    }
+
+    const provider = providerResponse;
     let result = await apiImplementation.authorisationUrlGET({
         provider,
         redirectURIOnProviderDashboard,

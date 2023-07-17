@@ -19,7 +19,6 @@ import {
 } from "../types";
 import NewProvider from "./custom";
 import { discoverOIDCEndpoints } from "./utils";
-import STError from "../error";
 
 export function getProviderConfigForClient(
     providerConfig: ProviderConfig,
@@ -70,7 +69,7 @@ export async function findAndCreateProviderInstance(
     thirdPartyId: string,
     clientType: string | undefined,
     userContext: any
-): Promise<TypeProvider> {
+): Promise<TypeProvider | undefined> {
     for (const providerInput of providers) {
         if (providerInput.config.thirdPartyId === thirdPartyId) {
             let providerInstance = createProvider(providerInput);
@@ -78,10 +77,7 @@ export async function findAndCreateProviderInstance(
             return providerInstance;
         }
     }
-    throw new STError({
-        type: STError.BAD_INPUT_ERROR,
-        message: `the provider ${thirdPartyId} could not be found in the configuration`,
-    });
+    return undefined;
 }
 
 export function mergeConfig(staticConfig: ProviderConfig, coreConfig: ProviderConfig): ProviderConfig {

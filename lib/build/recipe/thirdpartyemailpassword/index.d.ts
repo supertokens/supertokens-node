@@ -12,10 +12,7 @@ export default class Wrapper {
         thirdPartyId: string,
         clientType: string | undefined,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        provider: TypeProvider;
-    }>;
+    ): Promise<TypeProvider | undefined>;
     static thirdPartyManuallyCreateOrUpdateUser(
         tenantId: string,
         thirdPartyId: string,

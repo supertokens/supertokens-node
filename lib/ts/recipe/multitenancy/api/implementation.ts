@@ -1,6 +1,5 @@
 import { APIInterface } from "../";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "../../thirdparty/providers/configUtils";
-import STError from "../error";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -11,10 +10,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (tenantConfigRes === undefined) {
-                throw new STError({
-                    type: "BAD_INPUT_ERROR",
-                    message: "Tenant not found",
-                });
+                throw new Error("Tenant not found");
             }
 
             const providerInputsFromStatic = options.staticThirdPartyProviders;
@@ -35,6 +31,11 @@ export default function getAPIInterface(): APIInterface {
                         clientType,
                         userContext
                     );
+
+                    if (providerInstance === undefined) {
+                        throw new Error("should never come here"); // because creating instance from the merged provider list itself
+                    }
+
                     finalProviderList.push({
                         id: providerInstance.id,
                         name: providerInstance.config.name,
