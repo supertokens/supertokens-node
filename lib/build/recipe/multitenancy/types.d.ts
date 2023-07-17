@@ -50,22 +50,25 @@ export declare type RecipeInterface = {
     getTenant: (input: {
         tenantId: string;
         userContext: any;
-    }) => Promise<{
-        status: "OK";
-        emailPassword: {
-            enabled: boolean;
-        };
-        passwordless: {
-            enabled: boolean;
-        };
-        thirdParty: {
-            enabled: boolean;
-            providers: ProviderConfig[];
-        };
-        coreConfig: {
-            [key: string]: any;
-        };
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              emailPassword: {
+                  enabled: boolean;
+              };
+              passwordless: {
+                  enabled: boolean;
+              };
+              thirdParty: {
+                  enabled: boolean;
+                  providers: ProviderConfig[];
+              };
+              coreConfig: {
+                  [key: string]: any;
+              };
+          }
+        | undefined
+    >;
     listAllTenants: (input: {
         userContext: any;
     }) => Promise<{

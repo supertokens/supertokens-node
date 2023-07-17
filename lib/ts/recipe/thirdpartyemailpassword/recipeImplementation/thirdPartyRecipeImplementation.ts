@@ -91,7 +91,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             clientType?: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; provider: TypeProvider }> {
+        }): Promise<TypeProvider | undefined> {
             return await recipeInterface.thirdPartyGetProvider(input);
         },
 

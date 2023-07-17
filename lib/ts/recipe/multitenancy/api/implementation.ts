@@ -9,6 +9,10 @@ export default function getAPIInterface(): APIInterface {
                 userContext,
             });
 
+            if (tenantConfigRes === undefined) {
+                throw new Error("Tenant not found");
+            }
+
             const providerInputsFromStatic = options.staticThirdPartyProviders;
             const providerConfigsFromCore = tenantConfigRes.thirdParty.providers;
 
@@ -27,6 +31,11 @@ export default function getAPIInterface(): APIInterface {
                         clientType,
                         userContext
                     );
+
+                    if (providerInstance === undefined) {
+                        throw new Error("should never come here"); // because creating instance from the merged provider list itself
+                    }
+
                     finalProviderList.push({
                         id: providerInstance.id,
                         name: providerInstance.config.name,

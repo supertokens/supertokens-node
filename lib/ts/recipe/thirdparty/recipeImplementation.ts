@@ -116,6 +116,10 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
             const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
 
+            if (tenantConfig === undefined) {
+                throw new Error("Tenant not found");
+            }
+
             const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
                 tenantConfig.thirdParty.providers,
                 providers
@@ -127,10 +131,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 clientType,
                 userContext
             );
-            return {
-                status: "OK",
-                provider,
-            };
+
+            return provider;
         },
     };
 }

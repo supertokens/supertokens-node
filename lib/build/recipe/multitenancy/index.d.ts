@@ -30,22 +30,25 @@ export default class Wrapper {
     static getTenant(
         tenantId: string,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        emailPassword: {
-            enabled: boolean;
-        };
-        passwordless: {
-            enabled: boolean;
-        };
-        thirdParty: {
-            enabled: boolean;
-            providers: ProviderConfig[];
-        };
-        coreConfig: {
-            [key: string]: any;
-        };
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              emailPassword: {
+                  enabled: boolean;
+              };
+              passwordless: {
+                  enabled: boolean;
+              };
+              thirdParty: {
+                  enabled: boolean;
+                  providers: ProviderConfig[];
+              };
+              coreConfig: {
+                  [key: string]: any;
+              };
+          }
+        | undefined
+    >;
     static listAllTenants(
         userContext?: any
     ): Promise<{

@@ -192,7 +192,7 @@ export type RecipeInterface = {
         clientType?: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; provider: TypeProvider }>;
+    }): Promise<TypeProvider | undefined>;
 
     createCode: (
         input: (
