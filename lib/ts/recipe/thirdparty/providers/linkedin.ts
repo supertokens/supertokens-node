@@ -44,7 +44,7 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
         };
 
         originalImplementation.getUserInfo = async function (input) {
-            const accessToken = input.oAuthTokens.accessToken;
+            const accessToken = input.oAuthTokens.access_token;
 
             if (accessToken === undefined) {
                 throw new Error("Access token not found");
@@ -65,8 +65,12 @@ export default function Linkedin(input: ProviderInput): TypeProvider {
             const userInfoFromAccessToken = await doGetRequest("https://api.linkedin.com/v2/me", undefined, headers);
             rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
 
-            const emailAPIURL = "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))";
-            const userInfoFromEmail = await doGetRequest(emailAPIURL, undefined, headers);
+            const emailAPIURL = "https://api.linkedin.com/v2/emailAddress";
+            const userInfoFromEmail = await doGetRequest(
+                emailAPIURL,
+                { q: "members", projection: "(elements*(handle~))" },
+                headers
+            );
 
             if (userInfoFromEmail.elements && userInfoFromEmail.elements.length > 0) {
                 rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail.elements[0]["handle~"].emailAddress;

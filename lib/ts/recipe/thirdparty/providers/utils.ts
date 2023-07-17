@@ -27,10 +27,10 @@ export async function doGetRequest(
     });
 
     if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.text()}`);
+        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
+        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
     }
-    const respData = await response.json();
+    const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
     return respData;
@@ -60,10 +60,10 @@ export async function doPostRequest(
     });
 
     if (response.status >= 400) {
-        logDebugMessage(`Received response with status ${response.status} and body ${await response.text()}`);
-        throw new Error(`Received response with status ${response.status} and body ${await response.text()}`);
+        logDebugMessage(`Received response with status ${response.status} and body ${await response.clone().text()}`);
+        throw new Error(`Received response with status ${response.status} and body ${await response.clone().text()}`);
     }
-    const respData = await response.json();
+    const respData = await response.clone().json();
 
     logDebugMessage(`Received response with status ${response.status} and body ${JSON.stringify(respData)}`);
     return respData;
