@@ -1,9 +1,9 @@
+"use client";
 import React from "react";
 import Head from "next/head";
 import styles from "../styles/ProtectedHome.module.css";
-import SessionReact from "supertokens-auth-react/recipe/session";
-import SuperTokensReact from "supertokens-auth-react";
-import { useSessionContext } from "supertokens-auth-react/recipe/session";
+import { SessionAuth, useSessionContext, signOut } from "supertokens-auth-react/recipe/session";
+import { redirectToAuth } from "supertokens-auth-react";
 import { BlogsIcon, CelebrateIcon, GuideIcon, SeparatorLine, SignOutIcon } from "../assets/images";
 import Image from "next/image";
 import { recipeDetails } from "../config/frontendConfig";
@@ -18,8 +18,8 @@ function ProtectedPage() {
     const session = useSessionContext();
 
     async function logoutClicked() {
-        await SessionReact.signOut();
-        SuperTokensReact.redirectToAuth();
+        await signOut();
+        redirectToAuth();
     }
 
     async function fetchUserData() {
@@ -89,10 +89,10 @@ function ProtectedPage() {
     );
 }
 
-export default function Home(props) {
+export default function Home() {
     return (
-        <SessionReact.SessionAuth>
+        <SessionAuth>
             <ProtectedPage />
-        </SessionReact.SessionAuth>
+        </SessionAuth>
     );
 }
