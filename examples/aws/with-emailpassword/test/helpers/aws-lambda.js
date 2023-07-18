@@ -36,7 +36,6 @@ const setup_aws = async () => {
         FunctionName: process.env.LAMBDA_FUNCTION_NAME || "aws-test-function",
     });
     const getRes = await client.send(getCommand);
-    console.log(getRes);
 
     if (getRes["$metadata"].httpStatusCode !== 200) {
         throw new Error("Function not found");
@@ -78,7 +77,6 @@ const setup_aws = async () => {
     });
 
     const createResp = await client.send(createLayerCommand);
-    console.log(createResp);
 
     const updateConfig = new UpdateFunctionConfigurationCommand({
         FunctionName: FUNCTION_NAME,
@@ -91,6 +89,5 @@ const setup_aws = async () => {
     });
 
     const updateConfigResp = await client.send(updateConfig);
-    console.log(updateConfigResp);
 };
 module.exports = { setup_aws };
