@@ -20,6 +20,7 @@ jobs:
             NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.example_testing_supabase_public_url }}
             NEXT_PUBLIC_SUPABASE_KEY: ${{ secrets.example_testing_supabase_public_key }}
             SUPABASE_SIGNING_SECRET: ${{ secrets.example_testing_supabase_signing_secret }}
+            LAMBDA_FUNCTION_NAME: ${{ secrets.aws_function_name }}
         defaults:
             run:
                 working-directory: ${{ matrix.examplePath }}

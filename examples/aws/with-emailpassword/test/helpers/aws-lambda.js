@@ -33,7 +33,7 @@ const FUNCTION_NAME = "aws-test-function";
 const setup_aws = async () => {
     const client = new LambdaClient({ region: "ap-south-1" });
     const getCommand = new GetFunctionCommand({
-        FunctionName: "aws-test-function",
+        FunctionName: process.env.LAMBDA_FUNCTION_NAME || "aws-test-function",
     });
     const getRes = await client.send(getCommand);
     console.log(getRes);
@@ -83,7 +83,7 @@ const setup_aws = async () => {
     const updateConfig = new UpdateFunctionConfigurationCommand({
         FunctionName: FUNCTION_NAME,
         Layers: [createResp.LayerVersionArn],
-        Handler: "auth.handler",
+        Handler: "index.handler",
         CompatibleArchitectures: [
             // CompatibleArchitectures
             "arm64",
