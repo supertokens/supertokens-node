@@ -21,6 +21,7 @@ jobs:
             NEXT_PUBLIC_SUPABASE_KEY: ${{ secrets.example_testing_supabase_public_key }}
             SUPABASE_SIGNING_SECRET: ${{ secrets.example_testing_supabase_signing_secret }}
             LAMBDA_FUNCTION_NAME: ${{ secrets.aws_function_name }}
+            CURR_BRANCH: ${GITHUB_HEAD_REF}
         defaults:
             run:
                 working-directory: ${{ matrix.examplePath }}
