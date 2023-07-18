@@ -71,9 +71,12 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
+
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
                         {
@@ -172,8 +175,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -253,8 +258,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -333,8 +340,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -436,8 +445,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -514,8 +525,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -617,8 +630,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -700,8 +715,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -782,8 +799,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -892,8 +911,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -980,8 +1001,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -1063,8 +1086,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [
@@ -1108,8 +1133,10 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 recipeList: [
                     ThirdPartyPasswordless.init({
                         contactMethod: "EMAIL",
-                        createAndSendCustomEmail: (input) => {
-                            return;
+                        emailDelivery: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
                         },
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                         providers: [

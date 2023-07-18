@@ -50,8 +50,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -159,8 +161,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -224,8 +228,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -331,8 +337,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -423,8 +431,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -475,8 +485,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -547,8 +559,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -616,8 +630,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -685,8 +701,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -755,8 +773,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -809,8 +829,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -863,8 +885,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -919,8 +943,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -963,8 +989,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],

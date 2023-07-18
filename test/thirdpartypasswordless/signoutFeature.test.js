@@ -83,8 +83,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -172,8 +174,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -231,8 +235,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -285,8 +291,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],

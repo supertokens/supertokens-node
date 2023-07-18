@@ -80,8 +80,10 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -159,8 +161,10 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -238,8 +242,10 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],

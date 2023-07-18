@@ -168,8 +168,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     override: {
@@ -244,11 +246,20 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             },
             recipeList: [
                 Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
-                EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
+                    },
+                }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider6],
@@ -359,8 +370,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider6],
@@ -409,11 +422,20 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             },
             recipeList: [
                 Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
-                EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
+                    },
+                }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -534,13 +556,22 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider5],
                 }),
-                EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
+                    },
+                }),
             ],
         });
 
@@ -616,8 +647,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -675,8 +708,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider3],
@@ -736,8 +771,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider4],
@@ -803,8 +840,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -932,8 +971,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -1001,8 +1042,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
