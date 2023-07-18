@@ -25,7 +25,7 @@ function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoRespo
     }
 
     const result: UserInfo = {
-        thirdPartyUserId: rawUserInfoResponse.fromUserInfoAPI.user.id,
+        thirdPartyUserId: `${rawUserInfoResponse.fromUserInfoAPI.user.id}`, // coz user.id is a number
         rawUserInfoFromProvider: {
             fromIdTokenPayload: {},
             fromUserInfoAPI: {},

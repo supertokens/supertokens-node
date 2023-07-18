@@ -1,3 +1,3 @@
 // @ts-nocheck
 import { TypeProvider, ProviderInput } from "../types";
-export default function GitLab(input: ProviderInput): TypeProvider;
+export default function Gitlab(input: ProviderInput): TypeProvider;

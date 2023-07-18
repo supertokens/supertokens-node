@@ -22,4 +22,4 @@ export declare let GoogleWorkspaces: typeof ProviderGoogleWorkspaces;
 export declare let Linkedin: typeof ProviderLinkedin;
 export declare let Okta: typeof ProviderOkta;
 export declare let Bitbucket: typeof ProviderBitbucket;
-export declare let GitLab: typeof ProviderGitlab;
+export declare let Gitlab: typeof ProviderGitlab;

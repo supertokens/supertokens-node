@@ -1,10 +1,12 @@
 import {
     ActiveDirectory,
     Apple,
+    Bitbucket,
     BoxySAML,
     Discord,
     Facebook,
     Github,
+    Gitlab,
     Google,
     GoogleWorkspaces,
     Linkedin,
@@ -43,12 +45,16 @@ function createProvider(input: ProviderInput): TypeProvider {
         return ActiveDirectory(input);
     } else if (input.config.thirdPartyId.startsWith("apple")) {
         return Apple(input);
+    } else if (input.config.thirdPartyId.startsWith("bitbucket")) {
+        return Bitbucket(input);
     } else if (input.config.thirdPartyId.startsWith("discord")) {
         return Discord(input);
     } else if (input.config.thirdPartyId.startsWith("facebook")) {
         return Facebook(input);
     } else if (input.config.thirdPartyId.startsWith("github")) {
         return Github(input);
+    } else if (input.config.thirdPartyId.startsWith("gitlab")) {
+        return Gitlab(input);
     } else if (input.config.thirdPartyId.startsWith("google-workspaces")) {
         return GoogleWorkspaces(input);
     } else if (input.config.thirdPartyId.startsWith("google")) {
