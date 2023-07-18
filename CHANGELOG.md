@@ -7,6 +7,260 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [15.0.0]
+
+### Added
+
+-   Added Multitenancy Recipe & always initialized by default.
+-   Adds Multitenancy support to all the recipes
+-   Added new Social login providers - LinkedIn
+-   Added new Multi-tenant SSO providers - Okta, Active Directory, Boxy SAML
+-   All APIs handled by Supertokens middleware can have an optional `tenantId` prefixed in the path. e.g. <basePath>/<tenantId>/signinup
+
+### Breaking changes
+
+-   `getUsersOldestFirst` & `getUsersNewestFirst` has mandatory parameter `tenantId`. Pass `'public'` if not using multitenancy.
+-   Added mandatory field `tenantId` to `EmailDeliveryInterface` and `SmsDeliveryInterface`
+-   Added mandatory parameter/field `tenantId` to API interfaces, Recipe interfaces and Recipe functions. Pass `'public'` if not using multitenancy.
+-   Removed deprecated config `createAndSendCustomEmail` and `createAndSendCustomTextMessage`.
+-   Added `tenantId` to `fetchValue` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
+-   TypeProvider interface is re-written
+-   In the thirdparty, thirdpartyemailpassword and thirdpartypasswordless, the providers array accepts `[]ProviderInput` instead of `[]TypeProvider`
+-   Updated `authorisationUrlGET` API
+    -   Changed: Doesn't accept `clientId` anymore and accepts `clientType` instead to determine the matching config
+    -   Added: optional `pkceCodeVerifier` in the response, to support PKCE
+-   Updated `signInUpPOST` API
+    -   Removed: `clientId`, `redirectURI`, `authCodeResponse` and `code` from the input
+    -   Instead,
+        -   accepts `clientType` to determine the matching config
+        -   One of redirectURIInfo (for code flow) or oAuthTokens (for token flow) is required
+-   Updated `appleRedirectHandlerPOST`
+    -   to accept all the form fields instead of just the code
+    -   to use redirect URI encoded in the `state` parameter instead of using the websiteDomain config.
+    -   to use HTTP 303 instead of javascript based redirection.
+-   Updated `signInUp` recipe interface function in thirdparty with new parameters:
+    -   `oAuthTokens` - contains all the tokens (access_token, id_token, etc.) as returned by the provider
+    -   `rawUserInfoFromProvider` - contains all the user profile info as returned by the provider
+-   Added `manuallyCreateOrUpdateUser` recipe function in thirdparty recipe instead, to be used in place of `signInUp`
+
+### Migration
+
+1. To call any recipe function that has `tenantId` added to it, pass `'public`'
+
+Before:
+
+```ts
+EmailPassword.signUp("test@example.com", "password");
+```
+
+After:
+
+```ts
+EmailPassword.signUp("public", "test@example.com", "password");
+```
+
+2. Input for provider array change as follows:
+
+Before:
+
+```ts
+let googleProvider = thirdParty.Google({
+    clientID: "...",
+    clientSecret: "...",
+});
+```
+
+After:
+
+```ts
+let googleProvider = {
+    config: {
+        thirdPartyId: "google",
+        clients: [{ clientId: "...", clientSecret: "..." }],
+    },
+};
+```
+
+3. Single instance with multiple clients of each provider instead of multiple instances of them. Also use `clientType` to differentiate them. `clientType` passed from the frontend will be used to determine the right config.
+
+Before:
+
+```ts
+let providers = [
+    thirdParty.Google({
+        clientID: "clientid1",
+        clientSecret: "...",
+    }),
+    thirdParty.Google({
+        clientID: "clientid2",
+        clientSecret: "...",
+    }),
+];
+```
+
+After:
+
+```ts
+let providers = [
+    {
+        config: {
+            thirdPartyId: "google",
+            clients: [
+                { clientId: "clientid1", clientSecret: "..." },
+                { clientId: "clientid2", clientSecret: "..." },
+            ],
+        },
+    },
+];
+```
+
+4. Change in the implementation of custom providers
+
+-   All config is part of `ProviderInput`
+-   To update `authorisationRedirect.Params` dynamically, `getAuthorisationRedirectURL` must be overridden
+-   To provide implementation for `getProfileInfo`
+    -   either use `userInfoEndpoint`, `userInfoEndpointQueryParams` and `userInfoMap` to fetch the user info from the provider
+    -   or specify custom implementation in an override for `getUserInfo`
+
+Before:
+
+```ts
+let customProvider = {
+    id: "custom",
+    get: (redirectURI, authCodeFromRequest) => {
+        return {
+            accessTokenAPI: {
+                url: "...",
+                params: {},
+            },
+            authorisationRedirect: {
+                url: "...",
+                params: {},
+            },
+            getClientId: () => {
+                return "...";
+            },
+            getProfileInfo: async (accessTokenAPIResponse) => {
+                return {
+                    id: "...",
+                    email: {
+                        id: "...",
+                        isVerified: true,
+                    },
+                };
+            },
+        };
+    },
+};
+```
+
+After:
+
+```ts
+let customProvider = {
+    config: {
+        thirdPartyID: "custom",
+        clients: [
+            {
+                clientId: "...",
+                clientSecret: "...",
+            },
+        ],
+        authorizationEndpoint: "...",
+        authorizationEndpointQueryParams: {},
+        tokenEndpoint: "...",
+        tokenEndpointBodyParams: {},
+        userInfoEndpoint: "...",
+        userInfoEndpointQueryParams: {},
+        userInfoMap: {
+            fromUserInfoAPI: {
+                userId: "id",
+                email: "email",
+                emailVerified: "email_verified",
+            },
+        },
+    },
+};
+```
+
+Also, if the custom provider supports openid, it can automatically discover the endpoints
+
+```ts
+let customProvider = {
+    config: {
+        thirdPartyID: "custom",
+        clients: [
+            {
+                clientId: "...",
+                clientSecret: "...",
+            },
+        ],
+        oidcDiscoveryEndpoint: "...",
+        userInfoMap: {
+            fromUserInfoAPI: {
+                userId: "id",
+                email: "email",
+                emailVerified: "email_verified",
+            },
+        },
+    },
+};
+```
+
+Note: the SDK will fetch the oauth2 endpints from the providered OIDC discovery endpoint url + '/.well-known/openid-configuration'
+
+5. Any of the functions in the TypeProvider can be overridden for custom implementation
+
+```ts
+let customProvider = {
+    config: {
+        thirdPartyID: "custom",
+        clients: [
+            {
+                clientId: "...",
+                clientSecret: "...",
+            },
+        ],
+        oidcDiscoveryEndpoint: "...",
+        userInfoMap: {
+            fromUserInfoAPI: {
+                userId: "id",
+                email: "email",
+                emailVerified: "email_verified",
+            },
+        },
+    },
+    override: (originalImplementation) => {
+        return {
+            ...originalImplementation,
+            getAuthorisationRedirectURL: async (input) => {
+                let result = await originalImplementation.getAuthorisationRedirectURL(input);
+                // ...
+                return result;
+            },
+
+            exchangeAuthCodeForOAuthTokens: async (input) => {
+                let result = await originalImplementation.exchangeAuthCodeForOAuthTokens(input);
+                // ...
+                return result;
+            },
+
+            getUserInfo: async (input) => {
+                let result = await originalImplementation.getUserInfo(input);
+                // ...
+                return result;
+            },
+        };
+    },
+};
+```
+
+### Changes
+
+-   Adds optional param `tenantId` to `getUserCount` which returns total count across all tenants if not passed.
+-   Adds protected prop `tId` to the accessToken payload
+-   Adds `includesAny` claim validator to `PrimitiveArrayClaim`
+
 ### Fixes
 
 -   Fixed an issue where certain Dashboard API routes would return a 404 for Hapi
