@@ -1,6 +1,7 @@
 mkdir lambda && cd lambda
 npm init -y
-npm i -s supertokens-node @middy/core @middy/http-cors
+npm i -s @middy/core @middy/http-cors
+npm i file:../../../../../lib/build
 mkdir nodejs
 cp -r node_modules nodejs
 cp package.json nodejs
