@@ -182,4 +182,46 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         let provider6 = await ThirdParty.getProvider("t3", "linkedin", undefined);
         assert(provider6.config.thirdPartyId === "linkedin");
     });
+
+    it("test getProvider merges the config from static and core 1", async function () {
+        await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "staticclientid",
+                                            clientSecret: "secret",
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("public", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "coreclientid", clientSecret: "coresecret" }],
+        });
+
+        let thirdPartyInfo = await ThirdParty.getProvider("public", "google");
+        assert.equal(thirdPartyInfo.config.clients[0].clientId, "coreclientid");
+        assert.equal(thirdPartyInfo.config.clients[0].clientSecret, "coresecret");
+    });
 });
