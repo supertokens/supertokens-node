@@ -91,5 +91,6 @@ const setup_aws = async () => {
     });
 
     const updateConfigResp = await client.send(updateConfig);
+    console.log(updateConfigResp);
 };
 module.exports = { setup_aws };
