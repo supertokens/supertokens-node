@@ -16,16 +16,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added new Social login providers - LinkedIn
 -   Added new Multi-tenant SSO providers - Okta, Active Directory, Boxy SAML
 -   All APIs handled by Supertokens middleware can have an optional `tenantId` prefixed in the path. e.g. <basePath>/<tenantId>/signinup
+-   Following recipe functions have been added:
+    -   `EmailPassword.createResetPasswordLink`
+    -   `EmailPassword.sendResetPasswordEmail`
+    -   `EmailVerification.createEmailVerificationLink`
+    -   `EmailVerification.sendEmailVerificationEmail`
+    -   `ThirdParty.getProvider`
+    -   `ThirdPartyEmailPassword.thirdPartyGetProvider`
+    -   `ThirdPartyEmailPassword.createResetPasswordLink`
+    -   `ThirdPartyEmailPassword.sendResetPasswordEmail`
+    -   `ThirdPartyPasswordless.thirdPartyGetProvider`
+    -   `ThirdPartyPasswordless.createResetPasswordLink`
+    -   `ThirdPartyPasswordless.sendResetPasswordEmail`
 
 ### Breaking changes
 
 -   `getUsersOldestFirst` & `getUsersNewestFirst` has mandatory parameter `tenantId`. Pass `'public'` if not using multitenancy.
--   Added mandatory field `tenantId` to `EmailDeliveryInterface` and `SmsDeliveryInterface`
--   Added mandatory parameter/field `tenantId` to API interfaces, Recipe interfaces and Recipe functions. Pass `'public'` if not using multitenancy.
+-   Added mandatory field `tenantId` to `EmailDeliveryInterface` and `SmsDeliveryInterface`. Pass `'public'` if not using multitenancy.
+-   The following recipe functions have mandatory `tenantId` as the first parameter or the input object. Pass `'public'` if not using multitenancy.
+    -   `EmailPassword.signUp`
+    -   `EmailPassword.signIn`
+    -   `EmailPassword.getUserByEmail`
+    -   `EmailPassword.createResetPasswordToken`
+    -   `EmailPassword.resetPasswordUsingToken`
+    -   `EmailVerification.createEmailVerificationToken`
+    -   `EmailVerification.verifyEmailUsingToken`
+    -   `EmailVerification.revokeEmailVerificationTokens`
+    -   `Passwordless.createCode`
+    -   `Passwordless.createNewCodeForDevice`
+    -   `Passwordless.getUserByEmail`
+    -   `Passwordless.getUserByPhoneNumber`
+    -   `Passwordless.updateUser`
+    -   `Passwordless.revokeCode`
+    -   `Passwordless.listCodesByEmail`
+    -   `Passwordless.listCodesByPhoneNumber`
+    -   `Passwordless.listCodesByDeviceId`
+    -   `Passwordless.listCodesByPreAuthSessionId`
+    -   `Passwordless.signInUp`
+    -   `Session.createNewSession`
+    -   `Session.createNewSessionWithoutRequestResponse`
+    -   `Session.validateClaimsInJWTPayload`
+    -   `ThirdParty.getUsersByEmail`
+    -   `ThirdParty.getUserByThirdPartyInfo`
+    -   `ThirdPartyEmailPassword.getUserByThirdPartyInfo`
+    -   `ThirdPartyEmailPassword.emailPasswordSignUp`
+    -   `ThirdPartyEmailPassword.emailPasswordSignIn`
+    -   `ThirdPartyEmailPassword.getUsersByEmail`
+    -   `ThirdPartyEmailPassword.createResetPasswordToken`
+    -   `ThirdPartyEmailPassword.resetPasswordUsingToken`
+    -   `ThirdPartyEmailPassword.createEmailVerificationToken`
+    -   `ThirdPartyPasswordless.getUserByThirdPartyInfo`
+    -   `ThirdPartyPasswordless.getUsersByEmail`
+    -   `ThirdPartyPasswordless.createCode`
+    -   `ThirdPartyPasswordless.createNewCodeForDevice`
+    -   `ThirdPartyPasswordless.getUserByPhoneNumber`
+    -   `ThirdPartyPasswordless.updatePasswordlessUser`
+    -   `ThirdPartyPasswordless.revokeCode`
+    -   `ThirdPartyPasswordless.listCodesByEmail`
+    -   `ThirdPartyPasswordless.listCodesByPhoneNumber`
+    -   `ThirdPartyPasswordless.listCodesByDeviceId`
+    -   `ThirdPartyPasswordless.listCodesByPreAuthSessionId`
+    -   `ThirdPartyPasswordless.passwordlessSignInUp`
+    -   `Userroles.addRoleToUser`
+    -   `Userroles.removeUserRole`
+    -   `Userroles.getRolesForUser`
+    -   `Userroles.getUsersThatHaveRole`
 -   Removed deprecated config `createAndSendCustomEmail` and `createAndSendCustomTextMessage`.
 -   Added `tenantId` to `fetchValue` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
--   TypeProvider interface is re-written
--   In the thirdparty, thirdpartyemailpassword and thirdpartypasswordless, the providers array accepts `[]ProviderInput` instead of `[]TypeProvider`
+-   In the thirdparty, thirdpartyemailpassword and thirdpartypasswordless, the providers array accepts `[]ProviderInput` instead of `[]TypeProvider`. TypeProvider interface is re-written. Refer migration section for more info.
 -   Updated `authorisationUrlGET` API
     -   Changed: Doesn't accept `clientId` anymore and accepts `clientType` instead to determine the matching config
     -   Added: optional `pkceCodeVerifier` in the response, to support PKCE
@@ -41,7 +99,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Updated `signInUp` recipe interface function in thirdparty with new parameters:
     -   `oAuthTokens` - contains all the tokens (access_token, id_token, etc.) as returned by the provider
     -   `rawUserInfoFromProvider` - contains all the user profile info as returned by the provider
--   Added `manuallyCreateOrUpdateUser` recipe function in thirdparty recipe instead, to be used in place of `signInUp`
+-   Removed `ThirdParty.signInUp` and added `ThirdParty.manuallyCreateOrUpdateUser` instead.
+-   Removed `ThirdPartyEmailPassword.thirdPartySignInUp` and added `ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser` instead.
+-   Removed `ThirdPartyPasswordless.thirdPartySignInUp` and added `ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser` instead.
+-   Removed Provider functions from ThirdParty, ThirdPartyEmailPassword and ThirdPartyPasswordless. Refer migration section for more info.
+
+### Changes
+
+-   Recipe function changes:
+    -   Added optional `tenantIdForPasswordPolicy` param to `EmailPassword.updateEmailOrPassword`, `ThirdPartyEmailPassword.updateEmailOrPassword`
+    -   Added optional param `tenantId` to `Session.revokeAllSessionsForUser`. If tenantId is undefined, sessions are revoked across all tenants
+    -   Added optional param `tenantId` to `Session.getAllSessionHandlesForUser`. If tenantId is undefined, sessions handles across all tenants are returned
+-   Adds optional param `tenantId` to `getUserCount` which returns total count across all tenants if not passed.
+-   Adds protected prop `tId` to the accessToken payload
+-   Adds `includesAny` claim validator to `PrimitiveArrayClaim`
+
+### Fixes
+
+-   Fixed an issue where certain Dashboard API routes would return a 404 for Hapi
 
 ### Migration
 
@@ -106,8 +181,8 @@ let providers = [
         config: {
             thirdPartyId: "google",
             clients: [
-                { clientId: "clientid1", clientSecret: "..." },
-                { clientId: "clientid2", clientSecret: "..." },
+                { clientType: "web", clientId: "clientid1", clientSecret: "..." },
+                { clientType: "mobile", clientId: "clientid2", clientSecret: "..." },
             ],
         },
     },
@@ -255,15 +330,27 @@ let customProvider = {
 };
 ```
 
-### Changes
+6. To get access token and raw user info from the provider, override the signInUp function
 
--   Adds optional param `tenantId` to `getUserCount` which returns total count across all tenants if not passed.
--   Adds protected prop `tId` to the accessToken payload
--   Adds `includesAny` claim validator to `PrimitiveArrayClaim`
-
-### Fixes
-
--   Fixed an issue where certain Dashboard API routes would return a 404 for Hapi
+```ts
+ThirdParty.init({
+    override: {
+        functions: (oI) => {
+            return {
+                ...oI,
+                signInUp: async (input) => {
+                    let result = await oI.signInUp(input);
+                    // result.oAuthTokens.access_token
+                    // result.oAuthTokens.id_token
+                    // result.rawUserInfoFromProvider.fromUserInfoAPI
+                    // result.rawUserInfoFromProvider.fromIdTokenPayload
+                    return result;
+                },
+            };
+        },
+    },
+});
+```
 
 ## [14.1.3] - 2023-07-03
 
