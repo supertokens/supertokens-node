@@ -74,8 +74,10 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                 Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -129,8 +131,10 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],

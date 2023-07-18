@@ -49,8 +49,10 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByE
         recipeList: [
             ThirdPartyPasswordless.init({
                 contactMethod: "EMAIL",
-                createAndSendCustomEmail: (input) => {
-                    return;
+                emailDelivery: {
+                    sendEmail: async (input) => {
+                        return;
+                    },
                 },
                 flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                 providers: [MockThirdPartyProvider],
@@ -93,8 +95,10 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByE
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [MockThirdPartyProvider, MockThirdPartyProvider2],

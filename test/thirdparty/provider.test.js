@@ -90,7 +90,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "google");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "google");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://oauth2.googleapis.com/token");
@@ -187,7 +187,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "google");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "google");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://oauth2.googleapis.com/token");
@@ -257,7 +257,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "google");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "google");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://oauth2.googleapis.com/token");
@@ -328,7 +328,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "facebook");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "facebook");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://graph.facebook.com/v12.0/oauth/access_token");
@@ -424,7 +424,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "facebook");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "facebook");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://graph.facebook.com/v12.0/oauth/access_token");
@@ -493,7 +493,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "github");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "github");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://github.com/login/oauth/access_token");
@@ -592,7 +592,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "github");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "github");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://github.com/login/oauth/access_token");
@@ -664,7 +664,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "github");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "github");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://github.com/login/oauth/access_token");
@@ -737,7 +737,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "apple");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "apple");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://appleid.apple.com/auth/token");
@@ -843,7 +843,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "apple");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "apple");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://appleid.apple.com/auth/token");
@@ -920,7 +920,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
 
         let providerRes = await ThirdParty.getProvider("public", "apple");
-        let providerInfo = providerRes.provider;
+        let providerInfo = providerRes;
 
         assert.strictEqual(providerInfo.id, "apple");
         assert.strictEqual(providerInfo.config.tokenEndpoint, "https://appleid.apple.com/auth/token");
@@ -994,7 +994,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         try {
             let providerRes = await ThirdParty.getProvider("public", "apple");
-            let providerInfo = providerRes.provider;
+            let providerInfo = providerRes;
             assert(false);
         } catch (err) {
             assert.equal(err.toString(), "Error: error:0909006C:PEM routines:get_name:no start line");

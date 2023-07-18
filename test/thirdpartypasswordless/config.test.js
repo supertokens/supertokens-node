@@ -58,11 +58,15 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -359,8 +363,10 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -470,8 +476,10 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                     ThirdPartyPasswordless.init({
                         contactMethod: "PHONE",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                        createAndSendCustomTextMessage: (input) => {
-                            return;
+                        smsDelivery: {
+                            sendSms: async (input) => {
+                                return;
+                            },
                         },
                         validatePhoneNumber: (phoneNumber) => {
                             isValidatePhoneNumberCalled = true;
@@ -809,8 +817,10 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -851,8 +861,10 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     validateEmailAddress: (email) => {
                         isValidateEmailAddressCalled = true;
@@ -917,8 +929,10 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                     ThirdPartyPasswordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                        createAndSendCustomEmail: (input) => {
-                            return;
+                        emailDelivery: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
                         },
                         validateEmailAddress: (email) => {
                             isValidateEmailAddressCalled = true;
@@ -1512,8 +1526,10 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     override: {
                         apis: (oI) => {
@@ -1577,11 +1593,15 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                     providers: [
                         {
@@ -1623,11 +1643,15 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                     providers: [
                         {

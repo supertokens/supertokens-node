@@ -165,21 +165,63 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         });
 
         let provider1 = await ThirdParty.getProvider("t1", "google", undefined);
-        assert(provider1.provider.config.thirdPartyId === "google");
+        assert(provider1.config.thirdPartyId === "google");
 
         let provider2 = await ThirdParty.getProvider("t1", "facebook", undefined);
-        assert(provider2.provider.config.thirdPartyId === "facebook");
+        assert(provider2.config.thirdPartyId === "facebook");
 
         let provider3 = await ThirdParty.getProvider("t2", "facebook", undefined);
-        assert(provider3.provider.config.thirdPartyId === "facebook");
+        assert(provider3.config.thirdPartyId === "facebook");
 
         let provider4 = await ThirdParty.getProvider("t2", "discord", undefined);
-        assert(provider4.provider.config.thirdPartyId === "discord");
+        assert(provider4.config.thirdPartyId === "discord");
 
         let provider5 = await ThirdParty.getProvider("t3", "discord", undefined);
-        assert(provider5.provider.config.thirdPartyId === "discord");
+        assert(provider5.config.thirdPartyId === "discord");
 
         let provider6 = await ThirdParty.getProvider("t3", "linkedin", undefined);
-        assert(provider6.provider.config.thirdPartyId === "linkedin");
+        assert(provider6.config.thirdPartyId === "linkedin");
+    });
+
+    it("test getProvider merges the config from static and core 1", async function () {
+        await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "staticclientid",
+                                            clientSecret: "secret",
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("public", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "coreclientid", clientSecret: "coresecret" }],
+        });
+
+        let thirdPartyInfo = await ThirdParty.getProvider("public", "google");
+        assert.equal(thirdPartyInfo.config.clients[0].clientId, "coreclientid");
+        assert.equal(thirdPartyInfo.config.clients[0].clientSecret, "coresecret");
     });
 });

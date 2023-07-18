@@ -132,14 +132,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                             },
                         },
                     },
-                    // resetPasswordUsingTokenFeature: {
-
-                    //     // createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
-                    //     //     resetURL = passwordResetURLWithToken.split("?")[0];
-                    //     //     tokenInfo = passwordResetURLWithToken.split("?")[1].split("&")[0];
-                    //     //     ridInfo = passwordResetURLWithToken.split("?")[1].split("&")[1];
-                    //     // },
-                    // },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],

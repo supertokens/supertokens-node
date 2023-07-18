@@ -685,19 +685,6 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                 ThirdpartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: async (input) => {
-                        /**
-                         * when the function is called for the first time,
-                         * it will be for signinup
-                         */
-                        if (sendCustomSMSCalled) {
-                            phoneNumber = input.phoneNumber;
-                            codeLifetime = input.codeLifetime;
-                            urlWithLinkCode = input.urlWithLinkCode;
-                            userInputCode = input.userInputCode;
-                        }
-                        sendCustomSMSCalled = true;
-                    },
                     smsDelivery: {
                         service: {
                             sendSms: async (input) => {
