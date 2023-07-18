@@ -3,10 +3,9 @@ import { EmailPasswordPreBuiltUI } from "supertokens-auth-react/recipe/emailpass
 import Session from "supertokens-auth-react/recipe/session";
 
 export function getApiDomain() {
-    const apiPort = process.env.REACT_APP_API_PORT || 3001;
+    // const apiPort = process.env.REACT_APP_API_PORT || 3001;
     // const apiUrl = process.env.REACT_APP_API_URL || `http://localhost:${apiPort}`;
-    const apiUrl = "https://tmapud1ma2.execute-api.eu-north-1.amazonaws.com/awslambda-test/auth";
-    return apiUrl;
+    return "https://fjo5oq54c9.execute-api.ap-south-1.amazonaws.com";
 }
 
 export function getWebsiteDomain() {
@@ -19,6 +18,8 @@ export const SuperTokensConfig = {
     appInfo: {
         appName: "SuperTokens Demo App",
         apiDomain: getApiDomain(),
+        apiBasePath: "/auth",
+        apiGatewayPath: "/dev",
         websiteDomain: getWebsiteDomain(),
     },
     // recipeList contains all the modules that you want to
