@@ -21,7 +21,6 @@ jobs:
             NEXT_PUBLIC_SUPABASE_KEY: ${{ secrets.example_testing_supabase_public_key }}
             SUPABASE_SIGNING_SECRET: ${{ secrets.example_testing_supabase_signing_secret }}
             LAMBDA_FUNCTION_NAME: ${{ secrets.aws_function_name }}
-            CURR_BRANCH: $GITHUB_BASE_REF
         defaults:
             run:
                 working-directory: ${{ matrix.examplePath }}
@@ -35,6 +34,7 @@ jobs:
                   aws-region: ${{ secrets.AWS_REGION }}
                   role-duration-seconds: 1200
                   role-session-name: Github-action
+            - run: echo $GITHUB_REF_NAME
             - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
             - run: npm install
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
