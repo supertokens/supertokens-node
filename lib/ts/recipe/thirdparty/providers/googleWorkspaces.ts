@@ -63,6 +63,11 @@ export default function GoogleWorkspaces(input: ProviderInput): TypeProvider {
                 ...config.additionalConfig,
             };
 
+            config.authorizationEndpointQueryParams = {
+                ...config.authorizationEndpointQueryParams,
+                hd: config.additionalConfig.hd,
+            };
+
             return config;
         };
 
