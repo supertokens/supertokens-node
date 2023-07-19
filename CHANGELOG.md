@@ -171,241 +171,242 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Migration
 
-#### To call any recipe function that has `tenantId` added to it, pass `'public`'
+-   To call any recipe function that has `tenantId` added to it, pass `'public`'
 
-Before:
+    Before:
 
-```ts
-EmailPassword.signUp("test@example.com", "password");
-```
+    ```ts
+    EmailPassword.signUp("test@example.com", "password");
+    ```
 
-After:
+    After:
 
-```ts
-EmailPassword.signUp("public", "test@example.com", "password");
-```
+    ```ts
+    EmailPassword.signUp("public", "test@example.com", "password");
+    ```
 
-#### Input for provider array change as follows:
+-   Input for provider array change as follows:
 
-Before:
+    Before:
 
-```ts
-let googleProvider = thirdParty.Google({
-    clientID: "...",
-    clientSecret: "...",
-});
-```
-
-After:
-
-```ts
-let googleProvider = {
-    config: {
-        thirdPartyId: "google",
-        clients: [{ clientId: "...", clientSecret: "..." }],
-    },
-};
-```
-
-#### Single instance with multiple clients of each provider instead of multiple instances of them. Also use `clientType` to differentiate them. `clientType` passed from the frontend will be used to determine the right config.
-
-Before:
-
-```ts
-let providers = [
-    thirdParty.Google({
-        clientID: "clientid1",
+    ```ts
+    let googleProvider = thirdParty.Google({
+        clientID: "...",
         clientSecret: "...",
-    }),
-    thirdParty.Google({
-        clientID: "clientid2",
-        clientSecret: "...",
-    }),
-];
-```
+    });
+    ```
 
-After:
+    After:
 
-```ts
-let providers = [
-    {
+    ```ts
+    let googleProvider = {
         config: {
             thirdPartyId: "google",
-            clients: [
-                { clientType: "web", clientId: "clientid1", clientSecret: "..." },
-                { clientType: "mobile", clientId: "clientid2", clientSecret: "..." },
-            ],
+            clients: [{ clientId: "...", clientSecret: "..." }],
         },
-    },
-];
-```
+    };
+    ```
 
-#### Change in the implementation of custom providers
+-   Single instance with multiple clients of each provider instead of multiple instances of them. Also use `clientType` to differentiate them. `clientType` passed from the frontend will be used to determine the right config.
 
--   All config is part of `ProviderInput`
--   To provide implementation for `getProfileInfo`
-    -   either use `userInfoEndpoint`, `userInfoEndpointQueryParams` and `userInfoMap` to fetch the user info from the provider
-    -   or specify custom implementation in an override for `getUserInfo` (override example in the next section)
 
-Before:
+    Before:
 
-```ts
-let customProvider = {
-    id: "custom",
-    get: (redirectURI, authCodeFromRequest) => {
-        return {
-            accessTokenAPI: {
-                url: "...",
-                params: {},
-            },
-            authorisationRedirect: {
-                url: "...",
-                params: {},
-            },
-            getClientId: () => {
-                return "...";
-            },
-            getProfileInfo: async (accessTokenAPIResponse) => {
-                return {
-                    id: "...",
-                    email: {
-                        id: "...",
-                        isVerified: true,
-                    },
-                };
-            },
-        };
-    },
-};
-```
+    ```ts
+    let providers = [
+        thirdParty.Google({
+            clientID: "clientid1",
+            clientSecret: "...",
+        }),
+        thirdParty.Google({
+            clientID: "clientid2",
+            clientSecret: "...",
+        }),
+    ];
+    ```
 
-After:
+    After:
 
-```ts
-let customProvider = {
-    config: {
-        thirdPartyId: "custom",
-        clients: [
-            {
-                clientId: "...",
-                clientSecret: "...",
-            },
-        ],
-        authorizationEndpoint: "...",
-        authorizationEndpointQueryParams: {},
-        tokenEndpoint: "...",
-        tokenEndpointBodyParams: {},
-        userInfoEndpoint: "...",
-        userInfoEndpointQueryParams: {},
-        userInfoMap: {
-            fromUserInfoAPI: {
-                userId: "id",
-                email: "email",
-                emailVerified: "email_verified",
+    ```ts
+    let providers = [
+        {
+            config: {
+                thirdPartyId: "google",
+                clients: [
+                    { clientType: "web", clientId: "clientid1", clientSecret: "..." },
+                    { clientType: "mobile", clientId: "clientid2", clientSecret: "..." },
+                ],
             },
         },
-    },
-};
-```
+    ];
+    ```
 
-Also, if the custom provider supports openid, it can automatically discover the endpoints
+-   Change in the implementation of custom providers
 
-```ts
-let customProvider = {
-    config: {
-        thirdPartyId: "custom",
-        clients: [
-            {
-                clientId: "...",
-                clientSecret: "...",
-            },
-        ],
-        oidcDiscoveryEndpoint: "...",
-        userInfoMap: {
-            fromUserInfoAPI: {
-                userId: "id",
-                email: "email",
-                emailVerified: "email_verified",
-            },
-        },
-    },
-};
-```
+    -   All config is part of `ProviderInput`
+    -   To provide implementation for `getProfileInfo`
+        -   either use `userInfoEndpoint`, `userInfoEndpointQueryParams` and `userInfoMap` to fetch the user info from the provider
+        -   or specify custom implementation in an override for `getUserInfo` (override example in the next section)
 
-Note: The SDK will fetch the oauth2 endpoints from the provider's OIDC discovery endpoint. No need to `/.well-known/openid-configuration` to the `oidcDiscoveryEndpoint` config. For eg. if `oidcDiscoveryEndpoint` is set to `"https://accounts.google.com/"`, the SDK will fetch the endpoints from `"https://accounts.google.com/.well-known/openid-configuration"`
+    Before:
 
-#### Any of the functions in the TypeProvider can be overridden for custom implementation
-
--   Overrides can do the following:
-    -   update params, headers dynamically for the authorization redirect url or in the exchange of code to tokens
-    -   add custom logic to exchange code to tokens
-    -   add custom logic to get the user info
-
-```ts
-let customProvider = {
-    config: {
-        thirdPartyId: "custom",
-        clients: [
-            {
-                clientId: "...",
-                clientSecret: "...",
-            },
-        ],
-        oidcDiscoveryEndpoint: "...",
-        userInfoMap: {
-            fromUserInfoAPI: {
-                userId: "id",
-                email: "email",
-                emailVerified: "email_verified",
-            },
-        },
-    },
-    override: (originalImplementation) => {
-        return {
-            ...originalImplementation,
-            getAuthorisationRedirectURL: async (input) => {
-                let result = await originalImplementation.getAuthorisationRedirectURL(input);
-                // ...
-                return result;
-            },
-
-            exchangeAuthCodeForOAuthTokens: async (input) => {
-                let result = await originalImplementation.exchangeAuthCodeForOAuthTokens(input);
-                // ...
-                return result;
-            },
-
-            getUserInfo: async (input) => {
-                let result = await originalImplementation.getUserInfo(input);
-                // ...
-                return result;
-            },
-        };
-    },
-};
-```
-
-#### To get access token and raw user info from the provider, override the signInUp function
-
-```ts
-ThirdParty.init({
-    override: {
-        functions: (oI) => {
+    ```ts
+    let customProvider = {
+        id: "custom",
+        get: (redirectURI, authCodeFromRequest) => {
             return {
-                ...oI,
-                signInUp: async (input) => {
-                    let result = await oI.signInUp(input);
-                    // result.oAuthTokens.access_token
-                    // result.oAuthTokens.id_token
-                    // result.rawUserInfoFromProvider.fromUserInfoAPI
-                    // result.rawUserInfoFromProvider.fromIdTokenPayload
+                accessTokenAPI: {
+                    url: "...",
+                    params: {},
+                },
+                authorisationRedirect: {
+                    url: "...",
+                    params: {},
+                },
+                getClientId: () => {
+                    return "...";
+                },
+                getProfileInfo: async (accessTokenAPIResponse) => {
+                    return {
+                        id: "...",
+                        email: {
+                            id: "...",
+                            isVerified: true,
+                        },
+                    };
+                },
+            };
+        },
+    };
+    ```
+
+    After:
+
+    ```ts
+    let customProvider = {
+        config: {
+            thirdPartyId: "custom",
+            clients: [
+                {
+                    clientId: "...",
+                    clientSecret: "...",
+                },
+            ],
+            authorizationEndpoint: "...",
+            authorizationEndpointQueryParams: {},
+            tokenEndpoint: "...",
+            tokenEndpointBodyParams: {},
+            userInfoEndpoint: "...",
+            userInfoEndpointQueryParams: {},
+            userInfoMap: {
+                fromUserInfoAPI: {
+                    userId: "id",
+                    email: "email",
+                    emailVerified: "email_verified",
+                },
+            },
+        },
+    };
+    ```
+
+    Also, if the custom provider supports openid, it can automatically discover the endpoints
+
+    ```ts
+    let customProvider = {
+        config: {
+            thirdPartyId: "custom",
+            clients: [
+                {
+                    clientId: "...",
+                    clientSecret: "...",
+                },
+            ],
+            oidcDiscoveryEndpoint: "...",
+            userInfoMap: {
+                fromUserInfoAPI: {
+                    userId: "id",
+                    email: "email",
+                    emailVerified: "email_verified",
+                },
+            },
+        },
+    };
+    ```
+
+    Note: The SDK will fetch the oauth2 endpoints from the provider's OIDC discovery endpoint. No need to `/.well-known/openid-configuration` to the `oidcDiscoveryEndpoint` config. For eg. if `oidcDiscoveryEndpoint` is set to `"https://accounts.google.com/"`, the SDK will fetch the endpoints from `"https://accounts.google.com/.well-known/openid-configuration"`
+
+-   Any of the functions in the TypeProvider can be overridden for custom implementation
+
+    -   Overrides can do the following:
+        -   update params, headers dynamically for the authorization redirect url or in the exchange of code to tokens
+        -   add custom logic to exchange code to tokens
+        -   add custom logic to get the user info
+
+    ```ts
+    let customProvider = {
+        config: {
+            thirdPartyId: "custom",
+            clients: [
+                {
+                    clientId: "...",
+                    clientSecret: "...",
+                },
+            ],
+            oidcDiscoveryEndpoint: "...",
+            userInfoMap: {
+                fromUserInfoAPI: {
+                    userId: "id",
+                    email: "email",
+                    emailVerified: "email_verified",
+                },
+            },
+        },
+        override: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                getAuthorisationRedirectURL: async (input) => {
+                    let result = await originalImplementation.getAuthorisationRedirectURL(input);
+                    // ...
+                    return result;
+                },
+
+                exchangeAuthCodeForOAuthTokens: async (input) => {
+                    let result = await originalImplementation.exchangeAuthCodeForOAuthTokens(input);
+                    // ...
+                    return result;
+                },
+
+                getUserInfo: async (input) => {
+                    let result = await originalImplementation.getUserInfo(input);
+                    // ...
                     return result;
                 },
             };
         },
-    },
-});
-```
+    };
+    ```
+
+-   To get access token and raw user info from the provider, override the signInUp function
+
+    ```ts
+    ThirdParty.init({
+        override: {
+            functions: (oI) => {
+                return {
+                    ...oI,
+                    signInUp: async (input) => {
+                        let result = await oI.signInUp(input);
+                        // result.oAuthTokens.access_token
+                        // result.oAuthTokens.id_token
+                        // result.rawUserInfoFromProvider.fromUserInfoAPI
+                        // result.rawUserInfoFromProvider.fromIdTokenPayload
+                        return result;
+                    },
+                };
+            },
+        },
+    });
+    ```
 
 ## [14.1.3] - 2023-07-03
 
