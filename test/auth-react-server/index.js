@@ -37,6 +37,7 @@ const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassw
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
 const { default: DashboardRaw } = require("../../lib/build/recipe/dashboard/recipe");
+const { default: MultitenancyRaw } = require("../../lib/build/recipe/multitenancy/recipe");
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
@@ -46,10 +47,10 @@ let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, pa
 let jsonParser = bodyParser.json({ limit: "20mb" });
 
 let app = express();
-morgan.token("body", function (req, res) {
-    return JSON.stringify(req.body && req.body["formFields"]);
-});
-app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] - :body"));
+// morgan.token("body", function (req, res) {
+//     return JSON.stringify(req.body && req.body["formFields"]);
+// });
+// app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] - :body"));
 app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
@@ -91,6 +92,43 @@ const formFields = (process.env.MIN_FIELDS && []) || [
         id: "country",
         optional: true,
     },
+];
+
+const providers = [
+    {
+        config: {
+            thirdPartyId: "google",
+            clients: [
+                {
+                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                    clientId: process.env.GOOGLE_CLIENT_ID,
+                },
+            ],
+        },
+    },
+    {
+        config: {
+            thirdPartyId: "github",
+            clients: [
+                {
+                    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+                    clientId: process.env.GITHUB_CLIENT_ID,
+                },
+            ],
+        },
+    },
+    {
+        config: {
+            thirdPartyId: "facebook",
+            clients: [
+                {
+                    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+                    clientId: process.env.FACEBOOK_CLIENT_ID,
+                },
+            ],
+        },
+    },
+    customAuth0Provider(),
 ];
 
 initST();
