@@ -64,7 +64,7 @@ const setup_aws = async () => {
     const date = new Date();
     const layerCode = fs.readFileSync(path.join(__dirname, "lambda", "supertokens-node.zip"));
 
-    let normalise_layer_name = process.env.GITHUB_REF_NAME.replaceAll("/", "+");
+    let normalise_layer_name = process.env.GITHUB_REF_NAME.replaceAll("/", "_");
 
     const createLayerCommand = new PublishLayerVersionCommand({
         LayerName: "st-node-" + normalise_layer_name,
