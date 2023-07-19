@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [15.0.0]
+## [15.0.0] - 2023-07-19
 
 ### Added
 
@@ -103,57 +103,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `consumeCodePOST`
         -   `emailExistsGET`
         -   `phoneNumberExistsGET`
-    -   ThirdParty recipe changes
-        -   Removed `signInUp` and added `manuallyCreateOrUpdateUser` instead in the recipe exposed functions.
-        -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
-            -   `getUsersByEmail`
-            -   `getUserByThirdPartyInfo`
-        -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
-            -   `getUsersByEmail`
-            -   `getUserByThirdPartyInfo`
-            -   `signInUp`
-        -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
-            -   `authorisationUrlGET`
-            -   `signInUpPOST`
-        -   Updated `signInUp` recipe interface function in thirdparty with new parameters:
-            -   `oAuthTokens` - contains all the tokens (access_token, id_token, etc.) as returned by the provider
-            -   `rawUserInfoFromProvider` - contains all the user profile info as returned by the provider
-        -   Updated `authorisationUrlGET` API
-            -   Changed: Doesn't accept `clientId` anymore and accepts `clientType` instead to determine the matching config
-            -   Added: optional `pkceCodeVerifier` in the response, to support PKCE
-        -   Updated `signInUpPOST` API
-            -   Removed: `clientId`, `redirectURI`, `authCodeResponse` and `code` from the input
-            -   Instead,
-                -   accepts `clientType` to determine the matching config
-                -   One of redirectURIInfo (for code flow) or oAuthTokens (for token flow) is required
-        -   Updated `appleRedirectHandlerPOST`
-            -   to accept all the form fields instead of just the code
-            -   to use redirect URI encoded in the `state` parameter instead of using the websiteDomain config.
-            -   to use HTTP 303 instead of javascript based redirection.
-    -   Session recipe changes
-        -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
-            -   `createNewSession`
-            -   `createNewSessionWithoutRequestResponse`
-            -   `validateClaimsInJWTPayload`
-        -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
-            -   `createNewSession`
-            -   `getGlobalClaimValidators`
-        -   Added `tenantId` and `revokeAcrossAllTenants` params to `revokeAllSessionsForUser` in the recipe interface.
-        -   Added `tenantId` and `fetchAcrossAllTenants` params to `getAllSessionHandlesForUser` in the recipe interface.
-        -   Added `getTenantId` function to `SessionContainerInterface`
-        -   Added `tenantId` to `fetchValue` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
-    -   UserRoles recipe changes
-        -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
-            -   `addRoleToUser`
-            -   `removeUserRole`
-            -   `getRolesForUser`
-            -   `getUsersThatHaveRole`
-        -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
-            -   `addRoleToUser`
-            -   `removeUserRole`
-            -   `getRolesForUser`
-            -   `getRolesForUser`
-    -   Similar changes in combination recipes (thirdpartyemailpassword and thirdpartypasswordless) have been made
+-   ThirdParty recipe changes
+    -   Removed `signInUp` and added `manuallyCreateOrUpdateUser` instead in the recipe exposed functions.
+    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+        -   `getUsersByEmail`
+        -   `getUserByThirdPartyInfo`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `getUsersByEmail`
+        -   `getUserByThirdPartyInfo`
+        -   `signInUp`
+    -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `authorisationUrlGET`
+        -   `signInUpPOST`
+    -   Updated `signInUp` recipe interface function in thirdparty with new parameters:
+        -   `oAuthTokens` - contains all the tokens (access_token, id_token, etc.) as returned by the provider
+        -   `rawUserInfoFromProvider` - contains all the user profile info as returned by the provider
+    -   Updated `authorisationUrlGET` API
+        -   Changed: Doesn't accept `clientId` anymore and accepts `clientType` instead to determine the matching config
+        -   Added: optional `pkceCodeVerifier` in the response, to support PKCE
+    -   Updated `signInUpPOST` API
+        -   Removed: `clientId`, `redirectURI`, `authCodeResponse` and `code` from the input
+        -   Instead,
+            -   accepts `clientType` to determine the matching config
+            -   One of redirectURIInfo (for code flow) or oAuthTokens (for token flow) is required
+    -   Updated `appleRedirectHandlerPOST`
+        -   to accept all the form fields instead of just the code
+        -   to use redirect URI encoded in the `state` parameter instead of using the websiteDomain config.
+        -   to use HTTP 303 instead of javascript based redirection.
+-   Session recipe changes
+    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+        -   `createNewSession`
+        -   `createNewSessionWithoutRequestResponse`
+        -   `validateClaimsInJWTPayload`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `createNewSession`
+        -   `getGlobalClaimValidators`
+    -   Added `tenantId` and `revokeAcrossAllTenants` params to `revokeAllSessionsForUser` in the recipe interface.
+    -   Added `tenantId` and `fetchAcrossAllTenants` params to `getAllSessionHandlesForUser` in the recipe interface.
+    -   Added `getTenantId` function to `SessionContainerInterface`
+    -   Added `tenantId` to `fetchValue` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
+-   UserRoles recipe changes
+    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+        -   `addRoleToUser`
+        -   `removeUserRole`
+        -   `getRolesForUser`
+        -   `getUsersThatHaveRole`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `addRoleToUser`
+        -   `removeUserRole`
+        -   `getRolesForUser`
+        -   `getRolesForUser`
+-   Similar changes in combination recipes (thirdpartyemailpassword and thirdpartypasswordless) have been made
 
 ### Changes
 
@@ -171,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Migration
 
-1. To call any recipe function that has `tenantId` added to it, pass `'public`'
+#### To call any recipe function that has `tenantId` added to it, pass `'public`'
 
 Before:
 
@@ -185,7 +185,7 @@ After:
 EmailPassword.signUp("public", "test@example.com", "password");
 ```
 
-2. Input for provider array change as follows:
+#### Input for provider array change as follows:
 
 Before:
 
@@ -207,7 +207,7 @@ let googleProvider = {
 };
 ```
 
-3. Single instance with multiple clients of each provider instead of multiple instances of them. Also use `clientType` to differentiate them. `clientType` passed from the frontend will be used to determine the right config.
+#### Single instance with multiple clients of each provider instead of multiple instances of them. Also use `clientType` to differentiate them. `clientType` passed from the frontend will be used to determine the right config.
 
 Before:
 
@@ -240,13 +240,12 @@ let providers = [
 ];
 ```
 
-4. Change in the implementation of custom providers
+#### Change in the implementation of custom providers
 
 -   All config is part of `ProviderInput`
--   To update `authorisationRedirect.Params` dynamically, `getAuthorisationRedirectURL` must be overridden
 -   To provide implementation for `getProfileInfo`
     -   either use `userInfoEndpoint`, `userInfoEndpointQueryParams` and `userInfoMap` to fetch the user info from the provider
-    -   or specify custom implementation in an override for `getUserInfo`
+    -   or specify custom implementation in an override for `getUserInfo` (override example in the next section)
 
 Before:
 
@@ -333,9 +332,14 @@ let customProvider = {
 };
 ```
 
-Note: the SDK will fetch the oauth2 endpints from the providered OIDC discovery endpoint url + '/.well-known/openid-configuration'
+Note: The SDK will fetch the oauth2 endpoints from the provider's OIDC discovery endpoint. No need to `/.well-known/openid-configuration` to the `oidcDiscoveryEndpoint` config. For eg. if `oidcDiscoveryEndpoint` is set to `"https://accounts.google.com/"`, the SDK will fetch the endpoints from `"https://accounts.google.com/.well-known/openid-configuration"`
 
-5. Any of the functions in the TypeProvider can be overridden for custom implementation
+#### Any of the functions in the TypeProvider can be overridden for custom implementation
+
+-   Overrides can do the following:
+    -   update params, headers dynamically for the authorization redirect url or in the exchange of code to tokens
+    -   add custom logic to exchange code to tokens
+    -   add custom logic to get the user info
 
 ```ts
 let customProvider = {
@@ -381,7 +385,7 @@ let customProvider = {
 };
 ```
 
-6. To get access token and raw user info from the provider, override the signInUp function
+#### To get access token and raw user info from the provider, override the signInUp function
 
 ```ts
 ThirdParty.init({
