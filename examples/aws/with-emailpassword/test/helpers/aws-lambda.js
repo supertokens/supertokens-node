@@ -33,7 +33,7 @@ const FUNCTION_NAME = "aws-test-function";
 const setup_aws = async () => {
     const client = new LambdaClient({ region: "ap-south-1" });
     const getCommand = new GetFunctionCommand({
-        FunctionName: process.env.LAMBDA_FUNCTION_NAME || "aws-test-function",
+        FunctionName: process.env.LAMBDA_FUNCTION_NAME || "supertokens-test",
     });
     const getRes = await client.send(getCommand);
 
