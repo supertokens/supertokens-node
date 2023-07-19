@@ -35,10 +35,12 @@ export default class SessionRecipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
@@ -46,6 +48,7 @@ export default class SessionRecipe extends RecipeModule {
     verifySession: (
         options: VerifySessionOptions | undefined,
         request: BaseRequest,
-        response: BaseResponse
+        response: BaseResponse,
+        userContext: any
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
 }

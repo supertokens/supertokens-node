@@ -33,8 +33,6 @@ let { middleware, errorHandler } = require("../../framework/express");
 let { maxVersion } = require("../../lib/build/utils");
 
 /**
- * TODO: (later) in passwordResetFunctions.ts:
- *        - (later) check that createAndSendCustomEmail works fine
  * TODO: generate token API:
  *        - (later) Call the createResetPasswordToken function with valid input
  *        - (later) Call the createResetPasswordToken with unknown userId and test error thrown
@@ -124,11 +122,14 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
-                            resetURL = passwordResetURLWithToken.split("?")[0];
-                            tokenInfo = passwordResetURLWithToken.split("?")[1].split("&")[0];
-                            ridInfo = passwordResetURLWithToken.split("?")[1].split("&")[1];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.passwordResetLink).search);
+                                resetURL = input.passwordResetLink.split("?")[0];
+                                tokenInfo = searchParams.get("token");
+                                ridInfo = searchParams.get("rid");
+                            },
                         },
                     },
                 }),
@@ -166,8 +167,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 })
         );
         assert(resetURL === "https://supertokens.io/auth/reset-password");
-        assert(tokenInfo.startsWith("token="));
-        assert(ridInfo.startsWith("rid=emailpassword"));
+        assert.notStrictEqual(tokenInfo, undefined);
+        assert.notStrictEqual(tokenInfo, null);
+        assert.strictEqual(ridInfo, "emailpassword");
     });
 
     /*
@@ -360,9 +362,12 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                             };
                         },
                     },
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
-                            token = passwordResetURLWithToken.split("?")[1].split("&")[0].split("=")[1];
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.passwordResetLink).search);
+                                token = searchParams.get("token");
+                            },
                         },
                     },
                 }),

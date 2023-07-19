@@ -16,13 +16,15 @@
 import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import Session from "../../session";
 
-export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function emailVerify(
+    apiImplementation: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     let result;
-
-    const userContext = makeDefaultUserContextFromAPI(options.req);
 
     if (normaliseHttpMethod(options.req.getMethod()) === "post") {
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
@@ -54,6 +56,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
 
         let response = await apiImplementation.verifyEmailPOST({
             token,
+            tenantId,
             options,
             session,
             userContext,

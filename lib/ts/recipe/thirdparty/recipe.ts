@@ -15,9 +15,10 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, ProviderInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
+import MultitenancyRecipe from "../multitenancy/recipe";
 import STError from "./error";
 
 import { SIGN_IN_UP_API, AUTHORISATION_API, APPLE_REDIRECT_HANDLER } from "./constants";
@@ -39,7 +40,7 @@ export default class Recipe extends RecipeModule {
 
     config: TypeNormalisedInput;
 
-    providers: TypeProvider[];
+    providers: ProviderInput[];
 
     recipeInterfaceImpl: RecipeInterface;
 
@@ -51,7 +52,7 @@ export default class Recipe extends RecipeModule {
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
-        config: TypeInput,
+        config: TypeInput | undefined,
         _recipes: {},
         _ingredients: {}
     ) {
@@ -62,7 +63,9 @@ export default class Recipe extends RecipeModule {
         this.providers = this.config.signInAndUpFeature.providers;
 
         {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.providers)
+            );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
@@ -75,10 +78,15 @@ export default class Recipe extends RecipeModule {
             if (emailVerificationRecipe !== undefined) {
                 emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
             }
+
+            const mtRecipe = MultitenancyRecipe.getInstance();
+            if (mtRecipe !== undefined) {
+                mtRecipe.staticThirdPartyProviders = this.config.signInAndUpFeature.providers;
+            }
         });
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(
@@ -137,10 +145,12 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
-        _method: HTTPMethod
+        _method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options = {
             config: this.config,
@@ -153,11 +163,11 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_IN_UP_API) {
-            return await signInUpAPI(this.apiImpl, options);
+            return await signInUpAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === AUTHORISATION_API) {
-            return await authorisationUrlAPI(this.apiImpl, options);
+            return await authorisationUrlAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === APPLE_REDIRECT_HANDLER) {
-            return await appleRedirectHandler(this.apiImpl, options);
+            return await appleRedirectHandler(this.apiImpl, options, userContext);
         }
         return false;
     };

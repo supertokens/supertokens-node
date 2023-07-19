@@ -129,11 +129,15 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                 ThirdpartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: async (input) => {
-                        phoneNumber = input.phoneNumber;
-                        codeLifetime = input.codeLifetime;
-                        urlWithLinkCode = input.urlWithLinkCode;
-                        userInputCode = input.userInputCode;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                phoneNumber = input.phoneNumber;
+                                codeLifetime = input.codeLifetime;
+                                urlWithLinkCode = input.urlWithLinkCode;
+                                userInputCode = input.userInputCode;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
@@ -681,18 +685,18 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                 ThirdpartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: async (input) => {
-                        /**
-                         * when the function is called for the first time,
-                         * it will be for signinup
-                         */
-                        if (sendCustomSMSCalled) {
-                            phoneNumber = input.phoneNumber;
-                            codeLifetime = input.codeLifetime;
-                            urlWithLinkCode = input.urlWithLinkCode;
-                            userInputCode = input.userInputCode;
-                        }
-                        sendCustomSMSCalled = true;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                if (sendCustomSMSCalled) {
+                                    phoneNumber = input.phoneNumber;
+                                    codeLifetime = input.codeLifetime;
+                                    urlWithLinkCode = input.urlWithLinkCode;
+                                    userInputCode = input.userInputCode;
+                                }
+                                sendCustomSMSCalled = true;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),

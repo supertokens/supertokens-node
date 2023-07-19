@@ -13,17 +13,20 @@
  * under the License.
  */
 
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
 
-export default async function dashboard(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function dashboard(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.dashboardGET === undefined) {
         return false;
     }
 
     const htmlString = await apiImplementation.dashboardGET({
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     options.res.sendHTMLResponse(htmlString);

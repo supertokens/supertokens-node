@@ -55,14 +55,14 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
 
             // add the role to a user
             {
-                const result = await UserRolesRecipe.addRoleToUser(userId, role);
+                const result = await UserRolesRecipe.addRoleToUser("public", userId, role);
                 assert.strictEqual(result.status, "OK");
                 assert(!result.didUserAlreadyHaveRole);
             }
 
             // check that user has role
             {
-                const result = await UserRolesRecipe.getRolesForUser(userId);
+                const result = await UserRolesRecipe.getRolesForUser("public", userId);
                 assert.strictEqual(result.status, "OK");
                 assert.strictEqual(result.roles.length, 1);
                 assert.strictEqual(result.roles[0], role);
@@ -70,14 +70,14 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
 
             // remove role from user
             {
-                const result = await UserRolesRecipe.removeUserRole(userId, role);
+                const result = await UserRolesRecipe.removeUserRole("public", userId, role);
                 assert.strictEqual(result.status, "OK");
                 assert(result.didUserHaveRole);
             }
 
             // check that the user does not have the role
             {
-                const result = await UserRolesRecipe.getRolesForUser(userId);
+                const result = await UserRolesRecipe.getRolesForUser("public", userId);
                 assert.strictEqual(result.status, "OK");
                 assert.strictEqual(result.roles.length, 0);
             }
@@ -117,7 +117,7 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
 
             // remove role from user
             {
-                const result = await UserRolesRecipe.removeUserRole(userId, role);
+                const result = await UserRolesRecipe.removeUserRole("public", userId, role);
                 assert.strictEqual(result.status, "OK");
                 assert(!result.didUserHaveRole);
             }
@@ -149,7 +149,7 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
             const role = "unknownRole";
 
             // remove an unknown role from user
-            const result = await UserRolesRecipe.removeUserRole(userId, role);
+            const result = await UserRolesRecipe.removeUserRole("public", userId, role);
             assert.strictEqual(result.status, "UNKNOWN_ROLE_ERROR");
         });
     });

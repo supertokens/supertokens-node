@@ -80,10 +80,10 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 9);
+            assert.equal(Object.keys(payload).length, 10);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 10000);
@@ -91,7 +91,7 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             await res.removeClaim(TrueClaim);
 
             const payloadAfter = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payloadAfter).length, 8);
+            assert.equal(Object.keys(payloadAfter).length, 9);
         });
 
         it("should clear previously set claim using a handle", async function () {
@@ -126,10 +126,10 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(mockRequest(), response, "someId");
+            const session = await Session.createNewSession(mockRequest(), response, "public", "someId");
 
             const payload = session.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 9);
+            assert.equal(Object.keys(payload).length, 10);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 10000);

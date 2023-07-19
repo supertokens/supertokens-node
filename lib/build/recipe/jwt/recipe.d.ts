@@ -19,10 +19,12 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
         _: string,
+        ____: string | undefined,
         req: BaseRequest,
         res: BaseResponse,
         __: normalisedURLPath,
-        ___: HTTPMethod
+        ___: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];

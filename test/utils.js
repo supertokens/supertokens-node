@@ -16,6 +16,7 @@ const { exec } = require("child_process");
 const nock = require("nock");
 const request = require("supertest");
 let fs = require("fs");
+const { default: fetch } = require("cross-fetch");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
@@ -28,6 +29,7 @@ const EmailVerificationRecipe = require("../lib/build/recipe/emailverification/r
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
+let MultitenancyRecipe = require("../lib/build/recipe/multitenancy/recipe").default;
 const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
@@ -239,6 +241,7 @@ module.exports.resetAll = function () {
     OpenIDRecipe.reset();
     DashboardRecipe.reset();
     ProcessState.getInstance().reset();
+    MultitenancyRecipe.reset();
 };
 
 module.exports.killAllST = async function () {
@@ -302,6 +305,22 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
             returned = true;
             reject("could not start ST process");
         }
+    });
+};
+
+module.exports.startSTWithMultitenancy = async function (host = "localhost", port = 8080) {
+    await module.exports.startST(host, port);
+    const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
+        "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
+
+    await fetch(`http://${host}:${port}/ee/license`, {
+        method: "PUT",
+        headers: {
+            "content-type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+            licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+        }),
     });
 };
 
@@ -428,8 +447,12 @@ module.exports.signInUPCustomRequest = async function (app, email, id) {
             .post("/auth/signinup")
             .send({
                 thirdPartyId: "custom",
-                code: "abcdefghj",
-                redirectURI: "http://127.0.0.1/callback",
+                redirectURIInfo: {
+                    redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                    redirectURIQueryParams: {
+                        code: "abcdefghj",
+                    },
+                },
             })
             .end((err, res) => {
                 if (err) {
@@ -585,23 +608,27 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
     for (let i = 0; i < usersArray.length; i++) {
         const user = usersArray[i];
         if (user.recipe === "emailpassword" && emailpassword !== null) {
-            await emailpassword.signUp(user.email, user.password);
+            await emailpassword.signUp("public", user.email, user.password);
         }
         if (user.recipe === "passwordless" && passwordless !== null) {
             if (user.email !== undefined) {
                 const codeResponse = await passwordless.createCode({
+                    tenantId: "public",
                     email: user.email,
                 });
                 await passwordless.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: codeResponse.preAuthSessionId,
                     deviceId: codeResponse.deviceId,
                     userInputCode: codeResponse.userInputCode,
                 });
             } else {
                 const codeResponse = await passwordless.createCode({
+                    tenantId: "public",
                     phoneNumber: user.phone,
                 });
                 await passwordless.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: codeResponse.preAuthSessionId,
                     deviceId: codeResponse.deviceId,
                     userInputCode: codeResponse.userInputCode,
@@ -610,7 +637,7 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
         }
 
         if (user.recipe === "thirdparty" && thirdparty !== null) {
-            await thirdparty.signInUp(user.provider, user.userId, user.email);
+            await thirdparty.manuallyCreateOrUpdateUser("public", user.provider, user.userId, user.email);
         }
     }
 };

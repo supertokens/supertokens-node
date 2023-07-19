@@ -2,16 +2,21 @@ import { RecipeInterface, User } from "../types";
 import PasswordlessImplemenation from "../../passwordless/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
-import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
+import { RecipeInterface as ThirdPartyRecipeInterface, TypeProvider } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedPwdless from "./passwordlessRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
+import { ProviderInput } from "../../thirdparty/types";
 
-export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPartyQuerier?: Querier): RecipeInterface {
+export default function getRecipeInterface(
+    passwordlessQuerier: Querier,
+    thirdPartyQuerier?: Querier,
+    providers: ProviderInput[] = []
+): RecipeInterface {
     let originalPasswordlessImplementation = PasswordlessImplemenation(passwordlessQuerier);
     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
     if (thirdPartyQuerier !== undefined) {
-        originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
+        originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier, providers);
     }
 
     return {
@@ -64,12 +69,52 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
+            };
+            tenantId: string;
+            userContext: any;
+        }): Promise<{
+            status: "OK";
+            createdNewUser: boolean;
+            user: User;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
+            };
+        }> {
+            if (originalThirdPartyImplementation === undefined) {
+                throw new Error("No thirdparty provider configured");
+            }
+            return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
+        },
+
+        thirdPartyManuallyCreateOrUpdateUser: async function (input: {
+            thirdPartyId: string;
+            thirdPartyUserId: string;
+            email: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             if (originalThirdPartyImplementation === undefined) {
                 throw new Error("No thirdparty provider configured");
             }
-            return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
+            return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);
+        },
+
+        thirdPartyGetProvider: async function (input: {
+            thirdPartyId: string;
+            clientType?: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<TypeProvider | undefined> {
+            if (originalThirdPartyImplementation === undefined) {
+                throw new Error("No thirdparty provider configured");
+            }
+            return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },
 
         getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
@@ -85,17 +130,25 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
         },
 
-        getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
+        getUsersByEmail: async function ({
+            email,
+            tenantId,
+            userContext,
+        }: {
+            email: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<User[]> {
             let userFromEmailPass: User | undefined = await originalPasswordlessImplementation.getUserByEmail.bind(
                 DerivedPwdless(this)
-            )({ email, userContext });
+            )({ email, tenantId, userContext });
 
             if (originalThirdPartyImplementation === undefined) {
                 return userFromEmailPass === undefined ? [] : [userFromEmailPass];
             }
             let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
                 DerivedTP(this)
-            )({ email, userContext });
+            )({ email, tenantId, userContext });
 
             if (userFromEmailPass !== undefined) {
                 return [...usersFromThirdParty, userFromEmailPass];
@@ -106,6 +159,7 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
         getUserByThirdPartyInfo: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            tenantId: string;
             userContext: any;
         }): Promise<User | undefined> {
             if (originalThirdPartyImplementation === undefined) {

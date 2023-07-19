@@ -12,10 +12,20 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    startSTWithMultitenancy,
+    killAllST,
+    cleanST,
+    setKeyValueInConfig,
+    stopST,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
+let Multitenancy = require("../../recipe/multitenancy");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
@@ -59,12 +69,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -127,7 +145,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(typeof validUserInputCodeResponse.user.id === "string");
         assert(typeof validUserInputCodeResponse.user.email === "string");
         assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
         assert(Object.keys(validUserInputCodeResponse).length === 3);
     });
 
@@ -154,12 +172,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -222,7 +248,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(typeof validUserInputCodeResponse.user.id === "string");
         assert(typeof validUserInputCodeResponse.user.phoneNumber === "string");
         assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
         assert(Object.keys(validUserInputCodeResponse).length === 3);
     });
 
@@ -249,12 +275,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                isCreateAndSendCustomEmailCalled = true;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        isCreateAndSendCustomEmailCalled = true;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -336,12 +370,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        isCreateAndSendCustomTextMessageCalled = true;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                isCreateAndSendCustomTextMessageCalled = true;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -422,11 +464,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -525,13 +575,21 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
-                    createAndSendCustomEmail: (input) => {
-                        userInputCode = input.userInputCode;
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -654,8 +712,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -714,8 +776,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -733,6 +799,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         let codeInfo = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -782,7 +849,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             assert(typeof validLinkCodeResponse.user.id === "string");
             assert(typeof validLinkCodeResponse.user.email === "string");
             assert(typeof validLinkCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validLinkCodeResponse.user).length === 3);
+            assert(Object.keys(validLinkCodeResponse.user).length === 4);
             assert(Object.keys(validLinkCodeResponse).length === 3);
         }
     });
@@ -804,8 +871,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: () => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -823,6 +894,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         let codeInfo = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -878,7 +950,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             assert(typeof validUserInputCodeResponse.user.id === "string");
             assert(typeof validUserInputCodeResponse.user.email === "string");
             assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+            assert(Object.keys(validUserInputCodeResponse.user).length === 4);
             assert(Object.keys(validUserInputCodeResponse).length === 3);
         }
 
@@ -923,8 +995,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -943,6 +1026,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -990,8 +1074,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1071,8 +1166,19 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1153,8 +1259,20 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        magicLinkURL = new URL(input.urlWithLinkCode);
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                magicLinkURL = new URL(input.urlWithLinkCode);
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1217,8 +1335,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1261,10 +1383,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
             // create a passwordless user through email
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
@@ -1306,8 +1430,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1350,10 +1478,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
             // create a passwordless user through phone
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 
             await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
@@ -1397,8 +1527,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1417,6 +1551,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 
@@ -1481,8 +1616,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1501,6 +1640,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 phoneNumber: "+1234567890",
             });
 
@@ -1521,8 +1661,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                        createAndSendCustomEmail: (input) => {
-                            return;
+                        emailDelivery: {
+                            service: {
+                                sendEmail: async (input) => {
+                                    return;
+                                },
+                            },
                         },
                     }),
                 ],
@@ -1550,5 +1694,100 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 assert(response.status === "RESTART_FLOW_ERROR");
             }
         }
+    });
+
+    it("test resend code from different tenant throws error", async function () {
+        await startSTWithMultitenancy();
+
+        let isCreateAndSendCustomEmailCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie" }),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                isCreateAndSendCustomEmailCalled = true;
+                                return;
+                            },
+                        },
+                    },
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        await Multitenancy.createOrUpdateTenant("t1", { passwordlessEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t2", { passwordlessEnabled: true });
+        await Multitenancy.createOrUpdateTenant("t3", { passwordlessEnabled: true });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // createCodeAPI with email
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/t1/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(isCreateAndSendCustomEmailCalled);
+
+        isCreateAndSendCustomEmailCalled = false;
+
+        // resendCode API
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/t2/signinup/code/resend")
+                .send({
+                    deviceId: validCreateCodeResponse.deviceId,
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status === "RESTART_FLOW_ERROR");
+        assert(isCreateAndSendCustomEmailCalled === false);
     });
 });

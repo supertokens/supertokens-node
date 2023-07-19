@@ -15,45 +15,75 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import * as thirdPartyProviders from "../thirdparty/providers";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { getPasswordResetLink } from "../emailpassword/utils";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
+    static async thirdPartyGetProvider(
+        tenantId: string,
+        thirdPartyId: string,
+        clientType: string | undefined,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
             thirdPartyId,
-            thirdPartyUserId,
-            email,
+            clientType,
+            tenantId,
             userContext,
         });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
+    static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
+            thirdPartyId,
+            thirdPartyUserId,
+            email,
+            tenantId,
+            userContext,
+        });
+    }
+
+    static getUserByThirdPartyInfo(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
+            tenantId,
             userContext,
         });
     }
 
-    static emailPasswordSignUp(email: string, password: string, userContext: any = {}) {
+    static emailPasswordSignUp(tenantId: string, email: string, password: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
             email,
             password,
+            tenantId,
             userContext,
         });
     }
 
-    static emailPasswordSignIn(email: string, password: string, userContext: any = {}) {
+    static emailPasswordSignIn(tenantId: string, email: string, password: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
             email,
             password,
+            tenantId,
             userContext,
         });
     }
@@ -62,23 +92,30 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
-
-    static createResetPasswordToken(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId, userContext });
-    }
-
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
-            token,
-            newPassword,
+    static getUsersByEmail(tenantId: string, email: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({
+            email,
+            tenantId,
             userContext,
         });
     }
 
-    static Google = thirdPartyProviders.Google;
+    static createResetPasswordToken(tenantId: string, userId: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
+            userId,
+            tenantId,
+            userContext,
+        });
+    }
+
+    static resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
+            token,
+            newPassword,
+            tenantId,
+            userContext,
+        });
+    }
 
     static updateEmailOrPassword(input: {
         userId: string;
@@ -86,35 +123,65 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy?: string;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
+            tenantIdForPasswordPolicy:
+                input.tenantIdForPasswordPolicy === undefined ? DEFAULT_TENANT_ID : input.tenantIdForPasswordPolicy,
         });
     }
 
-    static Github = thirdPartyProviders.Github;
+    static async createResetPasswordLink(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+        let token = await createResetPasswordToken(userId, tenantId, userContext);
+        if (token.status === "UNKNOWN_USER_ID_ERROR") {
+            return token;
+        }
 
-    static Facebook = thirdPartyProviders.Facebook;
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        return {
+            status: "OK",
+            link: getPasswordResetLink({
+                appInfo: recipeInstance.getAppInfo(),
+                recipeId: recipeInstance.getRecipeId(),
+                token: token.token,
+                tenantId,
+            }),
+        };
+    }
 
-    static Apple = thirdPartyProviders.Apple;
+    static async sendResetPasswordEmail(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
+        let link = await createResetPasswordLink(userId, tenantId, userContext);
+        if (link.status === "UNKNOWN_USER_ID_ERROR") {
+            return link;
+        }
+        await sendEmail({
+            passwordResetLink: link.link,
+            type: "PASSWORD_RESET",
+            user: (await getUserById(userId, userContext))!,
+            tenantId,
+            userContext,
+        });
 
-    static Discord = thirdPartyProviders.Discord;
-
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
-
-    static Bitbucket = thirdPartyProviders.Bitbucket;
-
-    static GitLab = thirdPartyProviders.GitLab;
-
-    // static Okta = thirdPartyProviders.Okta;
-
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
+        return {
+            status: "OK",
+        };
+    }
 
     static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
+            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 }
@@ -127,7 +194,9 @@ export let emailPasswordSignUp = Wrapper.emailPasswordSignUp;
 
 export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
 
-export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
+export let thirdPartyGetProvider = Wrapper.thirdPartyGetProvider;
+
+export let thirdPartyManuallyCreateOrUpdateUser = Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 
 export let getUserById = Wrapper.getUserById;
 
@@ -141,26 +210,10 @@ export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
-export let Google = Wrapper.Google;
-
-export let Github = Wrapper.Github;
-
-export let Facebook = Wrapper.Facebook;
-
-export let Apple = Wrapper.Apple;
-
-export let Discord = Wrapper.Discord;
-
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
-
-export let Bitbucket = Wrapper.Bitbucket;
-
-export let GitLab = Wrapper.GitLab;
-
-// export let Okta = Wrapper.Okta;
-
-// export let ActiveDirectory = Wrapper.ActiveDirectory;
-
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+
+export let createResetPasswordLink = Wrapper.createResetPasswordLink;
+
+export let sendResetPasswordEmail = Wrapper.sendResetPasswordEmail;
 
 export let sendEmail = Wrapper.sendEmail;

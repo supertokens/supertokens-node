@@ -14,16 +14,16 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { RecipeInterface, APIInterface, TypeProvider } from "./types";
+import { RecipeInterface, APIInterface } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
 
-export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
-    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
+export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
+    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config?.signInAndUpFeature);
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
+        ...config?.override,
     };
 
     return {
@@ -32,84 +32,26 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
     };
 }
 
-export async function findRightProvider(
-    providers: TypeProvider[],
-    thirdPartyId: string,
-    clientId?: string
-): Promise<TypeProvider | undefined> {
-    for (const p of providers) {
-        let id = p.id;
-        if (id !== thirdPartyId) {
-            continue;
-        }
-
-        // first if there is only one provider with thirdPartyId in the providers array,
-        let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
-        if (otherProvidersWithSameId.length === 0) {
-            // they we always return that.
-            return p;
-        }
-
-        // otherwise, we look for the isDefault provider if clientId is missing
-        if (clientId === undefined && p.isDefault === true) {
-            return p;
-        }
-
-        // otherwise, we return a provider that matches based on client ID as well.
-        if ((await p.get(undefined, undefined, {})).getClientId({}) === clientId) {
-            return p;
-        }
-    }
-    return undefined;
-}
-
 function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
-    config: TypeInputSignInAndUp
+    config: TypeInputSignInAndUp | undefined
 ): TypeNormalisedInputSignInAndUp {
-    let providers = config.providers;
-
-    if (providers === undefined || providers.length === 0) {
-        throw new Error(
-            "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config"
-        );
+    if (config === undefined || config.providers === undefined) {
+        return {
+            providers: [],
+        };
     }
 
-    // we check if there are multiple providers with the same id that have isDefault as true.
-    // In this case, we want to throw an error..
-    let isDefaultProvidersSet = new Set<string>();
-    let allProvidersSet = new Set<string>();
-    providers.forEach((p) => {
-        let id = p.id;
-        allProvidersSet.add(p.id);
-        let isDefault = p.isDefault;
+    const thirdPartyIdSet = new Set<string>();
 
-        if (isDefault === undefined) {
-            // if this id is not being used by any other provider, we treat this as the isDefault
-            let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
-            if (otherProvidersWithSameId.length === 0) {
-                // we treat this as the isDefault now...
-                isDefault = true;
-            }
+    for (const provider of config.providers) {
+        if (thirdPartyIdSet.has(provider.config.thirdPartyId)) {
+            throw new Error(`The providers array has multiple entries for the same third party provider.`);
         }
-        if (isDefault) {
-            if (isDefaultProvidersSet.has(id)) {
-                throw new Error(
-                    `You have provided multiple third party providers that have the id: "${id}" and are marked as "isDefault: true". Please only mark one of them as isDefault.`
-                );
-            }
-            isDefaultProvidersSet.add(id);
-        }
-    });
-
-    if (isDefaultProvidersSet.size !== allProvidersSet.size) {
-        // this means that there is no provider marked as isDefault
-        throw new Error(
-            `The providers array has multiple entries for the same third party provider. Please mark one of them as the default one by using "isDefault: true".`
-        );
+        thirdPartyIdSet.add(provider.config.thirdPartyId);
     }
 
     return {
-        providers,
+        providers: config.providers,
     };
 }

@@ -15,19 +15,40 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import * as thirdPartyProviders from "./providers";
 import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static async signInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+    static async getProvider(
+        tenantId: string,
+        thirdPartyId: string,
+        clientType: string | undefined,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getProvider({
+            thirdPartyId,
+            clientType,
+            tenantId,
+            userContext,
+        });
+    }
+
+    static async manuallyCreateOrUpdateUser(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.manuallyCreateOrUpdateUser({
             thirdPartyId,
             thirdPartyUserId,
             email,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext,
         });
     }
@@ -36,69 +57,41 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
-    }
-
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
-            thirdPartyId,
-            thirdPartyUserId,
+    static getUsersByEmail(tenantId: string, email: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({
+            email,
+            tenantId,
             userContext,
         });
     }
 
-    static Google = thirdPartyProviders.Google;
-
-    static Github = thirdPartyProviders.Github;
-
-    static Facebook = thirdPartyProviders.Facebook;
-
-    static Apple = thirdPartyProviders.Apple;
-
-    static Discord = thirdPartyProviders.Discord;
-
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
-
-    static Bitbucket = thirdPartyProviders.Bitbucket;
-
-    static GitLab = thirdPartyProviders.GitLab;
-
-    // static Okta = thirdPartyProviders.Okta;
-
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
+    static getUserByThirdPartyInfo(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
+            thirdPartyId,
+            thirdPartyUserId,
+            tenantId,
+            userContext,
+        });
+    }
 }
 
 export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
 
-export let signInUp = Wrapper.signInUp;
+export let getProvider = Wrapper.getProvider;
+
+export let manuallyCreateOrUpdateUser = Wrapper.manuallyCreateOrUpdateUser;
 
 export let getUserById = Wrapper.getUserById;
 
 export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
-
-export let Google = Wrapper.Google;
-
-export let Github = Wrapper.Github;
-
-export let Facebook = Wrapper.Facebook;
-
-export let Apple = Wrapper.Apple;
-
-export let Discord = Wrapper.Discord;
-
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
-
-export let Bitbucket = Wrapper.Bitbucket;
-
-export let GitLab = Wrapper.GitLab;
-
-// export let Okta = Wrapper.Okta;
-
-// export let ActiveDirectory = Wrapper.ActiveDirectory;
 
 export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };

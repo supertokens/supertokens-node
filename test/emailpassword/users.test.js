@@ -63,26 +63,26 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         await signUPRequest(app, "test3@gmail.com", "testPass123");
         await signUPRequest(app, "test4@gmail.com", "testPass123");
 
-        let users = await getUsersOldestFirst();
+        let users = await getUsersOldestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
-        users = await getUsersOldestFirst({ limit: 1 });
+        users = await getUsersOldestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
         assert.strictEqual(users.users[0].user.email, "test@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersOldestFirst({ limit: 1, paginationToken: users.nextPaginationToken });
+        users = await getUsersOldestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
         assert.strictEqual(users.users[0].user.email, "test1@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersOldestFirst({ limit: 5, paginationToken: users.nextPaginationToken });
+        users = await getUsersOldestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 3);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         try {
-            await getUsersOldestFirst({ limit: 10, paginationToken: "invalid-pagination-token" });
+            await getUsersOldestFirst({ tenantId: "public", limit: 10, paginationToken: "invalid-pagination-token" });
             assert(false);
         } catch (err) {
             if (!err.message.includes("invalid pagination token")) {
@@ -91,7 +91,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         }
 
         try {
-            await getUsersOldestFirst({ limit: -1 });
+            await getUsersOldestFirst({ tenantId: "public", limit: -1 });
             assert(false);
         } catch (err) {
             if (!err.message.includes("limit must a positive integer with min value 1")) {
@@ -132,10 +132,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         await signUPRequest(app, "test3@gmail.com", "testPass123");
         await signUPRequest(app, "john@gmail.com", "testPass123");
 
-        let users = await getUsersOldestFirst({ query: { email: "doe" } });
+        let users = await getUsersOldestFirst({ tenantId: "public", query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
 
-        users = await getUsersOldestFirst({ query: { email: "john" } });
+        users = await getUsersOldestFirst({ tenantId: "public", query: { email: "john" } });
         assert.strictEqual(users.users.length, 1);
     });
 
@@ -166,26 +166,26 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         await signUPRequest(app, "test3@gmail.com", "testPass123");
         await signUPRequest(app, "test4@gmail.com", "testPass123");
 
-        let users = await getUsersNewestFirst();
+        let users = await getUsersNewestFirst({ tenantId: "public" });
         assert.strictEqual(users.users.length, 5);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
-        users = await getUsersNewestFirst({ limit: 1 });
+        users = await getUsersNewestFirst({ tenantId: "public", limit: 1 });
         assert.strictEqual(users.users.length, 1);
         assert.strictEqual(users.users[0].user.email, "test4@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersNewestFirst({ limit: 1, paginationToken: users.nextPaginationToken });
+        users = await getUsersNewestFirst({ tenantId: "public", limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
         assert.strictEqual(users.users[0].user.email, "test3@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersNewestFirst({ limit: 5, paginationToken: users.nextPaginationToken });
+        users = await getUsersNewestFirst({ tenantId: "public", limit: 5, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 3);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         try {
-            await getUsersOldestFirst({ limit: 10, paginationToken: "invalid-pagination-token" });
+            await getUsersOldestFirst({ tenantId: "public", limit: 10, paginationToken: "invalid-pagination-token" });
             assert(false);
         } catch (err) {
             if (!err.message.includes("invalid pagination token")) {
@@ -194,7 +194,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         }
 
         try {
-            await getUsersOldestFirst({ limit: -1 });
+            await getUsersOldestFirst({ tenantId: "public", limit: -1 });
             assert(false);
         } catch (err) {
             if (!err.message.includes("limit must a positive integer with min value 1")) {
@@ -235,10 +235,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         await signUPRequest(app, "test3@gmail.com", "testPass123");
         await signUPRequest(app, "john@gmail.com", "testPass123");
 
-        let users = await getUsersNewestFirst({ query: { email: "doe" } });
+        let users = await getUsersNewestFirst({ tenantId: "public", query: { email: "doe" } });
         assert.strictEqual(users.users.length, 0);
 
-        users = await getUsersNewestFirst({ query: { email: "john" } });
+        users = await getUsersNewestFirst({ tenantId: "public", query: { email: "john" } });
         assert.strictEqual(users.users.length, 1);
     });
 

@@ -17,28 +17,30 @@ import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { postWithFetch } from "../../utils";
 
-export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
-    return async (user: User, passwordResetURLWithToken: string) => {
-        // related issue: https://github.com/supertokens/supertokens-node/issues/38
-        if (process.env.TEST_MODE === "testing") {
-            return;
-        }
+export async function createAndSendEmailUsingSupertokensService(
+    appInfo: NormalisedAppinfo,
+    user: User,
+    passwordResetURLWithToken: string
+) {
+    // related issue: https://github.com/supertokens/supertokens-node/issues/38
+    if (process.env.TEST_MODE === "testing") {
+        return;
+    }
 
-        await postWithFetch(
-            "https://api.supertokens.io/0/st/auth/password/reset",
-            {
-                "api-version": "0",
-                "content-type": "application/json; charset=utf-8",
-            },
-            {
-                email: user.email,
-                appName: appInfo.appName,
-                passwordResetURL: passwordResetURLWithToken,
-            },
-            {
-                successLog: `Password reset email sent to ${user.email}`,
-                errorLogHeader: "Error sending password reset email",
-            }
-        );
-    };
+    await postWithFetch(
+        "https://api.supertokens.io/0/st/auth/password/reset",
+        {
+            "api-version": "0",
+            "content-type": "application/json; charset=utf-8",
+        },
+        {
+            email: user.email,
+            appName: appInfo.appName,
+            passwordResetURL: passwordResetURLWithToken,
+        },
+        {
+            successLog: `Password reset email sent to ${user.email}`,
+            errorLogHeader: "Error sending password reset email",
+        }
+    );
 }

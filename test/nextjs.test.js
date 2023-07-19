@@ -375,7 +375,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 handler: async (request, response) => {
                     const session = await superTokensNextWrapper(
                         async () => {
-                            return await Session.createNewSession(request, response, "1", {}, {});
+                            return await Session.createNewSession(request, response, "public", "1", {}, {});
                         },
                         request,
                         response
@@ -435,16 +435,17 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     }),
                     ThirdPartyEmailPassword.init({
                         providers: [
-                            ThirdPartyEmailPassword.Apple({
-                                isDefault: true,
-                                clientId: "4398792-io.supertokens.example.service",
-                                clientSecret: {
-                                    keyId: "7M48Y4RYDL",
-                                    privateKey:
-                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                    teamId: "YWQCXGJRJL",
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
                                 },
-                            }),
+                            },
                         ],
                     }),
                     Session.init({
@@ -491,17 +492,30 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/callback/apple",
                 test: async ({ fetch }) => {
+                    let state = Buffer.from(JSON.stringify({ redirectURI: "http://localhost:3000/redirect" })).toString(
+                        "base64"
+                    );
+                    let formData = { state, code: "testing" };
+                    var encodedData = Object.keys(formData)
+                        .map(function (key) {
+                            return encodeURIComponent(key) + "=" + encodeURIComponent(formData[key]);
+                        })
+                        .join("&");
+
                     const res = await fetch({
                         method: "POST",
                         headers: {
                             rid: "thirdpartyemailpassword",
                             "content-type": "application/x-www-form-urlencoded",
                         },
-                        body: "state=hello&code=testing",
+                        body: encodedData,
+                        redirect: "manual",
                     });
-                    let expected = `<html><head><script>window.location.replace("https://supertokens.io/auth/callback/apple?state=hello&code=testing");</script></head></html>`;
-                    const respText = await res.text();
-                    assert.strictEqual(respText, expected);
+                    assert.deepStrictEqual(res.status, 303);
+                    assert.deepEqual(
+                        res.headers.get("location"),
+                        "http://localhost:3000/redirect?state=eyJyZWRpcmVjdFVSSSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9yZWRpcmVjdCJ9&code=testing"
+                    );
                 },
             });
         });

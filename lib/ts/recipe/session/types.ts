@@ -39,6 +39,7 @@ export type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
+        tenantId: string;
     };
     accessToken: TokenInfo;
     refreshToken: TokenInfo;
@@ -191,10 +192,12 @@ export type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
     getGlobalClaimValidators(input: {
+        tenantId: string;
         userId: string;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
@@ -223,9 +226,19 @@ export type RecipeInterface = {
      */
     getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
 
-    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    revokeAllSessionsForUser(input: {
+        userId: string;
+        tenantId: string;
+        revokeAcrossAllTenants?: boolean;
+        userContext: any;
+    }): Promise<string[]>;
 
-    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: {
+        userId: string;
+        tenantId: string;
+        fetchAcrossAllTenants?: boolean;
+        userContext: any;
+    }): Promise<string[]>;
 
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
 
@@ -258,6 +271,7 @@ export type RecipeInterface = {
                   handle: string;
                   userId: string;
                   userDataInJWT: any;
+                  tenantId: string;
               };
               accessToken?: {
                   token: string;
@@ -321,6 +335,8 @@ export interface SessionContainerInterface {
     updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
 
     getUserId(userContext?: any): string;
+
+    getTenantId(userContext?: any): string;
 
     getAccessTokenPayload(userContext?: any): any;
 
@@ -398,6 +414,7 @@ export type SessionInformation = {
     expiry: number;
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
+    tenantId: string;
 };
 
 export type ClaimValidationResult = { isValid: true } | { isValid: false; reason?: JSONValue };
@@ -433,7 +450,7 @@ export abstract class SessionClaim<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    abstract fetchValue(userId: string, tenantId: string, userContext: any): Promise<T | undefined> | T | undefined;
 
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
@@ -463,8 +480,8 @@ export abstract class SessionClaim<T> {
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
-    async build(userId: string, userContext?: any): Promise<JSONObject> {
-        const value = await this.fetchValue(userId, userContext);
+    async build(userId: string, tenantId: string, userContext?: any): Promise<JSONObject> {
+        const value = await this.fetchValue(userId, tenantId, userContext);
 
         if (value === undefined) {
             return {};

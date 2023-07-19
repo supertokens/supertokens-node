@@ -15,7 +15,12 @@ type Response =
           error: string;
       };
 
-export const userPasswordPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userPasswordPut = async (
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const newPassword = requestBody.newPassword;
@@ -58,7 +63,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
             (field) => field.id === FORM_FIELD_PASSWORD_ID
         );
 
-        let passwordValidationError = await passwordFormFields[0].validate(newPassword);
+        let passwordValidationError = await passwordFormFields[0].validate(newPassword, tenantId);
 
         if (passwordValidationError !== undefined) {
             return {
@@ -67,7 +72,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
             };
         }
 
-        const passwordResetToken = await EmailPassword.createResetPasswordToken(userId);
+        const passwordResetToken = await EmailPassword.createResetPasswordToken(tenantId, userId, userContext);
 
         if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
             // Techincally it can but its an edge case so we assume that it wont
@@ -75,8 +80,10 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         }
 
         const passwordResetResponse = await EmailPassword.resetPasswordUsingToken(
+            tenantId,
             passwordResetToken.token,
-            newPassword
+            newPassword,
+            userContext
         );
 
         if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
@@ -92,7 +99,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         (field) => field.id === FORM_FIELD_PASSWORD_ID
     );
 
-    let passwordValidationError = await passwordFormFields[0].validate(newPassword);
+    let passwordValidationError = await passwordFormFields[0].validate(newPassword, tenantId);
 
     if (passwordValidationError !== undefined) {
         return {
@@ -101,7 +108,7 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         };
     }
 
-    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(userId);
+    const passwordResetToken = await ThirdPartyEmailPassword.createResetPasswordToken(tenantId, userId, userContext);
 
     if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
         // Techincally it can but its an edge case so we assume that it wont
@@ -109,8 +116,10 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
     }
 
     const passwordResetResponse = await ThirdPartyEmailPassword.resetPasswordUsingToken(
+        tenantId,
         passwordResetToken.token,
-        newPassword
+        newPassword,
+        userContext
     );
 
     if (passwordResetResponse.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {

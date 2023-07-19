@@ -12,95 +12,73 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, TypeProviderGetResponse } from "../types";
-import fetch from "cross-fetch";
+import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
-type TypeThirdPartyProviderFacebookConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    isDefault?: boolean;
-};
-
-export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): TypeProvider {
-    const id = "facebook";
-
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://graph.facebook.com/v9.0/oauth/access_token";
-        let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
-        };
-        if (authCodeFromRequest !== undefined) {
-            accessTokenAPIParams.code = authCodeFromRequest;
-        }
-        if (redirectURI !== undefined) {
-            accessTokenAPIParams.redirect_uri = redirectURI;
-        }
-        let authorisationRedirectURL = "https://www.facebook.com/v9.0/dialog/oauth";
-        let scopes = ["email"];
-        if (config.scope !== undefined) {
-            scopes = config.scope;
-            scopes = Array.from(new Set(scopes));
-        }
-        let authorizationRedirectParams: { [key: string]: string } = {
-            scope: scopes.join(" "),
-            response_type: "code",
-            client_id: config.clientId,
-        };
-
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let response = await fetch(
-                "https://graph.facebook.com/me?" +
-                    new URLSearchParams([
-                        ["access_token", accessToken],
-                        ["fields", "id,email"],
-                        ["format", "json"],
-                    ]).toString()
-            );
-            if (response.status >= 400) {
-                throw response;
-            }
-            let userInfo = await response.json();
-            let id = userInfo.id;
-            let email = userInfo.email;
-            if (email === undefined || email === null) {
-                return {
-                    id,
-                };
-            }
-            return {
-                id,
-                email: {
-                    id: email,
-                    isVerified: true,
-                },
-            };
-        }
-        return {
-            accessTokenAPI: {
-                url: accessTokenAPIURL,
-                params: accessTokenAPIParams,
-            },
-            authorisationRedirect: {
-                url: authorisationRedirectURL,
-                params: authorizationRedirectParams,
-            },
-            getProfileInfo,
-            getClientId: () => {
-                return config.clientId;
-            },
-        };
+export default function Facebook(input: ProviderInput): TypeProvider {
+    if (input.config.name === undefined) {
+        input.config.name = "Facebook";
     }
 
-    return {
-        id,
-        get,
-        isDefault: config.isDefault,
+    if (input.config.authorizationEndpoint === undefined) {
+        input.config.authorizationEndpoint = "https://www.facebook.com/v12.0/dialog/oauth";
+    }
+
+    if (input.config.tokenEndpoint === undefined) {
+        input.config.tokenEndpoint = "https://graph.facebook.com/v12.0/oauth/access_token";
+    }
+
+    if (input.config.userInfoEndpoint === undefined) {
+        input.config.userInfoEndpoint = "https://graph.facebook.com/me";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "id",
+            email: "email",
+            emailVerified: "email_verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
+        },
     };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.scope === undefined) {
+                config.scope = ["email"];
+            }
+
+            return config;
+        };
+
+        const oGetUserInfo = originalImplementation.getUserInfo;
+        originalImplementation.getUserInfo = async function (input) {
+            originalImplementation.config.userInfoEndpointQueryParams = {
+                access_token: input.oAuthTokens.access_token,
+                fields: "id,email",
+                format: "json",
+                ...originalImplementation.config.userInfoEndpointQueryParams,
+            };
+
+            originalImplementation.config.userInfoEndpointHeaders = {
+                ...originalImplementation.config.userInfoEndpointHeaders,
+                Authorization: null,
+            };
+
+            return await oGetUserInfo(input);
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }

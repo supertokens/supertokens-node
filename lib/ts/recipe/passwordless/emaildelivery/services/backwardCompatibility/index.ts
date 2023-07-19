@@ -17,107 +17,68 @@ import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery
 import { NormalisedAppinfo } from "../../../../../types";
 import { postWithFetch } from "../../../../../utils";
 
-function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
-    return async (
-        input: {
-            // Where the message should be delivered.
-            email: string;
-            // This has to be entered on the starting device  to finish sign in/up
-            userInputCode?: string;
-            // Full url that the end-user can click to finish sign in/up
-            urlWithLinkCode?: string;
-            codeLifetime: number;
+async function createAndSendEmailUsingSupertokensService(input: {
+    appInfo: NormalisedAppinfo;
+    // Where the message should be delivered.
+    email: string;
+    // This has to be entered on the starting device  to finish sign in/up
+    userInputCode?: string;
+    // Full url that the end-user can click to finish sign in/up
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+}): Promise<void> {
+    if (process.env.TEST_MODE === "testing") {
+        return;
+    }
+    const result = await postWithFetch(
+        "https://api.supertokens.io/0/st/auth/passwordless/login",
+        {
+            "api-version": "0",
+            "content-type": "application/json; charset=utf-8",
         },
-        _: any
-    ): Promise<void> => {
-        if (process.env.TEST_MODE === "testing") {
-            return;
+        {
+            email: input.email,
+            appName: input.appInfo.appName,
+            codeLifetime: input.codeLifetime,
+            urlWithLinkCode: input.urlWithLinkCode,
+            userInputCode: input.userInputCode,
+        },
+        {
+            successLog: `Email sent to ${input.email}`,
+            errorLogHeader: "Error sending passwordless login email",
         }
-        const result = await postWithFetch(
-            "https://api.supertokens.io/0/st/auth/passwordless/login",
-            {
-                "api-version": "0",
-                "content-type": "application/json; charset=utf-8",
-            },
-            {
-                email: input.email,
-                appName: appInfo.appName,
-                codeLifetime: input.codeLifetime,
-                urlWithLinkCode: input.urlWithLinkCode,
-                userInputCode: input.userInputCode,
-            },
-            {
-                successLog: `Email sent to ${input.email}`,
-                errorLogHeader: "Error sending passwordless login email",
-            }
-        );
-        if ("error" in result) {
-            throw result.error;
+    );
+    if ("error" in result) {
+        throw result.error;
+    }
+    if (result.resp && result.resp.status >= 400) {
+        if (result.resp.body.err) {
+            /**
+             * if the error is thrown from API, the response object
+             * will be of type `{err: string}`
+             */
+            throw new Error(result.resp.body.err);
+        } else {
+            throw new Error(`Request failed with status code ${result.resp.status}`);
         }
-        if (result.resp && result.resp.status >= 400) {
-            if (result.resp.body.err) {
-                /**
-                 * if the error is thrown from API, the response object
-                 * will be of type `{err: string}`
-                 */
-                throw new Error(result.resp.body.err);
-            } else {
-                throw new Error(`Request failed with status code ${result.resp.status}`);
-            }
-        }
-    };
+    }
 }
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
-    private createAndSendCustomEmail: (
-        input: {
-            // Where the message should be delivered.
-            email: string;
-            // This has to be entered on the starting device  to finish sign in/up
-            userInputCode?: string;
-            // Full url that the end-user can click to finish sign in/up
-            urlWithLinkCode?: string;
-            codeLifetime: number;
-            // Unlikely, but someone could display this (or a derived thing) to identify the device
-            preAuthSessionId: string;
-        },
-        userContext: any
-    ) => Promise<void>;
+    private appInfo: NormalisedAppinfo;
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        createAndSendCustomEmail?: (
-            input: {
-                // Where the message should be delivered.
-                email: string;
-                // This has to be entered on the starting device  to finish sign in/up
-                userInputCode?: string;
-                // Full url that the end-user can click to finish sign in/up
-                urlWithLinkCode?: string;
-                codeLifetime: number;
-                // Unlikely, but someone could display this (or a derived thing) to identify the device
-                preAuthSessionId: string;
-            },
-            userContext: any
-        ) => Promise<void>
-    ) {
-        this.createAndSendCustomEmail =
-            createAndSendCustomEmail === undefined
-                ? defaultCreateAndSendCustomEmail(appInfo)
-                : createAndSendCustomEmail;
+    constructor(appInfo: NormalisedAppinfo) {
+        this.appInfo = appInfo;
     }
 
     sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
-        await this.createAndSendCustomEmail(
-            {
-                email: input.email,
-                userInputCode: input.userInputCode,
-                urlWithLinkCode: input.urlWithLinkCode,
-                preAuthSessionId: input.preAuthSessionId,
-                codeLifetime: input.codeLifetime,
-            },
-            input.userContext
-        );
+        await createAndSendEmailUsingSupertokensService({
+            appInfo: this.appInfo,
+            email: input.email,
+            userInputCode: input.userInputCode,
+            urlWithLinkCode: input.urlWithLinkCode,
+            codeLifetime: input.codeLifetime,
+        });
     };
 }

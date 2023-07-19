@@ -19,25 +19,28 @@ export default class SuperTokens {
     handleAPI: (
         matchedRecipe: RecipeModule,
         id: string,
+        tenantId: string,
         request: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
-    getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
+    getUserCount: (includeRecipeIds?: string[] | undefined, tenantId?: string | undefined) => Promise<number>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: object;
+        tenantId: string;
     }) => Promise<{
         users: {
             recipeId: string;
             user: any;
         }[];
-        nextPaginationToken?: string;
+        nextPaginationToken?: string | undefined;
     }>;
     deleteUser: (input: {
         userId: string;
@@ -88,7 +91,7 @@ export default class SuperTokens {
     }) => Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
+    middleware: (request: BaseRequest, response: BaseResponse, userContext: any) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getRequestFromUserContext: (userContext: any | undefined) => BaseRequest | undefined;
 }

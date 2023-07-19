@@ -101,7 +101,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
             }
 
             // create a user
-            let signUpResponse = await EmailPasswordRecipe.signUp("test@example.com", "testPass123");
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signUpResponse.status, "OK");
 
             let superTokensUserId = signUpResponse.user.id;
@@ -204,7 +204,7 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
             }
 
             // create a user
-            let signUpResponse = await EmailPasswordRecipe.signUp("test@example.com", "testPass123");
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signUpResponse.status, "OK");
 
             let superTokensUserId = signUpResponse.user.id;

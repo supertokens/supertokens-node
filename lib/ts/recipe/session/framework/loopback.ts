@@ -19,6 +19,7 @@ import { InterceptorOrKey, InvocationContext, Next } from "@loopback/core";
 import { MiddlewareContext } from "@loopback/rest";
 import type { SessionContext as Context } from "../../../framework/loopback/framework";
 import { LoopbackRequest, LoopbackResponse } from "../../../framework/loopback/framework";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(options?: VerifySessionOptions): InterceptorOrKey {
     return async (ctx: InvocationContext, next: Next) => {
@@ -26,8 +27,15 @@ export function verifySession(options?: VerifySessionOptions): InterceptorOrKey 
         let middlewareCtx = await ctx.get<MiddlewareContext>("middleware.http.context");
         let request = new LoopbackRequest(middlewareCtx);
         let response = new LoopbackResponse(middlewareCtx);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
-            (middlewareCtx as Context).session = await sessionRecipe.verifySession(options, request, response);
+            (middlewareCtx as Context).session = await sessionRecipe.verifySession(
+                options,
+                request,
+                response,
+                userContext
+            );
         } catch (err) {
             try {
                 const supertokens = SuperTokens.getInstanceOrThrowError();

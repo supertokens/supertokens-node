@@ -7,6 +7,7 @@ const {
     thirdPartySignInUp,
     getUsersByEmail,
     emailPasswordSignUp,
+    thirdPartyManuallyCreateOrUpdateUser,
 } = require("../../lib/build/recipe/thirdpartyemailpassword");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
@@ -62,7 +63,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         // given there are no users
 
         // when
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 
         // then
         assert.strictEqual(thirdPartyUsers.length, 0);
@@ -86,11 +87,11 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
             return;
         }
 
-        await emailPasswordSignUp("john.doe@example.com", "somePass");
-        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await emailPasswordSignUp("public", "john.doe@example.com", "somePass");
+        await thirdPartyManuallyCreateOrUpdateUser("public", "mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await thirdPartyManuallyCreateOrUpdateUser("public", "mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 
         assert.strictEqual(thirdPartyUsers.length, 3);
 

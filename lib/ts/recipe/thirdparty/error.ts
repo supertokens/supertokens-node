@@ -23,3 +23,12 @@ export default class ThirdPartyError extends STError {
         this.fromRecipe = "thirdparty";
     }
 }
+
+export class ClientTypeNotFoundError extends STError {
+    constructor(options: { type: "CLIENT_TYPE_NOT_FOUND_ERROR"; message: string }) {
+        super({
+            ...options,
+        });
+        this.fromRecipe = "thirdparty";
+    }
+}

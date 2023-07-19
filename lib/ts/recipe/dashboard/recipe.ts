@@ -19,13 +19,14 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { getApiIdIfMatched, getApiPathWithDashboardBase, isApiPath, validateAndNormaliseUserInput } from "./utils";
+import { getApiPathWithDashboardBase, validateAndNormaliseUserInput } from "./utils";
 import {
     DASHBOARD_ANALYTICS_API,
     DASHBOARD_API,
     SEARCH_TAGS_API,
     SIGN_IN_API,
     SIGN_OUT_API,
+    TENANTS_LIST_API,
     USERS_COUNT_API,
     USERS_LIST_GET_API,
     USER_API,
@@ -59,6 +60,7 @@ import signIn from "./api/signIn";
 import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
+import listTenants from "./api/listTenants";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -116,21 +118,10 @@ export default class Recipe extends RecipeModule {
     // abstract instance functions below...............
 
     getAPIsHandled = (): APIHandled[] => {
-        /**
-         * Normally this array is used by the SDK to decide whether or not the recipe
-         * handles a specific API path and method and then returns the ID.
-         *
-         * For the dashboard recipe this logic is fully custom and handled inside the
-         * `returnAPIIdIfCanHandleRequest` method of this class.
-         *
-         * For most frameworks this array is redundant because the `returnAPIIdIfCanHandleRequest` is used.
-         * But for frameworks such as Hapi that require all APIs to be declared up front, this array is used
-         * to make sure that the framework does not return a 404
-         */
         return [
             {
                 id: DASHBOARD_API,
-                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(DASHBOARD_API)),
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase("/")),
                 disabled: false,
                 method: "get",
             },
@@ -175,6 +166,12 @@ export default class Recipe extends RecipeModule {
                 pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
                 disabled: false,
                 method: "post",
+            },
+            {
+                id: USER_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(USER_API)),
+                disabled: false,
+                method: "put",
             },
             {
                 id: USER_API,
@@ -242,15 +239,23 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "post",
             },
+            {
+                id: TENANTS_LIST_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(TENANTS_LIST_API)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
-        ___: HTTPMethod
+        ___: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,
@@ -264,15 +269,15 @@ export default class Recipe extends RecipeModule {
 
         // For these APIs we dont need API key validation
         if (id === DASHBOARD_API) {
-            return await dashboard(this.apiImpl, options);
+            return await dashboard(this.apiImpl, options, userContext);
         }
 
         if (id === SIGN_IN_API) {
-            return await signIn(this.apiImpl, options);
+            return await signIn(this.apiImpl, options, userContext);
         }
 
         if (id === VALIDATE_KEY_API) {
-            return await validateKey(this.apiImpl, options);
+            return await validateKey(this.apiImpl, options, userContext);
         }
 
         // Do API key validation for the remaining APIs
@@ -328,6 +333,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = signOut;
         } else if (id === DASHBOARD_ANALYTICS_API && req.getMethod() === "post") {
             apiFunction = analyticsPost;
+        } else if (id === TENANTS_LIST_API) {
+            apiFunction = listTenants;
         }
 
         // If the id doesnt match any APIs return false
@@ -335,7 +342,7 @@ export default class Recipe extends RecipeModule {
             return false;
         }
 
-        return await apiKeyProtector(this.apiImpl, options, apiFunction);
+        return await apiKeyProtector(this.apiImpl, tenantId, options, apiFunction, userContext);
     };
 
     handleError = async (err: error, _: BaseRequest, __: BaseResponse): Promise<void> => {
@@ -348,19 +355,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is error => {
         return error.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
-        const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
-
-        if (isApiPath(path, this.getAppInfo())) {
-            return getApiIdIfMatched(path, method);
-        }
-
-        if (path.startsWith(dashboardBundlePath)) {
-            return DASHBOARD_API;
-        }
-
-        return undefined;
     };
 }

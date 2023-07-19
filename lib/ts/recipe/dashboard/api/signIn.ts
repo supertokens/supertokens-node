@@ -24,7 +24,7 @@ type SignInResponse =
     | { status: "INVALID_CREDENTIALS_ERROR" }
     | { status: "USER_SUSPENDED_ERROR" };
 
-export default async function signIn(_: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function signIn(_: APIInterface, options: APIOptions, __: any): Promise<boolean> {
     const { email, password } = await options.req.getJSONBody();
 
     if (email === undefined) {

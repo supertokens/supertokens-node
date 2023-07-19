@@ -219,7 +219,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
             });
             SessionRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 1);
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2); // multitenancy is initialised by default
             resetAll();
         }
 
@@ -237,7 +237,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             SessionRecipe.getInstanceOrThrowError();
             EmailPasswordRecipe.getInstanceOrThrowError();
-            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 3); // multitenancy is initialised by default
             resetAll();
         }
     });
@@ -468,7 +468,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSameSite: "none" })],
             });
             try {
-                await Session.createNewSession(mockRequest(), mockResponse(), "asdf");
+                await Session.createNewSession(mockRequest(), mockResponse(), "public", "asdf");
             } catch (e) {
                 err = e;
             }
@@ -1091,7 +1091,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                     recipeList: [Session.init({ getTokenTransferMethod: () => "cookie" })],
                 });
-                await Session.createNewSession(mockRequest(), mockResponse(), "userId");
+                await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
                 assert(false);
             } catch (err) {
                 assert.strictEqual(
@@ -1117,7 +1117,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                     recipeList: [Session.init({ getTokenTransferMethod: () => "cookie", cookieSecure: false })],
                 });
-                await Session.createNewSession(mockRequest(), mockResponse(), "userId");
+                await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
                 assert(false);
             } catch (err) {
                 assert.strictEqual(
@@ -1148,7 +1148,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     }),
                 ],
             });
-            await Session.createNewSession(mockRequest(), mockResponse(), "userId");
+            await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
             resetAll();
         }
 
@@ -1254,7 +1254,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, "", {}, {});
+                await Session.createNewSession(req, res, "public", "", {}, {});
                 res.status(200).send("");
             });
 
@@ -1314,7 +1314,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, "", {}, {});
+                await Session.createNewSession(req, res, "public", "", {}, {});
                 res.status(200).send("");
             });
 
@@ -1374,7 +1374,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, "", {}, {});
+                await Session.createNewSession(req, res, "public", "", {}, {});
                 res.status(200).send("");
             });
 

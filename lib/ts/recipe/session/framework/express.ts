@@ -18,14 +18,17 @@ import type { SessionRequest } from "../../../framework/express/framework";
 import { ExpressRequest, ExpressResponse } from "../../../framework/express/framework";
 import type { NextFunction, Response } from "express";
 import SuperTokens from "../../../supertokens";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, res: Response, next: NextFunction) => {
         const request = new ExpressRequest(req);
         const response = new ExpressResponse(res);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
             const sessionRecipe = Session.getInstanceOrThrowError();
-            req.session = await sessionRecipe.verifySession(options, request, response);
+            req.session = await sessionRecipe.verifySession(options, request, response, userContext);
             next();
         } catch (err) {
             try {

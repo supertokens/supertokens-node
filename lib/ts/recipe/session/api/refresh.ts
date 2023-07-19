@@ -15,14 +15,17 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export default async function handleRefreshAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function handleRefreshAPI(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.refreshPOST === undefined) {
         return false;
     }
 
-    await apiImplementation.refreshPOST({ options, userContext: makeDefaultUserContextFromAPI(options.req) });
+    await apiImplementation.refreshPOST({ options, userContext });
     send200Response(options.res, {});
     return true;
 }

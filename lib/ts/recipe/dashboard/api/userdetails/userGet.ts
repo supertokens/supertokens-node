@@ -34,7 +34,12 @@ type Response =
           user: PasswordlessUser;
       };
 
-export const userGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userGet: APIFunction = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
     const recipeId = options.req.getKeyValueFromQuery("recipeId");
 
@@ -91,7 +96,7 @@ export const userGet: APIFunction = async (_: APIInterface, options: APIOptions)
         };
     }
 
-    const userMetaData = await UserMetaData.getUserMetadata(userId);
+    const userMetaData = await UserMetaData.getUserMetadata(userId, userContext);
     const { first_name, last_name } = userMetaData.metadata;
 
     user = {

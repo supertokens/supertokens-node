@@ -6,6 +6,7 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static signUp(
+        tenantId: string,
         email: string,
         password: string,
         userContext?: any
@@ -19,6 +20,7 @@ export default class Wrapper {
           }
     >;
     static signIn(
+        tenantId: string,
         email: string,
         password: string,
         userContext?: any
@@ -32,8 +34,9 @@ export default class Wrapper {
           }
     >;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
-    static getUserByEmail(email: string, userContext?: any): Promise<User | undefined>;
+    static getUserByEmail(tenantId: string, email: string, userContext?: any): Promise<User | undefined>;
     static createResetPasswordToken(
+        tenantId: string,
         userId: string,
         userContext?: any
     ): Promise<
@@ -46,6 +49,7 @@ export default class Wrapper {
           }
     >;
     static resetPasswordUsingToken(
+        tenantId: string,
         token: string,
         newPassword: string,
         userContext?: any
@@ -64,6 +68,7 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy?: string;
     }): Promise<
         | {
               status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
@@ -73,6 +78,26 @@ export default class Wrapper {
               failureReason: string;
           }
     >;
+    static createResetPasswordLink(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              link: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
+    static sendResetPasswordEmail(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR";
+    }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext?: any;
@@ -89,4 +114,6 @@ export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordT
 export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export type { RecipeInterface, User, APIOptions, APIInterface };
+export declare let createResetPasswordLink: typeof Wrapper.createResetPasswordLink;
+export declare let sendResetPasswordEmail: typeof Wrapper.sendResetPasswordEmail;
 export declare let sendEmail: typeof Wrapper.sendEmail;

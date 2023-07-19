@@ -12,7 +12,12 @@ type Response =
           data: any;
       };
 
-export const userMetaDataGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userMetaDataGet: APIFunction = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 
     if (userId === undefined) {
@@ -30,7 +35,7 @@ export const userMetaDataGet: APIFunction = async (_: APIInterface, options: API
         };
     }
 
-    const metaDataResponse = UserMetaData.getUserMetadata(userId);
+    const metaDataResponse = UserMetaData.getUserMetadata(userId, userContext);
     return {
         status: "OK",
         data: (await metaDataResponse).metadata,

@@ -79,7 +79,8 @@ export default class Recipe extends RecipeModule {
                 RecipeImplementation(
                     Querier.getNewInstanceOrThrowError(EmailPasswordRecipe.RECIPE_ID),
                     getEmailPasswordConfig,
-                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
+                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID),
+                    this.config.providers
                 )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
@@ -120,7 +121,6 @@ export default class Recipe extends RecipeModule {
                           signUpFeature: {
                               formFields: this.config.signUpFeature.formFields,
                           },
-                          resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
                       },
                       {
                           emailDelivery: this.emailDelivery,
@@ -205,19 +205,21 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
-        if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
-            return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, path, method);
+        if ((await this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
+            return await this.emailPasswordRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         if (
             this.thirdPartyRecipe !== undefined &&
-            this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
+            (await this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined
         ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
+            return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         return false;
     };

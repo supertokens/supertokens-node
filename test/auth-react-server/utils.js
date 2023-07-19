@@ -143,56 +143,47 @@ module.exports.startST = async function (host = "localhost", port = 9000) {
 
 module.exports.customAuth0Provider = () => {
     return {
-        id: "auth0",
-        get: (redirectURI, authCodeFromRequest) => {
-            return {
-                accessTokenAPI: {
-                    // this contains info about the token endpoint which exchanges the auth code with the access token and profile info.
-                    url: `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
-                    params: {
-                        // example post params
-                        client_id: process.env.AUTH0_CLIENT_ID,
-                        client_secret: process.env.AUTH0_CLIENT_SECRET,
-                        grant_type: "authorization_code",
-                        redirect_uri: redirectURI,
-                        code: authCodeFromRequest,
-                    },
+        config: {
+            thirdPartyId: "auth0",
+            name: "Auth0",
+            // this contains info about forming the authorisation redirect URL without the state params and without the redirect_uri param
+            authorizationEndpoint: `https://${process.env.AUTH0_DOMAIN}/authorize`,
+            authorizationEndpointQueryParams: {
+                scope: "openid profile",
+            },
+            tokenEndpoint: `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
+            clients: [
+                {
+                    clientId: process.env.AUTH0_CLIENT_ID,
+                    clientSecret: process.env.AUTH0_CLIENT_SECRET,
                 },
-                authorisationRedirect: {
-                    // this contains info about forming the authorisation redirect URL without the state params and without the redirect_uri param
-                    url: `https://${process.env.AUTH0_DOMAIN}/authorize`,
-                    params: {
-                        client_id: process.env.AUTH0_CLIENT_ID,
-                        scope: "openid profile",
-                        response_type: "code",
-                    },
-                },
-                getClientId: () => {
-                    return process.env.AUTH0_CLIENT_ID;
-                },
-                getProfileInfo: async (accessTokenAPIResponse) => {
-                    let accessToken = accessTokenAPIResponse.access_token;
-                    let authHeader = `Bearer ${accessToken}`;
-                    let response = await fetch(`https://${process.env.AUTH0_DOMAIN}/userinfo`, {
-                        method: "get",
-                        headers: {
-                            Authorization: authHeader,
-                        },
-                    });
-                    if (response.status >= 400) {
-                        throw new Error("Failed to fetch - status code: " + response.status);
-                    }
-                    let userInfo = await response.json();
-                    return {
-                        id: userInfo.sub,
-                        email: {
-                            id: userInfo.name,
-                            isVerified: true,
-                        },
-                    };
-                },
-            };
+            ],
         },
+        override: (oI) => ({
+            ...oI,
+            getUserInfo: async (accessTokenAPIResponse) => {
+                let accessToken = accessTokenAPIResponse.oAuthTokens.access_token;
+                if (accessToken === undefined) {
+                    throw new Error("access token is undefined");
+                }
+                // let authHeader = `Bearer ${accessToken}`;
+                // let response = await axios({
+                //     method: "get",
+                //     url: `https://${process.env.AUTH0_DOMAIN}/userinfo`,
+                //     headers: {
+                //         Authorization: authHeader,
+                //     },
+                // });
+                // let userInfo = response.data;
+                return {
+                    thirdPartyUserId: "someId",
+                    email: {
+                        id: "test@example.com",
+                        isVerified: true,
+                    },
+                };
+            },
+        }),
     };
 };
 

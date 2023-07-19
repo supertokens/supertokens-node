@@ -35,26 +35,23 @@ let { middleware, errorHandler } = require("../../framework/express");
 describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: true,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },
@@ -86,8 +83,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -114,8 +113,12 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -171,8 +174,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -230,8 +235,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -284,8 +291,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             recipeList: [
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -312,8 +321,12 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {

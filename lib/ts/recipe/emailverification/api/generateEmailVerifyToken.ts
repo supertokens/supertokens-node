@@ -15,19 +15,18 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import Session from "../../session";
 
 export default async function generateEmailVerifyToken(
     apiImplementation: APIInterface,
-    options: APIOptions
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
     if (apiImplementation.generateEmailVerifyTokenPOST === undefined) {
         return false;
     }
-    const userContext = makeDefaultUserContextFromAPI(options.req);
     const session = await Session.getSession(
         options.req,
         options.res,

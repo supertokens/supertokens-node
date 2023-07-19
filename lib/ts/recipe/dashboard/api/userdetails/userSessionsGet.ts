@@ -16,7 +16,12 @@ type Response = {
     sessions: SessionType[];
 };
 
-export const userSessionsGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userSessionsGet: APIFunction = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
 
     if (userId === undefined) {
@@ -26,7 +31,7 @@ export const userSessionsGet: APIFunction = async (_: APIInterface, options: API
         });
     }
 
-    const response = await Session.getAllSessionHandlesForUser(userId);
+    const response = await Session.getAllSessionHandlesForUser(userId, undefined, userContext);
 
     let sessions: SessionType[] = [];
     let sessionInfoPromises: Promise<void>[] = [];
@@ -35,7 +40,7 @@ export const userSessionsGet: APIFunction = async (_: APIInterface, options: API
         sessionInfoPromises.push(
             new Promise(async (res, rej) => {
                 try {
-                    const sessionResponse = await Session.getSessionInformation(response[i]);
+                    const sessionResponse = await Session.getSessionInformation(response[i], userContext);
 
                     if (sessionResponse !== undefined) {
                         const accessTokenPayload = sessionResponse.customClaimsInAccessTokenPayload;

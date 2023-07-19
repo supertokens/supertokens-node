@@ -29,7 +29,8 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import { getRequiredClaimValidators } from "./utils";
 import { createNewSessionInRequest, getSessionFromRequest, refreshSessionInRequest } from "./sessionRequestFunctions";
-// For Express
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+
 export default class SessionWrapper {
     static init = Recipe.init;
 
@@ -38,6 +39,7 @@ export default class SessionWrapper {
     static async createNewSession(
         req: any,
         res: any,
+        tenantId: string,
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
@@ -57,10 +59,12 @@ export default class SessionWrapper {
             config,
             appInfo,
             sessionDataInDatabase,
+            tenantId,
         });
     }
 
     static async createNewSessionWithoutRequestResponse(
+        tenantId: string,
         userId: string,
         accessTokenPayload: any = {},
         sessionDataInDatabase: any = {},
@@ -90,6 +94,7 @@ export default class SessionWrapper {
             accessTokenPayload: finalAccessTokenPayload,
             sessionDataInDatabase,
             disableAntiCsrf,
+            tenantId,
             userContext,
         });
     }
@@ -125,7 +130,8 @@ export default class SessionWrapper {
 
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
-            userId: sessionInfo?.userId,
+            userId: sessionInfo.userId,
+            tenantId: sessionInfo.tenantId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
         });
@@ -162,6 +168,7 @@ export default class SessionWrapper {
     }
 
     static async validateClaimsInJWTPayload(
+        tenantId: string,
         userId: string,
         jwtPayload: JSONObject,
         overrideGlobalClaimValidators?: (
@@ -178,6 +185,7 @@ export default class SessionWrapper {
 
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
+            tenantId,
             userId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
@@ -325,19 +333,29 @@ export default class SessionWrapper {
             userContext,
         });
     }
-    static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
+    static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({
+            userId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            revokeAcrossAllTenants: tenantId === undefined,
+            userContext,
+        });
     }
 
-    static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
+    static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
             userId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            fetchAcrossAllTenants: tenantId === undefined,
             userContext,
         });
     }
 
     static revokeSession(sessionHandle: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle, userContext });
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({
+            sessionHandle,
+            userContext,
+        });
     }
 
     static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {

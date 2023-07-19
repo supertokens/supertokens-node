@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User } from "../../../types";
+import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";
 import { RecipeInterface as EmailPasswordRecipeInterface } from "../../../../emailpassword";
 import { NormalisedAppinfo } from "../../../../../types";
 import EmailPasswordBackwardCompatibilityService from "../../../../emailpassword/emaildelivery/services/backwardCompatibility";
@@ -25,21 +25,13 @@ export default class BackwardCompatibilityService
     constructor(
         emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface,
         appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        resetPasswordUsingTokenFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                passwordResetURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
-        }
+        isInServerlessEnv: boolean
     ) {
         {
             this.emailPasswordBackwardCompatibilityService = new EmailPasswordBackwardCompatibilityService(
                 emailPasswordRecipeInterfaceImpl,
                 appInfo,
-                isInServerlessEnv,
-                resetPasswordUsingTokenFeature
+                isInServerlessEnv
             );
         }
     }

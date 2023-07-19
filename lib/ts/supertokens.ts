@@ -31,6 +31,7 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
+import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -80,9 +81,22 @@ export default class SuperTokens {
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
+        let multitenancyFound = false;
+        // Multitenancy recipe is an always initialized recipe and needs to be imported this way
+        // so that there is no circular dependency. Otherwise there would be cyclic dependency
+        // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
+        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
         this.recipeModules = config.recipeList.map((func) => {
-            return func(this.appInfo, this.isInServerlessEnv);
+            const recipeModule = func(this.appInfo, this.isInServerlessEnv);
+            if (recipeModule.getRecipeId() === MultitenancyRecipe.RECIPE_ID) {
+                multitenancyFound = true;
+            }
+            return recipeModule;
         });
+
+        if (!multitenancyFound) {
+            this.recipeModules.push(MultitenancyRecipe.init()(this.appInfo, this.isInServerlessEnv));
+        }
 
         this.telemetryEnabled = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
     }
@@ -112,12 +126,14 @@ export default class SuperTokens {
     handleAPI = async (
         matchedRecipe: RecipeModule,
         id: string,
+        tenantId: string,
         request: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => {
-        return await matchedRecipe.handleAPIRequest(id, request, response, path, method);
+        return await matchedRecipe.handleAPIRequest(id, tenantId, request, response, path, method, userContext);
     };
 
     getAllCORSHeaders = (): string[] => {
@@ -133,7 +149,7 @@ export default class SuperTokens {
         return Array.from(headerSet);
     };
 
-    getUserCount = async (includeRecipeIds?: string[]): Promise<number> => {
+    getUserCount = async (includeRecipeIds?: string[], tenantId?: string): Promise<number> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
@@ -145,9 +161,14 @@ export default class SuperTokens {
         if (includeRecipeIds !== undefined) {
             includeRecipeIdsStr = includeRecipeIds.join(",");
         }
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/users/count"), {
-            includeRecipeIds: includeRecipeIdsStr,
-        });
+
+        let response = await querier.sendGetRequest(
+            new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/users/count`),
+            {
+                includeRecipeIds: includeRecipeIdsStr,
+                includeAllTenants: tenantId === undefined,
+            }
+        );
         return Number(response.count);
     };
 
@@ -157,6 +178,7 @@ export default class SuperTokens {
         paginationToken?: string;
         includeRecipeIds?: string[];
         query?: object;
+        tenantId: string;
     }): Promise<{
         users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
@@ -172,15 +194,17 @@ export default class SuperTokens {
         if (input.includeRecipeIds !== undefined) {
             includeRecipeIdsStr = input.includeRecipeIds.join(",");
         }
-        let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+        let response = await querier.sendGetRequest(new NormalisedURLPath(`/${input.tenantId}/users`), {
             ...input.query,
             includeRecipeIds: includeRecipeIdsStr,
             timeJoinedOrder: input.timeJoinedOrder,
             limit: input.limit,
             paginationToken: input.paginationToken,
         });
+
+        const users: { recipeId: string; user: any }[] = response.users;
         return {
-            users: response.users,
+            users,
             nextPaginationToken: response.nextPaginationToken,
         };
     };
@@ -301,7 +325,7 @@ export default class SuperTokens {
         }
     };
 
-    middleware = async (request: BaseRequest, response: BaseResponse): Promise<boolean> => {
+    middleware = async (request: BaseRequest, response: BaseResponse, userContext: any): Promise<boolean> => {
         logDebugMessage("middleware: Started");
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
@@ -340,8 +364,8 @@ export default class SuperTokens {
             }
             logDebugMessage("middleware: Matched with recipe ID: " + matchedRecipe.getRecipeId());
 
-            let id = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
-            if (id === undefined) {
+            let idResult = await matchedRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext);
+            if (idResult === undefined) {
                 logDebugMessage(
                     "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
                         path.getAsStringDangerous() +
@@ -352,10 +376,18 @@ export default class SuperTokens {
                 return false;
             }
 
-            logDebugMessage("middleware: Request being handled by recipe. ID is: " + id);
+            logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
 
             // give task to the matched recipe
-            let requestHandled = await matchedRecipe.handleAPIRequest(id, request, response, path, method);
+            let requestHandled = await matchedRecipe.handleAPIRequest(
+                idResult.id,
+                idResult.tenantId,
+                request,
+                response,
+                path,
+                method,
+                userContext
+            );
             if (!requestHandled) {
                 logDebugMessage("middleware: Not handled because API returned requestHandled as false");
                 return false;
@@ -366,15 +398,17 @@ export default class SuperTokens {
             // we loop through all recipe modules to find the one with the matching path and method
             for (let i = 0; i < this.recipeModules.length; i++) {
                 logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
-                let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
-                if (id !== undefined) {
-                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + id);
+                let idResult = await this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method, userContext);
+                if (idResult !== undefined) {
+                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + idResult.id);
                     let requestHandled = await this.recipeModules[i].handleAPIRequest(
-                        id,
+                        idResult.id,
+                        idResult.tenantId,
                         request,
                         response,
                         path,
-                        method
+                        method,
+                        userContext
                     );
                     if (!requestHandled) {
                         logDebugMessage("middleware: Not handled because API returned requestHandled as false");

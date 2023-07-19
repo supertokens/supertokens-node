@@ -45,10 +45,12 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     handleError: (
         err: STErrorEmailPassword | STErrorThirdParty,

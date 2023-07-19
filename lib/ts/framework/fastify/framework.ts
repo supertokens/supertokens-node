@@ -20,7 +20,7 @@ import type {
     FastifyPluginCallback,
 } from "fastify";
 import type { HTTPMethod } from "../../types";
-import { getFromObjectCaseInsensitive, normaliseHttpMethod } from "../../utils";
+import { getFromObjectCaseInsensitive, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { serializeCookieValue, normalizeHeaderValue, getCookieValueFromHeaders } from "../utils";
@@ -189,8 +189,10 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(reply);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
-            await supertokens.middleware(request, response);
+            await supertokens.middleware(request, response, userContext);
         } catch (err) {
             await supertokens.errorHandler(err, request, response);
         }

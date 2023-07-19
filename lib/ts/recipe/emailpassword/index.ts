@@ -16,24 +16,28 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { getPasswordResetLink } from "./utils";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static signUp(email: string, password: string, userContext?: any) {
+    static signUp(tenantId: string, email: string, password: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({
             email,
             password,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static signIn(email: string, password: string, userContext?: any) {
+    static signIn(tenantId: string, email: string, password: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({
             email,
             password,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -45,24 +49,27 @@ export default class Wrapper {
         });
     }
 
-    static getUserByEmail(email: string, userContext?: any) {
+    static getUserByEmail(tenantId: string, email: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({
             email,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static createResetPasswordToken(userId: string, userContext?: any) {
+    static createResetPasswordToken(tenantId: string, userId: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({
             userId,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any) {
+    static resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
             token,
             newPassword,
+            tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -73,11 +80,58 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy?: string;
     }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             userContext: {},
             ...input,
+            tenantIdForPasswordPolicy:
+                input.tenantIdForPasswordPolicy === undefined ? DEFAULT_TENANT_ID : input.tenantIdForPasswordPolicy,
         });
+    }
+
+    static async createResetPasswordLink(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+        let token = await createResetPasswordToken(tenantId, userId, userContext);
+        if (token.status === "UNKNOWN_USER_ID_ERROR") {
+            return token;
+        }
+
+        const recipeInstance = Recipe.getInstanceOrThrowError();
+        return {
+            status: "OK",
+            link: getPasswordResetLink({
+                appInfo: recipeInstance.getAppInfo(),
+                recipeId: recipeInstance.getRecipeId(),
+                token: token.token,
+                tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+            }),
+        };
+    }
+
+    static async sendResetPasswordEmail(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
+        let link = await createResetPasswordLink(tenantId, userId, userContext);
+        if (link.status === "UNKNOWN_USER_ID_ERROR") {
+            return link;
+        }
+        await sendEmail({
+            passwordResetLink: link.link,
+            type: "PASSWORD_RESET",
+            user: (await getUserById(userId, userContext))!,
+            tenantId,
+            userContext,
+        });
+
+        return {
+            status: "OK",
+        };
     }
 
     static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
@@ -85,6 +139,7 @@ export default class Wrapper {
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
             userContext: {},
             ...input,
+            tenantId: input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId,
         });
     }
 }
@@ -108,5 +163,9 @@ export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
+
+export let createResetPasswordLink = Wrapper.createResetPasswordLink;
+
+export let sendResetPasswordEmail = Wrapper.sendResetPasswordEmail;
 
 export let sendEmail = Wrapper.sendEmail;
