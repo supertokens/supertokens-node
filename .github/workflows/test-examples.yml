@@ -20,11 +20,21 @@ jobs:
             NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.example_testing_supabase_public_url }}
             NEXT_PUBLIC_SUPABASE_KEY: ${{ secrets.example_testing_supabase_public_key }}
             SUPABASE_SIGNING_SECRET: ${{ secrets.example_testing_supabase_signing_secret }}
+            LAMBDA_FUNCTION_NAME: ${{ secrets.aws_function_name }}
         defaults:
             run:
                 working-directory: ${{ matrix.examplePath }}
         steps:
             - uses: actions/checkout@v2
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+                  role-duration-seconds: 1200
+                  role-session-name: Github-action
+            - run: echo $GITHUB_REF_NAME
             - run: npm install git+https://github.com:supertokens/supertokens-node.git#$GITHUB_SHA
             - run: npm install
             - run: npm install mocha@6.1.4 jsdom-global@3.0.2 puppeteer@^11.0.0 isomorphic-fetch@^3.0.0
