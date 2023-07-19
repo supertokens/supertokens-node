@@ -130,33 +130,31 @@ export default class Recipe extends RecipeModule {
                       }
                   );
 
-        if (this.config.providers.length !== 0) {
-            this.thirdPartyRecipe =
-                recipes.thirdPartyInstance !== undefined
-                    ? recipes.thirdPartyInstance
-                    : new ThirdPartyRecipe(
-                          recipeId,
-                          appInfo,
-                          isInServerlessEnv,
-                          {
-                              override: {
-                                  functions: (_) => {
-                                      return ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
-                                  },
-                                  apis: (_) => {
-                                      return getThirdPartyIterfaceImpl(this.apiImpl);
-                                  },
+        this.thirdPartyRecipe =
+            recipes.thirdPartyInstance !== undefined
+                ? recipes.thirdPartyInstance
+                : new ThirdPartyRecipe(
+                      recipeId,
+                      appInfo,
+                      isInServerlessEnv,
+                      {
+                          override: {
+                              functions: (_) => {
+                                  return ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
                               },
-                              signInAndUpFeature: {
-                                  providers: this.config.providers,
+                              apis: (_) => {
+                                  return getThirdPartyIterfaceImpl(this.apiImpl);
                               },
                           },
-                          {},
-                          {
-                              emailDelivery: this.emailDelivery,
-                          }
-                      );
-        }
+                          signInAndUpFeature: {
+                              providers: this.config.providers,
+                          },
+                      },
+                      {},
+                      {
+                          emailDelivery: this.emailDelivery,
+                      }
+                  );
     }
 
     static init(config: TypeInput): RecipeListFunction {
