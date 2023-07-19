@@ -3,7 +3,7 @@ import { getApiDomain } from "../config";
 
 export default function CallAPIView() {
     async function callAPIClicked() {
-        let response = await axios.get(getApiDomain() + "/dev/user");
+        let response = await axios.get(getApiDomain() + "/prod/user");
         window.alert("Session Information:\n" + JSON.stringify(response.data, null, 2));
     }
 

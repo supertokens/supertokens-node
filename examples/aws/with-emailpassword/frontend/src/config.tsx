@@ -5,7 +5,7 @@ import Session from "supertokens-auth-react/recipe/session";
 export function getApiDomain() {
     // const apiPort = process.env.REACT_APP_API_PORT || 3001;
     // const apiUrl = process.env.REACT_APP_API_URL || `http://localhost:${apiPort}`;
-    return "https://fjo5oq54c9.execute-api.ap-south-1.amazonaws.com";
+    return "https://0ez3j5libc.execute-api.ap-south-1.amazonaws.com";
 }
 
 export function getWebsiteDomain() {
@@ -19,7 +19,7 @@ export const SuperTokensConfig = {
         appName: "SuperTokens Demo App",
         apiDomain: getApiDomain(),
         apiBasePath: "/auth",
-        apiGatewayPath: "/dev",
+        apiGatewayPath: "/prod",
         websiteDomain: getWebsiteDomain(),
     },
     // recipeList contains all the modules that you want to

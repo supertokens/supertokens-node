@@ -36,7 +36,7 @@ const { setup_aws } = require("./helpers/aws-lambda.js");
 // Run the tests in a DOM environment.
 require("jsdom-global")();
 
-const apiDomain = "https://fjo5oq54c9.execute-api.ap-south-1.amazonaws.com";
+const apiDomain = "https://0ez3j5libc.execute-api.ap-south-1.amazonaws.com";
 const websiteDomain = "http://localhost:3000";
 SuperTokensNode.init({
     supertokens: {
@@ -48,7 +48,7 @@ SuperTokensNode.init({
         apiDomain: apiDomain,
         websiteDomain: websiteDomain,
         apiBasePath: "/auth",
-        apiGatewayPath: "/dev",
+        apiGatewayPath: "/prod",
         appName: "testNode",
     },
     recipeList: [EmailPassword.init(), Session.init()],

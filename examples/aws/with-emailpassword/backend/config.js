@@ -10,10 +10,10 @@ module.exports.getBackendConfig = () => {
         },
         appInfo: {
             appName: "SuperTokens Demo",
-            apiDomain: "https://fjo5oq54c9.execute-api.ap-south-1.amazonaws.com",
+            apiDomain: "https://0ez3j5libc.execute-api.ap-south-1.amazonaws.com",
             websiteDomain: "http://localhost:3000",
             apiBasePath: "/auth",
-            apiGatewayPath: "/dev",
+            apiGatewayPath: "/prod",
         },
         recipeList: [
             EmailPassword.init(),
