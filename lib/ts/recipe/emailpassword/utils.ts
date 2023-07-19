@@ -54,18 +54,11 @@ export function validateAndNormaliseUserInput(
         let emailService = config?.emailDelivery?.service;
         /**
          * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
-         * createAndSendCustomEmail implementation which calls our supertokens API
+         * if user has not passed emailService config, we use the default
+         * createAndSendEmailUsingSupertokensService implementation which calls our supertokens API
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                recipeImpl,
-                appInfo,
-                isInServerlessEnv,
-                config?.resetPasswordUsingTokenFeature
-            );
+            emailService = new BackwardCompatibilityService(recipeImpl, appInfo, isInServerlessEnv);
         }
         return {
             ...config?.emailDelivery,
@@ -254,4 +247,22 @@ export async function defaultEmailValidator(value: any) {
     }
 
     return undefined;
+}
+
+export function getPasswordResetLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    tenantId: string;
+}): string {
+    return (
+        input.appInfo.websiteDomain.getAsStringDangerous() +
+        input.appInfo.websiteBasePath.getAsStringDangerous() +
+        "/reset-password?token=" +
+        input.token +
+        "&rid=" +
+        input.recipeId +
+        "&tenantId=" +
+        input.tenantId
+    );
 }

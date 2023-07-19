@@ -59,7 +59,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
             recipeList: [Session.init()],
         });
 
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
 
         assert.strictEqual(requestMock.callCount, 0);
@@ -87,7 +87,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
             recipeList: [Session.init()],
         });
 
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
 
         assert.strictEqual(requestMock.callCount, 0);
@@ -115,7 +115,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         });
 
         // We create a new token
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
 
         assert.strictEqual(requestMock.callCount, 0);
@@ -125,7 +125,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         // We wait for signing key to expire
         await new Promise((r) => setTimeout(r, 6000));
 
-        const createResWithNewKey = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createResWithNewKey = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokensWithNewKey = createResWithNewKey.getAllSessionTokensDangerously();
         assert.ok(
             await Session.getSessionWithoutRequestResponse(tokensWithNewKey.accessToken, tokensWithNewKey.antiCsrfToken)
@@ -153,7 +153,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         });
 
         // We create a new token
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
 
         // Check that the keys have not been loaded
@@ -186,7 +186,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
             recipeList: [Session.init()],
         });
 
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
 
         assert.strictEqual(requestMock.callCount, 0);
@@ -222,7 +222,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         });
 
         // We create a new token
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
 
         // Check that the keys have not been loaded
@@ -249,7 +249,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         await new Promise((r) => setTimeout(r, 300));
 
         // We create a new token
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
 
         // Check that the keys have not been loaded
@@ -275,7 +275,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
             recipeList: [Session.init()],
         });
 
-        const createRes = await Session.createNewSessionWithoutRequestResponse("test-user-id");
+        const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
         const tokens = createRes.getAllSessionTokensDangerously();
         resetAll();
 

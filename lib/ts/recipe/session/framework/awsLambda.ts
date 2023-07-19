@@ -18,15 +18,18 @@ import type { SessionEvent, SessionEventV2 } from "../../../framework/awsLambda/
 import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
 import { VerifySessionOptions } from "..";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(handler: Handler, verifySessionOptions?: VerifySessionOptions): Handler {
     return async (event: SessionEvent | SessionEventV2, context: Context, callback: Callback) => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new AWSRequest(event);
         let response = new AWSResponse(event);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
             let sessionRecipe = Session.getInstanceOrThrowError();
-            event.session = await sessionRecipe.verifySession(verifySessionOptions, request, response);
+            event.session = await sessionRecipe.verifySession(verifySessionOptions, request, response, userContext);
             let handlerResult = await handler(event, context, callback);
             return response.sendResponse(handlerResult);
         } catch (err) {

@@ -64,7 +64,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
 
-        let res = await signIn("test@gmail.com", "testPass123");
+        let res = await signIn("public", "test@gmail.com", "testPass123");
 
         await updateEmailOrPassword({
             userId: res.user.id,
@@ -73,7 +73,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             applyPasswordPolicy: false,
         });
 
-        let res2 = await signIn("test2@gmail.com", "testPass");
+        let res2 = await signIn("public", "test2@gmail.com", "testPass");
 
         assert(res2.user.id === res2.user.id);
     });
@@ -124,7 +124,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
 
-        let res = await signIn("test@gmail.com", "testPass123");
+        let res = await signIn("public", "test@gmail.com", "testPass123");
 
         const res2 = await updateEmailOrPassword({
             userId: res.user.id,
@@ -182,7 +182,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
 
-        let res = await signIn("test@gmail.com", "testPass123");
+        let res = await signIn("public", "test@gmail.com", "testPass123");
 
         const res2 = await updateEmailOrPassword({
             userId: res.user.id,
@@ -221,7 +221,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
 
-        let res = await signIn("test@gmail.com", "testPass123");
+        let res = await signIn("public", "test@gmail.com", "testPass123");
 
         const res2 = await updateEmailOrPassword({
             userId: res.user.id,

@@ -22,7 +22,7 @@ import type {
     Callback,
 } from "aws-lambda";
 import { HTTPMethod } from "../../types";
-import { getFromObjectCaseInsensitive, normaliseHttpMethod } from "../../utils";
+import { getFromObjectCaseInsensitive, makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { normalizeHeaderValue, getCookieValueFromHeaders, serializeCookieValue } from "../utils";
@@ -323,8 +323,10 @@ export const middleware = (handler?: Handler): Handler => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new AWSRequest(event);
         let response = new AWSResponse(event);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
-            let result = await supertokens.middleware(request, response);
+            let result = await supertokens.middleware(request, response, userContext);
             if (result) {
                 return response.sendResponse();
             }

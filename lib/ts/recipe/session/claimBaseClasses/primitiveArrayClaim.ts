@@ -2,7 +2,11 @@ import { JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
-    public readonly fetchValue: (userId: string, userContext: any) => Promise<T[] | undefined> | T[] | undefined;
+    public readonly fetchValue: (
+        userId: string,
+        tenantId: string,
+        userContext: any
+    ) => Promise<T[] | undefined> | T[] | undefined;
     public readonly defaultMaxAgeInSeconds: number | undefined;
 
     constructor(config: { key: string; fetchValue: SessionClaim<T[]>["fetchValue"]; defaultMaxAgeInSeconds?: number }) {
@@ -171,6 +175,57 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
                         : {
                               isValid,
                               reason: { message: "wrong value", expectedToInclude: val, actualValue: claimVal },
+                          };
+                },
+            };
+        },
+        includesAny: (
+            val: T[],
+            maxAgeInSeconds: number | undefined = this.defaultMaxAgeInSeconds,
+            id?: string
+        ): SessionClaimValidator => {
+            return {
+                claim: this,
+                id: id ?? this.key,
+                shouldRefetch: (payload, ctx) =>
+                    this.getValueFromPayload(payload, ctx) === undefined ||
+                    // We know payload[this.id] is defined since the value is not undefined in this branch
+                    (maxAgeInSeconds !== undefined && payload[this.key].t < Date.now() - maxAgeInSeconds * 1000),
+                validate: async (payload, ctx) => {
+                    const claimVal = this.getValueFromPayload(payload, ctx);
+                    if (claimVal === undefined) {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message: "value does not exist",
+                                expectedToNotInclude: val,
+                                actualValue: claimVal,
+                            },
+                        };
+                    }
+
+                    const ageInSeconds = (Date.now() - this.getLastRefetchTime(payload, ctx)!) / 1000;
+                    if (maxAgeInSeconds !== undefined && ageInSeconds > maxAgeInSeconds) {
+                        return {
+                            isValid: false,
+                            reason: {
+                                message: "expired",
+                                ageInSeconds,
+                                maxAgeInSeconds,
+                            },
+                        };
+                    }
+                    const claimSet = new Set(claimVal);
+                    const isValid = val.some((v) => claimSet.has(v));
+                    return isValid
+                        ? { isValid: isValid }
+                        : {
+                              isValid,
+                              reason: {
+                                  message: "wrong value",
+                                  expectedToIncludeAtLeastOneOf: val,
+                                  actualValue: claimVal,
+                              },
                           };
                 },
             };

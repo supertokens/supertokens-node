@@ -55,13 +55,13 @@ describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRol
 
             // add them to a user
             for (let user in users) {
-                const response = await UserRolesRecipe.addRoleToUser(users[user], role);
+                const response = await UserRolesRecipe.addRoleToUser("public", users[user], role);
                 assert.strictEqual(response.status, "OK");
                 assert(!response.didUserAlreadyHaveRole);
             }
 
             // retrieve the users for role
-            const result = await UserRolesRecipe.getUsersThatHaveRole(role);
+            const result = await UserRolesRecipe.getUsersThatHaveRole("public", role);
             assert.strictEqual(result.status, "OK");
             assert(areArraysEqual(users, result.users));
         });
@@ -89,7 +89,7 @@ describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRol
             }
 
             // retrieve the users for role which that not exist
-            const result = await UserRolesRecipe.getUsersThatHaveRole("unknownRole");
+            const result = await UserRolesRecipe.getUsersThatHaveRole("public", "unknownRole");
             assert.strictEqual(result.status, "UNKNOWN_ROLE_ERROR");
         });
     });

@@ -36,10 +36,17 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 recipeList: [
                     ThirdPartyEmailPasswordRecipe.init({
                         providers: [
-                            ThirdPartyEmailPasswordRecipe.Google({
-                                clientId: "google",
-                                clientSecret: "test",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "google",
+                                            clientSecret: "test",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     }),
                     SessionRecipe.init(),
@@ -58,7 +65,7 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 const email = "test@example.com";
                 const password = "testPass123";
 
-                let signUpResponse = await ThirdPartyEmailPasswordRecipe.emailPasswordSignUp(email, password);
+                let signUpResponse = await ThirdPartyEmailPasswordRecipe.emailPasswordSignUp("public", email, password);
                 assert.strictEqual(signUpResponse.status, "OK");
                 let user = signUpResponse.user;
                 let superTokensUserId = user.id;
@@ -83,7 +90,12 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 // create a new ThirdParty user
                 const email = "test2@example.com";
 
-                let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartySignInUp("google", "tpId", email);
+                let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartyManuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "tpId",
+                    email
+                );
 
                 // map the users id
                 let user = signUpResponse.user;

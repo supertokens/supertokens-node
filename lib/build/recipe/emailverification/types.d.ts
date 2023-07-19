@@ -23,10 +23,6 @@ export declare type TypeInput = {
               status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
           }
     >;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -68,6 +64,7 @@ export declare type RecipeInterface = {
     createEmailVerificationToken(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -80,6 +77,7 @@ export declare type RecipeInterface = {
     >;
     verifyEmailUsingToken(input: {
         token: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -94,6 +92,7 @@ export declare type RecipeInterface = {
     revokeEmailVerificationTokens(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -121,6 +120,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
               session?: SessionContainerInterface;
@@ -167,6 +167,7 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
         email: string;
     };
     emailVerifyLink: string;
+    tenantId: string;
 };
 export declare type GetEmailForUserIdFunc = (
     userId: string,

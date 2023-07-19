@@ -97,10 +97,12 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         _: string,
+        ____: string | undefined, // TODO tenantId
         req: BaseRequest,
         res: BaseResponse,
         __: normalisedURLPath,
-        ___: HTTPMethod
+        ___: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options = {
             config: this.config,
@@ -111,7 +113,7 @@ export default class Recipe extends RecipeModule {
             res,
         };
 
-        return await getJWKS(this.apiImpl, options);
+        return await getJWKS(this.apiImpl, options, userContext);
     };
 
     handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void> {

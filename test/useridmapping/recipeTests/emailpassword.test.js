@@ -47,7 +47,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
@@ -110,14 +110,14 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -131,7 +131,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info using email, the id in the response should be the externalId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.ok(response !== undefined);
                 assert.strictEqual(response.id, externalId);
                 assert.strictEqual(response.email, email);
@@ -165,14 +165,14 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -185,7 +185,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             });
 
             // sign in, check that the userId retrieved is the external userId
-            let signInResponse = await EmailPasswordRecipe.signIn(email, password);
+            let signInResponse = await EmailPasswordRecipe.signIn("public", email, password);
             assert.strictEqual(signInResponse.status, "OK");
             assert.strictEqual(signInResponse.user.id, externalId);
         });
@@ -217,14 +217,14 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -235,12 +235,16 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 externalUserId: externalId,
             });
             // create the password resestToken
-            let createResetPasswordTokenResponse = await EmailPasswordRecipe.createResetPasswordToken(externalId);
+            let createResetPasswordTokenResponse = await EmailPasswordRecipe.createResetPasswordToken(
+                "public",
+                externalId
+            );
             assert.strictEqual(createResetPasswordTokenResponse.status, "OK");
 
             // reset the password
             const newPassword = "newTestPass123";
             let resetPasswordUsingTokenResponse = await EmailPasswordRecipe.resetPasswordUsingToken(
+                "public",
                 createResetPasswordTokenResponse.token,
                 newPassword
             );
@@ -248,7 +252,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             assert.strictEqual(resetPasswordUsingTokenResponse.userId, externalId);
 
             // check that the password is reset by signing in
-            let response = await EmailPasswordRecipe.signIn(email, newPassword);
+            let response = await EmailPasswordRecipe.signIn("public", email, newPassword);
             assert.strictEqual(response.status, "OK");
             assert.strictEqual(response.user.id, externalId);
         });
@@ -280,14 +284,14 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
 
             // retrieve the users info, the id should be the superTokens userId
             {
-                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                let response = await EmailPasswordRecipe.getUserByEmail("public", email);
                 assert.strictEqual(response.id, superTokensUserId);
             }
 
@@ -311,7 +315,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
                 // sign in with the new email
                 {
-                    const response = await EmailPasswordRecipe.signIn(updatedEmail, password);
+                    const response = await EmailPasswordRecipe.signIn("public", updatedEmail, password);
                     assert.strictEqual(response.status, "OK");
                     assert.strictEqual(response.user.id, externalId);
                 }
@@ -330,7 +334,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
                 // sign in with new password
                 {
-                    const response = await EmailPasswordRecipe.signIn(updatedEmail, updatedPassword);
+                    const response = await EmailPasswordRecipe.signIn("public", updatedEmail, updatedPassword);
                     assert.strictEqual(response.status, "OK");
                     assert.strictEqual(response.user.id, externalId);
                 }

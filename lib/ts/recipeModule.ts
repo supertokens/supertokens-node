@@ -17,6 +17,7 @@ import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
+import { DEFAULT_TENANT_ID } from "./recipe/multitenancy/constants";
 
 export default abstract class RecipeModule {
     private recipeId: string;
@@ -36,16 +37,53 @@ export default abstract class RecipeModule {
         return this.appInfo;
     };
 
-    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
+    returnAPIIdIfCanHandleRequest = async (
+        path: NormalisedURLPath,
+        method: HTTPMethod,
+        userContext: any
+    ): Promise<{ id: string; tenantId: string } | undefined> => {
         let apisHandled = this.getAPIsHandled();
+
+        const basePathStr = this.appInfo.apiBasePath.getAsStringDangerous();
+        const pathStr = path.getAsStringDangerous();
+        const regex = new RegExp(`^${basePathStr}(?:/([a-zA-Z0-9-]+))?(/.*)$`);
+
+        const match = pathStr.match(regex);
+        let tenantId: string = DEFAULT_TENANT_ID;
+        let remainingPath: NormalisedURLPath | undefined = undefined;
+
+        if (match) {
+            tenantId = match[1];
+            remainingPath = new NormalisedURLPath(match[2]);
+        }
+
+        // Multitenancy recipe is an always initialized recipe and needs to be imported this way
+        // so that there is no circular dependency. Otherwise there would be cyclic dependency
+        // between `supertokens.ts` -> `recipeModule.ts` -> `multitenancy/recipe.ts`
+        let MultitenancyRecipe = require("./recipe/multitenancy/recipe").default;
+        const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+
         for (let i = 0; i < apisHandled.length; i++) {
             let currAPI = apisHandled[i];
-            if (
-                !currAPI.disabled &&
-                currAPI.method === method &&
-                this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)
-            ) {
-                return currAPI.id;
+            if (!currAPI.disabled && currAPI.method === method) {
+                if (this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)) {
+                    const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
+                        tenantIdFromFrontend: DEFAULT_TENANT_ID,
+                        userContext,
+                    });
+                    return { id: currAPI.id, tenantId: finalTenantId };
+                } else if (
+                    remainingPath !== undefined &&
+                    this.appInfo.apiBasePath
+                        .appendPath(currAPI.pathWithoutApiBasePath)
+                        .equals(this.appInfo.apiBasePath.appendPath(remainingPath))
+                ) {
+                    const finalTenantId = await mtRecipe.recipeInterfaceImpl.getTenantId({
+                        tenantIdFromFrontend: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
+                        userContext,
+                    });
+                    return { id: currAPI.id, tenantId: finalTenantId };
+                }
             }
         }
         return undefined;
@@ -55,10 +93,12 @@ export default abstract class RecipeModule {
 
     abstract handleAPIRequest(
         id: string,
+        tenantId: string,
         req: BaseRequest,
         response: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean>;
 
     abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>;

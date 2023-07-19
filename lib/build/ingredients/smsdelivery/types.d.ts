@@ -3,6 +3,7 @@ import OverrideableBuilder from "supertokens-js-override";
 export declare type SmsDeliveryInterface<T> = {
     sendSms: (
         input: T & {
+            tenantId: string;
             userContext: any;
         }
     ) => Promise<void>;

@@ -20,6 +20,7 @@ import { logDebugMessage } from "../../logger";
 import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export type Helpers = {
     querier: Querier;
@@ -40,6 +41,7 @@ export const protectedProps = [
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
     "antiCsrfToken",
+    "tId",
 ];
 
 export default function getRecipeInterface(
@@ -88,17 +90,20 @@ export default function getRecipeInterface(
             accessTokenPayload = {},
             sessionDataInDatabase = {},
             disableAntiCsrf,
+            tenantId,
         }: {
             userId: string;
             disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
+            tenantId: string;
             userContext: any;
         }): Promise<SessionContainerInterface> {
             logDebugMessage("createNewSession: Started");
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
+                tenantId,
                 userId,
                 disableAntiCsrf === true,
                 accessTokenPayload,
@@ -117,7 +122,8 @@ export default function getRecipeInterface(
                 response.session.userId,
                 payload,
                 undefined,
-                true
+                true,
+                tenantId
             );
         },
 
@@ -216,7 +222,8 @@ export default function getRecipeInterface(
                 response.session.userId,
                 payload,
                 undefined,
-                response.accessToken !== undefined
+                response.accessToken !== undefined,
+                response.session.tenantId
             );
 
             return session;
@@ -242,7 +249,11 @@ export default function getRecipeInterface(
                 logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(input.userId, input.userContext);
+                    const value = await validator.claim.fetchValue(
+                        input.userId,
+                        accessTokenPayload.tId === undefined ? DEFAULT_TENANT_ID : accessTokenPayload.tId,
+                        input.userContext
+                    );
                     logDebugMessage(
                         "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
                     );
@@ -341,7 +352,8 @@ export default function getRecipeInterface(
                 response.session.userId,
                 payload,
                 undefined,
-                true
+                true,
+                payload.tId
             );
         },
 
@@ -359,6 +371,7 @@ export default function getRecipeInterface(
                       handle: string;
                       userId: string;
                       userDataInJWT: any;
+                      tenantId: string;
                   };
                   accessToken?: {
                       token: string;
@@ -380,15 +393,40 @@ export default function getRecipeInterface(
             if (response.status === "UNAUTHORISED") {
                 return undefined;
             }
-            return response;
+            return {
+                status: response.status,
+                session: {
+                    handle: response.session.handle,
+                    userId: response.session.userId,
+                    userDataInJWT: response.session.userDataInJWT,
+                    tenantId: response.session.tenantId,
+                },
+                accessToken: response.accessToken,
+            };
         },
 
-        revokeAllSessionsForUser: function ({ userId }: { userId: string }) {
-            return SessionFunctions.revokeAllSessionsForUser(helpers, userId);
+        revokeAllSessionsForUser: function ({
+            userId,
+            tenantId,
+            revokeAcrossAllTenants,
+        }: {
+            userId: string;
+            tenantId?: string;
+            revokeAcrossAllTenants?: boolean;
+        }) {
+            return SessionFunctions.revokeAllSessionsForUser(helpers, userId, tenantId, revokeAcrossAllTenants);
         },
 
-        getAllSessionHandlesForUser: function ({ userId }: { userId: string }): Promise<string[]> {
-            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId);
+        getAllSessionHandlesForUser: function ({
+            userId,
+            tenantId,
+            fetchAcrossAllTenants,
+        }: {
+            userId: string;
+            tenantId?: string;
+            fetchAcrossAllTenants?: boolean;
+        }): Promise<string[]> {
+            return SessionFunctions.getAllSessionHandlesForUser(helpers, userId, tenantId, fetchAcrossAllTenants);
         },
 
         revokeSession: function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
@@ -455,7 +493,11 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, input.userContext);
+            const accessTokenPayloadUpdate = await input.claim.build(
+                sessionInfo.userId,
+                sessionInfo.tenantId,
+                input.userContext
+            );
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,

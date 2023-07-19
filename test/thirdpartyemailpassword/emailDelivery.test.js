@@ -57,7 +57,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         let appName = undefined;
         let email = undefined;
@@ -113,7 +113,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         let appName = undefined;
         let email = undefined;
@@ -167,11 +167,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            email = input.email;
-                            passwordResetURL = passwordResetLink;
-                            timeJoined = input.timeJoined;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.user.email;
+                                passwordResetURL = input.passwordResetLink;
+                                timeJoined = input.user.timeJoined;
+                            },
                         },
                     },
                 }),
@@ -184,7 +186,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -221,11 +223,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            functionCalled = true;
-                            email = input.email;
-                            passwordResetURL = passwordResetLink;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                functionCalled = true;
+                                email = input.user.email;
+                                passwordResetURL = input.passwordResetLink;
+                            },
                         },
                     },
                 }),
@@ -256,7 +260,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         assert.strictEqual(email, undefined);
         assert.strictEqual(passwordResetURL, undefined);
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -290,9 +294,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    resetPasswordUsingTokenFeature: {
-                        createAndSendCustomEmail: async (input, passwordResetLink) => {
-                            functionCalled = true;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                functionCalled = true;
+                            },
                         },
                     },
                 }),
@@ -305,7 +311,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.thirdPartySignInUp("custom-provider", "test-user-id", "test@example.com");
+        await ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
+            "custom-provider",
+            "test-user-id",
+            "test@example.com"
+        );
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -363,7 +374,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         process.env.TEST_MODE = "production";
 
@@ -467,7 +478,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -513,12 +524,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -572,12 +583,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -607,117 +618,6 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(emailVerifyURL, undefined);
         assert.strictEqual(result.body.status, "OK");
-    });
-
-    it("test backward compatibility: email verify (emailpassword user)", async function () {
-        await startST();
-        let idInCallback = undefined;
-        let email = undefined;
-        let emailVerifyURL = undefined;
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailVerification.init({
-                    mode: "OPTIONAL",
-                    createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
-                        email = input.email;
-                        idInCallback = input.id;
-                        emailVerifyURL = emailVerificationURLWithToken;
-                    },
-                }),
-                ThirdPartyEmailPassword.init(),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-            telemetry: false,
-        });
-
-        const app = express();
-        app.use(express.json());
-        app.use(middleware());
-        app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
-            res.status(200).send("");
-        });
-        app.use(errorHandler());
-
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
-        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
-
-        await supertest(app)
-            .post("/auth/user/email/verify/token")
-            .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken])
-            .expect(200);
-        await delay(2);
-        assert.strictEqual(idInCallback, user.user.id);
-        assert.strictEqual(email, "test@example.com");
-        assert.notStrictEqual(emailVerifyURL, undefined);
-    });
-
-    it("test backward compatibility: email verify (thirdparty user)", async function () {
-        await startST();
-        let idInCallback = undefined;
-        let email = undefined;
-        let emailVerifyURL = undefined;
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailVerification.init({
-                    mode: "OPTIONAL",
-                    createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
-                        email = input.email;
-                        idInCallback = input.id;
-                        emailVerifyURL = emailVerificationURLWithToken;
-                    },
-                }),
-                ThirdPartyEmailPassword.init({
-                    // We need to add something to the providers array to make the thirdparty recipe initialize
-                    providers: [/** @type {any} */ {}],
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-            telemetry: false,
-        });
-
-        const app = express();
-        app.use(express.json());
-        app.use(middleware());
-        app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
-            res.status(200).send("");
-        });
-        app.use(errorHandler());
-
-        let user = await ThirdPartyEmailPassword.thirdPartySignInUp(
-            "custom-provider",
-            "test-user-id",
-            "test@example.com"
-        );
-        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
-
-        await supertest(app)
-            .post("/auth/user/email/verify/token")
-            .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken])
-            .expect(200);
-        await delay(2);
-        assert.strictEqual(idInCallback, user.user.id);
-        assert.strictEqual(email, "test@example.com");
-        assert.notStrictEqual(emailVerifyURL, undefined);
     });
 
     it("test custom override: email verify", async function () {
@@ -761,12 +661,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         process.env.TEST_MODE = "production";
@@ -866,12 +766,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+        let user = await ThirdPartyEmailPassword.emailPasswordSignUp("public", "test@example.com", "1234abcd");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         await supertest(app)

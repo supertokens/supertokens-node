@@ -45,7 +45,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
             }
 
             // create a user
-            let signUpResponse = await EmailPasswordRecipe.signUp("test@example.com", "testPass123");
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signUpResponse.status, "OK");
 
             let superTokensUserId = signUpResponse.user.id;
@@ -129,7 +129,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
 
             // create a UserId mapping
 
-            const signInResponse = await EmailPasswordRecipe.signUp("test@example.com", "testPass123");
+            const signInResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signInResponse.status, "OK");
 
             const superTokensUserId = signInResponse.user.id;
@@ -169,7 +169,11 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
 
             // create a duplicate mapping where both externalUserId already exists
             {
-                const newUserSignInResponse = await EmailPasswordRecipe.signUp("testnew@example.com", "testPass123");
+                const newUserSignInResponse = await EmailPasswordRecipe.signUp(
+                    "public",
+                    "testnew@example.com",
+                    "testPass123"
+                );
                 assert.strictEqual(newUserSignInResponse.status, "OK");
 
                 const createUserIdMappingResponse = await STExpress.createUserIdMapping({
@@ -207,7 +211,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
 
             // create a user
 
-            const signInResponse = await EmailPasswordRecipe.signUp("test@example.com", "testPass123");
+            const signInResponse = await EmailPasswordRecipe.signUp("public", "test@example.com", "testPass123");
             assert.strictEqual(signInResponse.status, "OK");
             const superTokensUserId = signInResponse.user.id;
 

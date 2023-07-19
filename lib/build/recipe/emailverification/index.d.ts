@@ -7,6 +7,7 @@ export default class Wrapper {
     static Error: typeof SuperTokensError;
     static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
+        tenantId: string,
         userId: string,
         email?: string,
         userContext?: any
@@ -19,7 +20,35 @@ export default class Wrapper {
               status: "EMAIL_ALREADY_VERIFIED_ERROR";
           }
     >;
+    static createEmailVerificationLink(
+        tenantId: string,
+        userId: string,
+        email?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              link: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    static sendEmailVerificationEmail(
+        tenantId: string,
+        userId: string,
+        email?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
     static verifyEmailUsingToken(
+        tenantId: string,
         token: string,
         userContext?: any
     ): Promise<
@@ -33,6 +62,7 @@ export default class Wrapper {
     >;
     static isEmailVerified(userId: string, email?: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
+        tenantId: string,
         userId: string,
         email?: string,
         userContext?: any
@@ -55,6 +85,8 @@ export default class Wrapper {
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
+export declare let createEmailVerificationLink: typeof Wrapper.createEmailVerificationLink;
+export declare let sendEmailVerificationEmail: typeof Wrapper.sendEmailVerificationEmail;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;

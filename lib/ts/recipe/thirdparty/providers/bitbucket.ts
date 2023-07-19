@@ -13,125 +13,105 @@
  * under the License.
  */
 
-import { TypeProvider, TypeProviderGetResponse } from "../types";
-import fetch from "cross-fetch";
+import { ProviderInput, TypeProvider } from "../types";
+import { doGetRequest } from "./utils";
 
-type TypeThirdPartyProviderBitbucketConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: any) => string) };
-    };
-    isDefault?: boolean;
-};
+import NewProvider from "./custom";
 
-export default function Bitbucket(config: TypeThirdPartyProviderBitbucketConfig): TypeProvider {
-    const id = "bitbucket";
+export default function Bitbucket(input: ProviderInput): TypeProvider {
+    if (input.config.name === undefined) {
+        input.config.name = "Bitbucket";
+    }
 
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://bitbucket.org/site/oauth2/access_token";
-        let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
-            grant_type: "authorization_code",
+    if (input.config.authorizationEndpoint === undefined) {
+        input.config.authorizationEndpoint = "https://bitbucket.org/site/oauth2/authorize";
+    }
+
+    if (input.config.tokenEndpoint === undefined) {
+        input.config.tokenEndpoint = "https://bitbucket.org/site/oauth2/access_token";
+    }
+
+    if (input.config.authorizationEndpointQueryParams === undefined) {
+        input.config.authorizationEndpointQueryParams = {
+            audience: "api.atlassian.com",
         };
-        if (authCodeFromRequest !== undefined) {
-            accessTokenAPIParams.code = authCodeFromRequest;
-        }
-        if (redirectURI !== undefined) {
-            accessTokenAPIParams.redirect_uri = redirectURI;
-        }
-        let authorisationRedirectURL = "https://bitbucket.org/site/oauth2/authorize";
-        let scopes = ["account", "email"];
-        if (config.scope !== undefined) {
-            scopes = config.scope;
-            scopes = Array.from(new Set(scopes));
-        }
-        let additionalParams =
-            config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
-                ? {}
-                : config.authorisationRedirect.params;
-        let authorizationRedirectParams: { [key: string]: string } = {
-            scope: scopes.join(" "),
-            access_type: "offline",
-            response_type: "code",
-            client_id: config.clientId,
-            ...additionalParams,
+    }
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.scope === undefined) {
+                config.scope = ["account", "email"];
+            }
+
+            return config;
         };
 
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-            refresh_token?: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let authHeader = `Bearer ${accessToken}`;
-            let response = await fetch("https://api.bitbucket.org/2.0/user", {
-                method: "get",
-                headers: {
-                    Authorization: authHeader,
-                },
-            });
-            if (response.status >= 400) {
-                throw response;
-            }
-            let userInfo = await response.json();
-            let id = userInfo.uuid;
+        originalImplementation.getUserInfo = async function (input) {
+            const accessToken = input.oAuthTokens.access_token;
 
-            let emailRes = await fetch("https://api.bitbucket.org/2.0/user/emails", {
-                method: "get",
-                headers: {
-                    Authorization: authHeader,
-                },
-            });
-            if (emailRes.status >= 400) {
-                throw response;
+            if (accessToken === undefined) {
+                throw new Error("Access token not found");
             }
-            let emailData = await emailRes.json();
+
+            const headers: { [key: string]: string } = {
+                Authorization: `Bearer ${accessToken}`,
+            };
+            let rawUserInfoFromProvider: {
+                fromUserInfoAPI: any;
+                fromIdTokenPayload: any;
+            } = {
+                fromUserInfoAPI: {},
+                fromIdTokenPayload: {},
+            };
+
+            const userInfoFromAccessToken = await doGetRequest(
+                "https://api.bitbucket.org/2.0/user",
+                undefined,
+                headers
+            );
+            rawUserInfoFromProvider.fromUserInfoAPI = userInfoFromAccessToken;
+
+            const userInfoFromEmail = await doGetRequest(
+                "https://api.bitbucket.org/2.0/user/emails",
+                undefined,
+                headers
+            );
+
+            rawUserInfoFromProvider.fromUserInfoAPI.email = userInfoFromEmail;
+
             let email = undefined;
             let isVerified = false;
-            emailData.values.forEach((emailInfo: any) => {
+            for (const emailInfo of userInfoFromEmail.values) {
                 if (emailInfo.is_primary) {
                     email = emailInfo.email;
                     isVerified = emailInfo.is_confirmed;
                 }
-            });
-
-            if (email === undefined) {
-                return {
-                    id,
-                };
             }
+
             return {
-                id,
-                email: {
-                    id: email,
-                    isVerified,
-                },
+                thirdPartyUserId: rawUserInfoFromProvider.fromUserInfoAPI.uuid,
+                email:
+                    email === undefined
+                        ? undefined
+                        : {
+                              id: email,
+                              isVerified,
+                          },
+                rawUserInfoFromProvider,
             };
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
         }
 
-        return {
-            accessTokenAPI: {
-                url: accessTokenAPIURL,
-                params: accessTokenAPIParams,
-            },
-            authorisationRedirect: {
-                url: authorisationRedirectURL,
-                params: authorizationRedirectParams,
-            },
-            getProfileInfo,
-            getClientId: () => {
-                return config.clientId;
-            },
-        };
-    }
-
-    return {
-        id,
-        get,
-        isDefault: config.isDefault,
+        return originalImplementation;
     };
+
+    return NewProvider(input);
 }

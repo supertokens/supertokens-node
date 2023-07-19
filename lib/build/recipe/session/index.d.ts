@@ -19,12 +19,14 @@ export default class SessionWrapper {
     static createNewSession(
         req: any,
         res: any,
+        tenantId: string,
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
         userContext?: any
     ): Promise<SessionContainer>;
     static createNewSessionWithoutRequestResponse(
+        tenantId: string,
         userId: string,
         accessTokenPayload?: any,
         sessionDataInDatabase?: any,
@@ -49,6 +51,7 @@ export default class SessionWrapper {
           }
     >;
     static validateClaimsInJWTPayload(
+        tenantId: string,
         userId: string,
         jwtPayload: JSONObject,
         overrideGlobalClaimValidators?: (
@@ -135,8 +138,8 @@ export default class SessionWrapper {
         antiCsrfToken?: string,
         userContext?: any
     ): Promise<SessionContainer>;
-    static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
-    static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
+    static revokeAllSessionsForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
+    static getAllSessionHandlesForUser(userId: string, tenantId?: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
     static updateSessionDataInDatabase(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;

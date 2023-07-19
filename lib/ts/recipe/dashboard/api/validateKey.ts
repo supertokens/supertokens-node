@@ -13,12 +13,11 @@
  * under the License.
  */
 
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
 import { sendUnauthorisedAccess, validateApiKey } from "../utils";
 
-export default async function validateKey(_: APIInterface, options: APIOptions): Promise<boolean> {
-    const input = { req: options.req, config: options.config, userContext: makeDefaultUserContextFromAPI(options.req) };
+export default async function validateKey(_: APIInterface, options: APIOptions, userContext: any): Promise<boolean> {
+    const input = { req: options.req, config: options.config, userContext };
 
     if (await validateApiKey(input)) {
         options.res.sendJSONResponse({

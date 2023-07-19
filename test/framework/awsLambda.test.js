@@ -30,7 +30,6 @@ let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let Passwordless = require("../../recipe/passwordless");
 let ThirdParty = require("../../recipe/thirdparty");
-let { Apple, Google, Github } = require("../../recipe/thirdparty");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
 let Dashboard = require("../../recipe/dashboard");
 let { createUsers } = require("../utils");
@@ -67,7 +66,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         });
 
         let createSession = async (awsEvent, _) => {
-            await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
+            await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,
@@ -235,7 +234,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         });
 
         let createSession = async (awsEvent, _) => {
-            await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
+            await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,
@@ -453,7 +452,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 });
 
                 let createSession = async (awsEvent, _) => {
-                    await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
+                    await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
                     return {
                         body: JSON.stringify(""),
                         statusCode: 200,
@@ -544,7 +543,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 });
 
                 let createSession = async (awsEvent, _) => {
-                    await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
+                    await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
                     throw new Session.Error({
                         message: "unauthorised",
                         type: Session.Error.UNAUTHORISED,
@@ -1045,23 +1044,45 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            Google({
-                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                clientSecret: "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",
-                            }),
-                            Github({
-                                clientId: "467101b197249757c71f",
-                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                            }),
-                            Apple({
-                                clientId: "4398792-io.supertokens.example.service",
-                                clientSecret: {
-                                    keyId: "7M48Y4RYDL",
-                                    privateKey:
-                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                    teamId: "YWQCXGJRJL",
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId:
+                                                "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            clientSecret: "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",
+                                        },
+                                    ],
                                 },
-                            }),
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId: "467101b197249757c71f",
+                                            clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId: "4398792-io.supertokens.example.service",
+                                            additionalConfig: {
+                                                keyId: "7M48Y4RYDL",
+                                                privateKey:
+                                                    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                                teamId: "YWQCXGJRJL",
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
@@ -1133,23 +1154,45 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            Google({
-                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                clientSecret: "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",
-                            }),
-                            Github({
-                                clientId: "467101b197249757c71f",
-                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                            }),
-                            Apple({
-                                clientId: "4398792-io.supertokens.example.service",
-                                clientSecret: {
-                                    keyId: "7M48Y4RYDL",
-                                    privateKey:
-                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                    teamId: "YWQCXGJRJL",
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId:
+                                                "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            clientSecret: "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",
+                                        },
+                                    ],
                                 },
-                            }),
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId: "467101b197249757c71f",
+                                            clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId: "4398792-io.supertokens.example.service",
+                                            additionalConfig: {
+                                                keyId: "7M48Y4RYDL",
+                                                privateKey:
+                                                    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                                teamId: "YWQCXGJRJL",
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),

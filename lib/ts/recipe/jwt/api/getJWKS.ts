@@ -15,16 +15,19 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export default async function getJWKS(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function getJWKS(
+    apiImplementation: APIInterface,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.getJWKSGET === undefined) {
         return false;
     }
 
     let result = await apiImplementation.getJWKSGET({
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
     if ("status" in result && result.status === "GENERAL_ERROR") {
         send200Response(options.res, result);

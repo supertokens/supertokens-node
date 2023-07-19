@@ -15,7 +15,6 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import * as thirdPartyProviders from "../thirdparty/providers";
 import {
     RecipeInterface,
     User,
@@ -32,19 +31,46 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
+    static async thirdPartyGetProvider(
+        tenantId: string,
+        thirdPartyId: string,
+        clientType: string | undefined,
+        userContext: any = {}
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyGetProvider({
             thirdPartyId,
-            thirdPartyUserId,
-            email,
+            tenantId,
+            clientType,
             userContext,
         });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
+    static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: string,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartyManuallyCreateOrUpdateUser({
+            thirdPartyId,
+            thirdPartyUserId,
+            email,
+            tenantId,
+            userContext,
+        });
+    }
+
+    static getUserByThirdPartyInfo(
+        tenantId: string,
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
+            tenantId,
             userContext,
         });
     }
@@ -53,8 +79,12 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
+    static getUsersByEmail(tenantId: string, email: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({
+            email,
+            tenantId,
+            userContext,
+        });
     }
 
     static createCode(
@@ -65,7 +95,7 @@ export default class Wrapper {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string; userContext?: any }
+        ) & { userInputCode?: string; tenantId: string; userContext?: any }
     ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode({
             userContext: {},
@@ -73,7 +103,12 @@ export default class Wrapper {
         });
     }
 
-    static createNewCodeForDevice(input: { deviceId: string; userInputCode?: string; userContext?: any }) {
+    static createNewCodeForDevice(input: {
+        deviceId: string;
+        userInputCode?: string;
+        tenantId: string;
+        userContext?: any;
+    }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewCodeForDevice({
             userContext: {},
             ...input,
@@ -86,19 +121,27 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({ userContext: {}, ...input });
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({ userContext: {}, ...input });
+    static getUserByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: any }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({
+            userContext: {},
+            ...input,
+        });
     }
 
     static updatePasswordlessUser(input: {
@@ -117,36 +160,50 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({ userContext: {}, ...input });
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static revokeCode(input: { codeId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({ userContext: {}, ...input });
+    static revokeCode(input: { codeId: string; tenantId: string; userContext?: any }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static listCodesByEmail(input: { email: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail({ userContext: {}, ...input });
+    static listCodesByEmail(input: { email: string; tenantId: string; userContext?: any }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static listCodesByPhoneNumber(input: { phoneNumber: string; userContext?: any }) {
+    static listCodesByPhoneNumber(input: { phoneNumber: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPhoneNumber({
             userContext: {},
             ...input,
         });
     }
 
-    static listCodesByDeviceId(input: { deviceId: string; userContext?: any }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId({ userContext: {}, ...input });
+    static listCodesByDeviceId(input: { deviceId: string; tenantId: string; userContext?: any }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static listCodesByPreAuthSessionId(input: { preAuthSessionId: string; userContext?: any }) {
+    static listCodesByPreAuthSessionId(input: { preAuthSessionId: string; tenantId: string; userContext?: any }) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPreAuthSessionId({
             userContext: {},
             ...input,
@@ -157,49 +214,39 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
-        return Recipe.getInstanceOrThrowError().passwordlessRecipe.createMagicLink({ userContext: {}, ...input });
+        return Recipe.getInstanceOrThrowError().passwordlessRecipe.createMagicLink({
+            userContext: {},
+            ...input,
+        });
     }
 
     static passwordlessSignInUp(
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ) {
-        return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({ userContext: {}, ...input });
+        return Recipe.getInstanceOrThrowError().passwordlessRecipe.signInUp({
+            userContext: {},
+            ...input,
+        });
     }
-
-    static Google = thirdPartyProviders.Google;
-
-    static Github = thirdPartyProviders.Github;
-
-    static Facebook = thirdPartyProviders.Facebook;
-
-    static Apple = thirdPartyProviders.Apple;
-
-    static Discord = thirdPartyProviders.Discord;
-
-    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
-
-    static Bitbucket = thirdPartyProviders.Bitbucket;
-
-    static GitLab = thirdPartyProviders.GitLab;
-
-    // static Okta = thirdPartyProviders.Okta;
-
-    // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 
     static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: any }) {
         return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
@@ -220,7 +267,9 @@ export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
 
-export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
+export let thirdPartyGetProvider = Wrapper.thirdPartyGetProvider;
+
+export let thirdPartyManuallyCreateOrUpdateUser = Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 
 export let passwordlessSignInUp = Wrapper.passwordlessSignInUp;
 
@@ -253,26 +302,6 @@ export let revokeAllCodes = Wrapper.revokeAllCodes;
 export let revokeCode = Wrapper.revokeCode;
 
 export let createMagicLink = Wrapper.createMagicLink;
-
-export let Google = Wrapper.Google;
-
-export let Github = Wrapper.Github;
-
-export let Facebook = Wrapper.Facebook;
-
-export let Apple = Wrapper.Apple;
-
-export let Discord = Wrapper.Discord;
-
-export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
-
-export let Bitbucket = Wrapper.Bitbucket;
-
-export let GitLab = Wrapper.GitLab;
-
-// export let Okta = Wrapper.Okta;
-
-// export let ActiveDirectory = Wrapper.ActiveDirectory;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 

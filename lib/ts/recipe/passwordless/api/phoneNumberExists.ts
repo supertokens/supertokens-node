@@ -16,11 +16,12 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function phoneNumberExists(
     apiImplementation: APIInterface,
-    options: APIOptions
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean> {
     if (apiImplementation.phoneNumberExistsGET === undefined) {
         return false;
@@ -37,8 +38,9 @@ export default async function phoneNumberExists(
 
     let result = await apiImplementation.phoneNumberExistsGET({
         phoneNumber,
+        tenantId,
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     send200Response(options.res, result);

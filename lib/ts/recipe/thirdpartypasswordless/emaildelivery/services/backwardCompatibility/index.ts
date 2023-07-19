@@ -21,30 +21,9 @@ export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
     private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService;
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        passwordlessFeature?: {
-            createAndSendCustomEmail?: (
-                input: {
-                    // Where the message should be delivered.
-                    email: string;
-                    // This has to be entered on the starting device  to finish sign in/up
-                    userInputCode?: string;
-                    // Full url that the end-user can click to finish sign in/up
-                    urlWithLinkCode?: string;
-                    codeLifetime: number;
-                    // Unlikely, but someone could display this (or a derived thing) to identify the device
-                    preAuthSessionId: string;
-                },
-                userContext: any
-            ) => Promise<void>;
-        }
-    ) {
+    constructor(appInfo: NormalisedAppinfo) {
         {
-            this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(
-                appInfo,
-                passwordlessFeature?.createAndSendCustomEmail
-            );
+            this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(appInfo);
         }
     }
 

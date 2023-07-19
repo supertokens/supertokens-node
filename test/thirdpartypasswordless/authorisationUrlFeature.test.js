@@ -26,42 +26,25 @@ let { middleware, errorHandler } = require("../../framework/express");
 describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authorisationFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                        params: {
-                            scope: "test",
-                            client_id: "supertokens",
-                        },
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: true,
                             },
                         };
                     },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
                 };
-            },
-        };
-
-        this.customProvider2 = {
-            id: "custom",
-            get: (recipe, authCode) => {
-                throw new Error("error from get function");
-            },
-            getClientId: () => {
-                return "supertokens";
             },
         };
     });
@@ -91,8 +74,10 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                 Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -113,7 +98,7 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
 
         let response1 = await new Promise((resolve) =>
             request(app)
-                .get("/auth/authorisationurl?thirdPartyId=custom")
+                .get("/auth/authorisationurl?thirdPartyId=custom&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -124,65 +109,10 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.url, "https://test.com/oauth/auth?scope=test&client_id=supertokens");
-    });
-
-    // testing 500 error thrown from sub-recipe
-    it("test with thirdPartyPasswordless, provider get function throws error", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
-                ThirdPartyPasswordlessRecipe.init({
-                    contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
-                    },
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers: [this.customProvider2],
-                }),
-            ],
-        });
-
-        // run test if current CDI version >= 2.11
-        if (!(await isCDIVersionCompatible("2.11"))) {
-            return;
-        }
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        app.use((err, request, response, next) => {
-            response.status(500).send({
-                message: err.message,
-            });
-        });
-
-        let response1 = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/authorisationurl?thirdPartyId=custom")
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
+        assert.strictEqual(
+            response1.body.urlWithQueryParams,
+            "https://test.com/oauth/auth?client_id=supetokens&redirect_uri=redirect&response_type=code&scope=test"
         );
-        assert.notStrictEqual(response1, undefined);
-        assert.strictEqual(response1.statusCode, 500);
-        assert.deepStrictEqual(response1.body, { message: "error from get function" });
     });
 
     // testing 4xx error correctly thrown from sub-recipe
@@ -201,8 +131,10 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
                 ThirdPartyPasswordlessRecipe.init({
                     contactMethod: "EMAIL",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider1],
@@ -223,7 +155,7 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
 
         let response1 = await new Promise((resolve) =>
             request(app)
-                .get("/auth/authorisationurl?thirdPartyId=google")
+                .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -233,9 +165,6 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                 })
         );
         assert.strictEqual(response1.statusCode, 400);
-        assert.strictEqual(
-            response1.body.message,
-            "The third party provider google seems to be missing from the backend configs."
-        );
+        assert.strictEqual(response1.body.message, "the provider google could not be found in the configuration");
     });
 });

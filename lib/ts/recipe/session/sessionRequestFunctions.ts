@@ -324,6 +324,7 @@ export async function createNewSessionInRequest({
     config,
     appInfo,
     sessionDataInDatabase,
+    tenantId,
 }: {
     req: any;
     res: any;
@@ -334,6 +335,7 @@ export async function createNewSessionInRequest({
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
+    tenantId: string;
 }) {
     logDebugMessage("createNewSession: Started");
     if (!req.wrapperUsed) {
@@ -355,7 +357,7 @@ export async function createNewSessionInRequest({
     };
 
     for (const claim of claimsAddedByOtherRecipes) {
-        const update = await claim.build(userId, userContext);
+        const update = await claim.build(userId, tenantId, userContext);
         finalAccessTokenPayload = {
             ...finalAccessTokenPayload,
             ...update,
@@ -390,6 +392,7 @@ export async function createNewSessionInRequest({
         accessTokenPayload: finalAccessTokenPayload,
         sessionDataInDatabase,
         disableAntiCsrf,
+        tenantId,
         userContext,
     });
 

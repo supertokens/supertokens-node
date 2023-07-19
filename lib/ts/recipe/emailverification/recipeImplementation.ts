@@ -7,9 +7,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         createEmailVerificationToken: async function ({
             userId,
             email,
+            tenantId,
         }: {
             userId: string;
             email: string;
+            tenantId: string;
         }): Promise<
             | {
                   status: "OK";
@@ -17,10 +19,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
               }
             | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
         > {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
-                userId,
-                email,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify/token`),
+                {
+                    userId,
+                    email,
+                }
+            );
             if (response.status === "OK") {
                 return {
                     status: "OK",
@@ -35,13 +40,18 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         verifyEmailUsingToken: async function ({
             token,
+            tenantId,
         }: {
             token: string;
+            tenantId: string;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
-                method: "token",
-                token,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
+                {
+                    method: "token",
+                    token,
+                }
+            );
             if (response.status === "OK") {
                 return {
                     status: "OK",
@@ -68,11 +78,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         revokeEmailVerificationTokens: async function (input: {
             userId: string;
             email: string;
+            tenantId: string;
         }): Promise<{ status: "OK" }> {
-            await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token/remove"), {
-                userId: input.userId,
-                email: input.email,
-            });
+            await querier.sendPostRequest(
+                new NormalisedURLPath(`/${input.tenantId}/recipe/user/email/verify/token/remove`),
+                {
+                    userId: input.userId,
+                    email: input.email,
+                }
+            );
             return { status: "OK" };
         },
 

@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailVerificationEmailDeliveryInput, User } from "../../../types";
-import { createAndSendCustomEmail as defaultCreateAndSendCustomEmail } from "../../../emailVerificationFunctions";
+import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
+import { createAndSendEmailUsingSupertokensService } from "../../../emailVerificationFunctions";
 import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
@@ -21,36 +21,23 @@ export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailVerificationEmailDeliveryInput> {
     private appInfo: NormalisedAppinfo;
     private isInServerlessEnv: boolean;
-    private createAndSendCustomEmail: (
-        user: User,
-        emailVerificationURLWithToken: string,
-        userContext: any
-    ) => Promise<void>;
 
-    constructor(
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        createAndSendCustomEmail?: (
-            user: User,
-            emailVerificationURLWithToken: string,
-            userContext: any
-        ) => Promise<void>
-    ) {
+    constructor(appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         this.appInfo = appInfo;
         this.isInServerlessEnv = isInServerlessEnv;
-        this.createAndSendCustomEmail =
-            createAndSendCustomEmail === undefined
-                ? defaultCreateAndSendCustomEmail(this.appInfo)
-                : createAndSendCustomEmail;
     }
 
     sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }) => {
         try {
             if (!this.isInServerlessEnv) {
-                this.createAndSendCustomEmail(input.user, input.emailVerifyLink, input.userContext).catch((_) => {});
+                createAndSendEmailUsingSupertokensService(
+                    this.appInfo,
+                    input.user,
+                    input.emailVerifyLink
+                ).catch((_) => {});
             } else {
                 // see https://github.com/supertokens/supertokens-node/pull/135
-                await this.createAndSendCustomEmail(input.user, input.emailVerifyLink, input.userContext);
+                await createAndSendEmailUsingSupertokensService(this.appInfo, input.user, input.emailVerifyLink);
             }
         } catch (_) {}
     };

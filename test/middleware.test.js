@@ -124,7 +124,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -406,7 +406,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -690,7 +690,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -981,7 +981,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -1275,7 +1275,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -1408,7 +1408,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
@@ -1681,7 +1681,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "testing-userId", {}, {});
+            await Session.createNewSession(req, res, "public", "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 

@@ -17,15 +17,17 @@ import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { ResponseToolkit } from "@hapi/hapi";
 import { ExtendedResponseToolkit, HapiRequest, HapiResponse, SessionRequest } from "../../../framework/hapi/framework";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, h: ResponseToolkit) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new HapiRequest(req);
         let response = new HapiResponse(h as ExtendedResponseToolkit);
+        const userContext = makeDefaultUserContextFromAPI(request);
 
         try {
-            req.session = await sessionRecipe.verifySession(options, request, response);
+            req.session = await sessionRecipe.verifySession(options, request, response, userContext);
         } catch (err) {
             try {
                 const supertokens = SuperTokens.getInstanceOrThrowError();

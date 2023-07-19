@@ -3,7 +3,7 @@ let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-const { signInUp } = require("../../lib/build/recipe/thirdparty");
+const { manuallyCreateOrUpdateUser } = require("../../lib/build/recipe/thirdparty");
 const { getUsersByEmail } = require("../../lib/build/recipe/thirdparty");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
@@ -11,11 +11,15 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.test.js]")}`, function () {
     const MockThirdPartyProvider = {
-        id: "mock",
+        config: {
+            thirdPartyId: "mock",
+        },
     };
 
     const MockThirdPartyProvider2 = {
-        id: "mock2",
+        config: {
+            thirdPartyId: "mock2",
+        },
     };
 
     const testSTConfig = {
@@ -59,7 +63,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
         // given there are no users
 
         // when
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 
         // then
         assert.strictEqual(thirdPartyUsers.length, 0);
@@ -83,10 +87,10 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
             return;
         }
 
-        await signInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
-        await signInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
+        await manuallyCreateOrUpdateUser("public", "mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await manuallyCreateOrUpdateUser("public", "mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
-        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
+        const thirdPartyUsers = await getUsersByEmail("public", "john.doe@example.com");
 
         assert.strictEqual(thirdPartyUsers.length, 2);
 

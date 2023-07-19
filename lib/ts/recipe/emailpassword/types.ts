@@ -42,7 +42,7 @@ export type TypeNormalisedInput = {
 
 export type TypeInputFormField = {
     id: string;
-    validate?: (value: any) => Promise<string | undefined>;
+    validate?: (value: any, tenantId: string) => Promise<string | undefined>;
     optional?: boolean;
 };
 
@@ -54,7 +54,7 @@ export type TypeInputSignUp = {
 
 export type NormalisedFormField = {
     id: string;
-    validate: (value: any) => Promise<string | undefined>;
+    validate: (value: any, tenantId: string) => Promise<string | undefined>;
     optional: boolean;
 };
 
@@ -66,13 +66,6 @@ export type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
 };
 
-export type TypeInputResetPasswordUsingTokenFeature = {
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
-};
-
 export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
@@ -82,12 +75,12 @@ export type User = {
     id: string;
     email: string;
     timeJoined: number;
+    tenantIds: string[];
 };
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -101,27 +94,31 @@ export type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
     signIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
 
-    getUserByEmail(input: { email: string; userContext: any }): Promise<User | undefined>;
+    getUserByEmail(input: { email: string; tenantId: string; userContext: any }): Promise<User | undefined>;
 
     createResetPasswordToken(input: {
         userId: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -141,6 +138,7 @@ export type RecipeInterface = {
         password?: string;
         userContext: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy: string;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -165,6 +163,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -182,6 +181,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -199,6 +199,7 @@ export type APIInterface = {
                   value: string;
               }[];
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -219,6 +220,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -240,6 +242,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -262,6 +265,7 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
         email: string;
     };
     passwordResetLink: string;
+    tenantId: string;
 };
 
 export type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;

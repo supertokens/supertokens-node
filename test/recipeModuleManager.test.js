@@ -685,7 +685,7 @@ class TestRecipe extends RecipeModule {
         ];
     }
 
-    async handleAPIRequest(id, req, res, next) {
+    async handleAPIRequest(id, tenantId, req, res, next) {
         if (id === "/") {
             res.setStatusCode(200);
             res.sendJSONResponse({ message: "success TestRecipe /" });
@@ -801,7 +801,7 @@ class TestRecipe1 extends RecipeModule {
         ];
     }
 
-    async handleAPIRequest(id, req, res) {
+    async handleAPIRequest(id, tenantId, req, res) {
         if (id === "/") {
             res.setStatusCode(200);
             res.sendJSONResponse({ message: "success TestRecipe1 /" });

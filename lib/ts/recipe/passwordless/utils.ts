@@ -46,16 +46,13 @@ export function validateAndNormaliseUserInput(
     function getEmailDeliveryConfig() {
         let emailService = config.emailDelivery?.service;
 
-        let createAndSendCustomEmail = config.contactMethod === "PHONE" ? undefined : config.createAndSendCustomEmail;
         /**
          * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
-         * createAndSendCustomEmail implementation
+         * if user has not passed emailService config, we use the default
+         * createAndSendEmailUsingSupertokensService implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityEmailService(appInfo, createAndSendCustomEmail);
+            emailService = new BackwardCompatibilityEmailService(appInfo);
         }
         let emailDelivery = {
             ...config.emailDelivery,
@@ -78,8 +75,6 @@ export function validateAndNormaliseUserInput(
     function getSmsDeliveryConfig() {
         let smsService = config.smsDelivery?.service;
 
-        let createAndSendCustomTextMessage =
-            config.contactMethod === "EMAIL" ? undefined : config.createAndSendCustomTextMessage;
         /**
          * following code is for backward compatibility.
          * if user has not passed emailDelivery config, we
@@ -88,7 +83,7 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomTextMessage implementation
          */
         if (smsService === undefined) {
-            smsService = new BackwardCompatibilitySmsService(appInfo, createAndSendCustomTextMessage);
+            smsService = new BackwardCompatibilitySmsService();
         }
         let smsDelivery = {
             ...config.smsDelivery,
