@@ -27,7 +27,7 @@ export default function Google(input: ProviderInput): TypeProvider {
     input.config.userInfoMap = {
         ...input.config.userInfoMap,
         fromUserInfoAPI: {
-            userId: "id",
+            userId: "sub",
             email: "email",
             emailVerified: "email_verified",
             ...input.config.userInfoMap?.fromUserInfoAPI,
