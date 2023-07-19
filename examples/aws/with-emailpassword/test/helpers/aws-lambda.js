@@ -66,7 +66,6 @@ const setup_aws = async () => {
 
     const createLayerCommand = new PublishLayerVersionCommand({
         LayerName: "st-node-" + process.env.GITHUB_REF_NAME,
-        LayerName: "st-node" + date.getMilliseconds(),
         Description: "this was created by github action",
         CompatibleRuntimes: [
             // CompatibleRuntimes
