@@ -64,8 +64,10 @@ const setup_aws = async () => {
     const date = new Date();
     const layerCode = fs.readFileSync(path.join(__dirname, "lambda", "supertokens-node.zip"));
 
+    let normalise_layer_name = process.env.GITHUB_REF_NAME.replaceAll("/", "+");
+
     const createLayerCommand = new PublishLayerVersionCommand({
-        LayerName: "st-node-" + process.env.GITHUB_REF_NAME,
+        LayerName: "st-node-" + normalise_layer_name,
         Description: "this was created by github action",
         CompatibleRuntimes: [
             // CompatibleRuntimes
