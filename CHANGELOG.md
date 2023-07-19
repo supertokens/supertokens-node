@@ -33,76 +33,127 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   `getUsersOldestFirst` & `getUsersNewestFirst` has mandatory parameter `tenantId`. Pass `'public'` if not using multitenancy.
 -   Added mandatory field `tenantId` to `EmailDeliveryInterface` and `SmsDeliveryInterface`. Pass `'public'` if not using multitenancy.
--   The following recipe functions have mandatory `tenantId` as the first parameter or the input object. Pass `'public'` if not using multitenancy.
-    -   `EmailPassword.signUp`
-    -   `EmailPassword.signIn`
-    -   `EmailPassword.getUserByEmail`
-    -   `EmailPassword.createResetPasswordToken`
-    -   `EmailPassword.resetPasswordUsingToken`
-    -   `EmailVerification.createEmailVerificationToken`
-    -   `EmailVerification.verifyEmailUsingToken`
-    -   `EmailVerification.revokeEmailVerificationTokens`
-    -   `Passwordless.createCode`
-    -   `Passwordless.createNewCodeForDevice`
-    -   `Passwordless.getUserByEmail`
-    -   `Passwordless.getUserByPhoneNumber`
-    -   `Passwordless.updateUser`
-    -   `Passwordless.revokeCode`
-    -   `Passwordless.listCodesByEmail`
-    -   `Passwordless.listCodesByPhoneNumber`
-    -   `Passwordless.listCodesByDeviceId`
-    -   `Passwordless.listCodesByPreAuthSessionId`
-    -   `Passwordless.signInUp`
-    -   `Session.createNewSession`
-    -   `Session.createNewSessionWithoutRequestResponse`
-    -   `Session.validateClaimsInJWTPayload`
-    -   `ThirdParty.getUsersByEmail`
-    -   `ThirdParty.getUserByThirdPartyInfo`
-    -   `ThirdPartyEmailPassword.getUserByThirdPartyInfo`
-    -   `ThirdPartyEmailPassword.emailPasswordSignUp`
-    -   `ThirdPartyEmailPassword.emailPasswordSignIn`
-    -   `ThirdPartyEmailPassword.getUsersByEmail`
-    -   `ThirdPartyEmailPassword.createResetPasswordToken`
-    -   `ThirdPartyEmailPassword.resetPasswordUsingToken`
-    -   `ThirdPartyEmailPassword.createEmailVerificationToken`
-    -   `ThirdPartyPasswordless.getUserByThirdPartyInfo`
-    -   `ThirdPartyPasswordless.getUsersByEmail`
-    -   `ThirdPartyPasswordless.createCode`
-    -   `ThirdPartyPasswordless.createNewCodeForDevice`
-    -   `ThirdPartyPasswordless.getUserByPhoneNumber`
-    -   `ThirdPartyPasswordless.updatePasswordlessUser`
-    -   `ThirdPartyPasswordless.revokeCode`
-    -   `ThirdPartyPasswordless.listCodesByEmail`
-    -   `ThirdPartyPasswordless.listCodesByPhoneNumber`
-    -   `ThirdPartyPasswordless.listCodesByDeviceId`
-    -   `ThirdPartyPasswordless.listCodesByPreAuthSessionId`
-    -   `ThirdPartyPasswordless.passwordlessSignInUp`
-    -   `Userroles.addRoleToUser`
-    -   `Userroles.removeUserRole`
-    -   `Userroles.getRolesForUser`
-    -   `Userroles.getUsersThatHaveRole`
 -   Removed deprecated config `createAndSendCustomEmail` and `createAndSendCustomTextMessage`.
--   Added `tenantId` to `fetchValue` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
--   In the thirdparty, thirdpartyemailpassword and thirdpartypasswordless, the providers array accepts `[]ProviderInput` instead of `[]TypeProvider`. TypeProvider interface is re-written. Refer migration section for more info.
--   Updated `authorisationUrlGET` API
-    -   Changed: Doesn't accept `clientId` anymore and accepts `clientType` instead to determine the matching config
-    -   Added: optional `pkceCodeVerifier` in the response, to support PKCE
--   Updated `signInUpPOST` API
-    -   Removed: `clientId`, `redirectURI`, `authCodeResponse` and `code` from the input
-    -   Instead,
-        -   accepts `clientType` to determine the matching config
-        -   One of redirectURIInfo (for code flow) or oAuthTokens (for token flow) is required
--   Updated `appleRedirectHandlerPOST`
-    -   to accept all the form fields instead of just the code
-    -   to use redirect URI encoded in the `state` parameter instead of using the websiteDomain config.
-    -   to use HTTP 303 instead of javascript based redirection.
--   Updated `signInUp` recipe interface function in thirdparty with new parameters:
-    -   `oAuthTokens` - contains all the tokens (access_token, id_token, etc.) as returned by the provider
-    -   `rawUserInfoFromProvider` - contains all the user profile info as returned by the provider
--   Removed `ThirdParty.signInUp` and added `ThirdParty.manuallyCreateOrUpdateUser` instead.
--   Removed `ThirdPartyEmailPassword.thirdPartySignInUp` and added `ThirdPartyEmailPassword.thirdPartyManuallyCreateOrUpdateUser` instead.
--   Removed `ThirdPartyPasswordless.thirdPartySignInUp` and added `ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser` instead.
--   Removed Provider functions from ThirdParty, ThirdPartyEmailPassword and ThirdPartyPasswordless. Refer migration section for more info.
+-   EmailPassword recipe changes:
+    -   Added mandatory `tenantId` field to `TypeEmailPasswordPasswordResetEmailDeliveryInput`
+    -   Removed `resetPasswordUsingTokenFeature` from `TypeInput`
+    -   Added `tenantId` param to `validate` function in `TypeInputFormField`
+    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+        -   `signUp`
+        -   `signIn`
+        -   `getUserByEmail`
+        -   `createResetPasswordToken`
+        -   `resetPasswordUsingToken`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `signUp`
+        -   `signIn`
+        -   `getUserByEmail`
+        -   `createResetPasswordToken`
+        -   `resetPasswordUsingToken`
+        -   `updateEmailOrPassword`
+    -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `emailExistsGET`
+        -   `generatePasswordResetTokenPOST`
+        -   `passwordResetPOST`
+        -   `signInPOST`
+        -   `signUpPOST`
+-   EmailVerification recipe changes:
+    -   Added mandatory `tenantId` field to `TypeEmailVerificationEmailDeliveryInput`
+    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+        -   `createEmailVerificationToken`
+        -   `verifyEmailUsingToken`
+        -   `revokeEmailVerificationTokens`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `createEmailVerificationToken`
+        -   `verifyEmailUsingToken`
+        -   `revokeEmailVerificationTokens`
+    -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `verifyEmailPOST`
+-   Passwordless recipe changes:
+    -   Added `tenantId` param to `validateEmailAddress`, `validatePhoneNumber` and `getCustomUserInputCode` functions in `TypeInput`
+    -   Added mandatory `tenantId` field to `TypePasswordlessEmailDeliveryInput` and `TypePasswordlessSmsDeliveryInput`
+    -   The providers array in `TypeInput` accepts `[]ProviderInput` instead of `[]TypeProvider`. TypeProvider interface is re-written. Refer migration section for more info.
+    -   Added mandatory `tenantId` in the input to the following recipe exposed functions:
+        -   `createCode`
+        -   `createNewCodeForDevice`
+        -   `getUserByEmail`
+        -   `getUserByPhoneNumber`
+        -   `updateUser`
+        -   `revokeCode`
+        -   `listCodesByEmail`
+        -   `listCodesByPhoneNumber`
+        -   `listCodesByDeviceId`
+        -   `listCodesByPreAuthSessionId`
+        -   `signInUp`
+    -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `createCode`
+        -   `createNewCodeForDevice`
+        -   `consumeCode`
+        -   `getUserByEmail`
+        -   `getUserByPhoneNumber`
+        -   `revokeAllCodes`
+        -   `revokeCode`
+        -   `listCodesByEmail`
+        -   `listCodesByPhoneNumber`
+        -   `listCodesByDeviceId`
+        -   `listCodesByPreAuthSessionId`
+    -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+        -   `createCodePOST`
+        -   `resendCodePOST`
+        -   `consumeCodePOST`
+        -   `emailExistsGET`
+        -   `phoneNumberExistsGET`
+    -   ThirdParty recipe changes
+        -   Removed `signInUp` and added `manuallyCreateOrUpdateUser` instead in the recipe exposed functions.
+        -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+            -   `getUsersByEmail`
+            -   `getUserByThirdPartyInfo`
+        -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+            -   `getUsersByEmail`
+            -   `getUserByThirdPartyInfo`
+            -   `signInUp`
+        -   Added mandatory `tenantId` in the input for the following API interface functions. If any of these functions are overridden, they need to be updated accordingly:
+            -   `authorisationUrlGET`
+            -   `signInUpPOST`
+        -   Updated `signInUp` recipe interface function in thirdparty with new parameters:
+            -   `oAuthTokens` - contains all the tokens (access_token, id_token, etc.) as returned by the provider
+            -   `rawUserInfoFromProvider` - contains all the user profile info as returned by the provider
+        -   Updated `authorisationUrlGET` API
+            -   Changed: Doesn't accept `clientId` anymore and accepts `clientType` instead to determine the matching config
+            -   Added: optional `pkceCodeVerifier` in the response, to support PKCE
+        -   Updated `signInUpPOST` API
+            -   Removed: `clientId`, `redirectURI`, `authCodeResponse` and `code` from the input
+            -   Instead,
+                -   accepts `clientType` to determine the matching config
+                -   One of redirectURIInfo (for code flow) or oAuthTokens (for token flow) is required
+        -   Updated `appleRedirectHandlerPOST`
+            -   to accept all the form fields instead of just the code
+            -   to use redirect URI encoded in the `state` parameter instead of using the websiteDomain config.
+            -   to use HTTP 303 instead of javascript based redirection.
+    -   Session recipe changes
+        -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+            -   `createNewSession`
+            -   `createNewSessionWithoutRequestResponse`
+            -   `validateClaimsInJWTPayload`
+        -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+            -   `createNewSession`
+            -   `getGlobalClaimValidators`
+        -   Added `tenantId` and `revokeAcrossAllTenants` params to `revokeAllSessionsForUser` in the recipe interface.
+        -   Added `tenantId` and `fetchAcrossAllTenants` params to `getAllSessionHandlesForUser` in the recipe interface.
+        -   Added `getTenantId` function to `SessionContainerInterface`
+        -   Added `tenantId` to `fetchValue` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
+    -   UserRoles recipe changes
+        -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+            -   `addRoleToUser`
+            -   `removeUserRole`
+            -   `getRolesForUser`
+            -   `getUsersThatHaveRole`
+        -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
+            -   `addRoleToUser`
+            -   `removeUserRole`
+            -   `getRolesForUser`
+            -   `getRolesForUser`
+    -   Similar changes in combination recipes (thirdpartyemailpassword and thirdpartypasswordless) have been made
 
 ### Changes
 
