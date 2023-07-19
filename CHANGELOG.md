@@ -284,7 +284,7 @@ After:
 ```ts
 let customProvider = {
     config: {
-        thirdPartyID: "custom",
+        thirdPartyId: "custom",
         clients: [
             {
                 clientId: "...",
@@ -313,7 +313,7 @@ Also, if the custom provider supports openid, it can automatically discover the 
 ```ts
 let customProvider = {
     config: {
-        thirdPartyID: "custom",
+        thirdPartyId: "custom",
         clients: [
             {
                 clientId: "...",
@@ -344,7 +344,7 @@ Note: The SDK will fetch the oauth2 endpoints from the provider's OIDC discovery
 ```ts
 let customProvider = {
     config: {
-        thirdPartyID: "custom",
+        thirdPartyId: "custom",
         clients: [
             {
                 clientId: "...",
