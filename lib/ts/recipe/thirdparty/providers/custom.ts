@@ -127,13 +127,13 @@ function getSupertokensUserInfoResultFromRawUserInfo(
 
 export default function NewProvider(input: ProviderInput): TypeProvider {
     input.config.userInfoMap = {
+        ...input.config.userInfoMap,
         fromIdTokenPayload: {
             userId: "sub",
             email: "email",
             emailVerified: "email_verified",
             ...input.config.userInfoMap?.fromIdTokenPayload,
         },
-        ...input.config.userInfoMap,
     };
 
     if (input.config.generateFakeEmail === undefined) {
