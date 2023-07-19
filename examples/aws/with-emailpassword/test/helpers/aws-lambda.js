@@ -28,12 +28,12 @@ const fs = require("fs");
 const child_process = require("child_process");
 const path = require("path");
 
-const FUNCTION_NAME = "aws-test-function";
+const FUNCTION_NAME = "supertokens-test";
 
 const setup_aws = async () => {
     const client = new LambdaClient({ region: "ap-south-1" });
     const getCommand = new GetFunctionCommand({
-        FunctionName: process.env.LAMBDA_FUNCTION_NAME || "supertokens-test",
+        FunctionName: process.env.LAMBDA_FUNCTION_NAME || FUNCTION_NAME,
     });
     const getRes = await client.send(getCommand);
 
@@ -48,7 +48,7 @@ const setup_aws = async () => {
     let buffer = fs.readFileSync(path.join(__dirname, "..", "..", "backend", "backend.zip"));
 
     const updateCommand = new UpdateFunctionCodeCommand({
-        FunctionName: FUNCTION_NAME,
+        FunctionName: process.env.LAMBDA_FUNCTION_NAME || FUNCTION_NAME,
         ZipFile: buffer,
     });
     const updateRes = await client.send(updateCommand);
@@ -79,7 +79,7 @@ const setup_aws = async () => {
     const createResp = await client.send(createLayerCommand);
 
     const updateConfig = new UpdateFunctionConfigurationCommand({
-        FunctionName: FUNCTION_NAME,
+        FunctionName: process.env.LAMBDA_FUNCTION_NAME || FUNCTION_NAME,
         Layers: [createResp.LayerVersionArn],
         Handler: "index.handler",
         CompatibleArchitectures: [
