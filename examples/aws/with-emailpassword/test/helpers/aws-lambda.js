@@ -23,6 +23,9 @@ const {
     UpdateFunctionCodeCommand,
     PublishLayerVersionCommand,
     UpdateFunctionConfigurationCommand,
+    ListLayersCommand,
+    GetLayerVersionCommand,
+    DeleteLayerVersionCommand,
 } = require("@aws-sdk/client-lambda");
 const fs = require("fs");
 const child_process = require("child_process");
@@ -61,7 +64,33 @@ const setup_aws = async () => {
         cwd: path.join(__dirname),
     });
 
+    const listLayerCommand = new ListLayersCommand({
+        CompatibleRuntime: "nodejs16.x",
+    });
+    const listLayerResp = await client.send(listLayerCommand);
+    const getLayerArray = listLayerResp.Layers.map((el) =>
+        client.send(
+            new GetLayerVersionCommand({
+                LayerName: el.LayerName,
+                VersionNumber: el.LatestMatchingVersion.Version,
+            })
+        )
+    );
+    const getLayersResp = await Promise.all(getLayerArray);
+
     const date = new Date();
+
+    const deleteLayerPromise = getLayersResp.filter((el, index) => {
+        if (date - new Date(el.CreatedDate) > 86400000) {
+            return client.send(
+                new DeleteLayerVersionCommand({
+                    LayerName: listLayerResp.Layers[index].LayerName,
+                    VersionNumber: listLayerResp.Layers[index].LatestMatchingVersion.Version,
+                })
+            );
+        }
+    });
+    const deleteResp = await Promise.all(deleteLayerPromise);
     const layerCode = fs.readFileSync(path.join(__dirname, "lambda", "supertokens-node.zip"));
 
     let normalise_layer_name = process.env.GITHUB_REF_NAME.replaceAll("/", "_");
