@@ -155,6 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `getRolesForUser`
 -   Similar changes in combination recipes (thirdpartyemailpassword and thirdpartypasswordless) have been made
 -   Even if thirdpartyemailpassword and thirdpartpasswordless recipes do not have a providers array as an input, they will still expose the third party recipe routes to the frontend.
+-   Returns 400 status code in emailpassword APIs if the input email or password are not of type string.
 
 ### Changes
 
