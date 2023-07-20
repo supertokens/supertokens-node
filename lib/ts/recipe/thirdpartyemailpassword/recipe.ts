@@ -47,7 +47,7 @@ export default class Recipe extends RecipeModule {
 
     private emailPasswordRecipe: EmailPasswordRecipe;
 
-    private thirdPartyRecipe: ThirdPartyRecipe | undefined;
+    private thirdPartyRecipe: ThirdPartyRecipe;
 
     recipeInterfaceImpl: RecipeInterface;
 
@@ -195,9 +195,7 @@ export default class Recipe extends RecipeModule {
 
     getAPIsHandled = (): APIHandled[] => {
         let apisHandled = [...this.emailPasswordRecipe.getAPIsHandled()];
-        if (this.thirdPartyRecipe !== undefined) {
-            apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
-        }
+        apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
         return apisHandled;
     };
 
@@ -213,10 +211,7 @@ export default class Recipe extends RecipeModule {
         if ((await this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
             return await this.emailPasswordRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
-        if (
-            this.thirdPartyRecipe !== undefined &&
-            (await this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined
-        ) {
+        if ((await this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
             return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         return false;
@@ -232,7 +227,7 @@ export default class Recipe extends RecipeModule {
         } else {
             if (this.emailPasswordRecipe.isErrorFromThisRecipe(err)) {
                 return await this.emailPasswordRecipe.handleError(err, request, response);
-            } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
+            } else if (this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
                 return await this.thirdPartyRecipe.handleError(err, request, response);
             }
             throw err;
@@ -241,9 +236,7 @@ export default class Recipe extends RecipeModule {
 
     getAllCORSHeaders = (): string[] => {
         let corsHeaders = [...this.emailPasswordRecipe.getAllCORSHeaders()];
-        if (this.thirdPartyRecipe !== undefined) {
-            corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
-        }
+        corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
         return corsHeaders;
     };
 
@@ -252,7 +245,7 @@ export default class Recipe extends RecipeModule {
             STError.isErrorFromSuperTokens(err) &&
             (err.fromRecipe === Recipe.RECIPE_ID ||
                 this.emailPasswordRecipe.isErrorFromThisRecipe(err) ||
-                (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
+                this.thirdPartyRecipe.isErrorFromThisRecipe(err))
         );
     };
 }
