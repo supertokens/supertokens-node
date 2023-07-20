@@ -83,7 +83,7 @@ const setup_aws = async () => {
 
     const deleteLayerPromise = getLayersResp.filter((el, index) => {
         if (date - new Date(el.CreatedDate) > 86400000) {
-            console.log("del");
+            console.log(listLayerResp.Layers[index].LayerName);
             return client.send(
                 new DeleteLayerVersionCommand({
                     LayerName: listLayerResp.Layers[index].LayerName,
@@ -95,7 +95,7 @@ const setup_aws = async () => {
     const deleteResp = await Promise.all(deleteLayerPromise);
     const layerCode = fs.readFileSync(path.join(__dirname, "lambda", "supertokens-node.zip"));
 
-    let normalise_layer_name = process.env.GITHUB_REF_NAME.replaceAll("/", "_");
+    let normalise_layer_name = process.env.GITHUB_REF.replaceAll("/", "_");
 
     const createLayerCommand = new PublishLayerVersionCommand({
         LayerName: "st-node-" + normalise_layer_name,
