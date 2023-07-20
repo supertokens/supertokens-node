@@ -17,6 +17,7 @@ let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyPasswordlessRecipe = require("../../lib/build/recipe/thirdpartypasswordless/recipe").default;
+let Multitenancy = require("../../lib/build/recipe/multitenancy");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
@@ -112,6 +113,118 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
         assert.strictEqual(
             response1.body.urlWithQueryParams,
             "https://test.com/oauth/auth?client_id=supetokens&redirect_uri=redirect&response_type=code&scope=test"
+        );
+    });
+
+    it("test calling authorisation url API with empty init", async function () {
+        await startST();
+
+        // testing with the google OAuth development key
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirdPartyPasswordlessRecipe.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        app.use((err, req, res, next) => {
+            res.status(500).send(err.message);
+        });
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.status, 400);
+        assert.strictEqual(response1.body.message, "the provider google could not be found in the configuration");
+    });
+
+    it("test calling authorisation url API with empty init with dynamic third party provider", async function () {
+        await startST();
+
+        // testing with the google OAuth development key
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirdPartyPasswordlessRecipe.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                }),
+            ],
+        });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("public", {
+            thirdPartyId: "google",
+            name: "Google",
+            clients: [
+                {
+                    clientId: "google-client-id",
+                    clientSecret: "google-client-secret",
+                },
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        app.use((err, req, res, next) => {
+            res.status(500).send(err.message);
+        });
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.body.status, "OK");
+        assert.strictEqual(
+            response1.body.urlWithQueryParams,
+            "https://accounts.google.com/o/oauth2/v2/auth?client_id=google-client-id&redirect_uri=redirect&response_type=code&scope=openid+email&included_grant_scopes=true&access_type=offline"
         );
     });
 

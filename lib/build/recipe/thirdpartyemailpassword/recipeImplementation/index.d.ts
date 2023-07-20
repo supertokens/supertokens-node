@@ -6,6 +6,6 @@ import { ProviderInput } from "../../thirdparty/types";
 export default function getRecipeInterface(
     emailPasswordQuerier: Querier,
     getEmailPasswordConfig: () => TypeNormalisedInput,
-    thirdPartyQuerier?: Querier,
+    thirdPartyQuerier: Querier,
     providers?: ProviderInput[]
 ): RecipeInterface;

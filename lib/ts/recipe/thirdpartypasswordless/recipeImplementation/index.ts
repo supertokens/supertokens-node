@@ -10,14 +10,14 @@ import { ProviderInput } from "../../thirdparty/types";
 
 export default function getRecipeInterface(
     passwordlessQuerier: Querier,
-    thirdPartyQuerier?: Querier,
+    thirdPartyQuerier: Querier,
     providers: ProviderInput[] = []
 ): RecipeInterface {
     let originalPasswordlessImplementation = PasswordlessImplemenation(passwordlessQuerier);
-    let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
-    if (thirdPartyQuerier !== undefined) {
-        originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier, providers);
-    }
+    let originalThirdPartyImplementation: ThirdPartyRecipeInterface = ThirdPartyImplemenation(
+        thirdPartyQuerier,
+        providers
+    );
 
     return {
         consumeCode: async function (input) {
@@ -86,9 +86,6 @@ export default function getRecipeInterface(
                 fromUserInfoAPI?: { [key: string]: any };
             };
         }> {
-            if (originalThirdPartyImplementation === undefined) {
-                throw new Error("No thirdparty provider configured");
-            }
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
 
@@ -99,9 +96,6 @@ export default function getRecipeInterface(
             tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
-            if (originalThirdPartyImplementation === undefined) {
-                throw new Error("No thirdparty provider configured");
-            }
             return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);
         },
 
@@ -111,9 +105,6 @@ export default function getRecipeInterface(
             tenantId: string;
             userContext: any;
         }): Promise<TypeProvider | undefined> {
-            if (originalThirdPartyImplementation === undefined) {
-                throw new Error("No thirdparty provider configured");
-            }
             return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },
 
@@ -123,9 +114,6 @@ export default function getRecipeInterface(
             )(input);
             if (user !== undefined) {
                 return user;
-            }
-            if (originalThirdPartyImplementation === undefined) {
-                return undefined;
             }
             return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
         },
@@ -143,9 +131,6 @@ export default function getRecipeInterface(
                 DerivedPwdless(this)
             )({ email, tenantId, userContext });
 
-            if (originalThirdPartyImplementation === undefined) {
-                return userFromEmailPass === undefined ? [] : [userFromEmailPass];
-            }
             let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
                 DerivedTP(this)
             )({ email, tenantId, userContext });
@@ -162,9 +147,6 @@ export default function getRecipeInterface(
             tenantId: string;
             userContext: any;
         }): Promise<User | undefined> {
-            if (originalThirdPartyImplementation === undefined) {
-                return undefined;
-            }
             return originalThirdPartyImplementation.getUserByThirdPartyInfo.bind(DerivedTP(this))(input);
         },
     };
