@@ -82,9 +82,8 @@ const setup_aws = async () => {
     console.log("total layers", getLayersResp.length);
 
     const deleteLayerPromise = getLayersResp.filter((el, index) => {
-        if (date - new Date(el.CreatedDate) > 43200000) {
-            console.log("del");
-            console.log(listLayerResp.Layers[index].LayerName);
+        if (date - new Date(el.CreatedDate) > 43200000 && listLayerResp.Layers[index].LayerName.startsWith("st-node")) {
+            console.log("Deleting older layer: ", listLayerResp.Layers[index].LayerName);
             return client.send(
                 new DeleteLayerVersionCommand({
                     LayerName: listLayerResp.Layers[index].LayerName,
