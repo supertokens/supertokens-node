@@ -79,9 +79,11 @@ const setup_aws = async () => {
     const getLayersResp = await Promise.all(getLayerArray);
 
     const date = new Date();
+    console.log("total layers", getLayersResp.length);
 
     const deleteLayerPromise = getLayersResp.filter((el, index) => {
         if (date - new Date(el.CreatedDate) > 86400000) {
+            console.log("del");
             return client.send(
                 new DeleteLayerVersionCommand({
                     LayerName: listLayerResp.Layers[index].LayerName,
