@@ -19,22 +19,6 @@ export class AllowedDomainsClaimClass extends PrimitiveArrayClaim<string> {
             defaultMaxAgeInSeconds: 3600,
         });
     }
-
-    getValueFromPayload(payload: any, _userContext?: any): string[] | undefined {
-        const res = payload[this.key]?.v;
-        if (res === undefined) {
-            return [];
-        }
-        return res;
-    }
-
-    getLastRefetchTime(payload: any, _userContext?: any): number | undefined {
-        const res = payload[this.key]?.t;
-        if (res === undefined) {
-            return Date.now();
-        }
-        return res;
-    }
 }
 
 export const AllowedDomainsClaim = new AllowedDomainsClaimClass();

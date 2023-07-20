@@ -1737,3 +1737,10 @@ async function refreshSessionWithoutRequestResponse(req: express.Request, resp: 
         }
     }
 }
+
+ThirdParty.init();
+ThirdPartyEmailPassword.init();
+ThirdPartyPasswordless.init({
+    contactMethod: "EMAIL",
+    flowType: "MAGIC_LINK",
+});
