@@ -224,4 +224,35 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         assert.equal(thirdPartyInfo.config.clients[0].clientId, "coreclientid");
         assert.equal(thirdPartyInfo.config.clients[0].clientSecret, "coresecret");
     });
+
+    it("test getProvider returns correct config from core", async function () {
+        await startSTWithMultitenancy();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdParty.init()],
+        });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("public", {
+            thirdPartyId: "google",
+            clients: [{ clientId: "coreclientid", clientSecret: "coresecret" }],
+        });
+
+        let thirdPartyInfo = await ThirdParty.getProvider("public", "google");
+        assert.equal(thirdPartyInfo.config.clients[0].clientId, "coreclientid");
+        assert.equal(thirdPartyInfo.config.clients[0].clientSecret, "coresecret");
+        assert.deepEqual(
+            {
+                fromIdTokenPayload: { userId: "sub", email: "email", emailVerified: "email_verified" },
+                fromUserInfoAPI: { userId: "sub", email: "email", emailVerified: "email_verified" },
+            },
+            thirdPartyInfo.config.userInfoMap
+        );
+    });
 });
