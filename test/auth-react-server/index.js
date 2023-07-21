@@ -42,7 +42,7 @@ const Multitenancy = require("../../lib/build/recipe/multitenancy");
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
-let { startST, killAllST, setupST, cleanST, customAuth0Provider, stopST } = require("./utils");
+let { startST, killAllST, setupST, cleanST, setKeyValueInConfig, customAuth0Provider, stopST } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
@@ -174,14 +174,18 @@ app.post("/startst", async (req, res) => {
 app.post("/beforeeach", async (req, res) => {
     deviceStore = new Map();
 
-    await killAllST();
-    await setupST();
+    if (process.env.INSTALL_PATH !== undefined) {
+        await killAllST();
+        await setupST();
+    }
     res.send();
 });
 
 app.post("/after", async (req, res) => {
-    await killAllST();
-    await cleanST();
+    if (process.env.INSTALL_PATH !== undefined) {
+        await killAllST();
+        await cleanST();
+    }
     res.send();
 });
 
