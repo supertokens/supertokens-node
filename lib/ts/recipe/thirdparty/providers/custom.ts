@@ -126,6 +126,8 @@ function getSupertokensUserInfoResultFromRawUserInfo(
 }
 
 export default function NewProvider(input: ProviderInput): TypeProvider {
+    // These are safe defaults common to most providers. Each provider implementations override these
+    // as necessary
     input.config.userInfoMap = {
         fromIdTokenPayload: {
             userId: "sub",
@@ -133,7 +135,12 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
             emailVerified: "email_verified",
             ...input.config.userInfoMap?.fromIdTokenPayload,
         },
-        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "sub",
+            email: "email",
+            emailVerified: "email_verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
+        },
     };
 
     if (input.config.generateFakeEmail === undefined) {

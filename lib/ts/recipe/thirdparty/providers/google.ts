@@ -24,16 +24,6 @@ export default function Google(input: ProviderInput): TypeProvider {
         input.config.oidcDiscoveryEndpoint = "https://accounts.google.com/";
     }
 
-    input.config.userInfoMap = {
-        ...input.config.userInfoMap,
-        fromUserInfoAPI: {
-            userId: "id",
-            email: "email",
-            emailVerified: "email_verified",
-            ...input.config.userInfoMap?.fromUserInfoAPI,
-        },
-    };
-
     input.config.authorizationEndpointQueryParams = {
         included_grant_scopes: "true",
         access_type: "offline",

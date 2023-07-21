@@ -20,16 +20,6 @@ export default function Okta(input: ProviderInput): TypeProvider {
         input.config.name = "Okta";
     }
 
-    input.config.userInfoMap = {
-        ...input.config.userInfoMap,
-        fromUserInfoAPI: {
-            userId: "sub",
-            email: "email",
-            emailVerified: "email_verified",
-            ...input.config.userInfoMap?.fromUserInfoAPI,
-        },
-    };
-
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {
@@ -42,7 +32,7 @@ export default function Okta(input: ProviderInput): TypeProvider {
                     throw new Error("Please provide the oktaDomain in the additionalConfig of the Okta provider.");
                 }
 
-                config.oidcDiscoveryEndpoint = `${config.additionalConfig.oktaDomain}.okta.com`;
+                config.oidcDiscoveryEndpoint = `${config.additionalConfig.oktaDomain}`;
             }
 
             if (config.scope === undefined) {
