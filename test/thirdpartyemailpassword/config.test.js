@@ -72,7 +72,7 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
 
         let thirdpartyemailpassword = await ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(thirdpartyemailpassword.thirdPartyRecipe, undefined);
+        assert.notEqual(thirdpartyemailpassword.thirdPartyRecipe, undefined); // thirdparty recipe should be initialized even if no providers are given
 
         let emailpassword = thirdpartyemailpassword.emailPasswordRecipe;
 
