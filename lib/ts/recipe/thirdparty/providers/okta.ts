@@ -32,7 +32,7 @@ export default function Okta(input: ProviderInput): TypeProvider {
                     throw new Error("Please provide the oktaDomain in the additionalConfig of the Okta provider.");
                 }
 
-                config.oidcDiscoveryEndpoint = `${config.additionalConfig.oktaDomain}.okta.com`;
+                config.oidcDiscoveryEndpoint = `${config.additionalConfig.oktaDomain}`;
             }
 
             if (config.scope === undefined) {
