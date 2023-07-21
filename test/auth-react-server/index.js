@@ -38,6 +38,7 @@ const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/re
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
 const { default: DashboardRaw } = require("../../lib/build/recipe/dashboard/recipe");
 const { default: MultitenancyRaw } = require("../../lib/build/recipe/multitenancy/recipe");
+const Multitenancy = require("../../lib/build/recipe/multitenancy");
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
@@ -301,6 +302,7 @@ app.get("/test/featureFlags", (req, res) => {
     available.push("thirdpartypasswordless");
     available.push("generalerror");
     available.push("userroles");
+    available.push("multitenancy");
 
     res.send({
         available,
@@ -631,6 +633,13 @@ function initST({ passwordlessConfig } = {}) {
                     };
                 },
             },
+        }),
+
+        Multitenancy.init({
+            getAllowedDomainsForTenantId: (tenantId) => [
+                `${tenantId}.example.com`,
+                websiteDomain.replace(/https?:\/\/([^:\/]*).*/, "$1"),
+            ],
         }),
     ];
 
