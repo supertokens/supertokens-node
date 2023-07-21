@@ -21,15 +21,6 @@ export default function ActiveDirectory(input: ProviderInput): TypeProvider {
         input.config.name = "Active Directory";
     }
 
-    input.config.userInfoMap = {
-        ...input.config.userInfoMap,
-        fromUserInfoAPI: {
-            userId: "sub",
-            email: "email",
-            ...input.config.userInfoMap?.fromUserInfoAPI,
-        },
-    };
-
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {

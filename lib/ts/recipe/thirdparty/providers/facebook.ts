@@ -36,8 +36,6 @@ export default function Facebook(input: ProviderInput): TypeProvider {
         ...input.config.userInfoMap,
         fromUserInfoAPI: {
             userId: "id",
-            email: "email",
-            emailVerified: "email_verified",
             ...input.config.userInfoMap?.fromUserInfoAPI,
         },
     };
