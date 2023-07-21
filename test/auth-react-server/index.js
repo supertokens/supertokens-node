@@ -38,7 +38,7 @@ const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/re
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
 const { default: DashboardRaw } = require("../../lib/build/recipe/dashboard/recipe");
 const { default: MultitenancyRaw } = require("../../lib/build/recipe/multitenancy/recipe");
-const Multitenancy = require("supertokens-node/lib/build/recipe/multitenancy");
+const Multitenancy = require("../../lib/build/recipe/multitenancy");
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
