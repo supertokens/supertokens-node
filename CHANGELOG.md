@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Added mandatory `tenantId` field to `TypeEmailPasswordPasswordResetEmailDeliveryInput`
     -   Removed `resetPasswordUsingTokenFeature` from `TypeInput`
     -   Added `tenantId` param to `validate` function in `TypeInputFormField`
-    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+    -   Added mandatory `tenantId` as first parameter to the following recipe index functions:
         -   `signUp`
         -   `signIn`
         -   `getUserByEmail`
@@ -59,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `signUpPOST`
 -   EmailVerification recipe changes:
     -   Added mandatory `tenantId` field to `TypeEmailVerificationEmailDeliveryInput`
-    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+    -   Added mandatory `tenantId` as first parameter to the following recipe index functions:
         -   `createEmailVerificationToken`
         -   `verifyEmailUsingToken`
         -   `revokeEmailVerificationTokens`
@@ -73,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Added `tenantId` param to `validateEmailAddress`, `validatePhoneNumber` and `getCustomUserInputCode` functions in `TypeInput`
     -   Added mandatory `tenantId` field to `TypePasswordlessEmailDeliveryInput` and `TypePasswordlessSmsDeliveryInput`
     -   The providers array in `TypeInput` accepts `[]ProviderInput` instead of `[]TypeProvider`. TypeProvider interface is re-written. Refer migration section for more info.
-    -   Added mandatory `tenantId` in the input to the following recipe exposed functions:
+    -   Added mandatory `tenantId` in the input to the following recipe index functions:
         -   `createCode`
         -   `createNewCodeForDevice`
         -   `getUserByEmail`
@@ -104,8 +104,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `emailExistsGET`
         -   `phoneNumberExistsGET`
 -   ThirdParty recipe changes
-    -   Removed `signInUp` and added `manuallyCreateOrUpdateUser` instead in the recipe exposed functions.
-    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+    -   Removed `signInUp` and added `manuallyCreateOrUpdateUser` instead in the recipe index functions.
+    -   Added `manuallyCreateOrUpdateUser` to recipe interface which is being called by the function mentioned above.
+        -   `manuallyCreateOrUpdateUser` recipe interface function should not be overridden as it is not going to be called by the SDK in the sign in/up flow.
+        -   `signInUp` recipe interface functions is not removed and is being used by the sign in/up flow.
+    -   Added mandatory `tenantId` as first parameter to the following recipe index functions:
         -   `getUsersByEmail`
         -   `getUserByThirdPartyInfo`
     -   Added mandatory `tenantId` in the input for the following recipe interface functions. If any of these functions are overridden, they need to be updated accordingly:
@@ -131,7 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   to use redirect URI encoded in the `state` parameter instead of using the websiteDomain config.
         -   to use HTTP 303 instead of javascript based redirection.
 -   Session recipe changes
-    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+    -   Added mandatory `tenantId` as first parameter to the following recipe index functions:
         -   `createNewSession`
         -   `createNewSessionWithoutRequestResponse`
         -   `validateClaimsInJWTPayload`
@@ -143,7 +146,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Added `getTenantId` function to `SessionContainerInterface`
     -   Added `tenantId` to `fetchValue` function in `PrimitiveClaim`, `PrimitiveArrayClaim`.
 -   UserRoles recipe changes
-    -   Added mandatory `tenantId` as first parameter to the following recipe exposed functions:
+    -   Added mandatory `tenantId` as first parameter to the following recipe index functions:
         -   `addRoleToUser`
         -   `removeUserRole`
         -   `getRolesForUser`
