@@ -425,7 +425,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         {
             "thirdPartyId": "...",
             "clientId": "...",
-            "redirectURI": "...",
+            "redirectURI": "...", // optional
             "code": "..."
         }
         ```
@@ -437,7 +437,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
             "thirdPartyId": "...",
             "clientType": "...",
             "redirectURIInfo": {
-                "redirectURIOnProviderDashboard": "...",
+                "redirectURIOnProviderDashboard": "...", // required
                 "redirectURIQueryParams": {
                     "code": "...",
                     "state": "..."
