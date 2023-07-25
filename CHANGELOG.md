@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
+-   Only supporting FDI 1.17
+-   Core must be upgraded to 6.0
 -   `getUsersOldestFirst` & `getUsersNewestFirst` has mandatory parameter `tenantId`. Pass `'public'` if not using multitenancy.
 -   Added mandatory field `tenantId` to `EmailDeliveryInterface` and `SmsDeliveryInterface`. Pass `'public'` if not using multitenancy.
 -   Removed deprecated config `createAndSendCustomEmail` and `createAndSendCustomTextMessage`.
@@ -412,6 +414,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         },
     });
     ```
+
+-   Request body of thirdparty signinup API has changed
+
+    -   If using auth code:
+
+        Before:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientId": "...",
+            "redirectURI": "...",
+            "code": "..."
+        }
+        ```
+
+        After:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientType": "...",
+            "redirectURIInfo": {
+                "redirectURIOnProviderDashboard": "...",
+                "redirectURIQueryParams": {
+                    "code": "...",
+                    "state": "..."
+                    // ... all callback query params
+                },
+                "pkceCodeVerifier": "..." // optional, use this if using PKCE flow
+            }
+        }
+        ```
+
+    -   If using tokens:
+
+        Before:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientId": "...",
+            "redirectURI": "...",
+            "authCodeResponse": {
+                "access_token": "...", // required
+                "id_token": "..."
+            }
+        }
+        ```
+
+        After:
+
+        ```json
+        {
+            "thirdPartyId": "...",
+            "clientType": "...",
+            "oAuthTokens": {
+                "access_token": "...", // now optional
+                "id_token": "..."
+                // rest of the oAuthTokens as returned by the provider
+            }
+        }
+        ```
 
 ## [14.1.3] - 2023-07-03
 
