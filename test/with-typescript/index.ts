@@ -1338,7 +1338,7 @@ Session.init({
                     input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
-                        ...(await boolClaim.build(input.userId, input.userContext)),
+                        ...(await boolClaim.build(input.userId, input.tenantId, input.userContext)),
                         lastTokenRefresh: Date.now(),
                     };
                     return originalImplementation.createNewSession(input);

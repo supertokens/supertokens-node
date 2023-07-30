@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [15.0.1] - 2023-07-19
+
+-   Passes missing `tenantId` to claim build function
+
 ## [15.0.0] - 2023-07-19
 
 ### Added
