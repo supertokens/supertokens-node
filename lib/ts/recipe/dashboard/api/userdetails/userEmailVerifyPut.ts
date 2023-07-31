@@ -55,7 +55,7 @@ export const userEmailVerifyPut = async (
             throw new Error("Should not come here");
         }
     } else {
-        await EmailVerification.unverifyEmail(userId, userContext);
+        await EmailVerification.unverifyEmail(userId, undefined, userContext);
     }
 
     return {
