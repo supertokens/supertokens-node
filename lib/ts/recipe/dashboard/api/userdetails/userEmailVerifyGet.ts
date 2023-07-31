@@ -36,7 +36,7 @@ export const userEmailverifyGet: APIFunction = async (
         };
     }
 
-    const response = await EmailVerification.isEmailVerified(userId, userContext);
+    const response = await EmailVerification.isEmailVerified(userId, undefined, userContext);
     return {
         status: "OK",
         isVerified: response,
