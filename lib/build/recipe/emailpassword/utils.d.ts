@@ -21,3 +21,9 @@ export declare function defaultPasswordValidator(
 export declare function defaultEmailValidator(
     value: any
 ): Promise<"Development bug: Please make sure the email field yields a string" | "Email is invalid" | undefined>;
+export declare function getPasswordResetLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    tenantId: string;
+}): string;

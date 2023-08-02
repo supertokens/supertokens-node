@@ -12,97 +12,56 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import { ProviderInput, TypeProvider } from "../types";
+import NewProvider from "./custom";
 
-type TypeThirdPartyProviderDiscordConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: any) => string) };
-    };
-    isDefault?: boolean;
-};
-
-export default function Discord(config: TypeThirdPartyProviderDiscordConfig): TypeProvider {
-    const id = "discord";
-
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://discord.com/api/oauth2/token";
-        let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
-            grant_type: "authorization_code",
-        };
-        if (authCodeFromRequest !== undefined) {
-            accessTokenAPIParams.code = authCodeFromRequest;
-        }
-        if (redirectURI !== undefined) {
-            accessTokenAPIParams.redirect_uri = redirectURI;
-        }
-        let authorisationRedirectURL = "https://discord.com/api/oauth2/authorize";
-        let scopes = ["email", "identify"];
-        if (config.scope !== undefined) {
-            scopes = config.scope;
-            scopes = Array.from(new Set(scopes));
-        }
-        let additionalParams =
-            config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
-                ? {}
-                : config.authorisationRedirect.params;
-        let authorizationRedirectParams: { [key: string]: string } = {
-            scope: scopes.join(" "),
-            client_id: config.clientId,
-            response_type: "code",
-            ...additionalParams,
-        };
-
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
-                method: "get",
-                url: "https://discord.com/api/users/@me",
-                headers: {
-                    Authorization: authHeader,
-                },
-            });
-            let userInfo = response.data;
-            return {
-                id: userInfo.id,
-                email:
-                    userInfo.email === undefined
-                        ? undefined
-                        : {
-                              id: userInfo.email,
-                              isVerified: userInfo.verified,
-                          },
-            };
-        }
-        return {
-            accessTokenAPI: {
-                url: accessTokenAPIURL,
-                params: accessTokenAPIParams,
-            },
-            authorisationRedirect: {
-                url: authorisationRedirectURL,
-                params: authorizationRedirectParams,
-            },
-            getProfileInfo,
-            getClientId: () => {
-                return config.clientId;
-            },
-        };
+export default function Discord(input: ProviderInput): TypeProvider {
+    if (input.config.name === undefined) {
+        input.config.name = "Discord";
     }
 
-    return {
-        id,
-        get,
-        isDefault: config.isDefault,
+    if (input.config.authorizationEndpoint === undefined) {
+        input.config.authorizationEndpoint = "https://discord.com/oauth2/authorize";
+    }
+
+    if (input.config.tokenEndpoint === undefined) {
+        input.config.tokenEndpoint = "https://discord.com/api/oauth2/token";
+    }
+
+    if (input.config.userInfoEndpoint === undefined) {
+        input.config.userInfoEndpoint = "https://discord.com/api/users/@me";
+    }
+
+    input.config.userInfoMap = {
+        ...input.config.userInfoMap,
+        fromUserInfoAPI: {
+            userId: "id",
+            email: "email",
+            emailVerified: "verified",
+            ...input.config.userInfoMap?.fromUserInfoAPI,
+        },
     };
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function ({ clientType, userContext }) {
+            const config = await oGetConfig({ clientType, userContext });
+
+            if (config.scope === undefined) {
+                config.scope = ["identify", "email"];
+            }
+
+            return config;
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }

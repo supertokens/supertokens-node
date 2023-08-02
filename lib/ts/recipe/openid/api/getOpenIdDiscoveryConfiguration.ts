@@ -14,11 +14,11 @@
  */
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function getOpenIdDiscoveryConfiguration(
     apiImplementation: APIInterface,
-    options: APIOptions
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean> {
     if (apiImplementation.getOpenIdDiscoveryConfigurationGET === undefined) {
         return false;
@@ -26,7 +26,7 @@ export default async function getOpenIdDiscoveryConfiguration(
 
     let result = await apiImplementation.getOpenIdDiscoveryConfigurationGET({
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
     if (result.status === "OK") {
         options.res.setHeader("Access-Control-Allow-Origin", "*", false);

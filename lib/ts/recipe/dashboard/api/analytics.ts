@@ -19,13 +19,18 @@ import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { version as SDKVersion } from "../../../version";
 import STError from "../../../error";
-import axios from "axios";
+import fetch from "cross-fetch";
 
 export type Response = {
     status: "OK";
 };
 
-export default async function analyticsPost(_: APIInterface, options: APIOptions): Promise<Response> {
+export default async function analyticsPost(
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    __: any
+): Promise<Response> {
     // If telemetry is disabled, dont send any event
     if (!SuperTokens.getInstanceOrThrowError().telemetryEnabled) {
         return {
@@ -80,12 +85,12 @@ export default async function analyticsPost(_: APIInterface, options: APIOptions
     };
 
     try {
-        await axios({
-            url: "https://api.supertokens.com/0/st/telemetry",
+        await fetch("https://api.supertokens.com/0/st/telemetry", {
             method: "POST",
-            data,
+            body: JSON.stringify(data),
             headers: {
-                "api-version": 3,
+                "api-version": "3",
+                "content-type": "application/json; charset=utf-8",
             },
         });
     } catch (e) {

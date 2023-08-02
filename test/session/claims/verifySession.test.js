@@ -700,7 +700,7 @@ function getTestApp(endpoints) {
     app.use(express.json());
 
     app.post("/create", async (req, res) => {
-        await Session.createNewSession(req, res, "testing-userId", undefined, req.body, {});
+        await Session.createNewSession(req, res, "public", "testing-userId", undefined, req.body, {});
         res.status(200).json({ message: true });
     });
 

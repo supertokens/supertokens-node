@@ -15,7 +15,6 @@
 
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
-import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
@@ -31,11 +30,13 @@ export default class Wrapper {
      * no linking that happened.
      */
     static async createPrimaryUserIdOrLinkAccounts(input: {
+        tenantId: string;
         recipeUserId: RecipeUserId;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }) {
         return await Recipe.getInstance().createPrimaryUserIdOrLinkAccounts({
+            tenantId: input.tenantId,
             recipeUserId: input.recipeUserId,
             checkAccountsToLinkTableAsWell: input.checkAccountsToLinkTableAsWell ?? true,
             userContext: input.userContext === undefined ? {} : input.userContext,
@@ -77,44 +78,6 @@ export default class Wrapper {
         });
     }
 
-    /**
-     * This function is similar to linkAccounts, but it specifically
-     * works for when trying to link accounts with a user that you are already logged
-     * into. This can be used to implement, for example, connecting social accounts to your *
-     * existing email password account.
-     *
-     * This function also creates a new recipe user for the newUser if required, and for that,
-     * it allows you to provide two functions:
-     *  - createRecipeUserFunc: Used to create a new account for newUser
-     *  - verifyCredentialsFunc: If the new account already exists, this function will be called
-     *      and you can verify the input credentials before we attempt linking. If the input
-     *      credentials are not OK, then you can return a `CUSTOM_RESPONSE` status and that
-     *      will be returned back to you from this function call.
-     */
-    static async linkAccountsWithUserFromSession<T>(input: {
-        session: SessionContainerInterface;
-        newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: (userContext: any) => Promise<void>;
-        verifyCredentialsFunc: (
-            userContext: any
-        ) => Promise<
-            | { status: "OK" }
-            | {
-                  status: "CUSTOM_RESPONSE";
-                  resp: T;
-              }
-        >;
-        userContext?: any;
-    }) {
-        return await Recipe.getInstance().linkAccountWithUserFromSession<T>({
-            session: input.session,
-            newUser: input.newUser,
-            createRecipeUserFunc: input.createRecipeUserFunc,
-            verifyCredentialsFunc: input.verifyCredentialsFunc,
-            userContext: input.userContext === undefined ? {} : input.userContext,
-        });
-    }
-
     static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
@@ -123,8 +86,9 @@ export default class Wrapper {
         });
     }
 
-    static async linkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
+    static async linkAccounts(tenantId: string, recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
         return await Recipe.getInstance().recipeInterfaceImpl.linkAccounts({
+            tenantId,
             recipeUserId,
             primaryUserId,
             userContext: userContext === undefined ? {} : userContext,
@@ -193,7 +157,6 @@ export const fetchFromAccountToLinkTable = Wrapper.fetchFromAccountToLinkTable;
 export const storeIntoAccountToLinkTable = Wrapper.storeIntoAccountToLinkTable;
 export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
 export const getPrimaryUserIdThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
-export const linkAccountsWithUserFromSession = Wrapper.linkAccountsWithUserFromSession;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 export const isSignInAllowed = Wrapper.isSignInAllowed;
 export const isEmailChangeAllowed = Wrapper.isEmailChangeAllowed;

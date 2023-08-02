@@ -125,11 +125,15 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: async (input) => {
-                        email = input.email;
-                        codeLifetime = input.codeLifetime;
-                        urlWithLinkCode = input.urlWithLinkCode;
-                        userInputCode = input.userInputCode;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.email;
+                                codeLifetime = input.codeLifetime;
+                                urlWithLinkCode = input.urlWithLinkCode;
+                                userInputCode = input.userInputCode;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
@@ -414,7 +418,7 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
         assert.notStrictEqual(codeLifetime, undefined);
         assert(codeLifetime > 0);
         assert.strictEqual(result.status, 500);
-        assert(message === "Request failed with status code 500");
+        assert.strictEqual(message, "Request failed with status code 500");
     });
 
     it("test default backward compatibility api being called: resend code api", async function () {
@@ -523,18 +527,18 @@ describe(`emailDelivery: ${printPath("[test/passwordless/emailDelivery.test.js]"
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: async (input) => {
-                        /**
-                         * when the function is called for the first time,
-                         * it will be for signinup
-                         */
-                        if (sendCustomEmailCalled) {
-                            email = input.email;
-                            codeLifetime = input.codeLifetime;
-                            urlWithLinkCode = input.urlWithLinkCode;
-                            userInputCode = input.userInputCode;
-                        }
-                        sendCustomEmailCalled = true;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                if (sendCustomEmailCalled) {
+                                    email = input.email;
+                                    codeLifetime = input.codeLifetime;
+                                    urlWithLinkCode = input.urlWithLinkCode;
+                                    userInputCode = input.userInputCode;
+                                }
+                                sendCustomEmailCalled = true;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),

@@ -50,14 +50,14 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
-    function getEmailDeliveryConfig(recipeImpl: RecipeInterface, isInServerlessEnv: boolean) {
+    function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
         let emailService = config?.emailDelivery?.service;
         /**
          * If the user has not passed even that config, we use the default
          * createAndSendCustomEmail implementation which calls our supertokens API
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(recipeImpl, appInfo, isInServerlessEnv);
+            emailService = new BackwardCompatibilityService(appInfo, isInServerlessEnv);
         }
         return {
             ...config?.emailDelivery,
@@ -246,4 +246,22 @@ export async function defaultEmailValidator(value: any) {
     }
 
     return undefined;
+}
+
+export function getPasswordResetLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    tenantId: string;
+}): string {
+    return (
+        input.appInfo.websiteDomain.getAsStringDangerous() +
+        input.appInfo.websiteBasePath.getAsStringDangerous() +
+        "/reset-password?token=" +
+        input.token +
+        "&rid=" +
+        input.recipeId +
+        "&tenantId=" +
+        input.tenantId
+    );
 }

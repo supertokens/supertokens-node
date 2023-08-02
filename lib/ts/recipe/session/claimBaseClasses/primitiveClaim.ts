@@ -6,6 +6,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
     public readonly fetchValue: (
         userId: string,
         recipeUserId: RecipeUserId,
+        tenantId: string,
         userContext: any
     ) => Promise<T | undefined> | T | undefined;
     public readonly defaultMaxAgeInSeconds: number | undefined;

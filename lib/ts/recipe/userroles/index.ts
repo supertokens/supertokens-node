@@ -23,32 +23,36 @@ export default class Wrapper {
     static PermissionClaim = PermissionClaim;
     static UserRoleClaim = UserRoleClaim;
 
-    static async addRoleToUser(userId: string, role: string, userContext?: any) {
+    static async addRoleToUser(tenantId: string, userId: string, role: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addRoleToUser({
             userId,
             role,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async removeUserRole(userId: string, role: string, userContext?: any) {
+    static async removeUserRole(tenantId: string, userId: string, role: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeUserRole({
             userId,
             role,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async getRolesForUser(userId: string, userContext?: any) {
+    static async getRolesForUser(tenantId: string, userId: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getRolesForUser({
             userId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async getUsersThatHaveRole(role: string, userContext?: any) {
+    static async getUsersThatHaveRole(tenantId: string, role: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersThatHaveRole({
             role,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }

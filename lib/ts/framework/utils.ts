@@ -15,7 +15,6 @@
 
 import { parse, serialize } from "cookie";
 import type { Request, Response } from "express";
-import { json, urlencoded } from "body-parser";
 import type { IncomingMessage } from "http";
 import { ServerResponse } from "http";
 import STError from "../error";
@@ -23,6 +22,9 @@ import type { HTTPMethod } from "../types";
 import { NextApiRequest } from "next";
 import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
+import contentType from "content-type";
+import raw from "raw-body";
+import inflate from "inflation";
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
     if (headers === undefined || headers === null) {
@@ -109,9 +111,52 @@ function JSONCookies(obj: any) {
     return obj;
 }
 
+function getCharset(req: IncomingMessage) {
+    try {
+        return (contentType.parse(req).parameters.charset || "").toLowerCase();
+    } catch (e) {
+        return undefined;
+    }
+}
+
+export async function parseJSONBodyFromRequest(req: IncomingMessage) {
+    const encoding = getCharset(req) || "utf-8";
+    if (!encoding.startsWith("utf-")) {
+        throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
+    }
+    const str = await raw(inflate(req), { encoding });
+
+    if (str.length === 0) {
+        return {};
+    }
+    return JSON.parse(str);
+}
+
+export async function parseURLEncodedFormData(req: IncomingMessage) {
+    const encoding = getCharset(req) || "utf-8";
+    if (!encoding.startsWith("utf-")) {
+        throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
+    }
+    const str = await raw(inflate(req), { encoding });
+
+    let body: any = {};
+    for (const [key, val] of new URLSearchParams(str).entries()) {
+        if (key in body) {
+            if (body[key] instanceof Array) {
+                body[key].push(val);
+            } else {
+                body[key] = [body[key], val];
+            }
+        } else {
+            body[key] = val;
+        }
+    }
+    return body;
+}
+
 export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
+    request: Request | NextApiRequest
 ) {
     // according to https://github.com/supertokens/supertokens-node/issues/33
     if (method === "post" || method === "put") {
@@ -131,62 +176,49 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
         } else if (
             request.body === undefined ||
             Buffer.isBuffer(request.body) ||
-            Object.keys(request.body).length === 0
+            (Object.keys(request.body).length === 0 && request.readable)
         ) {
-            // parsing it again to make sure that the request is parsed atleast once by a json parser
-            let jsonParser = json();
-            let err = await new Promise((resolve) => {
-                let resolvedCalled = false;
-                if (request.readable) {
-                    jsonParser(request, new ServerResponse(request), (e) => {
-                        if (!resolvedCalled) {
-                            resolvedCalled = true;
-                            resolve(e);
-                        }
-                    });
-                } else {
-                    resolve(undefined);
-                }
-            });
-            if (err !== undefined) {
+            try {
+                // parsing it again to make sure that the request is parsed atleast once by a json parser
+                request.body = await parseJSONBodyFromRequest(request);
+            } catch {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass a valid JSON input in the request body",
                 });
             }
         }
-    } else if (method === "delete" || method === "get") {
-        if (request.query === undefined) {
-            let parser = urlencoded({ extended: true });
-            let err = await new Promise((resolve) => parser(request, new ServerResponse(request), resolve));
-            if (err !== undefined) {
+    }
+}
+
+export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request | NextApiRequest) {
+    if (typeof request.body === "string") {
+        try {
+            request.body = Object.fromEntries(new URLSearchParams(request.body).entries());
+        } catch (err) {
+            if (request.body === "") {
+                request.body = {};
+            } else {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass valid url encoded form in the request body",
                 });
             }
         }
-    }
-}
-
-export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
-) {
-    let parser = urlencoded({ extended: true });
-    let err = await new Promise((resolve) => {
-        if (request.readable) {
-            parser(request, new ServerResponse(request), (e) => {
-                resolve(e);
+    } else if (
+        request.body === undefined ||
+        Buffer.isBuffer(request.body) ||
+        (Object.keys(request.body).length === 0 && request.readable)
+    ) {
+        try {
+            // parsing it again to make sure that the request is parsed atleast once by a form data parser
+            request.body = await parseURLEncodedFormData(request);
+        } catch {
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: "API input error: Please make sure to pass valid url encoded form in the request body",
             });
-        } else {
-            resolve(undefined);
         }
-    });
-    if (err !== undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: "API input error: Please make sure to pass valid url encoded form in the request body",
-        });
     }
 }
 

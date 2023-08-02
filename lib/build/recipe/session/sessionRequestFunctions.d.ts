@@ -42,6 +42,7 @@ export declare function createNewSessionInRequest({
     config,
     appInfo,
     sessionDataInDatabase,
+    tenantId,
 }: {
     req: any;
     res: any;
@@ -53,4 +54,5 @@ export declare function createNewSessionInRequest({
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
+    tenantId: string;
 }): Promise<SessionContainerInterface>;

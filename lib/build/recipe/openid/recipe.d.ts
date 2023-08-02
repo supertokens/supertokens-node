@@ -20,10 +20,12 @@ export default class OpenIdRecipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         response: BaseResponse,
         path: normalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     handleError: (error: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];

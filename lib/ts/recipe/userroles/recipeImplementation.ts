@@ -16,23 +16,38 @@
 import { RecipeInterface } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        addRoleToUser: function ({ userId, role }) {
-            return querier.sendPutRequest(new NormalisedURLPath("/recipe/user/role"), { userId, role });
+        addRoleToUser: function ({ userId, role, tenantId }) {
+            return querier.sendPutRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/role`),
+                { userId, role }
+            );
         },
 
-        removeUserRole: function ({ userId, role }) {
-            return querier.sendPostRequest(new NormalisedURLPath("/recipe/user/role/remove"), { userId, role });
+        removeUserRole: function ({ userId, role, tenantId }) {
+            return querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/role/remove`
+                ),
+                { userId, role }
+            );
         },
 
-        getRolesForUser: function ({ userId }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/roles"), { userId });
+        getRolesForUser: function ({ userId, tenantId }) {
+            return querier.sendGetRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/roles`),
+                { userId }
+            );
         },
 
-        getUsersThatHaveRole: function ({ role }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/role/users"), { role });
+        getUsersThatHaveRole: function ({ role, tenantId }) {
+            return querier.sendGetRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/role/users`),
+                { role }
+            );
         },
 
         createNewRoleOrAddPermissions: function ({ role, permissions }) {

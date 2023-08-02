@@ -27,6 +27,7 @@ export declare type RecipeInterface = {
     addRoleToUser: (input: {
         userId: string;
         role: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<
         | {
@@ -40,6 +41,7 @@ export declare type RecipeInterface = {
     removeUserRole: (input: {
         userId: string;
         role: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<
         | {
@@ -52,6 +54,7 @@ export declare type RecipeInterface = {
     >;
     getRolesForUser: (input: {
         userId: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
@@ -59,6 +62,7 @@ export declare type RecipeInterface = {
     }>;
     getUsersThatHaveRole: (input: {
         role: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<
         | {

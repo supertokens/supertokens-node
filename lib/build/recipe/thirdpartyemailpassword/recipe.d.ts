@@ -30,7 +30,7 @@ export default class Recipe extends RecipeModule {
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
-        config: TypeInput,
+        config: TypeInput | undefined,
         recipes: {
             thirdPartyInstance: ThirdPartyRecipe | undefined;
             emailPasswordInstance: EmailPasswordRecipe | undefined;
@@ -39,16 +39,18 @@ export default class Recipe extends RecipeModule {
             emailDelivery: EmailDeliveryIngredient<TypeThirdPartyEmailPasswordEmailDeliveryInput> | undefined;
         }
     );
-    static init(config: TypeInput): RecipeListFunction;
+    static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     static getInstanceOrThrowError(): Recipe;
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     handleError: (
         err: STErrorEmailPassword | STErrorThirdParty,

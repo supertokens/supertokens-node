@@ -30,11 +30,12 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
     }
 
-    static getUserCount(includeRecipeIds?: string[]) {
-        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds);
+    static getUserCount(includeRecipeIds?: string[], tenantId?: string) {
+        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds, tenantId);
     }
 
-    static getUsersOldestFirst(input?: {
+    static getUsersOldestFirst(input: {
+        tenantId: string;
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
@@ -50,7 +51,8 @@ export default class SuperTokensWrapper {
         });
     }
 
-    static getUsersNewestFirst(input?: {
+    static getUsersNewestFirst(input: {
+        tenantId: string;
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];

@@ -135,6 +135,7 @@ export type RecipeInterface = {
           }
     >;
     linkAccounts: (input: {
+        tenantId: string;
         recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: any;
@@ -211,6 +212,7 @@ export type AccountInfoWithRecipeId = {
 } & AccountInfo;
 
 export type RecipeLevelUser = {
+    tenantIds: string[];
     timeJoined: number;
     recipeUserId: RecipeUserId;
 } & AccountInfoWithRecipeId;

@@ -6,7 +6,7 @@ type Response = {
     status: "OK";
 };
 
-export const userDelete = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userDelete = async (_: APIInterface, ___: string, options: APIOptions, __: any): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
     let removeAllLinkedAccountsQueryValue = options.req.getKeyValueFromQuery("removeAllLinkedAccounts");
     if (removeAllLinkedAccountsQueryValue !== undefined) {

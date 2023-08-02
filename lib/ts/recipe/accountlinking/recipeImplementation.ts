@@ -108,7 +108,7 @@ export default function getRecipeImplementation(
                 return await querier.sendGetRequest(
                     new NormalisedURLPath("/recipe/accountlinking/user/primary/check"),
                     {
-                        recipeUserId,
+                        recipeUserId: recipeUserId.getAsString(),
                     }
                 );
             } else {
@@ -184,7 +184,7 @@ export default function getRecipeImplementation(
                 let result = await querier.sendGetRequest(
                     new NormalisedURLPath("/recipe/accountlinking/user/link/check"),
                     {
-                        recipeUserId,
+                        recipeUserId: recipeUserId.getAsString(),
                         primaryUserId,
                     }
                 );
@@ -198,10 +198,12 @@ export default function getRecipeImplementation(
         linkAccounts: async function (
             this: RecipeInterface,
             {
+                tenantId,
                 recipeUserId,
                 primaryUserId,
                 userContext,
             }: {
+                tenantId: string;
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
                 userContext: any;
@@ -240,6 +242,7 @@ export default function getRecipeImplementation(
 
             if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
                 await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    tenantId,
                     recipeUserId,
                     userContext,
                 });
@@ -308,7 +311,10 @@ export default function getRecipeImplementation(
         ): Promise<User[]> {
             if (process.env.MOCK !== "true") {
                 let result = await querier.sendGetRequest(new NormalisedURLPath("/users/accountinfo"), {
-                    ...accountInfo,
+                    email: accountInfo.email,
+                    phoneNumber: accountInfo.phoneNumber,
+                    thirdPartyId: accountInfo.thirdParty?.id, // TODO: double check this
+                    thirdPartyUserId: accountInfo.thirdParty?.userId,
                 });
                 return result.users;
             } else {
@@ -347,7 +353,7 @@ export default function getRecipeImplementation(
                 let result = await querier.sendGetRequest(
                     new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
                     {
-                        recipeUserId,
+                        recipeUserId: recipeUserId.getAsString(),
                     }
                 );
                 return result.user;

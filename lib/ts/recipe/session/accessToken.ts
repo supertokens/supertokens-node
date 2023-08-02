@@ -20,6 +20,7 @@ import { ProcessState, PROCESS_STATE } from "../../processState";
 import RecipeUserId from "../../recipeUserId";
 import { mockAccessTokenPayload } from "./mockCore";
 import { logDebugMessage } from "../../logger";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export async function getInfoFromAccessToken(
     jwtInfo: ParsedJWTInfo,
@@ -35,6 +36,7 @@ export async function getInfoFromAccessToken(
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
+    tenantId: string;
 }> {
     try {
         // From the library examples
@@ -88,6 +90,11 @@ export async function getInfoFromAccessToken(
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
+        let tenantId = DEFAULT_TENANT_ID;
+
+        if (jwtInfo.version >= 4) {
+            tenantId = sanitizeStringInput(payload.tId)!;
+        }
 
         if (antiCsrfToken === undefined && doAntiCsrfCheck) {
             throw Error("Access token does not contain the anti-csrf token.");
@@ -106,6 +113,7 @@ export async function getInfoFromAccessToken(
             expiryTime,
             timeCreated,
             recipeUserId,
+            tenantId,
         };
     } catch (err) {
         logDebugMessage(
@@ -146,6 +154,12 @@ export function validateAccessTokenStructure(payload: any, version: number) {
             // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
             // it would come here if we change the structure of the JWT.
             throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        }
+
+        if (version >= 4) {
+            if (typeof payload.tId !== "string") {
+                throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+            }
         }
     } else if (
         typeof payload.sessionHandle !== "string" ||

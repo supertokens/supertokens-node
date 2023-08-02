@@ -17,9 +17,13 @@ import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export default async function passwordReset(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function passwordReset(
+    apiImplementation: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     if (apiImplementation.passwordResetPOST === undefined) {
@@ -35,7 +39,8 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
-        (await options.req.getJSONBody()).formFields
+        (await options.req.getJSONBody()).formFields,
+        tenantId
     );
 
     let token = (await options.req.getJSONBody()).token;
@@ -55,8 +60,9 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
     let result = await apiImplementation.passwordResetPOST({
         formFields,
         token,
+        tenantId,
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     if (result.status === "PASSWORD_POLICY_VIOLATED_ERROR") {

@@ -116,6 +116,12 @@ export async function getSessionFromRequest({
         doAntiCsrfCheck = false;
     }
 
+    // If the token is not present we can ignore the antiCsrf settings.
+    // the getSession implementation will handle checking sessionOptional
+    if (accessToken === undefined) {
+        doAntiCsrfCheck = false;
+    }
+
     if (doAntiCsrfCheck && config.antiCsrf === "VIA_CUSTOM_HEADER") {
         if (config.antiCsrf === "VIA_CUSTOM_HEADER") {
             if (getRidFromHeader(req) === undefined) {
@@ -320,6 +326,7 @@ export async function createNewSessionInRequest({
     config,
     appInfo,
     sessionDataInDatabase,
+    tenantId,
 }: {
     req: any;
     res: any;
@@ -331,6 +338,7 @@ export async function createNewSessionInRequest({
     config: TypeNormalisedInput;
     appInfo: NormalisedAppinfo;
     sessionDataInDatabase: any;
+    tenantId: string;
 }) {
     logDebugMessage("createNewSession: Started");
     if (!req.wrapperUsed) {
@@ -352,7 +360,7 @@ export async function createNewSessionInRequest({
     };
 
     for (const claim of claimsAddedByOtherRecipes) {
-        const update = await claim.build(userId, recipeUserId, userContext);
+        const update = await claim.build(userId, recipeUserId, tenantId, userContext);
         finalAccessTokenPayload = {
             ...finalAccessTokenPayload,
             ...update,
@@ -388,6 +396,7 @@ export async function createNewSessionInRequest({
         accessTokenPayload: finalAccessTokenPayload,
         sessionDataInDatabase,
         disableAntiCsrf,
+        tenantId,
         userContext,
     });
 

@@ -8,6 +8,7 @@ import RecipeUserId from "../../recipeUserId";
  */
 export declare function createNewSession(
     helpers: Helpers,
+    tenantId: string,
     userId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
@@ -30,6 +31,7 @@ export declare function getSession(
         recipeUserId: RecipeUserId;
         userDataInJWT: any;
         expiryTime: number;
+        tenantId: string;
     };
     accessToken?: {
         token: string;
@@ -62,7 +64,9 @@ export declare function refreshSession(
 export declare function revokeAllSessionsForUser(
     helpers: Helpers,
     userId: string,
-    revokeSessionsForLinkedAccounts: boolean
+    revokeSessionsForLinkedAccounts: boolean,
+    tenantId?: string,
+    revokeAcrossAllTenants?: boolean
 ): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
@@ -71,7 +75,9 @@ export declare function getAllSessionHandlesForUser(
     helpers: Helpers,
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
-    userContext: any
+    tenantId?: string,
+    fetchAcrossAllTenants?: boolean,
+    userContext?: any
 ): Promise<string[]>;
 /**
  * @description call to destroy one session

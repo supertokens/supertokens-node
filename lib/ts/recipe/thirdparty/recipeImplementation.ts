@@ -1,42 +1,53 @@
-import { RecipeInterface } from "./types";
+import { RecipeInterface, ProviderInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { User } from "../../types";
+import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
 import AccountLinking from "../accountlinking/recipe";
-import { getUser } from "../..";
-import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
 import EmailVerification from "../emailverification";
 import EmailVerificationRecipe from "../emailverification/recipe";
+import MultitenancyRecipe from "../multitenancy/recipe";
+import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
+import { getUser } from "../..";
+import { User } from "../../types";
 
-export default function getRecipeImplementation(querier: Querier): RecipeInterface {
+export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
-        createNewOrUpdateEmailOfRecipeUser: async function ({
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-            isVerified,
-            userContext,
-        }): Promise<
+        manuallyCreateOrUpdateUser: async function (
+            this: RecipeInterface,
+            {
+                thirdPartyId,
+                thirdPartyUserId,
+                email,
+                isVerified,
+                tenantId,
+                userContext,
+            }: {
+                thirdPartyId: string;
+                thirdPartyUserId: string;
+                email: string;
+                isVerified: boolean;
+                tenantId: string;
+                userContext: any;
+            }
+        ): Promise<
             | { status: "OK"; createdNewUser: boolean; user: User }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
               }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
         > {
             let response;
             if (process.env.MOCK !== "true") {
-                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+                response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
                     thirdPartyId,
                     thirdPartyUserId,
                     email: { id: email },
                 });
-
-                return {
-                    status: "OK",
-                    createdNewUser: response.createdNewUser,
-                    user: response.user,
-                };
             } else {
                 response = await mockCreateNewOrUpdateEmailOfRecipeUser(thirdPartyId, thirdPartyUserId, email, querier);
             }
@@ -56,6 +67,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     }
                 }
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    tenantId,
                     recipeUserId: recipeUserId!,
                     userContext,
                 });
@@ -73,6 +85,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     } catch (ignored) {}
                     if (isInitialized) {
                         let verifyResponse = await EmailVerification.createEmailVerificationToken(
+                            tenantId,
                             recipeUserId!,
                             undefined,
                             userContext
@@ -80,7 +93,12 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                         if (verifyResponse.status === "OK") {
                             // we pass in false here cause we do not want to attempt account linking
                             // as of yet.
-                            await EmailVerification.verifyEmailUsingToken(verifyResponse.token, false, userContext);
+                            await EmailVerification.verifyEmailUsingToken(
+                                tenantId,
+                                verifyResponse.token,
+                                false,
+                                userContext
+                            );
                         }
                     }
                 }
@@ -91,6 +109,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             }
             return response;
         },
+
         signInUp: async function (
             this: RecipeInterface,
             {
@@ -98,25 +117,32 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 thirdPartyUserId,
                 email,
                 isVerified,
+                tenantId,
                 userContext,
             }: {
                 thirdPartyId: string;
                 thirdPartyUserId: string;
                 email: string;
                 isVerified: boolean;
+                tenantId: string;
                 userContext: any;
             }
         ): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | {
+                  status: "OK";
+                  createdNewUser: boolean;
+                  user: User;
+              }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
         > {
-            let response = await this.createNewOrUpdateEmailOfRecipeUser({
+            let response = await this.manuallyCreateOrUpdateUser({
                 thirdPartyId,
                 thirdPartyUserId,
                 email,
+                tenantId,
                 isVerified,
                 userContext,
             });
@@ -127,6 +153,10 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                     reason:
                         "Cannot sign in / up because new email cannot be applied to existing account. Please contact support.",
                 };
+            }
+
+            if (response.status === "SIGN_IN_UP_NOT_ALLOWED") {
+                return response;
             }
 
             if (!response.createdNewUser) {
@@ -161,6 +191,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             }
 
             userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                tenantId,
                 recipeUserId: recipeUserId!,
                 checkAccountsToLinkTableAsWell: true,
                 userContext,
@@ -176,6 +207,29 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 createdNewUser: response.createdNewUser,
                 user: updatedUser,
             };
+        },
+
+        getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {
+            const mtRecipe = MultitenancyRecipe.getInstanceOrThrowError();
+            const tenantConfig = await mtRecipe.recipeInterfaceImpl.getTenant({ tenantId, userContext });
+
+            if (tenantConfig === undefined) {
+                throw new Error("Tenant not found");
+            }
+
+            const mergedProviders: ProviderInput[] = mergeProvidersFromCoreAndStatic(
+                tenantConfig.thirdParty.providers,
+                providers
+            );
+
+            const provider = await findAndCreateProviderInstance(
+                mergedProviders,
+                thirdPartyId,
+                clientType,
+                userContext
+            );
+
+            return provider;
         },
     };
 }

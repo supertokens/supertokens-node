@@ -20,7 +20,6 @@ import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
-import { RecipeInterface as EPRecipeInterface } from "../emailpassword/types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -41,17 +40,15 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
-    function getEmailDeliveryConfig(emailPasswordRecipeImpl: EPRecipeInterface, isInServerlessEnv: boolean) {
+    function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
         let emailService = config?.emailDelivery?.service;
         /**
          * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
-         * createAndSendCustomEmail implementation
+         * if user has not passed emailService config, we use the default
+         * createAndSendEmailUsingSupertokensService implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(emailPasswordRecipeImpl, appInfo, isInServerlessEnv);
+            emailService = new BackwardCompatibilityService(appInfo, isInServerlessEnv);
         }
         return {
             ...config?.emailDelivery,

@@ -64,10 +64,10 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 9);
+            assert.equal(Object.keys(payload).length, 10);
             assert.ok(payload["iss"], "http://api.supertokens.io/auth");
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
@@ -109,9 +109,9 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 8);
+            assert.equal(Object.keys(payload).length, 9);
         });
 
         it("should merge claims and the passed access token payload obj", async function () {
@@ -153,14 +153,13 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "someId", payloadParam);
+            const res = await Session.createNewSession(mockRequest(), response, "public", "someId", payloadParam);
 
             // The passed object should be unchanged
             assert.strictEqual(Object.keys(payloadParam).length, 1);
 
             const payload = res.getAccessTokenPayload();
-
-            assert.strictEqual(Object.keys(payload).length, 13); // 5 + 8 standard
+            assert.strictEqual(Object.keys(payload).length, 14); // 5 + 9 standard
             // We have the prop from the payload param
             assert.strictEqual(payload["initial"], true);
             // We have the boolean claim

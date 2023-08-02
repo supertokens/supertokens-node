@@ -71,7 +71,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(mockRequest(), response, "someId");
+            const session = await Session.createNewSession(mockRequest(), response, "public", "someId");
 
             const failingValidator = UndefinedClaim.validators.hasValue(true);
             assert.deepStrictEqual(

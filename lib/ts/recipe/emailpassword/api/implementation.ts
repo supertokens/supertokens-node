@@ -177,6 +177,7 @@ export default function getAPIImplementation(): APIInterface {
             userContext,
         }: {
             email: string;
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -200,6 +201,7 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "emailpassword",
                     email,
                 },
+                // tenantId,
                 isVerified: false,
                 userContext,
             });
@@ -236,6 +238,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         generatePasswordResetTokenPOST: async function ({
             formFields,
+            tenantId,
             options,
             userContext,
         }: {
@@ -243,6 +246,7 @@ export default function getAPIImplementation(): APIInterface {
                 id: string;
                 value: string;
             }[];
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -267,6 +271,7 @@ export default function getAPIImplementation(): APIInterface {
             > {
                 // the user ID here can be primary or recipe level.
                 let response = await options.recipeImplementation.createResetPasswordToken({
+                    tenantId,
                     userId: recipeUserId === undefined ? primaryUserId : recipeUserId.getAsString(),
                     email,
                     userContext,
@@ -292,6 +297,7 @@ export default function getAPIImplementation(): APIInterface {
 
                 logDebugMessage(`Sending password reset email to ${email}`);
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    tenantId,
                     type: "PASSWORD_RESET",
                     user: {
                         id: primaryUserId,
@@ -509,6 +515,7 @@ export default function getAPIImplementation(): APIInterface {
         passwordResetPOST: async function ({
             formFields,
             token,
+            tenantId,
             options,
             userContext,
         }: {
@@ -517,6 +524,7 @@ export default function getAPIImplementation(): APIInterface {
                 value: string;
             }[];
             token: string;
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -534,6 +542,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (emailVerificationInstance) {
                     const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                         {
+                            tenantId,
                             recipeUserId,
                             email,
                             userContext,
@@ -542,6 +551,7 @@ export default function getAPIImplementation(): APIInterface {
 
                     if (tokenResponse.status === "OK") {
                         await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                            tenantId,
                             token: tokenResponse.token,
                             attemptAccountLinking: false, // we pass false here cause
                             // we anyway do account linking in this API after this function is
@@ -565,6 +575,7 @@ export default function getAPIImplementation(): APIInterface {
                 | GeneralErrorResponse
             > {
                 let updateResponse = await options.recipeImplementation.updateEmailOrPassword({
+                    tenantIdForPasswordPolicy: tenantId,
                     // we can treat userIdForWhomTokenWasGenerated as a recipe user id cause
                     // whenever this function is called,
                     recipeUserId,
@@ -601,6 +612,8 @@ export default function getAPIImplementation(): APIInterface {
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
+                newPassword,
+                tenantId,
                 userContext,
             });
 
@@ -668,6 +681,7 @@ export default function getAPIImplementation(): APIInterface {
                     // really cause any security issue.
 
                     let createUserResponse = await options.recipeImplementation.createNewRecipeUser({
+                        tenantId,
                         email: tokenConsumptionResponse.email,
                         password: newPassword,
                         userContext,
@@ -693,6 +707,7 @@ export default function getAPIImplementation(): APIInterface {
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
                         let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                            tenantId,
                             recipeUserId: createUserResponse.user.loginMethods[0].recipeUserId,
                             checkAccountsToLinkTableAsWell: true,
                             userContext,
@@ -720,6 +735,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         signInPOST: async function ({
             formFields,
+            tenantId,
             options,
             userContext,
         }: {
@@ -727,6 +743,7 @@ export default function getAPIImplementation(): APIInterface {
                 id: string;
                 value: string;
             }[];
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -743,12 +760,7 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let response = await options.recipeImplementation.signIn({
-                email,
-                password,
-                userContext,
-            });
-
+            let response = await options.recipeImplementation.signIn({ email, password, tenantId, userContext });
             if (response.status === "WRONG_CREDENTIALS_ERROR") {
                 return response;
             }
@@ -781,6 +793,7 @@ export default function getAPIImplementation(): APIInterface {
 
             // the above sign in recipe function does not do account linking - so we do it here.
             let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                tenantId,
                 recipeUserId: emailPasswordRecipeUser.recipeUserId!,
                 checkAccountsToLinkTableAsWell: true,
                 userContext,
@@ -791,6 +804,7 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
+                tenantId,
                 emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},
@@ -802,8 +816,10 @@ export default function getAPIImplementation(): APIInterface {
                 user: response.user,
             };
         },
+
         signUpPOST: async function ({
             formFields,
+            tenantId,
             options,
             userContext,
         }: {
@@ -811,6 +827,7 @@ export default function getAPIImplementation(): APIInterface {
                 id: string;
                 value: string;
             }[];
+            tenantId: string;
             options: APIOptions;
             userContext: any;
         }): Promise<
@@ -852,6 +869,7 @@ export default function getAPIImplementation(): APIInterface {
 
             // this function also does account linking
             let response = await options.recipeImplementation.signUp({
+                tenantId,
                 email,
                 password,
                 userContext,
@@ -871,6 +889,7 @@ export default function getAPIImplementation(): APIInterface {
             let session = await Session.createNewSession(
                 options.req,
                 options.res,
+                tenantId,
                 emailPasswordRecipeUser.recipeUserId,
                 {},
                 {},

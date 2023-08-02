@@ -1,5 +1,6 @@
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
+import { parseJWTWithoutSignatureVerification } from "./jwt";
 
 let sessionHandles: {
     primaryUserId: string;
@@ -49,10 +50,12 @@ export async function mockCreateNewSession(requestBody: any, querier: any) {
     let ogRecipeUserId = requestBody.recipeUserId;
     let ogUserId = requestBody.userId;
     requestBody.userId = requestBody.recipeUserId;
+    requestBody.userDataInJWT.recipeUserId = requestBody.recipeUserId;
     delete requestBody.recipeUserId;
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
     response.session.recipeUserId = ogRecipeUserId;
     response.session.userId = ogUserId;
+    delete response.session.userDataInJWT.recipeUserId;
     sessionHandles.push({
         primaryUserId: ogUserId,
         recipeUserId: ogRecipeUserId,
@@ -123,6 +126,8 @@ export async function mockRegenerateSession(accessToken: string, newAccessTokenP
             "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
         );
     }
+    newAccessTokenPayload.recipeUserId = parseJWTWithoutSignatureVerification(accessToken).payload.recipeUserId;
+
     let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
         accessToken: accessToken,
         userDataInJWT: newAccessTokenPayload,

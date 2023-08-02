@@ -48,7 +48,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init()],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
         assert(user.isPrimaryUser === false);
 
@@ -86,7 +86,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init()],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
         assert(user.isPrimaryUser === false);
 
@@ -119,13 +119,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         let response = await AccountLinking.createPrimaryUser(user2.loginMethods[0].recipeUserId);
         assert(response.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR");
@@ -148,10 +148,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirdParty.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
@@ -159,9 +166,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
+        let user2 = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false))
+            .user;
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
@@ -195,20 +203,20 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
         // we create a new session to check that the session has not been revoked
         // when we link accounts, cause these users are already linked.
-        await Session.createNewSessionWithoutRequestResponse(user2.loginMethods[0].recipeUserId);
+        await Session.createNewSessionWithoutRequestResponse("public", user2.loginMethods[0].recipeUserId);
         let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 1);
 
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
@@ -252,21 +260,21 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
 
-        let user3 = (await EmailPassword.signUp("test3@example.com", "password123")).user;
+        let user3 = (await EmailPassword.signUp("public", "test3@example.com", "password123")).user;
         assert(user3.isPrimaryUser === false);
 
-        response = await AccountLinking.linkAccounts(user3.loginMethods[0].recipeUserId, user2.id);
+        response = await AccountLinking.linkAccounts("public", user3.loginMethods[0].recipeUserId, user2.id);
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
 
@@ -299,24 +307,24 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         primaryUserInCallback = undefined;
         newAccountInfoInCallback = undefined;
 
         // we create a new session to check that the session has not been revoked
         // when we link accounts, cause these users are already linked.
-        await Session.createNewSessionWithoutRequestResponse(user2.loginMethods[0].recipeUserId);
+        await Session.createNewSessionWithoutRequestResponse("public", user2.loginMethods[0].recipeUserId);
         let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 1);
 
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked);
@@ -351,20 +359,24 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
-        let otherPrimaryUser = (await EmailPassword.signUp("test3@example.com", "password123")).user;
+        let otherPrimaryUser = (await EmailPassword.signUp("public", "test3@example.com", "password123")).user;
         await AccountLinking.createPrimaryUser(otherPrimaryUser.loginMethods[0].recipeUserId);
 
         primaryUserInCallback = undefined;
 
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, otherPrimaryUser.id);
+        let response = await AccountLinking.linkAccounts(
+            "public",
+            user2.loginMethods[0].recipeUserId,
+            otherPrimaryUser.id
+        );
 
         assert(response.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
         assert(response.primaryUserId === user.id);
@@ -395,12 +407,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        let resp = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let resp = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
         assert(resp.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER");
     });
 
@@ -420,10 +432,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirdParty.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
@@ -431,15 +450,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
-        let user2 = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
-        let otherPrimaryUser = (await EmailPassword.signUp("test3@example.com", "password123")).user;
+        let user2 = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false))
+            .user;
+        let otherPrimaryUser = (await EmailPassword.signUp("public", "test3@example.com", "password123")).user;
+        await AccountLinking.createPrimaryUser(otherPrimaryUser.loginMethods[0].recipeUserId);
 
         let response = await AccountLinking.linkAccounts(
+            "public",
             supertokens.convertToRecipeUserId(user2.id),
             otherPrimaryUser.id
         );
@@ -462,18 +484,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         // we create a new session to check that the session has not been revoked
         // when we link accounts, cause these users are already linked.
-        await Session.createNewSessionWithoutRequestResponse(user2.loginMethods[0].recipeUserId);
+        await Session.createNewSessionWithoutRequestResponse("public", user2.loginMethods[0].recipeUserId);
         let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 1);
 
@@ -508,14 +530,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
         // we create a new session to check that the session has not been revoked
         // when we link accounts, cause these users are already linked.
-        await Session.createNewSessionWithoutRequestResponse(user.loginMethods[0].recipeUserId);
+        await Session.createNewSessionWithoutRequestResponse("public", user.loginMethods[0].recipeUserId);
         let sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 1);
 
@@ -545,18 +567,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         // we create a new session to check that the session has not been revoked
         // when we link accounts, cause these users are already linked.
-        await Session.createNewSessionWithoutRequestResponse(user.loginMethods[0].recipeUserId);
+        await Session.createNewSessionWithoutRequestResponse("public", user.loginMethods[0].recipeUserId);
         let sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 1);
 
@@ -608,12 +630,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === true);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
         {
             let primaryUser = await supertokens.getUser(user.id);
             assert(primaryUser !== undefined);
@@ -661,12 +683,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === true);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
         {
             let primaryUser = await supertokens.getUser(user.id);
             assert(primaryUser !== undefined);
@@ -714,12 +736,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             ],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(user.isPrimaryUser === true);
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
         {
             let primaryUser = await supertokens.getUser(user.id);
             assert(primaryUser !== undefined);
@@ -753,11 +775,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(primaryUser.isPrimaryUser === false);
         await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
 
-        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
@@ -786,11 +808,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(primaryUser.isPrimaryUser === false);
         await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
 
-        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
@@ -823,13 +845,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(primaryUser.isPrimaryUser === false);
         await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
 
-        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        await AccountLinking.linkAccounts(user.loginMethods[0].recipeUserId, primaryUser.id);
+        await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, primaryUser.id);
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
             user.loginMethods[0].recipeUserId,
@@ -853,9 +875,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let user1 = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user1 = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
             user1.loginMethods[0].recipeUserId,
@@ -878,13 +900,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(primaryUser.isPrimaryUser === false);
         await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
 
-        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
-        await AccountLinking.linkAccounts(user.loginMethods[0].recipeUserId, primaryUser.id);
+        await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, primaryUser.id);
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
             user.loginMethods[0].recipeUserId,
@@ -908,11 +930,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(primaryUser.isPrimaryUser === false);
         await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
 
-        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
@@ -923,7 +945,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
         assert(response !== undefined);
 
-        await AccountLinking.linkAccounts(user.loginMethods[0].recipeUserId, primaryUser.id);
+        await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, primaryUser.id);
         response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
         assert(response === undefined);
     });
@@ -942,11 +964,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(primaryUser.isPrimaryUser === false);
         await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
 
-        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
@@ -977,11 +999,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let primaryUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
         assert(primaryUser.isPrimaryUser === false);
         await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
 
-        let user = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user.isPrimaryUser === false);
 
         let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
@@ -1018,27 +1040,38 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirdParty.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
+        let user = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false))
+            .user;
         assert(user.isPrimaryUser === false);
 
-        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user.id));
-        await EmailVerification.verifyEmailUsingToken(token.token);
+        let token = await EmailVerification.createEmailVerificationToken(
+            "public",
+            supertokens.convertToRecipeUserId(user.id)
+        );
+        await EmailVerification.verifyEmailUsingToken("public", token.token);
 
-        let user2 = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
@@ -1067,33 +1100,44 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirdParty.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
+        let user = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false))
+            .user;
 
-        let user2 = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
-        let user3 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user3 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user2.id));
-        await EmailVerification.verifyEmailUsingToken(token.token);
+        let token = await EmailVerification.createEmailVerificationToken(
+            "public",
+            supertokens.convertToRecipeUserId(user2.id)
+        );
+        await EmailVerification.verifyEmailUsingToken("public", token.token);
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
 
-        await AccountLinking.linkAccounts(user3.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts("public", user3.loginMethods[0].recipeUserId, user.id);
 
         {
             let isVerified = await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(user.id));
@@ -1126,26 +1170,37 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirdParty.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
+        let user = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false))
+            .user;
 
-        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user.id));
-        await EmailVerification.verifyEmailUsingToken(token.token);
+        let token = await EmailVerification.createEmailVerificationToken(
+            "public",
+            supertokens.convertToRecipeUserId(user.id)
+        );
+        await EmailVerification.verifyEmailUsingToken("public", token.token);
 
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
@@ -1174,26 +1229,37 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirdParty.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abc", "test@example.com", false)).user;
+        let user = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "test@example.com", false))
+            .user;
 
-        let user2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-        let token = await EmailVerification.createEmailVerificationToken(supertokens.convertToRecipeUserId(user2.id));
-        await EmailVerification.verifyEmailUsingToken(token.token);
+        let token = await EmailVerification.createEmailVerificationToken(
+            "public",
+            supertokens.convertToRecipeUserId(user2.id)
+        );
+        await EmailVerification.verifyEmailUsingToken("public", token.token);
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);

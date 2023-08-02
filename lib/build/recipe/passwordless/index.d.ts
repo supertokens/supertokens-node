@@ -3,7 +3,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import {
     RecipeInterface,
-    User,
     APIOptions,
     APIInterface,
     TypePasswordlessEmailDeliveryInput,
@@ -21,6 +20,7 @@ export default class Wrapper {
                   phoneNumber: string;
               }
         ) & {
+            tenantId: string;
             userInputCode?: string;
             userContext?: any;
         }
@@ -37,6 +37,7 @@ export default class Wrapper {
     static createNewCodeForDevice(input: {
         deviceId: string;
         userInputCode?: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<
         | {
@@ -59,18 +60,20 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: User;
+              user: import("../emailpassword").User;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -93,10 +96,12 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<{
@@ -104,31 +109,41 @@ export default class Wrapper {
     }>;
     static revokeCode(input: {
         codeId: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<{
         status: "OK";
     }>;
-    static listCodesByEmail(input: { email: string; userContext?: any }): Promise<import("./types").DeviceType[]>;
+    static listCodesByEmail(input: {
+        email: string;
+        tenantId: string;
+        userContext?: any;
+    }): Promise<import("./types").DeviceType[]>;
     static listCodesByPhoneNumber(input: {
         phoneNumber: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<import("./types").DeviceType[]>;
     static listCodesByDeviceId(input: {
         deviceId: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<import("./types").DeviceType | undefined>;
     static listCodesByPreAuthSessionId(input: {
         preAuthSessionId: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<import("./types").DeviceType | undefined>;
     static createMagicLink(
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<string>;
@@ -136,16 +151,18 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<{
         status: string;
         createdNewUser: boolean;
-        user: User;
+        user: import("../emailpassword").User;
     }>;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {
@@ -172,6 +189,6 @@ export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
 export declare let signInUp: typeof Wrapper.signInUp;
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

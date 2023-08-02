@@ -6,6 +6,7 @@ export declare class PrimitiveClaim<T extends JSONPrimitive> extends SessionClai
     readonly fetchValue: (
         userId: string,
         recipeUserId: RecipeUserId,
+        tenantId: string,
         userContext: any
     ) => Promise<T | undefined> | T | undefined;
     readonly defaultMaxAgeInSeconds: number | undefined;

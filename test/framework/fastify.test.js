@@ -36,7 +36,6 @@ const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
-const { Apple, Google, Github } = require("../../recipe/thirdparty");
 
 describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function () {
     beforeEach(async function () {
@@ -86,7 +85,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -140,7 +139,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -198,7 +197,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -280,7 +279,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -354,7 +353,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -465,7 +464,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -578,7 +577,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -625,7 +624,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -739,7 +738,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             return res.send("").code(200);
         });
 
@@ -802,7 +801,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         await this.server.register(FastifyFramework.plugin);
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             return res.send("").code(200);
         });
 
@@ -866,11 +865,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
         this.server.post("/usercreate", async (req, res) => {
-            await Session.createNewSession(req, res, "someUniqueUserId", {}, {});
+            await Session.createNewSession(req, res, "public", "someUniqueUserId", {}, {});
             return res.send("").code(200);
         });
         this.server.post("/session/revoke", async (req, res) => {
@@ -955,7 +954,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(req, res, "public", "", {}, {});
             return res.send("").code(200);
         });
 
@@ -1082,7 +1081,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "user1", {}, {});
+            await Session.createNewSession(req, res, "public", "user1", {}, {});
             return res.send("").code(200);
         });
 
@@ -1143,7 +1142,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1162,7 +1161,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await this.server.inject({
@@ -1193,7 +1192,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1211,7 +1210,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //retrieve the changed jwt payload
         let response3 = await this.server.inject({
@@ -1235,6 +1234,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 "sessionHandle",
                 "sub",
                 "iss",
+                "tId",
             ])
         );
         //invalid session handle when updating the jwt payload
@@ -1368,7 +1368,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         await this.server.register(FastifyFramework.plugin);
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "id1", {}, {});
+            await Session.createNewSession(req, res, "public", "id1", {}, {});
             return res.send("").code(200);
         });
 
@@ -1781,23 +1781,45 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            Google({
-                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                clientSecret: "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",
-                            }),
-                            Github({
-                                clientId: "467101b197249757c71f",
-                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                            }),
-                            Apple({
-                                clientId: "4398792-io.supertokens.example.service",
-                                clientSecret: {
-                                    keyId: "7M48Y4RYDL",
-                                    privateKey:
-                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                    teamId: "YWQCXGJRJL",
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId:
+                                                "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            clientSecret: "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",
+                                        },
+                                    ],
                                 },
-                            }),
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId: "467101b197249757c71f",
+                                            clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId: "4398792-io.supertokens.example.service",
+                                            additionalConfig: {
+                                                keyId: "7M48Y4RYDL",
+                                                privateKey:
+                                                    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                                teamId: "YWQCXGJRJL",
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
@@ -1860,23 +1882,45 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            Google({
-                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                clientSecret: "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",
-                            }),
-                            Github({
-                                clientId: "467101b197249757c71f",
-                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                            }),
-                            Apple({
-                                clientId: "4398792-io.supertokens.example.service",
-                                clientSecret: {
-                                    keyId: "7M48Y4RYDL",
-                                    privateKey:
-                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                    teamId: "YWQCXGJRJL",
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId:
+                                                "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            clientSecret: "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",
+                                        },
+                                    ],
                                 },
-                            }),
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId: "467101b197249757c71f",
+                                            clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId: "4398792-io.supertokens.example.service",
+                                            additionalConfig: {
+                                                keyId: "7M48Y4RYDL",
+                                                privateKey:
+                                                    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                                teamId: "YWQCXGJRJL",
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),

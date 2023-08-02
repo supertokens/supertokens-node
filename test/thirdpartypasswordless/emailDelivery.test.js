@@ -29,26 +29,23 @@ let { isCDIVersionCompatible } = require("../utils");
 describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery.test.js]")}`, function () {
     before(function () {
         this.customProvider = {
-            id: "supertokens",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function ({ oAuthTokens }) {
                         return {
-                            id: authCodeResponse.id,
+                            thirdPartyUserId: oAuthTokens.id,
                             email: {
-                                id: authCodeResponse.email,
+                                id: oAuthTokens.email,
                                 isVerified: true,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },
@@ -99,12 +96,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp(
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com",
@@ -172,12 +170,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp(
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com",
@@ -212,148 +211,6 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(emailVerifyURL, undefined);
         assert.strictEqual(result.body.status, "OK");
-    });
-
-    it("test backward compatibility: email verify (thirdparty user)", async function () {
-        await startST();
-        let idInCallback = undefined;
-        let email = undefined;
-        let emailVerifyURL = undefined;
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailVerification.init({
-                    mode: "OPTIONAL",
-                    emailDelivery: {
-                        override: (oI) => {
-                            return {
-                                ...oI,
-                                sendEmail: async (input) => {
-                                    idInCallback = input.user.id;
-                                    email = input.user.email;
-                                    emailVerifyURL = input.emailVerifyLink;
-                                },
-                            };
-                        },
-                    },
-                }),
-                ThirdpartyPasswordless.init({
-                    providers: [this.customProvider],
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-            telemetry: false,
-        });
-
-        // run test if current CDI version >= 2.11
-        if (!(await isCDIVersionCompatible("2.11"))) {
-            return;
-        }
-
-        const app = express();
-        app.use(express.json());
-        app.use(middleware());
-        app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
-            res.status(200).send("");
-        });
-        app.use(errorHandler());
-
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp(
-            "supertokens",
-            "test-user-id",
-            "test@example.com",
-            false
-        );
-        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
-
-        await supertest(app)
-            .post("/auth/user/email/verify/token")
-            .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken])
-            .expect(200);
-        await delay(2);
-        assert.strictEqual(email, "test@example.com");
-        assert.strictEqual(idInCallback, user.user.id);
-        assert.notStrictEqual(emailVerifyURL, undefined);
-    });
-
-    it("test backward compatibility: email verify (passwordless user)", async function () {
-        await startST();
-        let functionCalled = false;
-        let email = undefined;
-        let emailVerifyURL = undefined;
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailVerification.init({
-                    mode: "OPTIONAL",
-                    emailDelivery: {
-                        override: (oI) => {
-                            return {
-                                ...oI,
-                                sendEmail: async (input) => {
-                                    functionCalled = true;
-                                    email = input.user.email;
-                                    emailVerifyURL = input.emailVerifyLink;
-                                },
-                            };
-                        },
-                    },
-                }),
-                ThirdpartyPasswordless.init({
-                    providers: [this.customProvider],
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-                Session.init({ getTokenTransferMethod: () => "cookie" }),
-            ],
-            telemetry: false,
-        });
-
-        // run test if current CDI version >= 2.11
-        if (!(await isCDIVersionCompatible("2.11"))) {
-            return;
-        }
-
-        const app = express();
-        app.use(express.json());
-        app.use(middleware());
-        app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, user.user.id, {}, {});
-            res.status(200).send("");
-        });
-        app.use(errorHandler());
-
-        let user = await ThirdpartyPasswordless.passwordlessSignInUp({
-            email: "test@example.com",
-        });
-        let res = extractInfoFromResponse(await supertest(app).post("/create").send({}).expect(200));
-
-        await supertest(app)
-            .post("/auth/user/email/verify/token")
-            .set("rid", "emailverification")
-            .set("Cookie", ["sAccessToken=" + res.accessToken])
-            .expect(200);
-        await delay(2);
-        assert.strictEqual(functionCalled, true);
-        assert.strictEqual(email, "test@example.com");
     });
 
     it("test custom override: email verify", async function () {
@@ -406,12 +263,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp(
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com",
@@ -525,12 +383,13 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, req.body.id, {}, {});
+            await Session.createNewSession(req, res, "public", req.body.id, {}, {});
             res.status(200).send("");
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp(
+        let user = await ThirdpartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "supertokens",
             "test-user-id",
             "test@example.com",
@@ -639,11 +498,15 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                 ThirdpartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: async (input) => {
-                        email = input.email;
-                        codeLifetime = input.codeLifetime;
-                        urlWithLinkCode = input.urlWithLinkCode;
-                        userInputCode = input.userInputCode;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                email = input.email;
+                                codeLifetime = input.codeLifetime;
+                                urlWithLinkCode = input.urlWithLinkCode;
+                                userInputCode = input.userInputCode;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
@@ -1038,18 +901,18 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                 ThirdpartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: async (input) => {
-                        /**
-                         * when the function is called for the first time,
-                         * it will be for signinup
-                         */
-                        if (sendCustomEmailCalled) {
-                            email = input.email;
-                            codeLifetime = input.codeLifetime;
-                            urlWithLinkCode = input.urlWithLinkCode;
-                            userInputCode = input.userInputCode;
-                        }
-                        sendCustomEmailCalled = true;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                if (sendCustomEmailCalled) {
+                                    email = input.email;
+                                    codeLifetime = input.codeLifetime;
+                                    urlWithLinkCode = input.urlWithLinkCode;
+                                    userInputCode = input.userInputCode;
+                                }
+                                sendCustomEmailCalled = true;
+                            },
+                        },
                     },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),

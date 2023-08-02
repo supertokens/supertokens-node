@@ -42,7 +42,6 @@ import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
-import { makeDefaultUserContextFromAPI } from "../../utils";
 import { mockReset } from "./mockCore";
 
 // For Express
@@ -169,10 +168,12 @@ export default class SessionRecipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options: APIOptions = {
             config: this.config,
@@ -183,11 +184,11 @@ export default class SessionRecipe extends RecipeModule {
             res,
         };
         if (id === REFRESH_API_PATH) {
-            return await handleRefreshAPI(this.apiImpl, options);
+            return await handleRefreshAPI(this.apiImpl, options, userContext);
         } else if (id === SIGNOUT_API_PATH) {
-            return await signOutAPI(this.apiImpl, options);
+            return await signOutAPI(this.apiImpl, options, userContext);
         } else {
-            return await this.openIdRecipe.handleAPIRequest(id, req, res, path, method);
+            return await this.openIdRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
     };
 
@@ -243,7 +244,12 @@ export default class SessionRecipe extends RecipeModule {
         );
     };
 
-    verifySession = async (options: VerifySessionOptions | undefined, request: BaseRequest, response: BaseResponse) => {
+    verifySession = async (
+        options: VerifySessionOptions | undefined,
+        request: BaseRequest,
+        response: BaseResponse,
+        userContext: any
+    ) => {
         return await this.apiImpl.verifySession({
             verifySessionOptions: options,
             options: {
@@ -254,7 +260,7 @@ export default class SessionRecipe extends RecipeModule {
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
             },
-            userContext: makeDefaultUserContextFromAPI(request),
+            userContext,
         });
     };
 }

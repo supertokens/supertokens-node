@@ -4,7 +4,6 @@ import type { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
-import type { SessionContainerInterface } from "../session/types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
 export default class Recipe extends RecipeModule {
@@ -24,6 +23,7 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled(): APIHandled[];
     handleAPIRequest(
         _id: string,
+        _tenantId: string,
         _req: BaseRequest,
         _response: BaseResponse,
         _path: normalisedURLPath,
@@ -34,10 +34,12 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe(err: any): err is error;
     static reset(): void;
     createPrimaryUserIdOrLinkAccounts: ({
+        tenantId,
         recipeUserId,
         checkAccountsToLinkTableAsWell,
         userContext,
     }: {
+        tenantId: string;
         recipeUserId: RecipeUserId;
         checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
@@ -76,47 +78,6 @@ export default class Recipe extends RecipeModule {
         isVerified: boolean;
         userContext: any;
     }) => Promise<boolean>;
-    linkAccountWithUserFromSession: <T>({
-        session,
-        newUser,
-        createRecipeUserFunc,
-        verifyCredentialsFunc,
-        userContext,
-    }: {
-        session: SessionContainerInterface;
-        newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: (userContext: any) => Promise<void>;
-        verifyCredentialsFunc: (
-            userContext: any
-        ) => Promise<
-            | {
-                  status: "OK";
-              }
-            | {
-                  status: "CUSTOM_RESPONSE";
-                  resp: T;
-              }
-        >;
-        userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              wereAccountsAlreadyLinked: boolean;
-          }
-        | {
-              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-              description: string;
-          }
-        | {
-              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-              primaryUserId: string;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "CUSTOM_RESPONSE";
-              resp: T;
-          }
-    >;
     isEmailChangeAllowed: (input: {
         recipeUserId: RecipeUserId;
         newEmail: string;
@@ -124,6 +85,7 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
+        tenantId: string;
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<void>;

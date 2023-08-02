@@ -37,10 +37,17 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     ThirdPartyRecipe.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdPartyRecipe.Google({
-                                    clientId: "test",
-                                    clientSecret: "test",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "test",
+                                                clientSecret: "test-secret",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -56,7 +63,13 @@ describe(`userIdMapping with thirdparty: ${printPath(
             }
 
             // create a thirdParty user
-            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com", false);
+            let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "tpId",
+                "test@example.com",
+                false
+            );
 
             assert.strictEqual(signInUpResponse.status, "OK");
             const superTokensUserId = signInUpResponse.user.id;
@@ -68,7 +81,13 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // sign in and check that the userId in the response is the externalId
-            let response = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com", false);
+            let response = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "tpId",
+                "test@example.com",
+                false
+            );
 
             assert.strictEqual(response.status, "OK");
             assert.strictEqual(response.createdNewUser, false);
@@ -92,10 +111,17 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     ThirdPartyRecipe.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdPartyRecipe.Google({
-                                    clientId: "test",
-                                    clientSecret: "test",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "test",
+                                                clientSecret: "test",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -111,7 +137,13 @@ describe(`userIdMapping with thirdparty: ${printPath(
             }
 
             // create a thirdParty user
-            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com", false);
+            let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "tpId",
+                "test@example.com",
+                false
+            );
 
             assert.strictEqual(signInUpResponse.status, "OK");
             const superTokensUserId = signInUpResponse.user.id;
@@ -146,10 +178,17 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     ThirdPartyRecipe.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdPartyRecipe.Google({
-                                    clientId: "test",
-                                    clientSecret: "test",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "test",
+                                                clientSecret: "test",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -165,7 +204,13 @@ describe(`userIdMapping with thirdparty: ${printPath(
             }
 
             // create a thirdParty user
-            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com", false);
+            let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "tpId",
+                "test@example.com",
+                false
+            );
 
             assert.strictEqual(signInUpResponse.status, "OK");
             const superTokensUserId = signInUpResponse.user.id;
@@ -200,10 +245,17 @@ describe(`userIdMapping with thirdparty: ${printPath(
                     ThirdPartyRecipe.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdPartyRecipe.Google({
-                                    clientId: "test",
-                                    clientSecret: "test",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "test",
+                                                clientSecret: "test",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -221,7 +273,8 @@ describe(`userIdMapping with thirdparty: ${printPath(
             // create a thirdParty user
             const thirdPartyId = "google";
             const thirdPartyUserId = "tpId";
-            let signInUpResponse = await ThirdPartyRecipe.signInUp(
+            let signInUpResponse = await ThirdPartyRecipe.manuallyCreateOrUpdateUser(
+                "public",
                 thirdPartyId,
                 thirdPartyUserId,
                 "test@example.com",

@@ -55,10 +55,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -73,21 +80,30 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
             assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            let token = await EmailVerification.createEmailVerificationToken(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             {
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === false);
             }
 
-            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token);
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken("public", token.token);
             assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
 
             {
@@ -117,10 +133,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -135,21 +158,31 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
             assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
             {
-                let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
-                await EmailVerification.verifyEmailUsingToken(token.token, false);
+                let token = await EmailVerification.createEmailVerificationToken(
+                    "public",
+                    epUser.loginMethods[0].recipeUserId
+                );
+                await EmailVerification.verifyEmailUsingToken("public", token.token, false);
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === false);
             }
 
             let token = await EmailVerification.createEmailVerificationToken(
+                "public",
                 epUser.loginMethods[0].recipeUserId,
                 "test2@example.com"
             );
@@ -159,7 +192,7 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 assert(user.isPrimaryUser === false);
             }
 
-            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token);
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken("public", token.token);
             assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
 
             {
@@ -189,10 +222,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -207,17 +247,20 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            let token = await EmailVerification.createEmailVerificationToken(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             {
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === false);
             }
 
-            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token);
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken("public", token.token);
             assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
 
             {
@@ -246,10 +289,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -263,21 +313,30 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
             assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            let token = await EmailVerification.createEmailVerificationToken(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             {
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === false);
             }
 
-            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token);
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken("public", token.token);
             assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
 
             {
@@ -307,10 +366,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -324,17 +390,20 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            let token = await EmailVerification.createEmailVerificationToken(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             {
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === false);
             }
 
-            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token);
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken("public", token.token);
             assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
 
             {
@@ -363,10 +432,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -380,17 +456,20 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            let token = await EmailVerification.createEmailVerificationToken(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             {
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === false);
             }
 
-            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token, false);
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken("public", token.token, false);
             assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
 
             {
@@ -419,10 +498,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -437,21 +523,30 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
             assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
+            let token = await EmailVerification.createEmailVerificationToken(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             {
                 let user = await supertokens.getUser(epUser.id);
                 assert(user.isPrimaryUser === false);
             }
 
-            let userFromVerification = await EmailVerification.verifyEmailUsingToken(token.token, false);
+            let userFromVerification = await EmailVerification.verifyEmailUsingToken("public", token.token, false);
             assert(userFromVerification.user.recipeUserId.getAsString() === epUser.id);
 
             {
@@ -483,10 +578,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -501,12 +603,18 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", true);
-            assert(tpUser.user.isPrimaryUser === true);
-            let epUser = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                true
+            );
+            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            let epUser = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            await AccountLinking.linkAccounts(epUser.loginMethods[0].recipeUserId, tpUser.user.id);
+            await AccountLinking.linkAccounts("public", epUser.loginMethods[0].recipeUserId, tpUser.user.id);
 
             epUser = await supertokens.getUser(epUser.id);
             assert(epUser.isPrimaryUser === true);
@@ -544,10 +652,17 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -562,16 +677,23 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 ],
             });
 
-            let tpUser = await ThirdParty.signInUp("google", "abcd", "test@example.com", true);
-            assert(tpUser.user.isPrimaryUser === true);
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                true
+            );
+            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
             {
                 let token = await EmailVerification.createEmailVerificationToken(
+                    "public",
                     supertokens.convertToRecipeUserId(epUser.id)
                 );
-                await EmailVerification.verifyEmailUsingToken(token.token);
+                await EmailVerification.verifyEmailUsingToken("public", token.token);
             }
 
             {

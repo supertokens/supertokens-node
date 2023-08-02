@@ -26,7 +26,12 @@ export declare type Response = {
     nextPaginationToken?: string;
     users: User[];
 };
-export default function usersGet(_: APIInterface, options: APIOptions): Promise<Response>;
+export default function usersGet(
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response>;
 export declare function getSearchParamsFromURL(
     path: string
 ): {

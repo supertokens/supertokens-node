@@ -8,7 +8,14 @@ import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static thirdPartySignInUp(
+    static thirdPartyGetProvider(
+        tenantId: string,
+        thirdPartyId: string,
+        clientType: string | undefined,
+        userContext?: any
+    ): Promise<TypeProvider | undefined>;
+    static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
@@ -21,11 +28,16 @@ export default class Wrapper {
               user: import("../emailpassword").User;
           }
         | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
     static emailPasswordSignUp(
+        tenantId: string,
         email: string,
         password: string,
         userContext?: any
@@ -39,6 +51,7 @@ export default class Wrapper {
           }
     >;
     static emailPasswordSignIn(
+        tenantId: string,
         email: string,
         password: string,
         userContext?: any
@@ -52,6 +65,7 @@ export default class Wrapper {
           }
     >;
     static createResetPasswordToken(
+        tenantId: string,
         userId: string,
         email: string,
         userContext?: any
@@ -65,7 +79,9 @@ export default class Wrapper {
           }
     >;
     static consumePasswordResetToken(
+        tenantId: string,
         token: string,
+        newPassword: string,
         userContext?: any
     ): Promise<
         | {
@@ -83,6 +99,7 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy?: string;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -96,14 +113,26 @@ export default class Wrapper {
               failureReason: string;
           }
     >;
-    static Google: typeof import("../thirdparty/providers/google").default;
-    static Github: typeof import("../thirdparty/providers/github").default;
-    static Facebook: typeof import("../thirdparty/providers/facebook").default;
-    static Apple: typeof import("../thirdparty/providers/apple").default;
-    static Discord: typeof import("../thirdparty/providers/discord").default;
-    static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
-    static Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
-    static GitLab: typeof import("../thirdparty/providers/gitlab").default;
+    static createResetPasswordLink(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              link: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
+    static sendResetPasswordEmail(
+        tenantId: string,
+        userId: string,
+        userContext?: any
+    ): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR";
+    }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext?: any;
@@ -114,17 +143,12 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let emailPasswordSignUp: typeof Wrapper.emailPasswordSignUp;
 export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
-export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
+export declare let thirdPartyGetProvider: typeof Wrapper.thirdPartyGetProvider;
+export declare let thirdPartyManuallyCreateOrUpdateUser: typeof Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
-export declare let Google: typeof import("../thirdparty/providers/google").default;
-export declare let Github: typeof import("../thirdparty/providers/github").default;
-export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;
-export declare let Apple: typeof import("../thirdparty/providers/apple").default;
-export declare let Discord: typeof import("../thirdparty/providers/discord").default;
-export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
-export declare let Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
-export declare let GitLab: typeof import("../thirdparty/providers/gitlab").default;
 export type { RecipeInterface, TypeProvider, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+export declare let createResetPasswordLink: typeof Wrapper.createResetPasswordLink;
+export declare let sendResetPasswordEmail: typeof Wrapper.sendResetPasswordEmail;
 export declare let sendEmail: typeof Wrapper.sendEmail;

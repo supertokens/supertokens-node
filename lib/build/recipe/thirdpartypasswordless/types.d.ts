@@ -1,5 +1,12 @@
 // @ts-nocheck
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    ProviderInput,
+    ProviderConfig,
+    ProviderClientConfig,
+    ProviderConfigForClientType,
+} from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -16,90 +23,23 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
-import { GeneralErrorResponse, User as GlobalUser } from "../../types";
+import { GeneralErrorResponse, User } from "../../types";
 export declare type DeviceType = DeviceTypeOriginal;
-export declare type User = (
-    | {
-          email?: string;
-          phoneNumber?: string;
-      }
-    | {
-          email: string;
-          thirdParty: {
-              id: string;
-              userId: string;
-          };
-      }
-) & {
-    id: string;
-    recipeUserId: string;
-    timeJoined: number;
-};
 export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use smsDelivery config instead
-           */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
+          validatePhoneNumber?: (
+              phoneNumber: string,
+              tenantId: string
+          ) => Promise<string | undefined> | string | undefined;
       }
     | {
           contactMethod: "EMAIL";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use emailDelivery config instead
-           */
-          createAndSendCustomEmail?: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
+          validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use emailDelivery config instead
-           */
-          createAndSendCustomEmail?: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          /**
-           * @deprecated Please use smsDelivery config instead
-           */
-          createAndSendCustomTextMessage?: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
+          validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
       }
 ) & {
     /**
@@ -108,9 +48,9 @@ export declare type TypeInput = (
      */
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
-    providers?: TypeProvider[];
+    providers?: ProviderInput[];
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -122,21 +62,27 @@ export declare type TypeInput = (
 export declare type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (
+              phoneNumber: string,
+              tenantId: string
+          ) => Promise<string | undefined> | string | undefined;
       }
     | {
           contactMethod: "EMAIL";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string, tenantId: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (
+              phoneNumber: string,
+              tenantId: string
+          ) => Promise<string | undefined> | string | undefined;
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    providers: TypeProvider[];
+    getCustomUserInputCode?: (tenantId: string, userContext: any) => Promise<string> | string;
+    providers: ProviderInput[];
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
@@ -156,35 +102,58 @@ export declare type RecipeInterface = {
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        oAuthTokens: {
+            [key: string]: any;
+        };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload?: {
+                [key: string]: any;
+            };
+            fromUserInfoAPI?: {
+                [key: string]: any;
+            };
+        };
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: GlobalUser;
+              user: User;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
-    createNewOrUpdateEmailOfThirdPartyRecipeUser(input: {
+    thirdPartyManuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: GlobalUser;
+              user: User;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
           }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
     >;
+    thirdPartyGetProvider(input: {
+        thirdPartyId: string;
+        clientType?: string;
+        tenantId: string;
+        userContext: any;
+    }): Promise<TypeProvider | undefined>;
     createCode: (
         input: (
             | {
@@ -195,6 +164,7 @@ export declare type RecipeInterface = {
               }
         ) & {
             userInputCode?: string;
+            tenantId: string;
             userContext: any;
         }
     ) => Promise<{
@@ -210,6 +180,7 @@ export declare type RecipeInterface = {
     createNewCodeForDevice: (input: {
         deviceId: string;
         userInputCode?: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<
         | {
@@ -232,11 +203,13 @@ export declare type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  tenantId: string;
                   userContext: any;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
+                  tenantId: string;
                   userContext: any;
               }
     ) => Promise<
@@ -266,10 +239,12 @@ export declare type RecipeInterface = {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext: any;
               }
     ) => Promise<{
@@ -277,15 +252,25 @@ export declare type RecipeInterface = {
     }>;
     revokeCode: (input: {
         codeId: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<{
         status: "OK";
     }>;
-    listCodesByEmail: (input: { email: string; userContext: any }) => Promise<DeviceType[]>;
-    listCodesByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<DeviceType[]>;
-    listCodesByDeviceId: (input: { deviceId: string; userContext: any }) => Promise<DeviceType | undefined>;
+    listCodesByEmail: (input: { email: string; tenantId: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByPhoneNumber: (input: {
+        phoneNumber: string;
+        tenantId: string;
+        userContext: any;
+    }) => Promise<DeviceType[]>;
+    listCodesByDeviceId: (input: {
+        deviceId: string;
+        tenantId: string;
+        userContext: any;
+    }) => Promise<DeviceType | undefined>;
     listCodesByPreAuthSessionId: (input: {
         preAuthSessionId: string;
+        tenantId: string;
         userContext: any;
     }) => Promise<DeviceType | undefined>;
 };
@@ -296,32 +281,57 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
+              redirectURIOnProviderDashboard: string;
+              tenantId: string;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
               | {
                     status: "OK";
-                    url: string;
+                    urlWithQueryParams: string;
+                    pkceCodeVerifier?: string;
                 }
               | GeneralErrorResponse
           >);
     thirdPartySignInUpPOST:
         | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
+        | ((
+              input: {
+                  provider: TypeProvider;
+                  tenantId: string;
+                  options: ThirdPartyAPIOptions;
+                  userContext: any;
+              } & (
+                  | {
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: string;
+                            redirectURIQueryParams: any;
+                            pkceCodeVerifier?: string;
+                        };
+                    }
+                  | {
+                        oAuthTokens: {
+                            [key: string]: any;
+                        };
+                    }
+              )
+          ) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
-                    user: GlobalUser;
+                    user: User;
                     session: SessionContainerInterface;
-                    authCodeResponse: any;
+                    oAuthTokens: {
+                        [key: string]: any;
+                    };
+                    rawUserInfoFromProvider: {
+                        fromIdTokenPayload?: {
+                            [key: string]: any;
+                        };
+                        fromUserInfoAPI?: {
+                            [key: string]: any;
+                        };
+                    };
                 }
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
@@ -337,7 +347,11 @@ export declare type APIInterface = {
           >);
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
+        | ((input: {
+              formPostInfoFromProvider: any;
+              options: ThirdPartyAPIOptions;
+              userContext: any;
+          }) => Promise<void>);
     createCodePOST:
         | undefined
         | ((
@@ -349,6 +363,7 @@ export declare type APIInterface = {
                         phoneNumber: string;
                     }
               ) & {
+                  tenantId: string;
                   options: PasswordlessAPIOptions;
                   userContext: any;
               }
@@ -368,6 +383,7 @@ export declare type APIInterface = {
                   deviceId: string;
                   preAuthSessionId: string;
               } & {
+                  tenantId: string;
                   options: PasswordlessAPIOptions;
                   userContext: any;
               }
@@ -391,6 +407,7 @@ export declare type APIInterface = {
                         preAuthSessionId: string;
                     }
               ) & {
+                  tenantId: string;
                   options: PasswordlessAPIOptions;
                   userContext: any;
               }
@@ -419,6 +436,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: PasswordlessAPIOptions;
               userContext: any;
           }) => Promise<
@@ -432,6 +450,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               phoneNumber: string;
+              tenantId: string;
               options: PasswordlessAPIOptions;
               userContext: any;
           }) => Promise<
@@ -444,3 +463,7 @@ export declare type APIInterface = {
 };
 export declare type TypeThirdPartyPasswordlessEmailDeliveryInput = TypePasswordlessEmailDeliveryInput;
 export declare type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;
+export declare type ThirdPartyProviderInput = ProviderInput;
+export declare type ThirdPartyProviderConfig = ProviderConfig;
+export declare type ThirdPartyProviderClientConfig = ProviderClientConfig;
+export declare type ThirdPartyProviderConfigForClientType = ProviderConfigForClientType;

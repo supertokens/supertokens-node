@@ -9,7 +9,7 @@ class Create {
     @post("/create")
     @response(200)
     async handler() {
-        await Session.createNewSession(this.ctx, this.ctx, "userId", {}, {});
+        await Session.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
         return {};
     }
 }
@@ -19,7 +19,7 @@ class CreateThrowing {
     @post("/create-throw")
     @response(200)
     async handler() {
-        await Session.createNewSession(this.ctx, this.ctx, "userId", {}, {});
+        await Session.createNewSession(this.ctx, this.ctx, "public", "userId", {}, {});
         throw new Session.Error({
             message: "unauthorised",
             type: Session.Error.UNAUTHORISED,

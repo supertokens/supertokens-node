@@ -22,6 +22,7 @@ import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
 import { mockRegenerateSession } from "./mockCore";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export type Helpers = {
     querier: Querier;
@@ -43,6 +44,7 @@ export const protectedProps = [
     "refreshTokenHash1",
     "antiCsrfToken",
     "recipeUserId",
+    "tId",
 ];
 
 export default function getRecipeInterface(
@@ -92,18 +94,21 @@ export default function getRecipeInterface(
             accessTokenPayload = {},
             sessionDataInDatabase = {},
             disableAntiCsrf,
+            tenantId,
         }: {
             userId: string;
             recipeUserId: RecipeUserId;
             disableAntiCsrf?: boolean;
             accessTokenPayload?: any;
             sessionDataInDatabase?: any;
+            tenantId: string;
             userContext: any;
         }): Promise<SessionContainerInterface> {
             logDebugMessage("createNewSession: Started");
 
             let response = await SessionFunctions.createNewSession(
                 helpers,
+                tenantId,
                 userId,
                 recipeUserId,
                 disableAntiCsrf === true,
@@ -124,7 +129,8 @@ export default function getRecipeInterface(
                 response.session.recipeUserId,
                 payload,
                 undefined,
-                true
+                true,
+                tenantId
             );
         },
 
@@ -224,7 +230,8 @@ export default function getRecipeInterface(
                 response.session.recipeUserId,
                 payload,
                 undefined,
-                response.accessToken !== undefined
+                response.accessToken !== undefined,
+                response.session.tenantId
             );
 
             return session;
@@ -251,7 +258,12 @@ export default function getRecipeInterface(
                 logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(input.userId, input.recipeUserId, input.userContext);
+                    const value = await validator.claim.fetchValue(
+                        input.userId,
+                        input.recipeUserId,
+                        accessTokenPayload.tId === undefined ? DEFAULT_TENANT_ID : accessTokenPayload.tId,
+                        input.userContext
+                    );
                     logDebugMessage(
                         "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
                     );
@@ -325,7 +337,8 @@ export default function getRecipeInterface(
                 response.session.recipeUserId,
                 payload,
                 undefined,
-                true
+                true,
+                payload.tId
             );
         },
 
@@ -344,6 +357,7 @@ export default function getRecipeInterface(
                       userId: string;
                       recipeUserId: RecipeUserId;
                       userDataInJWT: any;
+                      tenantId: string;
                   };
                   accessToken?: {
                       token: string;
@@ -371,37 +385,57 @@ export default function getRecipeInterface(
                 return undefined;
             }
             return {
-                ...response,
+                status: response.status,
                 session: {
-                    ...response.session,
+                    handle: response.session.handle,
+                    userId: response.session.userId,
                     recipeUserId: new RecipeUserId(response.session.recipeUserId),
+                    userDataInJWT: response.session.userDataInJWT,
+                    tenantId: response.session.tenantId,
                 },
+                accessToken: response.accessToken,
             };
         },
 
         revokeAllSessionsForUser: function ({
             userId,
+            tenantId,
+            revokeAcrossAllTenants,
             revokeSessionsForLinkedAccounts,
         }: {
             userId: string;
             revokeSessionsForLinkedAccounts: boolean;
+            tenantId?: string;
+            revokeAcrossAllTenants?: boolean;
         }) {
-            return SessionFunctions.revokeAllSessionsForUser(helpers, userId, revokeSessionsForLinkedAccounts);
+            return SessionFunctions.revokeAllSessionsForUser(
+                helpers,
+                userId,
+                revokeSessionsForLinkedAccounts,
+                tenantId,
+                revokeAcrossAllTenants
+            );
         },
 
         getAllSessionHandlesForUser: function ({
             userId,
             fetchSessionsForAllLinkedAccounts,
+            tenantId,
+            fetchAcrossAllTenants,
             userContext,
         }: {
             userId: string;
             fetchSessionsForAllLinkedAccounts: boolean;
+            tenantId?: string;
+            fetchAcrossAllTenants?: boolean;
             userContext: any;
         }): Promise<string[]> {
             return SessionFunctions.getAllSessionHandlesForUser(
                 helpers,
                 userId,
                 fetchSessionsForAllLinkedAccounts,
+                tenantId,
+                fetchAcrossAllTenants,
                 userContext
             );
         },
@@ -473,6 +507,7 @@ export default function getRecipeInterface(
             const accessTokenPayloadUpdate = await input.claim.build(
                 sessionInfo.userId,
                 sessionInfo.recipeUserId,
+                sessionInfo.tenantId,
                 input.userContext
             );
 

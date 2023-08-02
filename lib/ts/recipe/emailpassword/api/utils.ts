@@ -14,11 +14,12 @@
  */
 import { NormalisedFormField } from "../types";
 import STError from "../error";
-import { FORM_FIELD_EMAIL_ID } from "../constants";
+import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
 
 export async function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],
-    formFieldsRaw: any
+    formFieldsRaw: any,
+    tenantId: string
 ): Promise<
     {
         id: string;
@@ -47,6 +48,11 @@ export async function validateFormFieldsOrThrowError(
         if (typeof curr.id !== "string" || curr.value === undefined) {
             throw newBadRequestError("All elements of formFields must contain an 'id' and 'value' field");
         }
+        if (curr.id === FORM_FIELD_EMAIL_ID || curr.id === FORM_FIELD_PASSWORD_ID) {
+            if (typeof curr.value !== "string") {
+                throw newBadRequestError("The value of formFields with id = " + curr.id + " must be a string");
+            }
+        }
         formFields.push(curr);
     }
 
@@ -62,7 +68,7 @@ export async function validateFormFieldsOrThrowError(
     });
 
     // then run validators through them-----------------------
-    await validateFormOrThrowError(formFields, configFormFields);
+    await validateFormOrThrowError(formFields, configFormFields, tenantId);
 
     return formFields;
 }
@@ -81,7 +87,8 @@ async function validateFormOrThrowError(
         id: string;
         value: string;
     }[],
-    configFormFields: NormalisedFormField[]
+    configFormFields: NormalisedFormField[],
+    tenantId: string
 ) {
     let validationErrors: { id: string; error: string }[] = [];
 
@@ -104,7 +111,7 @@ async function validateFormOrThrowError(
             });
         } else {
             // Otherwise, use validate function.
-            const error = await field.validate(input.value);
+            const error = await field.validate(input.value, tenantId);
             // If error, add it.
             if (error !== undefined) {
                 validationErrors.push({

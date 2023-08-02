@@ -15,11 +15,10 @@
 
 import type { Context, Next } from "koa";
 import type { HTTPMethod } from "../../types";
-import { normaliseHttpMethod } from "../../utils";
+import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
-import { getHeaderValueFromIncomingMessage } from "../utils";
-import { json, form } from "co-body";
+import { getHeaderValueFromIncomingMessage, parseJSONBodyFromRequest, parseURLEncodedFormData } from "../utils";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
@@ -39,7 +38,7 @@ export class KoaRequest extends BaseRequest {
 
     getFormData = async (): Promise<any> => {
         if (this.parsedUrlEncodedFormData === undefined) {
-            this.parsedUrlEncodedFormData = await parseURLEncodedFormData(this.ctx);
+            this.parsedUrlEncodedFormData = (await parseURLEncodedFormData(this.ctx.req)) as any;
         }
         return this.parsedUrlEncodedFormData;
     };
@@ -57,7 +56,7 @@ export class KoaRequest extends BaseRequest {
 
     getJSONBody = async (): Promise<any> => {
         if (this.parsedJSONBody === undefined) {
-            this.parsedJSONBody = await parseJSONBodyFromRequest(this.ctx);
+            this.parsedJSONBody = await parseJSONBodyFromRequest(this.ctx.req);
         }
         return this.parsedJSONBody === undefined ? {} : this.parsedJSONBody;
     };
@@ -77,20 +76,6 @@ export class KoaRequest extends BaseRequest {
     getOriginalURL = (): string => {
         return this.ctx.originalUrl;
     };
-}
-
-async function parseJSONBodyFromRequest(ctx: Context) {
-    if (ctx.body !== undefined) {
-        return ctx.body;
-    }
-    return await json(ctx);
-}
-
-async function parseURLEncodedFormData(ctx: Context) {
-    if (ctx.body !== undefined) {
-        return ctx.body;
-    }
-    return await form(ctx);
 }
 
 export class KoaResponse extends BaseResponse {
@@ -181,8 +166,10 @@ export const middleware = () => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new KoaRequest(ctx);
         let response = new KoaResponse(ctx);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
-            let result = await supertokens.middleware(request, response);
+            let result = await supertokens.middleware(request, response, userContext);
             if (!result) {
                 return await next();
             }

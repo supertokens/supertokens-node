@@ -4,20 +4,8 @@ import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery
 import { NormalisedAppinfo } from "../../../../../types";
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
-    private createAndSendCustomEmail;
-    constructor(
-        appInfo: NormalisedAppinfo,
-        createAndSendCustomEmail?: (
-            input: {
-                email: string;
-                userInputCode?: string;
-                urlWithLinkCode?: string;
-                codeLifetime: number;
-                preAuthSessionId: string;
-            },
-            userContext: any
-        ) => Promise<void>
-    );
+    private appInfo;
+    constructor(appInfo: NormalisedAppinfo);
     sendEmail: (
         input: TypePasswordlessEmailDeliveryInput & {
             userContext: any;

@@ -49,7 +49,7 @@ export default class Recipe extends RecipeModule {
 
     passwordlessRecipe: PasswordlessRecipe;
 
-    private thirdPartyRecipe: ThirdPartyRecipe | undefined;
+    private thirdPartyRecipe: ThirdPartyRecipe;
 
     recipeInterfaceImpl: RecipeInterface;
 
@@ -83,7 +83,8 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(
                 RecipeImplementation(
                     Querier.getNewInstanceOrThrowError(PasswordlessRecipe.RECIPE_ID),
-                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
+                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID),
+                    this.config.providers
                 )
             );
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
@@ -129,33 +130,31 @@ export default class Recipe extends RecipeModule {
                       }
                   );
 
-        if (this.config.providers.length !== 0) {
-            this.thirdPartyRecipe =
-                recipes.thirdPartyInstance !== undefined
-                    ? recipes.thirdPartyInstance
-                    : new ThirdPartyRecipe(
-                          recipeId,
-                          appInfo,
-                          isInServerlessEnv,
-                          {
-                              override: {
-                                  functions: (_) => {
-                                      return ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
-                                  },
-                                  apis: (_) => {
-                                      return getThirdPartyIterfaceImpl(this.apiImpl);
-                                  },
+        this.thirdPartyRecipe =
+            recipes.thirdPartyInstance !== undefined
+                ? recipes.thirdPartyInstance
+                : new ThirdPartyRecipe(
+                      recipeId,
+                      appInfo,
+                      isInServerlessEnv,
+                      {
+                          override: {
+                              functions: (_) => {
+                                  return ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
                               },
-                              signInAndUpFeature: {
-                                  providers: this.config.providers,
+                              apis: (_) => {
+                                  return getThirdPartyIterfaceImpl(this.apiImpl);
                               },
                           },
-                          {},
-                          {
-                              emailDelivery: this.emailDelivery,
-                          }
-                      );
-        }
+                          signInAndUpFeature: {
+                              providers: this.config.providers,
+                          },
+                      },
+                      {},
+                      {
+                          emailDelivery: this.emailDelivery,
+                      }
+                  );
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -200,27 +199,24 @@ export default class Recipe extends RecipeModule {
 
     getAPIsHandled = (): APIHandled[] => {
         let apisHandled = [...this.passwordlessRecipe.getAPIsHandled()];
-        if (this.thirdPartyRecipe !== undefined) {
-            apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
-        }
+        apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
         return apisHandled;
     };
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         path: NormalisedURLPath,
-        method: HTTPMethod
+        method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
-        if (this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
-            return await this.passwordlessRecipe.handleAPIRequest(id, req, res, path, method);
+        if ((await this.passwordlessRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
+            return await this.passwordlessRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
-        if (
-            this.thirdPartyRecipe !== undefined &&
-            this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
-        ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
+        if ((await this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method, userContext)) !== undefined) {
+            return await this.thirdPartyRecipe.handleAPIRequest(id, tenantId, req, res, path, method, userContext);
         }
         return false;
     };
@@ -235,7 +231,7 @@ export default class Recipe extends RecipeModule {
         } else {
             if (this.passwordlessRecipe.isErrorFromThisRecipe(err)) {
                 return await this.passwordlessRecipe.handleError(err, request, response);
-            } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
+            } else if (this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
                 return await this.thirdPartyRecipe.handleError(err, request, response);
             }
             throw err;
@@ -244,9 +240,7 @@ export default class Recipe extends RecipeModule {
 
     getAllCORSHeaders = (): string[] => {
         let corsHeaders = [...this.passwordlessRecipe.getAllCORSHeaders()];
-        if (this.thirdPartyRecipe !== undefined) {
-            corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
-        }
+        corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
         return corsHeaders;
     };
 
@@ -255,7 +249,7 @@ export default class Recipe extends RecipeModule {
             STError.isErrorFromSuperTokens(err) &&
             (err.fromRecipe === Recipe.RECIPE_ID ||
                 this.passwordlessRecipe.isErrorFromThisRecipe(err) ||
-                (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
+                this.thirdPartyRecipe.isErrorFromThisRecipe(err))
         );
     };
 }

@@ -13,9 +13,11 @@ export default function getRecipeInterface(
         createEmailVerificationToken: async function ({
             recipeUserId,
             email,
+            tenantId,
         }: {
             recipeUserId: RecipeUserId;
             email: string;
+            tenantId: string;
         }): Promise<
             | {
                   status: "OK";
@@ -24,10 +26,13 @@ export default function getRecipeInterface(
             | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
         > {
             if (process.env.MOCK !== "true") {
-                let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
-                    userId: recipeUserId.getAsString(),
-                    email,
-                });
+                let response = await querier.sendPostRequest(
+                    new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify/token`),
+                    {
+                        userId: recipeUserId.getAsString(),
+                        email,
+                    }
+                );
                 if (response.status === "OK") {
                     return {
                         status: "OK",
@@ -70,16 +75,21 @@ export default function getRecipeInterface(
         verifyEmailUsingToken: async function ({
             token,
             attemptAccountLinking,
+            tenantId,
             userContext,
         }: {
             token: string;
             attemptAccountLinking: boolean;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
-                method: "token",
-                token,
-            });
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
+                {
+                    method: "token",
+                    token,
+                }
+            );
             if (response.status === "OK") {
                 if (attemptAccountLinking) {
                     // before attempting this, we must check that the email that got verified
@@ -129,11 +139,15 @@ export default function getRecipeInterface(
         revokeEmailVerificationTokens: async function (input: {
             recipeUserId: RecipeUserId;
             email: string;
+            tenantId: string;
         }): Promise<{ status: "OK" }> {
-            await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token/remove"), {
-                userId: input.recipeUserId.getAsString(),
-                email: input.email,
-            });
+            await querier.sendPostRequest(
+                new NormalisedURLPath(`/${input.tenantId}/recipe/user/email/verify/token/remove`),
+                {
+                    userId: input.recipeUserId.getAsString(),
+                    email: input.email,
+                }
+            );
             return { status: "OK" };
         },
 

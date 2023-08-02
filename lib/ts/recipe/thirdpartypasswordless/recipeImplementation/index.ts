@@ -2,19 +2,24 @@ import { RecipeInterface } from "../types";
 import PasswordlessImplemenation from "../../passwordless/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
-import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
+import { RecipeInterface as ThirdPartyRecipeInterface, TypeProvider } from "../../thirdparty";
 import { Querier } from "../../../querier";
 import DerivedPwdless from "./passwordlessRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
-import { User as GlobalUser } from "../../../types";
+import { User } from "../../../types";
 import { getUser } from "../../../";
+import { ProviderInput } from "../../thirdparty/types";
 
-export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPartyQuerier?: Querier): RecipeInterface {
+export default function getRecipeInterface(
+    passwordlessQuerier: Querier,
+    thirdPartyQuerier: Querier,
+    providers: ProviderInput[] = []
+): RecipeInterface {
     let originalPasswordlessImplementation = PasswordlessImplemenation(passwordlessQuerier);
-    let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
-    if (thirdPartyQuerier !== undefined) {
-        originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
-    }
+    let originalThirdPartyImplementation: ThirdPartyRecipeInterface = ThirdPartyImplemenation(
+        thirdPartyQuerier,
+        providers
+    );
 
     return {
         consumeCode: async function (input) {
@@ -65,37 +70,55 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
+            oAuthTokens: { [key: string]: any };
+            rawUserInfoFromProvider: {
+                fromIdTokenPayload?: { [key: string]: any };
+                fromUserInfoAPI?: { [key: string]: any };
+            };
+            tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+            | {
+                  status: "OK";
+                  createdNewUser: boolean;
+                  user: User;
+              }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
               }
         > {
-            if (originalThirdPartyImplementation === undefined) {
-                throw new Error("No thirdparty provider configured");
-            }
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
 
-        createNewOrUpdateEmailOfThirdPartyRecipeUser: async function (input: {
+        thirdPartyManuallyCreateOrUpdateUser: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: string;
             isVerified: boolean;
+            tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+            | { status: "OK"; createdNewUser: boolean; user: User }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
               }
+            | {
+                  status: "SIGN_IN_UP_NOT_ALLOWED";
+                  reason: string;
+              }
         > {
-            if (originalThirdPartyImplementation === undefined) {
-                throw new Error("No thirdparty provider configured");
-            }
-            return originalThirdPartyImplementation.createNewOrUpdateEmailOfRecipeUser.bind(DerivedTP(this))(input);
+            return originalThirdPartyImplementation.manuallyCreateOrUpdateUser.bind(DerivedTP(this))(input);
+        },
+
+        thirdPartyGetProvider: async function (input: {
+            thirdPartyId: string;
+            clientType?: string;
+            tenantId: string;
+            userContext: any;
+        }): Promise<TypeProvider | undefined> {
+            return originalThirdPartyImplementation.getProvider.bind(DerivedTP(this))(input);
         },
     };
 }

@@ -2,5 +2,7 @@
 import { APIInterface, APIOptions } from "../";
 export default function generatePasswordResetToken(
     apiImplementation: APIInterface,
-    options: APIOptions
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean>;

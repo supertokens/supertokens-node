@@ -178,6 +178,112 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(userInfo.email === signUpUserInfo.email);
     });
 
+    it("test password must be of type string in input", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let signUpUserInfo = JSON.parse(response.text).user;
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: 2,
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(JSON.parse(res.text).message === "The value of formFields with id = password must be a string");
+    });
+
+    it("test email must be of type string in input", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let signUpUserInfo = JSON.parse(response.text).user;
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: 2,
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(JSON.parse(res.text).message === "The value of formFields with id = email must be a string");
+    });
+
     /*
     Setting the email value in form field as random@gmail.com causes the test to fail
     */
@@ -334,7 +440,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(
+            badInputResponse.message,
+            "API input error: Please make sure to pass a valid JSON input in the request body"
+        );
     });
 
     /*
@@ -377,7 +486,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(badInputResponse.message, "Missing input param: formFields");
     });
 
     /*
@@ -422,7 +531,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                     }
                 })
         );
-        assert(badInputResponse.message === "Missing input param: formFields");
+        assert.strictEqual(badInputResponse.message, "Missing input param: formFields");
     });
 
     // Make sure that a successful sign in yields a session

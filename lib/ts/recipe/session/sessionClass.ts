@@ -33,7 +33,8 @@ export default class Session implements SessionContainerInterface {
         protected recipeUserId: RecipeUserId,
         protected userDataInAccessToken: any,
         protected reqResInfo: ReqResInfo | undefined,
-        protected accessTokenUpdated: boolean
+        protected accessTokenUpdated: boolean,
+        protected tenantId: string
     ) {}
 
     getRecipeUserId(_userContext?: any): RecipeUserId {
@@ -92,6 +93,10 @@ export default class Session implements SessionContainerInterface {
 
     getUserId(_userContext?: any) {
         return this.userId;
+    }
+
+    getTenantId(_userContext?: any) {
+        return this.tenantId;
     }
 
     getAccessTokenPayload(_userContext?: any) {
@@ -234,7 +239,12 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        const update = await claim.build(this.getUserId(userContext), this.getRecipeUserId(userContext), userContext);
+        const update = await claim.build(
+            this.getUserId(userContext),
+            this.getRecipeUserId(userContext),
+            this.getTenantId(),
+            userContext
+        );
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 

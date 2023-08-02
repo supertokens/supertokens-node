@@ -1,6 +1,5 @@
 import { AccountInfo, RecipeLevelUser } from "./types";
 import type { User } from "../../types";
-import axios from "axios";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
@@ -401,6 +400,7 @@ export async function mockGetUsers(
                     email: user.email,
                     phoneNumber: user.phoneNumber,
                     thirdParty: user.thirdParty,
+                    tenantIds: ["public"], // TODO
                 },
             ],
         };
@@ -510,12 +510,13 @@ async function isEmailVerified(userId: string, email: string | undefined): Promi
     if (email === undefined) {
         return true;
     }
-    let response = await axios.get(`http://localhost:8080/recipe/user/email/verify?userId=${userId}&email=${email}`, {
+    let response = await fetch(`http://localhost:8080/recipe/user/email/verify?userId=${userId}&email=${email}`, {
         headers: {
             rid: "emailverification",
         },
     });
-    return response.data.status === "OK" && response.data.isVerified;
+    const respBody = await response.json();
+    return respBody.status === "OK" && respBody.isVerified;
 }
 
 export async function mockListUsersByAccountInfo({
@@ -536,7 +537,7 @@ export async function mockListUsersByAccountInfo({
     if (accountInfo.email !== undefined) {
         // email password
         {
-            let response = await axios.get(
+            let response = await fetch(
                 `http://localhost:8080/recipe/user?email=${encodeURIComponent(accountInfo.email)}`,
                 {
                     headers: {
@@ -544,8 +545,9 @@ export async function mockListUsersByAccountInfo({
                     },
                 }
             );
-            if (response.data.status === "OK") {
-                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                let user = (await mockGetUser({ userId: respBody.user.id }))!;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -561,14 +563,15 @@ export async function mockListUsersByAccountInfo({
 
         // third party
         {
-            let response = await axios.get(`http://localhost:8080/recipe/users/by-email?email=${accountInfo.email}`, {
+            let response = await fetch(`http://localhost:8080/recipe/users/by-email?email=${accountInfo.email}`, {
                 headers: {
                     rid: "thirdparty",
                 },
             });
-            if (response.data.status === "OK") {
-                for (let i = 0; i < response.data.users.length; i++) {
-                    let user = (await mockGetUser({ userId: response.data.users[i].id }))!;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                for (let i = 0; i < respBody.users.length; i++) {
+                    let user = (await mockGetUser({ userId: respBody.users[i].id }))!;
                     let userAlreadyAdded = false;
                     for (let u of users) {
                         if (u.id === user.id) {
@@ -585,13 +588,14 @@ export async function mockListUsersByAccountInfo({
 
         // passwordless
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?email=${accountInfo.email}`, {
+            let response = await fetch(`http://localhost:8080/recipe/user?email=${accountInfo.email}`, {
                 headers: {
                     rid: "passwordless",
                 },
             });
-            if (response.data.status === "OK") {
-                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                let user = (await mockGetUser({ userId: respBody.user.id }))!;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -609,7 +613,7 @@ export async function mockListUsersByAccountInfo({
     if (accountInfo.phoneNumber !== undefined) {
         // passwordless
         {
-            let response = await axios.get(
+            let response = await fetch(
                 `http://localhost:8080/recipe/user?phoneNumber=${encodeURIComponent(accountInfo.phoneNumber)}`,
                 {
                     headers: {
@@ -617,8 +621,9 @@ export async function mockListUsersByAccountInfo({
                     },
                 }
             );
-            if (response.data.status === "OK") {
-                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                let user = (await mockGetUser({ userId: respBody.user.id }))!;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -636,7 +641,7 @@ export async function mockListUsersByAccountInfo({
     if (accountInfo.thirdParty !== undefined) {
         // third party
         {
-            let response = await axios.get(
+            let response = await fetch(
                 `http://localhost:8080/recipe/user?thirdPartyId=${accountInfo.thirdParty.id}&thirdPartyUserId=${accountInfo.thirdParty.userId}`,
                 {
                     headers: {
@@ -644,8 +649,9 @@ export async function mockListUsersByAccountInfo({
                     },
                 }
             );
-            if (response.data.status === "OK") {
-                let user = (await mockGetUser({ userId: response.data.user.id }))!;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                let user = (await mockGetUser({ userId: respBody.user.id }))!;
                 let userAlreadyAdded = false;
                 for (let u of users) {
                     if (u.id === user.id) {
@@ -736,13 +742,14 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
         let currUser = allRecipeUserIds[i].getAsString();
         // email password
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?userId=${currUser}`, {
+            let response = await fetch(`http://localhost:8080/recipe/user?userId=${currUser}`, {
                 headers: {
                     rid: "emailpassword",
                 },
             });
-            if (response.data.status === "OK") {
-                let user = response.data.user;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                let user = respBody.user;
                 let verified = await isEmailVerified(user.id, user.email);
                 finalResult.loginMethods.push({
                     recipeId: "emailpassword",
@@ -750,6 +757,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                     timeJoined: user.timeJoined,
                     verified,
                     email: user.email,
+                    tenantIds: ["public"], // TODO
                 });
                 finalResult.emails.push(user.email);
                 finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
@@ -758,13 +766,14 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
 
         // third party
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?userId=${currUser}`, {
+            let response = await fetch(`http://localhost:8080/recipe/user?userId=${currUser}`, {
                 headers: {
                     rid: "thirdparty",
                 },
             });
-            if (response.data.status === "OK") {
-                let user = response.data.user;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                let user = respBody.user;
                 let verified = await isEmailVerified(user.id, user.email);
                 finalResult.loginMethods.push({
                     recipeId: "thirdparty",
@@ -773,6 +782,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                     verified,
                     email: user.email,
                     thirdParty: user.thirdParty,
+                    tenantIds: ["public"], // TODO
                 });
                 finalResult.emails.push(user.email);
                 finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
@@ -782,13 +792,14 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
 
         // passwordless
         {
-            let response = await axios.get(`http://localhost:8080/recipe/user?userId=${currUser}`, {
+            let response = await fetch(`http://localhost:8080/recipe/user?userId=${currUser}`, {
                 headers: {
                     rid: "passwordless",
                 },
             });
-            if (response.data.status === "OK") {
-                let user = response.data.user;
+            const respBody = await response.json();
+            if (respBody.status === "OK") {
+                let user = respBody.user;
                 let verified = await isEmailVerified(user.id, user.email);
 
                 finalResult.loginMethods.push({
@@ -798,6 +809,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                     verified,
                     email: user.email,
                     phoneNumber: user.phoneNumber,
+                    tenantIds: ["public"], // TODO
                 });
                 if (user.email !== undefined) {
                     finalResult.emails.push(user.email);

@@ -41,6 +41,7 @@ export type CreateOrRefreshAPIResponse = {
         userId: string;
         recipeUserId: RecipeUserId;
         userDataInJWT: any;
+        tenantId: string;
     };
     accessToken: TokenInfo;
     refreshToken: TokenInfo;
@@ -200,10 +201,12 @@ export type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
     getGlobalClaimValidators(input: {
+        tenantId: string;
         userId: string;
         recipeUserId: RecipeUserId;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
@@ -236,12 +239,16 @@ export type RecipeInterface = {
     revokeAllSessionsForUser(input: {
         userId: string;
         revokeSessionsForLinkedAccounts: boolean;
+        tenantId: string;
+        revokeAcrossAllTenants?: boolean;
         userContext: any;
     }): Promise<string[]>;
 
     getAllSessionHandlesForUser(input: {
         userId: string;
         fetchSessionsForAllLinkedAccounts: boolean;
+        tenantId: string;
+        fetchAcrossAllTenants?: boolean;
         userContext: any;
     }): Promise<string[]>;
 
@@ -277,6 +284,7 @@ export type RecipeInterface = {
                   userId: string;
                   recipeUserId: RecipeUserId;
                   userDataInJWT: any;
+                  tenantId: string;
               };
               accessToken?: {
                   token: string;
@@ -332,6 +340,7 @@ export interface SessionContainerInterface {
     getUserId(userContext?: any): string;
 
     getRecipeUserId(userContext?: any): RecipeUserId;
+    getTenantId(userContext?: any): string;
 
     getAccessTokenPayload(userContext?: any): any;
 
@@ -410,6 +419,7 @@ export type SessionInformation = {
     expiry: number;
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
+    tenantId: string;
 };
 
 export type ClaimValidationResult = { isValid: true } | { isValid: false; reason?: JSONValue };
@@ -448,6 +458,7 @@ export abstract class SessionClaim<T> {
     abstract fetchValue(
         userId: string,
         recipeUserId: RecipeUserId,
+        tenantId: string,
         userContext: any
     ): Promise<T | undefined> | T | undefined;
 
@@ -479,8 +490,8 @@ export abstract class SessionClaim<T> {
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
-    async build(userId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<JSONObject> {
-        const value = await this.fetchValue(userId, recipeUserId, userContext);
+    async build(userId: string, recipeUserId: RecipeUserId, tenantId: string, userContext?: any): Promise<JSONObject> {
+        const value = await this.fetchValue(userId, recipeUserId, tenantId, userContext);
 
         if (value === undefined) {
             return {};

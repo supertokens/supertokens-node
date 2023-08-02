@@ -33,10 +33,8 @@ export function validateAndNormaliseUserInput(
         let emailService = config.emailDelivery?.service;
         /**
          * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
-         * createAndSendCustomEmail implementation which calls our supertokens API
+         * if user has not passed emailService config, we use the default
+         * createAndSendEmailUsingSupertokensService implementation which calls our supertokens API
          */
         if (emailService === undefined) {
             emailService = new BackwardCompatibilityService(appInfo, isInServerlessEnv);
@@ -65,7 +63,12 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: string; recipeId: string }): string {
+export function getEmailVerifyLink(input: {
+    appInfo: NormalisedAppinfo;
+    token: string;
+    recipeId: string;
+    tenantId: string;
+}): string {
     return (
         input.appInfo.websiteDomain.getAsStringDangerous() +
         input.appInfo.websiteBasePath.getAsStringDangerous() +
@@ -73,6 +76,8 @@ export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: s
         "?token=" +
         input.token +
         "&rid=" +
-        input.recipeId
+        input.recipeId +
+        "&tenantId=" +
+        input.tenantId
     );
 }

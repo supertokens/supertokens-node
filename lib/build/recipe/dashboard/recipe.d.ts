@@ -19,13 +19,14 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
-        ___: HTTPMethod
+        ___: HTTPMethod,
+        userContext: any
     ) => Promise<boolean>;
     handleError: (err: error, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is error;
-    returnAPIIdIfCanHandleRequest: (path: NormalisedURLPath, method: HTTPMethod) => string | undefined;
 }

@@ -18,7 +18,12 @@ type Response =
           user: RecipeLevelUserWithFirstAndLastName; // TODO: this needs to return the primary user id
       };
 
-export const userGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userGet: APIFunction = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const recipeUserId = options.req.getKeyValueFromQuery("recipeUserId"); // TODO: this needs to change to just be user ID
     const recipeId = options.req.getKeyValueFromQuery("recipeId"); // TODO: remove recipeId
 
@@ -75,7 +80,7 @@ export const userGet: APIFunction = async (_: APIInterface, options: APIOptions)
         };
     }
 
-    const userMetaData = await UserMetaData.getUserMetadata(recipeUserId);
+    const userMetaData = await UserMetaData.getUserMetadata(recipeUserId, userContext);
     const { first_name, last_name } = userMetaData.metadata;
 
     user = {

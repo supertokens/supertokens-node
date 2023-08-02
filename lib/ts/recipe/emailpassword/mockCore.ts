@@ -1,5 +1,4 @@
 import type { User } from "../../types";
-import axios from "axios";
 import { createUserObject, mockGetUser } from "../accountlinking/mockCore";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
@@ -16,38 +15,39 @@ export async function mockCreatePasswordResetToken(
     email: string,
     userId: string
 ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-    let response = await axios(`http://localhost:8080/recipe/user/password/reset/token`, {
+    let response = await fetch(`http://localhost:8080/recipe/user/password/reset/token`, {
         method: "post",
         headers: {
             rid: "emailpassword",
             "content-type": "application/json",
         },
-        data: {
+        body: JSON.stringify({
             email,
             userId,
-        },
+        }),
     });
+    const respBody = await response.json();
 
-    if (response.data.status === "UNKNOWN_USER_ID_ERROR") {
+    if (respBody.status === "UNKNOWN_USER_ID_ERROR") {
         // this is cause maybe we are trying to use a primary user id..
         let user = await mockGetUser({
             userId,
         });
         if (user !== undefined) {
-            response.data.status = "OK";
-            response.data.token = (Math.random() + 1).toString(36).substring(7);
+            respBody.status = "OK";
+            respBody.token = (Math.random() + 1).toString(36).substring(7);
         } else {
-            return response.data;
+            return respBody;
         }
     }
 
-    passwordResetTokens[response.data.token] = {
+    passwordResetTokens[respBody.token] = {
         userId,
         email,
     };
     return {
         status: "OK",
-        token: response.data.token,
+        token: respBody.token,
     };
 }
 
@@ -80,23 +80,24 @@ export async function mockSignIn(input: {
     email: string;
     password: string;
 }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-    let response = await axios(`http://localhost:8080/recipe/signin`, {
+    let response = await fetch(`http://localhost:8080/recipe/signin`, {
         method: "post",
         headers: {
             rid: "emailpassword",
             "content-type": "application/json",
         },
-        data: {
+        body: JSON.stringify({
             email: input.email,
             password: input.password,
-        },
+        }),
     });
+    const respBody = await response.json();
 
-    if (response.data.status === "WRONG_CREDENTIALS_ERROR") {
-        return response.data;
+    if (respBody.status === "WRONG_CREDENTIALS_ERROR") {
+        return respBody;
     }
 
-    let user = response.data.user;
+    let user = respBody.user;
     return {
         status: "OK",
         user: (await mockGetUser({
@@ -116,23 +117,24 @@ export async function mockCreateRecipeUser(input: {
       }
     | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
 > {
-    let response = await axios(`http://localhost:8080/recipe/signup`, {
+    let response = await fetch(`http://localhost:8080/recipe/signup`, {
         method: "post",
         headers: {
             rid: "emailpassword",
             "content-type": "application/json",
         },
-        data: {
+        body: JSON.stringify({
             email: input.email,
             password: input.password,
-        },
+        }),
     });
+    const respBody = await response.json();
 
-    if (response.data.status === "EMAIL_ALREADY_EXISTS_ERROR") {
-        return response.data;
+    if (respBody.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+        return respBody;
     }
 
-    let user = response.data.user;
+    let user = respBody.user;
     return {
         status: "OK",
         user: createUserObject({
@@ -144,6 +146,7 @@ export async function mockCreateRecipeUser(input: {
             thirdParty: [],
             loginMethods: [
                 {
+                    tenantIds: ["public"], // TODO: fix this
                     recipeId: "emailpassword",
                     recipeUserId: new RecipeUserId(user.id),
                     timeJoined: user.timeJoined,

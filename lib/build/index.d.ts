@@ -8,8 +8,9 @@ export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
     static getAllCORSHeaders(): string[];
-    static getUserCount(includeRecipeIds?: string[]): Promise<number>;
-    static getUsersOldestFirst(input?: {
+    static getUserCount(includeRecipeIds?: string[], tenantId?: string): Promise<number>;
+    static getUsersOldestFirst(input: {
+        tenantId: string;
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];
@@ -20,7 +21,8 @@ export default class SuperTokensWrapper {
         users: User[];
         nextPaginationToken?: string;
     }>;
-    static getUsersNewestFirst(input?: {
+    static getUsersNewestFirst(input: {
+        tenantId: string;
         limit?: number;
         paginationToken?: string;
         includeRecipeIds?: string[];

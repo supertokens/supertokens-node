@@ -34,8 +34,6 @@ let { middleware, errorHandler } = require("../../framework/express");
 let { maxVersion } = require("../../lib/build/utils");
 
 /**
- * TODO: (later) in passwordResetFunctions.ts:
- *        - (later) check that createAndSendCustomEmail works fine
  * TODO: generate token API:
  *        - (later) Call the createResetPasswordToken function with valid input
  *        - (later) Call the createResetPasswordToken with unknown userId and test error thrown
@@ -126,15 +124,13 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             recipeList: [
                 EmailPassword.init({
                     emailDelivery: {
-                        override: (oI) => {
-                            return {
-                                ...oI,
-                                sendEmail: async (input) => {
-                                    resetURL = input.passwordResetLink.split("?")[0];
-                                    tokenInfo = input.passwordResetLink.split("?")[1].split("&")[0];
-                                    ridInfo = input.passwordResetLink.split("?")[1].split("&")[1];
-                                },
-                            };
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.passwordResetLink).search);
+                                resetURL = input.passwordResetLink.split("?")[0];
+                                tokenInfo = searchParams.get("token");
+                                ridInfo = searchParams.get("rid");
+                            },
                         },
                     },
                 }),
@@ -172,8 +168,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 })
         );
         assert(resetURL === "https://supertokens.io/auth/reset-password");
-        assert(tokenInfo.startsWith("token="));
-        assert(ridInfo.startsWith("rid=emailpassword"));
+        assert.notStrictEqual(tokenInfo, undefined);
+        assert.notStrictEqual(tokenInfo, null);
+        assert.strictEqual(ridInfo, "emailpassword");
     });
 
     /*
@@ -374,6 +371,14 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                             };
                         },
                     },
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.passwordResetLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
+                    },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
@@ -506,7 +511,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 recipeList: [EmailPassword.init()],
             });
 
-            let user = await EmailPassword.signUp("test@example.com", "password1234");
+            let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
             let resetPassword = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
 
@@ -573,17 +578,30 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
                 ],
             });
 
-            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let user = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
 
             let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
 
@@ -606,7 +624,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 recipeList: [EmailPassword.init()],
             });
 
-            let user = await EmailPassword.signUp("test@example.com", "password1234");
+            let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
             let resetPassword = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
 
@@ -652,17 +670,30 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
                 ],
             });
 
-            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let user = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
 
             let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
 

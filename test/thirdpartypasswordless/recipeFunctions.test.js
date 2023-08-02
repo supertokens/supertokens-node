@@ -52,12 +52,16 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    providers: [/** @type {any} */ {}],
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    providers: [{ config: { thirdPartyId: "customProvider" } }],
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -69,7 +73,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         // create a ThirdParty user with a verified email
-        let response = await ThirdPartyPasswordless.thirdPartySignInUp(
+        let response = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "customProvider",
             "verifiedUser",
             "test@example.com",
@@ -78,16 +83,18 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // verify the user's email
         let emailVerificationToken = await EmailVerification.createEmailVerificationToken(
+            "public",
             response.user.id,
             response.user.email
         );
-        await EmailVerification.verifyEmailUsingToken(emailVerificationToken.token);
+        await EmailVerification.verifyEmailUsingToken("public", emailVerificationToken.token);
 
         // check that the ThirdParty user's email is verified
         assert(await EmailVerification.isEmailVerified(response.user.id));
 
         // create a ThirdParty user with an unverfied email and check that it is not verified
-        let response2 = await ThirdPartyPasswordless.thirdPartySignInUp(
+        let response2 = await ThirdPartyPasswordless.thirdPartyManuallyCreateOrUpdateUser(
+            "public",
             "customProvider2",
             "NotVerifiedUser",
             "test@example.com",
@@ -115,11 +122,15 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -132,27 +143,30 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         // create a Passwordless user with email
         let response = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         // verify the user's email
         let emailVerificationToken = await EmailVerification.createEmailVerificationToken(
+            "public",
             response.user.id,
             response.user.email
         );
-        await EmailVerification.verifyEmailUsingToken(emailVerificationToken.token);
+        await EmailVerification.verifyEmailUsingToken("public", emailVerificationToken.token);
 
         // check that the Passwordless user's email is verified
         assert(await EmailVerification.isEmailVerified(response.user.id, response.user.email));
 
         // check that creating an email verification with a verified passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert(
-            (await EmailVerification.createEmailVerificationToken(response.user.id, response.user.email)).status ===
-                "EMAIL_ALREADY_VERIFIED_ERROR"
+            (await EmailVerification.createEmailVerificationToken("public", response.user.id, response.user.email))
+                .status === "EMAIL_ALREADY_VERIFIED_ERROR"
         );
 
         // create a Passwordless user with phone and check that it is verified
         let response2 = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             phoneNumber: "+123456789012",
         });
 
@@ -160,7 +174,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         assert(await EmailVerification.isEmailVerified(response2.user.id));
         // check that creating an email verification with a phone-based passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert.equal(
-            (await EmailVerification.createEmailVerificationToken(response2.user.id)).status,
+            (await EmailVerification.createEmailVerificationToken("public", response2.user.id)).status,
             "EMAIL_ALREADY_VERIFIED_ERROR"
         );
     });
@@ -182,8 +196,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -201,6 +219,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
             user = (
                 await ThirdPartyPasswordless.passwordlessSignInUp({
+                    tenantId: "public",
                     email: "test@example.com",
                 })
             ).user;
@@ -212,7 +231,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(result.emails[0] === user.email);
             assert(result.phoneNumbers.length === 0);
             assert(typeof result.timeJoined === "number");
-            assert(Object.keys(result).length === 8);
+            assert(result.tenantIds.length === 1);
+            assert(Object.keys(result).length === 9);
         }
 
         {
@@ -224,12 +244,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
             let user = (
                 await ThirdPartyPasswordless.passwordlessSignInUp({
+                    tenantId: "public",
                     email: "test@example.com",
                 })
             ).user;
 
             let result = await STExpress.listUsersByAccountInfo({
-                email: user.email,
+                email: "test@example.com",
             });
 
             assert(result.length === 1);
@@ -240,7 +261,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(userInfo.emails[0] === user.email);
             assert(userInfo.phoneNumbers.length === 0);
             assert(typeof userInfo.timeJoined === "number");
-            assert(Object.keys(userInfo).length === 8);
+            assert(userInfo.tenantIds.length === 1);
+            assert(Object.keys(userInfo).length === 9);
         }
 
         {
@@ -252,6 +274,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
             user = (
                 await ThirdPartyPasswordless.passwordlessSignInUp({
+                    tenantId: "public",
                     phoneNumber: "+1234567890",
                 })
             ).user;
@@ -263,7 +286,8 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(result[0].phoneNumbers[0] === user.phoneNumber);
             assert(result[0].emails.length === 0);
             assert(typeof result[0].timeJoined === "number");
-            assert(Object.keys(result[0]).length === 8);
+            assert(result.tenantIds.length === 1);
+            assert(Object.keys(result[0]).length === 9);
         }
     });
 
@@ -284,8 +308,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -298,6 +324,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let resp = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -314,6 +341,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let resp = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
                 userInputCode: "123",
             });
@@ -347,8 +375,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -361,10 +391,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let resp = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             resp = await ThirdPartyPasswordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: resp.deviceId,
             });
 
@@ -381,10 +413,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let resp = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             resp = await ThirdPartyPasswordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: resp.deviceId,
                 userInputCode: "1234",
             });
@@ -402,10 +436,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let resp = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             resp = await ThirdPartyPasswordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: "random",
             });
 
@@ -415,11 +451,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let resp = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
                 userInputCode: "1234",
             });
 
             resp = await ThirdPartyPasswordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: resp.deviceId,
                 userInputCode: "1234",
             });
@@ -446,8 +484,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -460,10 +500,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             let resp = await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -476,15 +518,17 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(resp.user.phoneNumber === undefined);
             assert(typeof resp.user.timeJoined === "number");
             assert(Object.keys(resp).length === 3);
-            assert(Object.keys(resp.user).length === 3);
+            assert(Object.keys(resp.user).length === 4);
         }
 
         {
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             let resp = await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: "random",
                 deviceId: codeInfo.deviceId,
@@ -498,11 +542,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             try {
                 await ThirdPartyPasswordless.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: "random",
                     userInputCode: codeInfo.userInputCode,
                     deviceId: codeInfo.deviceId,
@@ -532,8 +578,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -546,12 +594,14 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let codeInfo = await ThirdPartyPasswordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             await new Promise((r) => setTimeout(r, 2000)); // wait for code to expire
 
             let resp = await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -582,8 +632,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -595,6 +647,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let userInfo = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             email: "test@example.com",
         });
         {
@@ -621,6 +674,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         {
             // update user with an email that already exists
             let userInfo2 = await ThirdPartyPasswordless.passwordlessSignInUp({
+                tenantId: "public",
                 email: "test3@example.com",
             });
 
@@ -650,8 +704,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -667,6 +723,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         let phoneNumber_3 = "+1234567893";
 
         let userInfo = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             phoneNumber: phoneNumber_1,
         });
 
@@ -685,6 +742,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         {
             // update user with a phoneNumber that already exists
             let userInfo2 = await ThirdPartyPasswordless.passwordlessSignInUp({
+                tenantId: "public",
                 phoneNumber: phoneNumber_3,
             });
 
@@ -715,8 +773,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -728,15 +788,18 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let codeInfo_1 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let codeInfo_2 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         {
             let result = await ThirdPartyPasswordless.revokeAllCodes({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -745,6 +808,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let result_1 = await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
                 deviceId: codeInfo_1.deviceId,
                 userInputCode: codeInfo_1.userInputCode,
@@ -753,6 +817,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(result_1.status === "RESTART_FLOW_ERROR");
 
             let result_2 = await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_2.preAuthSessionId,
                 deviceId: codeInfo_2.deviceId,
                 userInputCode: codeInfo_2.userInputCode,
@@ -779,8 +844,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -792,15 +859,18 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let codeInfo_1 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let codeInfo_2 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         {
             let result = await ThirdPartyPasswordless.revokeCode({
+                tenantId: "public",
                 codeId: codeInfo_1.codeId,
             });
 
@@ -809,6 +879,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let result_1 = await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
                 deviceId: codeInfo_1.deviceId,
                 userInputCode: codeInfo_1.userInputCode,
@@ -817,6 +888,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(result_1.status === "RESTART_FLOW_ERROR");
 
             let result_2 = await ThirdPartyPasswordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_2.preAuthSessionId,
                 deviceId: codeInfo_2.deviceId,
                 userInputCode: codeInfo_2.userInputCode,
@@ -844,8 +916,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -857,14 +931,17 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let codeInfo_1 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let codeInfo_2 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let result = await ThirdPartyPasswordless.listCodesByEmail({
+            tenantId: "public",
             email: "test@example.com",
         });
         assert(result.length === 2);
@@ -895,8 +972,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -908,14 +987,17 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let codeInfo_1 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
         let codeInfo_2 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
         let result = await ThirdPartyPasswordless.listCodesByPhoneNumber({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
         assert(result.length === 2);
@@ -946,8 +1028,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -959,11 +1043,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let codeInfo_1 = await ThirdPartyPasswordless.createCode({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
         {
             let result = await ThirdPartyPasswordless.listCodesByDeviceId({
+                tenantId: "public",
                 deviceId: codeInfo_1.deviceId,
             });
             assert(result.codes[0].codeId === codeInfo_1.codeId);
@@ -971,6 +1057,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             let result = await ThirdPartyPasswordless.listCodesByPreAuthSessionId({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
             });
             assert(result.codes[0].codeId === codeInfo_1.codeId);
@@ -999,8 +1086,10 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -1012,6 +1101,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let result = await ThirdPartyPasswordless.createMagicLink({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
@@ -1042,8 +1132,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        service: {
+                            sendSms: async (input) => {
+                                return;
+                            },
+                        },
                     },
                 }),
             ],
@@ -1055,6 +1149,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         let result = await ThirdPartyPasswordless.passwordlessSignInUp({
+            tenantId: "public",
             phoneNumber: "+12345678901",
         });
 
@@ -1065,6 +1160,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         assert(result.user.phoneNumber === "+12345678901");
         assert(typeof result.user.id === "string");
         assert(typeof result.user.timeJoined === "number");
-        assert(Object.keys(result.user).length === 3);
+        assert(result.user.tenantIds.length === 1);
+        assert(Object.keys(result.user).length === 4);
     });
 });

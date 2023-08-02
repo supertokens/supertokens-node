@@ -12,13 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    ProviderInput,
+    ProviderClientConfig,
+    ProviderConfigForClientType,
+    ProviderConfig,
+} from "../thirdparty/types";
 import {
     NormalisedFormField,
     TypeInputFormField,
     APIOptions as EmailPasswordAPIOptionsOriginal,
     TypeEmailPasswordEmailDeliveryInput,
-    RecipeInterface as EPRecipeInterface,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
@@ -26,7 +32,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { GeneralErrorResponse, User as GlobalUser } from "../../types";
+import { GeneralErrorResponse, User as GlobalUser, User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeInputSignUp = {
@@ -39,7 +45,7 @@ export type TypeNormalisedInputSignUp = {
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
-    providers?: TypeProvider[];
+    providers?: ProviderInput[];
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     override?: {
         functions?: (
@@ -52,9 +58,8 @@ export type TypeInput = {
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
-    providers: TypeProvider[];
+    providers: ProviderInput[];
     getEmailDeliveryConfig: (
-        emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     override: {
@@ -67,25 +72,43 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
+    thirdPartyGetProvider(input: {
+        thirdPartyId: string;
+        clientType?: string;
+        tenantId: string;
+        userContext: any;
+    }): Promise<TypeProvider | undefined>;
+
     thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
+        };
+        tenantId: string;
         userContext: any;
     }): Promise<
-        | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
 
-    createNewOrUpdateEmailOfThirdPartyRecipeUser(input: {
+    thirdPartyManuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | { status: "OK"; createdNewUser: boolean; user: GlobalUser }
@@ -93,11 +116,16 @@ export type RecipeInterface = {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
           }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
     >;
 
     emailPasswordSignUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
@@ -116,17 +144,21 @@ export type RecipeInterface = {
     emailPasswordSignIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     createResetPasswordToken(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     consumePasswordResetToken(input: {
         token: string;
+        newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -143,6 +175,7 @@ export type RecipeInterface = {
         password?: string;
         userContext: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy: string;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -163,12 +196,15 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
+              redirectURIOnProviderDashboard: string;
+              tenantId: string;
               options: ThirdPartyAPIOptions;
               userContext: any;
           }) => Promise<
               | {
                     status: "OK";
-                    url: string;
+                    urlWithQueryParams: string;
+                    pkceCodeVerifier?: string;
                 }
               | GeneralErrorResponse
           >);
@@ -177,6 +213,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
           }) => Promise<
@@ -194,6 +231,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
           }) => Promise<
@@ -215,6 +253,7 @@ export type APIInterface = {
                   value: string;
               }[];
               token: string;
+              tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
           }) => Promise<
@@ -232,21 +271,35 @@ export type APIInterface = {
 
     thirdPartySignInUpPOST:
         | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
+        | ((
+              input: {
+                  provider: TypeProvider;
+                  tenantId: string;
+                  options: ThirdPartyAPIOptions;
+                  userContext: any;
+              } & (
+                  | {
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: string;
+                            redirectURIQueryParams: any;
+                            pkceCodeVerifier?: string;
+                        };
+                    }
+                  | {
+                        oAuthTokens: { [key: string]: any };
+                    }
+              )
+          ) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
                     user: GlobalUser;
                     session: SessionContainerInterface;
-                    authCodeResponse: any;
+                    oAuthTokens: { [key: string]: any };
+                    rawUserInfoFromProvider: {
+                        fromIdTokenPayload?: { [key: string]: any };
+                        fromUserInfoAPI?: { [key: string]: any };
+                    };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | {
@@ -266,6 +319,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
           }) => Promise<
@@ -287,6 +341,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
           }) => Promise<
@@ -303,7 +358,15 @@ export type APIInterface = {
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
+        | ((input: {
+              formPostInfoFromProvider: any;
+              options: ThirdPartyAPIOptions;
+              userContext: any;
+          }) => Promise<void>);
 };
 
 export type TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput;
+export type ThirdPartyProviderInput = ProviderInput;
+export type ThirdPartyProviderConfig = ProviderConfig;
+export type ThirdPartyProviderClientConfig = ProviderClientConfig;
+export type ThirdPartyProviderConfigForClientType = ProviderConfigForClientType;
