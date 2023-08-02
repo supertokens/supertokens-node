@@ -122,7 +122,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(Object.keys(validCreateCodeResponse).length === 4);
 
         // consumeCode API
-        let validUserInputCodeResponse = await new Promise((resolve) =>
+        let validUserInputCodeResponse = await new Promise((resolve, reject) =>
             request(app)
                 .post("/auth/signinup/code/consume")
                 .send({
@@ -133,7 +133,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
-                        resolve(undefined);
+                        reject(err);
                     } else {
                         resolve(JSON.parse(res.text));
                     }

@@ -1142,7 +1142,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1161,7 +1161,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await this.server.inject({
@@ -1192,7 +1192,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1210,7 +1210,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //retrieve the changed jwt payload
         let response3 = await this.server.inject({
@@ -1235,6 +1235,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 "sub",
                 "iss",
                 "tId",
+                "recipeUserId",
             ])
         );
         //invalid session handle when updating the jwt payload

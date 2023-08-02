@@ -1458,7 +1458,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, emailId);
 
-        let userInfo = await EmailVerification.getEmailVerificationTokenInfo("public", verifyToken.token);
+        let userInfo = await EmailVerification.getEmailVerificationTokenInfo(verifyToken.token);
         assert(userInfo.status === "OK");
         assert(userInfo.user.recipeUserId.getAsString() === userId);
         assert(userInfo.user.email === "test@gmail.com");

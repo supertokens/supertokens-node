@@ -566,7 +566,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await ThirdPartyEmailPassword.getUserById(userId));
+            res.json(await SuperTokens.getUser(userId));
         });
 
         app.use((err, req, res, next) => {

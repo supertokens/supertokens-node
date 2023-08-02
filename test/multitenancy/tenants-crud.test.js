@@ -321,15 +321,15 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
         await Multitenancy.associateUserToTenant("t2", userId);
         await Multitenancy.associateUserToTenant("t3", userId);
 
-        let newUser = await EmailPassword.getUserById(userId);
+        let newUser = await SuperTokens.getUser(userId);
 
-        assert(newUser.tenantIds.length === 4); // public + 3 tenants created above
+        assert.strictEqual(newUser.loginMethods[0].tenantIds.length, 4); // public + 3 tenants created above
 
         await Multitenancy.disassociateUserFromTenant("t1", userId);
         await Multitenancy.disassociateUserFromTenant("t2", userId);
         await Multitenancy.disassociateUserFromTenant("t3", userId);
 
-        newUser = await EmailPassword.getUserById(userId);
+        newUser = await SuperTokens.getUser(userId);
 
         assert(newUser.tenantIds.length === 1); // only public
     });

@@ -74,12 +74,12 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         assert.deepEqual(user3b.user.tenantIds, ["t3"]);
 
         // get user by id
-        let gUser1a = await ThirdParty.getUserById(user1a.user.id);
-        let gUser1b = await ThirdParty.getUserById(user1b.user.id);
-        let gUser2a = await ThirdParty.getUserById(user2a.user.id);
-        let gUser2b = await ThirdParty.getUserById(user2b.user.id);
-        let gUser3a = await ThirdParty.getUserById(user3a.user.id);
-        let gUser3b = await ThirdParty.getUserById(user3b.user.id);
+        let gUser1a = await SuperTokens.getUser(user1a.user.id);
+        let gUser1b = await SuperTokens.getUser(user1b.user.id);
+        let gUser2a = await SuperTokens.getUser(user2a.user.id);
+        let gUser2b = await SuperTokens.getUser(user2b.user.id);
+        let gUser3a = await SuperTokens.getUser(user3a.user.id);
+        let gUser3b = await SuperTokens.getUser(user3b.user.id);
 
         assert.deepEqual(gUser1a, user1a.user);
         assert.deepEqual(gUser1b, user1b.user);

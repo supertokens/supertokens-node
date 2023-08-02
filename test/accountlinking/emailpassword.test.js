@@ -218,7 +218,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 false
             );
 
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test@example.com", "password123");
 
@@ -443,11 +443,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "abc", "abcd", "test@example.com", true)
             ).user;
+            assert(tpUser.isPrimaryUser);
 
-            await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                tenantId: "public",
-                recipeUserId: tpUser.loginMethods[0].recipeUserId,
-            });
             let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(!user.isPrimaryUser);
             assert(user.loginMethods[0].verified === false);
@@ -511,8 +508,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 "test@example.com",
                 false
             );
-
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.user.isPrimaryUser);
@@ -658,10 +654,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                tenantId: "public",
-                recipeUserId: user.loginMethods[0].recipeUserId,
-            });
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.status === "OK");

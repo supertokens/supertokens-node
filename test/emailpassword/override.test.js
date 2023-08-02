@@ -539,7 +539,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
-            res.json(await EmailPassword.getUserById(userId));
+            res.json(await SuperTokens.getUser(userId));
         });
 
         app.use((err, req, res, next) => {

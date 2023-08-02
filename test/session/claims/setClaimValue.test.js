@@ -90,7 +90,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 10);
+            assert.equal(Object.keys(payload).length, 11);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 2000);
@@ -98,7 +98,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             await res.setClaimValue(TrueClaim, false);
 
             const payloadAfter = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payloadAfter).length, 10);
+            assert.equal(Object.keys(payloadAfter).length, 11);
             assert.ok(payloadAfter["st-true"]);
             assert.equal(payloadAfter["st-true"].v, false);
             assert(payloadAfter["st-true"].t > payload["st-true"].t);
@@ -139,7 +139,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 10);
+            assert.equal(Object.keys(payload).length, 11);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 10000);

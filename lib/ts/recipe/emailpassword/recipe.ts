@@ -151,12 +151,6 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
-            // {
-            //     method: "post",
-            //     pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
-            //     id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
-            //     disabled: this.apiImpl.linkAccountWithUserFromSessionPOST === undefined,
-            // },
         ];
     };
 
@@ -190,9 +184,6 @@ export default class Recipe extends RecipeModule {
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         }
-        // else if (id === LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API) {
-        //     return await linkAccountWithUserFromSessionAPI(this.apiImpl, options);
-        // }
         return false;
     };
 

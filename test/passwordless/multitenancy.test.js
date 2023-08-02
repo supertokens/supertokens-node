@@ -109,9 +109,9 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
         assert.deepEqual(user3.user.tenantIds, ["t3"]);
 
         // get user by id
-        let gUser1 = await Passwordless.getUserById({ userId: user1.user.id });
-        let gUser2 = await Passwordless.getUserById({ userId: user2.user.id });
-        let gUser3 = await Passwordless.getUserById({ userId: user3.user.id });
+        let gUser1 = await SuperTokens.getUser({ userId: user1.user.id });
+        let gUser2 = await SuperTokens.getUser({ userId: user2.user.id });
+        let gUser3 = await SuperTokens.getUser({ userId: user3.user.id });
 
         assert.deepEqual(gUser1, user1.user);
         assert.deepEqual(gUser2, user2.user);

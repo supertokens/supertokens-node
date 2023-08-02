@@ -1434,6 +1434,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 "sub",
                 "iss",
                 "tId",
+                "recipeUserId",
             ])
         );
         //invalid session handle when updating the jwt payload

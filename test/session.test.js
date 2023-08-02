@@ -548,7 +548,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response2.session != undefined);
-        assert(Object.keys(response2.session).length === 5);
+        assert.strictEqual(Object.keys(response2.session).length, 6);
 
         let response3 = await SessionFunctions.getSession(
             s.recipeInterfaceImpl.helpers,
@@ -558,7 +558,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response3.session != undefined);
-        assert(Object.keys(response3.session).length === 5);
+        assert.strictEqual(Object.keys(response3.session).length, 6);
     });
 
     //check session verify for with / without anti-csrf present**
@@ -598,7 +598,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         );
 
         assert.notStrictEqual(response2.session, undefined);
-        assert.strictEqual(Object.keys(response2.session).length, 5);
+        assert.strictEqual(Object.keys(response2.session).length, 6);
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         try {
@@ -1094,7 +1094,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response2.session != undefined);
-        assert(Object.keys(response2.session).length === 5);
+        assert.strictEqual(Object.keys(response2.session).length, 6);
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         let response3 = await SessionFunctions.getSession(
@@ -1105,7 +1105,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             true
         );
         assert(response3.session != undefined);
-        assert(Object.keys(response3.session).length === 5);
+        assert.strictEqual(Object.keys(response3.session).length, 6);
     });
 
     it("test that anti-csrf disabled and sameSite none does not throw an error", async function () {

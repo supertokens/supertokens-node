@@ -1420,7 +1420,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.user.isPrimaryUser === false);
@@ -1489,7 +1489,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123", {
                 doNotLink: true,
@@ -1558,7 +1558,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             await AccountLinking.createPrimaryUser(response.user.loginMethods[0].recipeUserId);
@@ -1679,7 +1679,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.user.isPrimaryUser === true);
@@ -1805,7 +1805,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.user.isPrimaryUser === true);
@@ -1939,7 +1939,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.user.isPrimaryUser === false);
@@ -2007,7 +2007,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test@example.com", "password123");
             assert(response.user.isPrimaryUser === false);
@@ -2079,7 +2079,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.user.isPrimaryUser === false);
@@ -2156,7 +2156,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
+            assert(user.isPrimaryUser);
 
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.user.isPrimaryUser === false);

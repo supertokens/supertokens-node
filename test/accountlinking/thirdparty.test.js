@@ -344,11 +344,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
                 "test@example.com",
                 true
             );
-            assert(resp.status === "SIGN_IN_UP_NOT_ALLOWED");
-            assert(
-                resp.reason ===
-                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support."
-            );
+            assert.strictEqual(resp.status, "EMAIL_CHANGE_NOT_ALLOWED_ERROR");
+            assert.strictEqual(resp.reason, "Email already associated with another primary user.");
         });
 
         it("sign up in fails cause changed email already associated with another primary user when the user trying to sign in is linked with another user", async function () {
@@ -419,11 +416,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
                 "test@example.com",
                 true
             );
-            assert(resp.status === "SIGN_IN_UP_NOT_ALLOWED");
-            assert(
-                resp.reason ===
-                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support."
-            );
+            assert.strictEqual(resp.status, "EMAIL_CHANGE_NOT_ALLOWED_ERROR");
+            assert.strictEqual(resp.reason, "Email already associated with another primary user.");
         });
 
         it("sign up in succeeds when changed email belongs to a recipe user even though the new email is already associated with another primary user", async function () {

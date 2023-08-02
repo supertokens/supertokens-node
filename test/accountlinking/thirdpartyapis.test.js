@@ -54,11 +54,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 exchangeAuthCodeForOAuthTokens: () => ({}),
                 getUserInfo: () => {
                     return {
-                        id: "user",
+                        thirdPartyUserId: "user",
                         email: {
                             id: "email@test.com",
                             isVerified: true,
                         },
+                        rawUserInfoFromProvider: {},
                     };
                 },
             }),
@@ -80,11 +81,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 exchangeAuthCodeForOAuthTokens: () => ({}),
                 getUserInfo: () => {
                     return {
-                        id: "user",
+                        thirdPartyUserId: "user",
                         email: {
                             id: "email@test.com",
                             isVerified: false,
                         },
+                        rawUserInfoFromProvider: {},
                     };
                 },
             }),
@@ -158,15 +160,23 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "email@test.com", true)
             ).user;
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            assert(tpUser.isPrimaryUser);
 
+            assert.strictEqual(
+                await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED),
+                undefined
+            );
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -179,8 +189,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
 
             assert(response.body.status === "OK");
-            assert(
-                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) !== undefined
+            assert.notStrictEqual(
+                await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED),
+                undefined
             );
         });
 
@@ -240,15 +251,19 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email2@test.com", true)
             ).user;
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -322,15 +337,19 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
             ).user;
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -404,15 +423,19 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
             ).user;
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -464,7 +487,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailVerified,
-
                                 {
                                     config: {
                                         thirdPartyId: "google",
@@ -504,7 +526,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
             ).user;
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let tpUser2 = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email@test.com", true, {
@@ -518,8 +540,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -624,15 +650,19 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
             ).user;
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -712,7 +742,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             let tpUser = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email2@test.com", true)
             ).user;
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let tpUser2 = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", true)
@@ -724,8 +754,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -815,8 +849,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -923,8 +961,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -1011,8 +1053,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -1106,8 +1152,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -1198,8 +1248,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -1289,18 +1343,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(tpUser2.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(tpUser2.loginMethods[0].recipeUserId);
 
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }

@@ -1085,47 +1085,6 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(userInfo.id === signUpUserInfo.id);
     });
 
-    /*
-     * Test getUserById
-     *        - User does not exist
-     *        - User exists
-     */
-    it("test getUserById when user does not exist", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init({ getTokenTransferMethod: () => "cookie" })],
-        });
-
-        let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
-
-        assert((await STExpress.getUser("randomID")) === undefined);
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(signUpResponse.text).status === "OK");
-        assert(signUpResponse.status === 200);
-
-        let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await STExpress.getUser(signUpUserInfo.id);
-
-        assert(userInfo.emails[0] === signUpUserInfo.emails[0]);
-        assert(userInfo.id === signUpUserInfo.id);
-    });
-
     it("test the handlePostSignIn function", async function () {
         await startST();
 

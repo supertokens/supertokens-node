@@ -496,52 +496,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(successResponse.user.email === userInfo.email);
     });
 
-    describe("getPasswordResetTokenInfo tests", function () {
-        it("getPasswordResetTokenInfo with valid token should return correct info", async function () {
-            await startST();
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [EmailPassword.init()],
-            });
-
-            let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
-
-            let resetPassword = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
-
-            let info = await EmailPassword.getPasswordResetTokenInfo(resetPassword.token);
-
-            assert(info.status === "OK");
-            assert(info.userId === user.user.id);
-            assert(info.email === "test@example.com");
-        });
-
-        it("getPasswordResetTokenInfo returns UNKNOWN_USER_ID_ERROR if the token doesnt exist", async function () {
-            await startST();
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [EmailPassword.init()],
-            });
-
-            let info = await EmailPassword.getPasswordResetTokenInfo("random");
-
-            assert(info.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
-        });
-    });
-
     describe("createPasswordResetToken tests", function () {
         it("createPasswordResetToken with random user ID fails", async function () {
             await startST();
@@ -557,7 +511,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 recipeList: [EmailPassword.init()],
             });
 
-            let resetPassword = await EmailPassword.createResetPasswordToken("random", "test@example.com");
+            let resetPassword = await EmailPassword.createResetPasswordToken("public", "random", "test@example.com");
 
             assert(resetPassword.status === "UNKNOWN_USER_ID_ERROR");
         });
@@ -603,9 +557,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 false
             );
 
-            let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
+            let tokenInfo = await EmailPassword.createResetPasswordToken("public", user.user.id, "test@example.com");
 
-            assert(tokenInfo.status === "OK");
+            assert.strictEqual(tokenInfo.status, "OK");
         });
     });
 
@@ -626,9 +580,13 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
             let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
-            let resetPassword = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
+            let resetPassword = await EmailPassword.createResetPasswordToken(
+                "public",
+                user.user.id,
+                "test@example.com"
+            );
 
-            let info = await EmailPassword.consumePasswordResetToken(resetPassword.token);
+            let info = await EmailPassword.consumePasswordResetToken("public", resetPassword.token);
 
             assert(info.status === "OK");
             assert(info.userId === user.user.id);
@@ -695,9 +653,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 false
             );
 
-            let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
+            let tokenInfo = await EmailPassword.createResetPasswordToken("public", user.user.id, "test@example.com");
 
-            let info = await EmailPassword.consumePasswordResetToken(tokenInfo.token);
+            let info = await EmailPassword.consumePasswordResetToken("public", tokenInfo.token);
 
             assert(info.status === "OK");
             assert(info.userId === user.user.id);

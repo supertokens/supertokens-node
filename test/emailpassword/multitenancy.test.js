@@ -82,9 +82,9 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
         assert(sUser3.user.id === user3.user.id);
 
         // get user by id
-        let gUser1 = await EmailPassword.getUserById(user1.user.id);
-        let gUser2 = await EmailPassword.getUserById(user2.user.id);
-        let gUser3 = await EmailPassword.getUserById(user3.user.id);
+        let gUser1 = await SuperTokens.getUser(user1.user.id);
+        let gUser2 = await SuperTokens.getUser(user2.user.id);
+        let gUser3 = await SuperTokens.getUser(user3.user.id);
 
         assert.deepEqual(gUser1, user1.user);
         assert.deepEqual(gUser2, user2.user);

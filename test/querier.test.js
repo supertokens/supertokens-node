@@ -314,7 +314,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         try {
             // we query the core now
-            await Session.getAllSessionHandlesForUser("user1", true, {
+            await Session.getAllSessionHandlesForUser("user1", true, undefined, {
                 doNotMock: true,
             });
             fail();

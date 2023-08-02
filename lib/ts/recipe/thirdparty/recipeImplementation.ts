@@ -107,7 +107,55 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 // function updated the verification status) and can return that
                 response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
             }
-            return response;
+
+            if (!response.createdNewUser) {
+                // Unlike in the sign up scenario, we do not do account linking here
+                // cause we do not want sign in to change the potentially user ID of a user
+                // due to linking when this function is called by the dev in their API.
+                // If we did account linking
+                // then we would have to ask the dev to also change the session
+                // in such API calls.
+                // In the case of sign up, since we are creating a new user, it's fine
+                // to link there since there is no user id change really from the dev's
+                // point of view who is calling the sign up recipe function.
+                return response;
+            }
+
+            let userId = response.user.id;
+
+            // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
+            // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
+            let recipeUserId: RecipeUserId | undefined = undefined;
+            for (let i = 0; i < response.user.loginMethods.length; i++) {
+                if (
+                    response.user.loginMethods[i].recipeId === "thirdparty" &&
+                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
+                        id: thirdPartyId,
+                        userId: thirdPartyUserId,
+                    })
+                ) {
+                    recipeUserId = response.user.loginMethods[i].recipeUserId;
+                    break;
+                }
+            }
+
+            userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                tenantId,
+                recipeUserId: recipeUserId!,
+                checkAccountsToLinkTableAsWell: true,
+                userContext,
+            });
+
+            let updatedUser = await getUser(userId, userContext);
+
+            if (updatedUser === undefined) {
+                throw new Error("Should never come here.");
+            }
+            return {
+                status: "OK",
+                createdNewUser: response.createdNewUser,
+                user: updatedUser,
+            };
         },
 
         signInUp: async function (
@@ -158,55 +206,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             if (response.status === "SIGN_IN_UP_NOT_ALLOWED") {
                 return response;
             }
-
-            if (!response.createdNewUser) {
-                // Unlike in the sign up scenario, we do not do account linking here
-                // cause we do not want sign in to change the potentially user ID of a user
-                // due to linking when this function is called by the dev in their API.
-                // If we did account linking
-                // then we would have to ask the dev to also change the session
-                // in such API calls.
-                // In the case of sign up, since we are creating a new user, it's fine
-                // to link there since there is no user id change really from the dev's
-                // point of view who is calling the sign up recipe function.
-                return response;
-            }
-
-            let userId = response.user.id;
-
-            // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
-            // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
-            let recipeUserId: RecipeUserId | undefined = undefined;
-            for (let i = 0; i < response.user.loginMethods.length; i++) {
-                if (
-                    response.user.loginMethods[i].recipeId === "thirdparty" &&
-                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
-                        id: thirdPartyId,
-                        userId: thirdPartyUserId,
-                    })
-                ) {
-                    recipeUserId = response.user.loginMethods[i].recipeUserId;
-                    break;
-                }
-            }
-
-            userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                tenantId,
-                recipeUserId: recipeUserId!,
-                checkAccountsToLinkTableAsWell: true,
-                userContext,
-            });
-
-            let updatedUser = await getUser(userId, userContext);
-
-            if (updatedUser === undefined) {
-                throw new Error("Should never come here.");
-            }
-            return {
-                status: "OK",
-                createdNewUser: response.createdNewUser,
-                user: updatedUser,
-            };
+            return response;
         },
 
         getProvider: async function ({ thirdPartyId, tenantId, clientType, userContext }) {

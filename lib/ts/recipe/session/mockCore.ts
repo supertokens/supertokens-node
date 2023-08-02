@@ -114,6 +114,9 @@ export async function mockGetSessionInformation(sessionHandle: string, querier: 
             // there is no session handle in the mocked map
             response.recipeUserId = response.userId;
         }
+        if (response.userDataInJWT.recipeUserId !== undefined) {
+            delete response.userDataInJWT.recipeUserId;
+        }
         return response;
     } else {
         return response;

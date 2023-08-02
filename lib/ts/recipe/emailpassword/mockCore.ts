@@ -107,6 +107,7 @@ export async function mockSignIn(input: {
 }
 
 export async function mockCreateRecipeUser(input: {
+    tenantId?: string;
     email: string;
     password: string;
     userContext: any;
@@ -117,7 +118,7 @@ export async function mockCreateRecipeUser(input: {
       }
     | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
 > {
-    let response = await fetch(`http://localhost:8080/recipe/signup`, {
+    let response = await fetch(`http://localhost:8080/${input.tenantId ?? "public"}/recipe/signup`, {
         method: "post",
         headers: {
             rid: "emailpassword",

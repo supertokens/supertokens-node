@@ -207,7 +207,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                        onTokenTheftDetected: async (sessionHandle, userId, recipeUserId, request, response) => {
                             response.sendJSONResponse({
                                 success: true,
                             });
@@ -1311,7 +1311,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1336,7 +1336,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
@@ -1379,7 +1379,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 11);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1403,7 +1403,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
@@ -1434,6 +1434,7 @@ describe(`Koa: ${printPath("[test/framework/koa.withTenantId.test.js]")}`, funct
                 "sub",
                 "iss",
                 "tId",
+                "recipeUserId",
             ])
         );
         //invalid session handle when updating the jwt payload

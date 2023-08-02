@@ -400,7 +400,7 @@ export async function mockGetUsers(
                     email: user.email,
                     phoneNumber: user.phoneNumber,
                     thirdParty: user.thirdParty,
-                    tenantIds: ["public"], // TODO
+                    tenantIds: user.tenantIds,
                 },
             ],
         };
@@ -757,7 +757,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                     timeJoined: user.timeJoined,
                     verified,
                     email: user.email,
-                    tenantIds: ["public"], // TODO
+                    tenantIds: user.tenantIds,
                 });
                 finalResult.emails.push(user.email);
                 finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
@@ -782,7 +782,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                     verified,
                     email: user.email,
                     thirdParty: user.thirdParty,
-                    tenantIds: ["public"], // TODO
+                    tenantIds: user.tenantIds,
                 });
                 finalResult.emails.push(user.email);
                 finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
@@ -809,7 +809,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                     verified,
                     email: user.email,
                     phoneNumber: user.phoneNumber,
-                    tenantIds: ["public"], // TODO
+                    tenantIds: user.tenantIds,
                 });
                 if (user.email !== undefined) {
                     finalResult.emails.push(user.email);

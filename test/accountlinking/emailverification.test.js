@@ -610,7 +610,7 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            assert(tpUser.user.isPrimaryUser);
             let epUser = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
@@ -684,7 +684,7 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 "test@example.com",
                 true
             );
-            await AccountLinking.createPrimaryUser(tpUser.user.loginMethods[0].recipeUserId);
+            assert(tpUser.user.isPrimaryUser);
 
             let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);

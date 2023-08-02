@@ -65,6 +65,7 @@ export default function getRecipeInterface(
         },
 
         createNewRecipeUser: async function (input: {
+            tenantId: string;
             email: string;
             password: string;
             userContext: any;
@@ -76,10 +77,15 @@ export default function getRecipeInterface(
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             if (process.env.MOCK !== "true") {
-                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
-                    email: input.email,
-                    password: input.password,
-                });
+                return await querier.sendPostRequest(
+                    new NormalisedURLPath(
+                        `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/signup`
+                    ),
+                    {
+                        email: input.email,
+                        password: input.password,
+                    }
+                );
             } else {
                 return mockCreateRecipeUser(input);
             }

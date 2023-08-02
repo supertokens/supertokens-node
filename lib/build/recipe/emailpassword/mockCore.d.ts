@@ -40,6 +40,7 @@ export declare function mockSignIn(input: {
       }
 >;
 export declare function mockCreateRecipeUser(input: {
+    tenantId?: string;
     email: string;
     password: string;
     userContext: any;
