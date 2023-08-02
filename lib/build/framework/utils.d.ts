@@ -9,16 +9,14 @@ export declare function getCookieValueFromHeaders(headers: any, key: string): st
 export declare function getCookieValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
 export declare function getHeaderValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
 export declare function normalizeHeaderValue(value: string | string[] | undefined): string | undefined;
+export declare function parseJSONBodyFromRequest(req: IncomingMessage): Promise<any>;
+export declare function parseURLEncodedFormData(req: IncomingMessage): Promise<any>;
 export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: (Request | NextApiRequest) & {
-        __supertokensFromNextJS?: true;
-    }
+    request: Request | NextApiRequest
 ): Promise<void>;
 export declare function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: (Request | NextApiRequest) & {
-        __supertokensFromNextJS?: true;
-    }
+    request: Request | NextApiRequest
 ): Promise<void>;
 export declare function setHeaderForExpressLikeResponse(
     res: Response,
@@ -47,7 +45,7 @@ export declare function setCookieForServerResponse(
     expires: number,
     path: string,
     sameSite: "strict" | "lax" | "none"
-): ServerResponse<IncomingMessage>;
+): ServerResponse;
 export declare function getCookieValueToSetInHeader(
     prev: string | string[] | undefined,
     val: string | string[],

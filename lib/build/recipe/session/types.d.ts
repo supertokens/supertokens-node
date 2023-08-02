@@ -24,6 +24,7 @@ export declare type CreateOrRefreshAPIResponse = {
         userId: string;
         recipeUserId: RecipeUserId;
         userDataInJWT: any;
+        tenantId: string;
     };
     accessToken: TokenInfo;
     refreshToken: TokenInfo;
@@ -166,9 +167,11 @@ export declare type RecipeInterface = {
         accessTokenPayload?: any;
         sessionDataInDatabase?: any;
         disableAntiCsrf?: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
+        tenantId: string;
         userId: string;
         recipeUserId: RecipeUserId;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
@@ -197,11 +200,15 @@ export declare type RecipeInterface = {
     revokeAllSessionsForUser(input: {
         userId: string;
         revokeSessionsForLinkedAccounts: boolean;
+        tenantId: string;
+        revokeAcrossAllTenants?: boolean;
         userContext: any;
     }): Promise<string[]>;
     getAllSessionHandlesForUser(input: {
         userId: string;
         fetchSessionsForAllLinkedAccounts: boolean;
+        tenantId: string;
+        fetchAcrossAllTenants?: boolean;
         userContext: any;
     }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
@@ -231,6 +238,7 @@ export declare type RecipeInterface = {
                   userId: string;
                   recipeUserId: RecipeUserId;
                   userDataInJWT: any;
+                  tenantId: string;
               };
               accessToken?: {
                   token: string;
@@ -278,6 +286,7 @@ export interface SessionContainerInterface {
     updateSessionDataInDatabase(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
     getRecipeUserId(userContext?: any): RecipeUserId;
+    getTenantId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAllSessionTokensDangerously(): {
@@ -339,6 +348,7 @@ export declare type SessionInformation = {
     expiry: number;
     customClaimsInAccessTokenPayload: any;
     timeCreated: number;
+    tenantId: string;
 };
 export declare type ClaimValidationResult =
     | {
@@ -381,6 +391,7 @@ export declare abstract class SessionClaim<T> {
     abstract fetchValue(
         userId: string,
         recipeUserId: RecipeUserId,
+        tenantId: string,
         userContext: any
     ): Promise<T | undefined> | T | undefined;
     /**
@@ -407,7 +418,7 @@ export declare abstract class SessionClaim<T> {
      * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
-    build(userId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<JSONObject>;
+    build(userId: string, recipeUserId: RecipeUserId, tenantId: string, userContext?: any): Promise<JSONObject>;
 }
 export declare type ReqResInfo = {
     res: BaseResponse;

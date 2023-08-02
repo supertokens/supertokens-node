@@ -85,9 +85,7 @@ export default class Recipe extends RecipeModule {
          */
         this.emailDelivery =
             ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(
-                      this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
-                  )
+                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig(this.isInServerlessEnv))
                 : ingredients.emailDelivery;
     }
 
@@ -153,21 +151,17 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
-            // {
-            //     method: "post",
-            //     pathWithoutApiBasePath: new NormalisedURLPath(LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API),
-            //     id: LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API,
-            //     disabled: this.apiImpl.linkAccountWithUserFromSessionPOST === undefined,
-            // },
         ];
     };
 
     handleAPIRequest = async (
         id: string,
+        tenantId: string,
         req: BaseRequest,
         res: BaseResponse,
         _path: NormalisedURLPath,
-        _method: HTTPMethod
+        _method: HTTPMethod,
+        userContext: any
     ): Promise<boolean> => {
         let options = {
             config: this.config,
@@ -180,19 +174,16 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
         if (id === SIGN_UP_API) {
-            return await signUpAPI(this.apiImpl, options);
+            return await signUpAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this.apiImpl, options);
+            return await signInAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
-            return await generatePasswordResetTokenAPI(this.apiImpl, options);
+            return await generatePasswordResetTokenAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === PASSWORD_RESET_API) {
-            return await passwordResetAPI(this.apiImpl, options);
+            return await passwordResetAPI(this.apiImpl, tenantId, options, userContext);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-            return await emailExistsAPI(this.apiImpl, options);
+            return await emailExistsAPI(this.apiImpl, tenantId, options, userContext);
         }
-        // else if (id === LINK_ACCOUNT_TO_EXISTING_ACCOUNT_API) {
-        //     return await linkAccountWithUserFromSessionAPI(this.apiImpl, options);
-        // }
         return false;
     };
 

@@ -13,7 +13,6 @@ export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     getEmailDeliveryConfig: (
-        recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -27,7 +26,7 @@ export declare type TypeNormalisedInput = {
 };
 export declare type TypeInputFormField = {
     id: string;
-    validate?: (value: any) => Promise<string | undefined>;
+    validate?: (value: any, tenantId: string) => Promise<string | undefined>;
     optional?: boolean;
 };
 export declare type TypeFormField = {
@@ -39,7 +38,7 @@ export declare type TypeInputSignUp = {
 };
 export declare type NormalisedFormField = {
     id: string;
-    validate: (value: any) => Promise<string | undefined>;
+    validate: (value: any, tenantId: string) => Promise<string | undefined>;
     optional: boolean;
 };
 export declare type TypeNormalisedInputSignUp = {
@@ -67,6 +66,7 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -80,6 +80,7 @@ export declare type RecipeInterface = {
     createNewRecipeUser(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -93,6 +94,7 @@ export declare type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -111,6 +113,7 @@ export declare type RecipeInterface = {
     createResetPasswordToken(input: {
         userId: string;
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -123,6 +126,8 @@ export declare type RecipeInterface = {
     >;
     consumePasswordResetToken(input: {
         token: string;
+        newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -140,6 +145,7 @@ export declare type RecipeInterface = {
         password?: string;
         userContext: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy: string;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -169,6 +175,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -185,6 +192,7 @@ export declare type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -205,6 +213,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -229,6 +238,7 @@ export declare type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -249,6 +259,7 @@ export declare type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -271,5 +282,6 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
         email: string;
     };
     passwordResetLink: string;
+    tenantId: string;
 };
 export declare type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;

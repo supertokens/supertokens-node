@@ -44,7 +44,7 @@ addCrossFrameworkTests(
                             path: "/create",
                             method: "post",
                             handler: async (req, res, next) => {
-                                await Session.createNewSession(req, res, "id1", {}, {});
+                                await Session.createNewSession(req, res, "public", "id1", {}, {});
                                 res.setStatusCode(200);
                                 res.sendJSONResponse("");
                                 return res.response;
@@ -125,7 +125,7 @@ addCrossFrameworkTests(
                             path: "/create-throw",
                             method: "post",
                             handler: async (req, res, next) => {
-                                await Session.createNewSession(req, res, "id1", {}, {});
+                                await Session.createNewSession(req, res, "public", "id1", {}, {});
                                 next(
                                     new Session.Error({
                                         message: "unauthorised",

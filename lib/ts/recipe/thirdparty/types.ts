@@ -19,42 +19,98 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
 
-export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
-
-export type TypeProviderGetResponse = {
-    accessTokenAPI: {
-        url: string;
-        params: { [key: string]: string }; // Will be merged with our object
-    };
-    authorisationRedirect: {
-        url: string;
-        params: { [key: string]: string | ((request: any) => string) };
-    };
-    getProfileInfo: (authCodeResponse: any, userContext: any) => Promise<UserInfo>;
-    getClientId: (userContext: any) => string;
-    getRedirectURI?: (userContext: any) => string; // if undefined, the redirect_uri is set on the frontend.
+export type UserInfo = {
+    thirdPartyUserId: string;
+    email?: { id: string; isVerified: boolean };
+    rawUserInfoFromProvider: { fromIdTokenPayload?: { [key: string]: any }; fromUserInfoAPI?: { [key: string]: any } };
 };
+
+export type UserInfoMap = {
+    fromIdTokenPayload?: {
+        userId?: string;
+        email?: string;
+        emailVerified?: string;
+    };
+    fromUserInfoAPI?: {
+        userId?: string;
+        email?: string;
+        emailVerified?: string;
+    };
+};
+
+export type ProviderClientConfig = {
+    clientType?: string;
+    clientId: string;
+    clientSecret?: string;
+    scope?: string[];
+    forcePKCE?: boolean;
+    additionalConfig?: { [key: string]: any };
+};
+
+type CommonProviderConfig = {
+    thirdPartyId: string;
+    name?: string;
+
+    authorizationEndpoint?: string;
+    authorizationEndpointQueryParams?: { [key: string]: string | null };
+    tokenEndpoint?: string;
+    tokenEndpointBodyParams?: { [key: string]: string };
+    userInfoEndpoint?: string;
+    userInfoEndpointQueryParams?: { [key: string]: string | null };
+    userInfoEndpointHeaders?: { [key: string]: string | null };
+    jwksURI?: string;
+    oidcDiscoveryEndpoint?: string;
+    userInfoMap?: UserInfoMap;
+    validateIdTokenPayload?: (input: {
+        idTokenPayload: { [key: string]: any };
+        clientConfig: ProviderConfigForClientType;
+        userContext: any;
+    }) => Promise<void>;
+    requireEmail?: boolean;
+    generateFakeEmail?: (input: { thirdPartyUserId: string; tenantId: string; userContext: any }) => Promise<string>;
+};
+
+export type ProviderConfigForClientType = ProviderClientConfig & CommonProviderConfig;
 
 export type TypeProvider = {
     id: string;
-    get: (
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined,
-        userContext: any
-    ) => TypeProviderGetResponse;
-    isDefault?: boolean; // if not present, we treat it as false
+    config: ProviderConfigForClientType;
+
+    getConfigForClientType: (input: { clientType?: string; userContext: any }) => Promise<ProviderConfigForClientType>;
+    getAuthorisationRedirectURL: (input: {
+        redirectURIOnProviderDashboard: string;
+        userContext: any;
+    }) => Promise<{ urlWithQueryParams: string; pkceCodeVerifier?: string }>;
+    exchangeAuthCodeForOAuthTokens: (input: {
+        redirectURIInfo: {
+            redirectURIOnProviderDashboard: string;
+            redirectURIQueryParams: any;
+            pkceCodeVerifier?: string;
+        };
+        userContext: any;
+    }) => Promise<any>;
+    getUserInfo: (input: { oAuthTokens: any; userContext: any }) => Promise<UserInfo>;
+};
+
+export type ProviderConfig = CommonProviderConfig & {
+    clients?: ProviderClientConfig[];
+};
+
+export type ProviderInput = {
+    config: ProviderConfig;
+    override?: (originalImplementation: TypeProvider) => TypeProvider;
 };
 
 export type TypeInputSignInAndUp = {
-    providers: TypeProvider[];
+    providers?: ProviderInput[];
 };
 
 export type TypeNormalisedInputSignInAndUp = {
-    providers: TypeProvider[];
+    providers: ProviderInput[];
 };
 
 export type TypeInput = {
-    signInAndUpFeature: TypeInputSignInAndUp;
+    signInAndUpFeature?: TypeInputSignInAndUp;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -76,30 +132,52 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
+    getProvider(input: {
+        thirdPartyId: string;
+        tenantId: string;
+        clientType?: string;
+        userContext: any;
+    }): Promise<TypeProvider | undefined>;
+
     signInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        oAuthTokens: { [key: string]: any };
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload?: { [key: string]: any };
+            fromUserInfoAPI?: { [key: string]: any };
+        };
+        tenantId: string;
         userContext: any;
     }): Promise<
-        | { status: "OK"; createdNewUser: boolean; user: User }
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
 
-    createNewOrUpdateEmailOfRecipeUser(input: {
+    manuallyCreateOrUpdateUser(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: string;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | { status: "OK"; createdNewUser: boolean; user: User }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;
@@ -110,7 +188,7 @@ export type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    providers: TypeProvider[];
+    providers: ProviderInput[];
     req: BaseRequest;
     res: BaseResponse;
     appInfo: NormalisedAppinfo;
@@ -121,33 +199,50 @@ export type APIInterface = {
         | undefined
         | ((input: {
               provider: TypeProvider;
+              redirectURIOnProviderDashboard: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
               | {
                     status: "OK";
-                    url: string;
+                    urlWithQueryParams: string;
+                    pkceCodeVerifier?: string;
                 }
               | GeneralErrorResponse
           >);
 
     signInUpPOST:
         | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<
+        | ((
+              input: {
+                  provider: TypeProvider;
+                  tenantId: string;
+                  options: APIOptions;
+                  userContext: any;
+              } & (
+                  | {
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: string;
+                            redirectURIQueryParams: any;
+                            pkceCodeVerifier?: string;
+                        };
+                    }
+                  | {
+                        oAuthTokens: { [key: string]: any };
+                    }
+              )
+          ) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
-                    authCodeResponse: any;
+                    oAuthTokens: { [key: string]: any };
+                    rawUserInfoFromProvider: {
+                        fromIdTokenPayload?: { [key: string]: any };
+                        fromUserInfoAPI?: { [key: string]: any };
+                    };
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
               | {
@@ -160,52 +255,11 @@ export type APIInterface = {
               | GeneralErrorResponse
           >);
 
-    // This is commented out because we have decided to not add this feature for now,
-    // and add it at a later iteration in the project.
-    // linkAccountWithUserFromSessionPOST:
-    //     | undefined
-    //     | ((input: {
-    //           provider: TypeProvider;
-    //           code: string;
-    //           redirectURI: string;
-    //           authCodeResponse?: any;
-    //           clientId?: string;
-    //           fromProvider:
-    //               | {
-    //                     userInfo: UserInfo;
-    //                     authCodeResponse: any;
-    //                 }
-    //               | undefined;
-    //           session: SessionContainerInterface;
-    //           options: APIOptions;
-    //           userContext: any;
-    //       }) => Promise<
-    //           | {
-    //                 status: "OK";
-    //                 wereAccountsAlreadyLinked: boolean;
-    //                 authCodeResponse: any;
-    //             }
-    //           | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-    //           | {
-    //                 status: "SIGN_IN_NOT_ALLOWED";
-    //                 reason: string;
-    //             }
-    //           | {
-    //                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-    //                 description: string;
-    //             }
-    //           | {
-    //                 status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-    //                 description: string;
-    //                 recipeUserId: string;
-    //                 primaryUserId: string;
-    //                 email: string;
-    //                 authCodeResponse: any;
-    //             }
-    //           | GeneralErrorResponse
-    //       >);
-
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
+        | ((input: {
+              formPostInfoFromProvider: { [key: string]: any };
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<void>);
 };

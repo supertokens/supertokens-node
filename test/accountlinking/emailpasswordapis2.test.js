@@ -76,10 +76,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -103,8 +110,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -160,10 +173,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -187,7 +207,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -243,10 +263,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -270,8 +297,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -327,10 +360,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -354,8 +394,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -379,7 +425,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user, account linking enabled, and email verification required, should return OK, and should send an email", async function () {
@@ -414,10 +460,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -441,8 +494,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", true);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                true
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -466,7 +525,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user, account linking disabled, should return OK, but should not send an email", async function () {
@@ -498,10 +557,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -512,8 +578,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -571,10 +643,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -593,11 +672,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
-            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -622,7 +707,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, where both accounts are linked, should send email if account linking is disabled", async function () {
@@ -656,10 +741,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -677,12 +769,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
-            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -707,7 +805,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user existing, primary user is not verified, and email verification is required, should not send email", async function () {
@@ -741,10 +839,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -763,9 +868,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -860,10 +971,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -882,8 +1000,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -978,10 +1102,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1000,8 +1131,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1026,7 +1163,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test2@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with recipe user existing, and no email password user existing, primary user is not verified, and email verification is not required, should not send email - cause no primary user exists", async function () {
@@ -1060,10 +1197,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1087,10 +1231,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false, {
-                doNotLink: true,
-            });
-            assert(tpUser.user.isPrimaryUser === false);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false,
+                {
+                    doNotLink: true,
+                }
+            );
+            assert(tpUser.isPrimaryUser === false);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1151,10 +1302,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1178,10 +1336,16 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1210,7 +1374,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
             assert(sendEmailToRecipeUserId.getAsString() === epUser.user.id);
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, account linking enabled, but email verification not required should send email, for primary user", async function () {
@@ -1244,10 +1408,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1271,10 +1442,16 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1302,7 +1479,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, account linking enabled, email verification required should send email, for primary user", async function () {
@@ -1336,10 +1513,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1363,11 +1547,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1395,7 +1585,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and email is verified in one of those methods, and email password user existing, account linking enabled, email verification required should send email, for primary user", async function () {
@@ -1432,10 +1622,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1459,16 +1656,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", true);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                true
+            );
+            assert(tpUser.isPrimaryUser);
 
-            let epUser2 = await EmailPassword.signUp("test2@example.com", "password1234", {
+            let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser2.user.isPrimaryUser === false);
-            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            await AccountLinking.linkAccounts("public", epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1496,7 +1699,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and email right is not verified in the login methods, and email password user existing, account linking enabled, email verification required should say not allowed", async function () {
@@ -1533,10 +1736,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1560,21 +1770,28 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser2 = await EmailPassword.signUp("test2@example.com", "password1234", {
+            let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser2.user.isPrimaryUser === false);
-            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            await AccountLinking.linkAccounts("public", epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
             let token = await EmailVerification.createEmailVerificationToken(
+                "public",
                 supertokens.convertToRecipeUserId(epUser2.user.id)
             );
-            await EmailVerification.verifyEmailUsingToken(token.token);
+            await EmailVerification.verifyEmailUsingToken("public", token.token);
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1643,10 +1860,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1670,15 +1894,27 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let tpUser2 = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let tpUser2 = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
             assert(tpUser2.user.isPrimaryUser === false);
-            await AccountLinking.linkAccounts(supertokens.convertToRecipeUserId(tpUser2.user.id), tpUser.user.id);
+            await AccountLinking.linkAccounts("public", supertokens.convertToRecipeUserId(tpUser2.user.id), tpUser.id);
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
             assert(epUser.user.isPrimaryUser === false);
@@ -1705,7 +1941,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
             assert(sendEmailToUserEmail === "test@example.com");
         });
     });
@@ -1759,10 +1995,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1786,7 +2029,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1892,10 +2135,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1919,7 +2169,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2030,10 +2280,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -2057,8 +2314,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2082,7 +2345,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -2113,9 +2376,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(emailPostPasswordReset === "test@example.com");
             assert(userPostPasswordReset.isPrimaryUser);
             assert(userPostPasswordReset.loginMethods.length === 2);
-            assert(userPostPasswordReset.id === tpUser.user.id);
+            assert(userPostPasswordReset.id === tpUser.id);
             for (let i = 0; i < userPostPasswordReset.loginMethods.length; i++) {
-                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.user.id) {
+                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                     assert(userPostPasswordReset.loginMethods[i].verified);
                 } else {
@@ -2182,10 +2445,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -2209,8 +2479,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2234,7 +2510,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -2265,7 +2541,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(emailPostPasswordReset === "test@example.com");
             assert(!userPostPasswordReset.isPrimaryUser);
             assert(userPostPasswordReset.loginMethods.length === 1);
-            assert(userPostPasswordReset.id !== tpUser.user.id);
+            assert(userPostPasswordReset.id !== tpUser.id);
             for (let i = 0; i < userPostPasswordReset.loginMethods.length; i++) {
                 assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                 assert(userPostPasswordReset.loginMethods[i].verified);
@@ -2324,10 +2600,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -2351,8 +2634,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2376,9 +2665,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234", {
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
 
@@ -2465,10 +2754,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -2492,8 +2788,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", false);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2517,11 +2819,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
             assert(epUser.user.isPrimaryUser === true);
-            assert(epUser.user.id === tpUser.user.id);
+            assert(epUser.user.id === tpUser.id);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -2602,10 +2904,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -2629,8 +2938,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test@example.com", true);
-            assert(tpUser.user.isPrimaryUser === true);
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                true
+            );
+            assert(tpUser.isPrimaryUser);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2654,7 +2969,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             );
             assert(res !== undefined);
             assert(res.body.status === "OK");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -2685,9 +3000,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(emailPostPasswordReset === "test@example.com");
             assert(userPostPasswordReset.isPrimaryUser);
             assert(userPostPasswordReset.loginMethods.length === 2);
-            assert(userPostPasswordReset.id === tpUser.user.id);
+            assert(userPostPasswordReset.id === tpUser.id);
             for (let i = 0; i < userPostPasswordReset.loginMethods.length; i++) {
-                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.user.id) {
+                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                 }
                 assert(userPostPasswordReset.loginMethods[i].verified);
@@ -2745,10 +3060,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -2767,12 +3089,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
-            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2797,7 +3125,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -2828,9 +3156,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(emailPostPasswordReset === "test@example.com");
             assert(userPostPasswordReset.isPrimaryUser);
             assert(userPostPasswordReset.loginMethods.length === 2);
-            assert(userPostPasswordReset.id === tpUser.user.id);
+            assert(userPostPasswordReset.id === tpUser.id);
             for (let i = 0; i < userPostPasswordReset.loginMethods.length; i++) {
-                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.user.id) {
+                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                     assert(userPostPasswordReset.loginMethods[i].email === "test@example.com");
                 } else {
@@ -2839,9 +3167,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 assert(!userPostPasswordReset.loginMethods[i].verified);
             }
 
-            let signInResp = await EmailPassword.signIn("test@example.com", "validpass123");
+            let signInResp = await EmailPassword.signIn("public", "test@example.com", "validpass123");
             assert(signInResp.status === "OK");
-            assert(signInResp.user.id === tpUser.user.id);
+            assert(signInResp.user.id === tpUser.id);
         });
 
         it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked, should change existing email password account's password if account linking is disabled, and NOT mark both as verified", async function () {
@@ -2894,10 +3222,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -2915,12 +3250,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
-            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -2945,7 +3286,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -2976,9 +3317,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(emailPostPasswordReset === "test@example.com");
             assert(userPostPasswordReset.isPrimaryUser);
             assert(userPostPasswordReset.loginMethods.length === 2);
-            assert(userPostPasswordReset.id === tpUser.user.id);
+            assert(userPostPasswordReset.id === tpUser.id);
             for (let i = 0; i < userPostPasswordReset.loginMethods.length; i++) {
-                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.user.id) {
+                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                     assert(userPostPasswordReset.loginMethods[i].email === "test@example.com");
                 } else {
@@ -2987,9 +3328,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 assert(!userPostPasswordReset.loginMethods[i].verified);
             }
 
-            let signInResp = await EmailPassword.signIn("test@example.com", "validpass123");
+            let signInResp = await EmailPassword.signIn("public", "test@example.com", "validpass123");
             assert(signInResp.status === "OK");
-            assert(signInResp.user.id === tpUser.user.id);
+            assert(signInResp.user.id === tpUser.id);
         });
 
         it("calling passwordResetPOST with primary user existing, and multiple email password user existing, where all accounts are linked, should change the right email password account's password, and NOT mark both as verified", async function () {
@@ -3042,10 +3383,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -3064,15 +3412,21 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
-            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
-            let epUser2 = await EmailPassword.signUp("test2@example.com", "password1234");
-            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234");
+            await AccountLinking.linkAccounts("public", epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let pUser = await supertokens.getUser(epUser.user.id);
             assert(pUser.loginMethods.length === 3);
@@ -3100,7 +3454,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
             let res2 = await new Promise((resolve) =>
                 request(app)
@@ -3131,9 +3485,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(emailPostPasswordReset === "test@example.com");
             assert(userPostPasswordReset.isPrimaryUser);
             assert(userPostPasswordReset.loginMethods.length === 3);
-            assert(userPostPasswordReset.id === tpUser.user.id);
+            assert(userPostPasswordReset.id === tpUser.id);
             for (let i = 0; i < userPostPasswordReset.loginMethods.length; i++) {
-                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.user.id) {
+                if (userPostPasswordReset.loginMethods[i].recipeUserId.getAsString() !== tpUser.id) {
                     assert(userPostPasswordReset.loginMethods[i].recipeId === "emailpassword");
                     assert(
                         userPostPasswordReset.loginMethods[i].email === "test@example.com" ||
@@ -3146,14 +3500,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             }
 
             {
-                let signInResp = await EmailPassword.signIn("test@example.com", "validpass123");
+                let signInResp = await EmailPassword.signIn("public", "test@example.com", "validpass123");
                 assert(signInResp.status === "OK");
-                assert(signInResp.user.id === tpUser.user.id);
+                assert(signInResp.user.id === tpUser.id);
             }
             {
-                let signInResp = await EmailPassword.signIn("test2@example.com", "password1234");
+                let signInResp = await EmailPassword.signIn("public", "test2@example.com", "password1234");
                 assert(signInResp.status === "OK");
-                assert(signInResp.user.id === tpUser.user.id);
+                assert(signInResp.user.id === tpUser.id);
             }
         });
 
@@ -3207,10 +3561,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -3229,12 +3590,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             app.use(middleware());
             app.use(errorHandler());
 
-            let tpUser = await ThirdParty.signInUp("google", "abc", "test2@example.com", false);
-            assert(tpUser.user.isPrimaryUser === false);
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test2@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser === false);
+            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
-            let epUser = await EmailPassword.signUp("test@example.com", "password1234");
-            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -3259,11 +3626,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res !== undefined);
             assert(res.body.status === "OK");
             assert(sendEmailToUserEmail === "test@example.com");
-            assert(sendEmailToUserId === tpUser.user.id);
+            assert(sendEmailToUserId === tpUser.id);
 
             {
                 await AccountLinking.unlinkAccount(epUser.user.loginMethods[0].recipeUserId);
-                let user = await supertokens.getUser(tpUser.user.id);
+                let user = await supertokens.getUser(tpUser.id);
                 assert(user !== undefined);
                 assert(user.loginMethods.length === 1);
             }
@@ -3290,7 +3657,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     })
             );
 
-            let user = await supertokens.getUser(tpUser.user.id);
+            let user = await supertokens.getUser(tpUser.id);
             assert(user !== undefined);
             assert(user.loginMethods.length === 1);
             assert(res2 !== undefined);
@@ -3298,7 +3665,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 status: "OK",
             });
 
-            let signInResp = await EmailPassword.signIn("test@example.com", "validpass123");
+            let signInResp = await EmailPassword.signIn("public", "test@example.com", "validpass123");
             assert(signInResp.status === "OK");
             assert(signInResp.user.id === epUser.user.id);
             assert(signInResp.user.loginMethods.length === 1);

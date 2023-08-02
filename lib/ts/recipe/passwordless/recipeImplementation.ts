@@ -17,11 +17,12 @@ import EmailVerification from "../emailverification/recipe";
 import { User } from "../../types";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
-    function copyAndRemoveUserContext(input: any): any {
+    function copyAndRemoveUserContextAndTenantId(input: any): any {
         let result = {
             ...input,
         };
         delete result.userContext;
+        delete result.tenantId;
         return result;
     }
 
@@ -31,8 +32,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/signinup/code/consume"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockConsumeCode(input);
@@ -49,6 +50,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     if (emailVerificationInstance) {
                         const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                             {
+                                tenantId: input.tenantId,
                                 recipeUserId: loginMethod.recipeUserId,
                                 email: loginMethod.email,
                                 userContext: input.userContext,
@@ -57,6 +59,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
                         if (tokenResponse.status === "OK") {
                             await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                                tenantId: input.tenantId,
                                 token: tokenResponse.token,
                                 attemptAccountLinking: false,
                                 userContext: input.userContext,
@@ -72,8 +75,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/signinup/code"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockCreateCode(input);
@@ -85,8 +88,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/signinup/code"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockCreateNewCodeForDevice(input);
@@ -98,8 +101,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendGetRequest(
-                    new NormalisedURLPath("/recipe/signinup/codes"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockListCodesByDeviceId(input);
@@ -111,8 +114,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendGetRequest(
-                    new NormalisedURLPath("/recipe/signinup/codes"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockListCodesByEmail(input);
@@ -124,8 +127,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendGetRequest(
-                    new NormalisedURLPath("/recipe/signinup/codes"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockListCodesByPhoneNumber(input);
@@ -137,8 +140,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendGetRequest(
-                    new NormalisedURLPath("/recipe/signinup/codes"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockListCodesByPreAuthSessionId(input);
@@ -148,8 +151,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         revokeAllCodes: async function (input) {
             if (process.env.MOCK !== "true") {
                 await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/signinup/codes/remove"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/codes/remove`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 await mockRevokeAllCodes(input);
@@ -161,8 +164,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         revokeCode: async function (input) {
             if (process.env.MOCK !== "true") {
                 await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/signinup/code/remove"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`${input.tenantId}/recipe/signinup/code/remove`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 await mockRevokeCode(input);
@@ -174,8 +177,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             if (process.env.MOCK !== "true") {
                 response = await querier.sendPutRequest(
-                    new NormalisedURLPath("/recipe/user"),
-                    copyAndRemoveUserContext(input)
+                    new NormalisedURLPath(`${input.tenantId}/recipe/user`),
+                    copyAndRemoveUserContextAndTenantId(input)
                 );
             } else {
                 response = await mockUpdateUser(input);

@@ -46,7 +46,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
             recipeList: [EmailPassword.init()],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let { user } = await EmailPassword.signUp("public", "test@example.com", "password123");
 
         assert(user.loginMethods[0].hasSameEmailAs("test@example.com"));
         assert(user.loginMethods[0].hasSameEmailAs(" Test@example.com"));
@@ -68,7 +68,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
             recipeList: [EmailPassword.init()],
         });
 
-        let user = (await EmailPassword.signUp("test@example.com", "password123")).user;
+        let { user } = await EmailPassword.signUp("public", "test@example.com", "password123");
 
         let jsonifiedUser = user.toJson();
 
@@ -91,17 +91,30 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirdParty.Google({
-                                clientId: "",
-                                clientSecret: "",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "",
+                                            clientSecret: "",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let user = (await ThirdParty.signInUp("google", "abcd", "test@example.com", false)).user;
+        let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
+            "public",
+            "google",
+            "abcd",
+            "test@example.com",
+            false
+        );
 
         assert(user.loginMethods[0].hasSameEmailAs("test@example.com"));
         assert(user.loginMethods[0].hasSameEmailAs(" Test@example.com"));

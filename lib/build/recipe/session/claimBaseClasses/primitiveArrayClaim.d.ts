@@ -6,6 +6,7 @@ export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends Sessio
     readonly fetchValue: (
         userId: string,
         recipeUserId: RecipeUserId,
+        tenantId: string,
         userContext: any
     ) => Promise<T[] | undefined> | T[] | undefined;
     readonly defaultMaxAgeInSeconds: number | undefined;
@@ -19,6 +20,7 @@ export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends Sessio
         includes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
         excludes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
         includesAll: (val: T[], maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
+        includesAny: (val: T[], maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
         excludesAll: (val: T[], maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
     };
 }

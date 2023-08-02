@@ -50,7 +50,12 @@ export type Response = {
     users: User[];
 };
 
-export default async function usersGet(_: APIInterface, options: APIOptions): Promise<Response> {
+export default async function usersGet(
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");
 
@@ -80,11 +85,13 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
     let usersResponse =
         timeJoinedOrder === "DESC"
             ? await getUsersNewestFirst({
+                  tenantId,
                   query,
                   limit: parseInt(limit),
                   paginationToken,
               })
             : await getUsersOldestFirst({
+                  tenantId,
                   query,
                   limit: parseInt(limit),
                   paginationToken,
@@ -111,7 +118,7 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
             (): Promise<any> =>
                 new Promise(async (resolve, reject) => {
                     try {
-                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.id);
+                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.id, userContext);
                         const { first_name, last_name } = userMetaDataResponse.metadata;
 
                         updatedUsersArray[i] = {

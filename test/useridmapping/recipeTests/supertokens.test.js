@@ -48,7 +48,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
             const email = "test@example.com";
             const password = "testPass123";
 
-            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            let signUpResponse = await EmailPasswordRecipe.signUp("public", email, password);
             assert.strictEqual(signUpResponse.status, "OK");
             let user = signUpResponse.user;
             let superTokensUserId = user.id;
@@ -134,7 +134,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
             let users = [];
 
             for (let i = 0; i < email.length; i++) {
-                let signUpResponse = await EmailPasswordRecipe.signUp(email[i], password);
+                let signUpResponse = await EmailPasswordRecipe.signUp("public", email[i], password);
                 assert.strictEqual(signUpResponse.status, "OK");
                 users.push(signUpResponse.user);
             }
@@ -152,7 +152,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
             // retrieve all the users using getUsersNewestFirst
             {
-                let response = await STExpress.getUsersNewestFirst();
+                let response = await STExpress.getUsersNewestFirst({ tenantId: "public" });
                 assert.strictEqual(response.users.length, 4);
                 // since the first user we created has their userId mapped we access the last element from the users array in the response
                 const oldestUsersId = response.users[response.users.length - 1].id;
@@ -161,7 +161,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
             // retrieve all the users using getUsersOldestFirst
             {
-                let response = await STExpress.getUsersOldestFirst();
+                let response = await STExpress.getUsersOldestFirst({ tenantId: "public" });
                 assert.strictEqual(response.users.length, 4);
 
                 const oldestUsersId = response.users[0].id;

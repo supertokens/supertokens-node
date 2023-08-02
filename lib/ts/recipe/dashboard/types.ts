@@ -60,19 +60,31 @@ export type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
 };
 
-export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
+export type APIFunction = (
+    apiImplementation: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+) => Promise<any>;
 
 export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 
 export type AuthMode = "api-key" | "email-password";
 
-export type RecipeLevelUser = {
+export type CommonUserInformation = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    timeJoined: number;
     recipeUserId: RecipeUserId;
-    email?: string;
-    phoneNumber?: string;
-    thirdParty?: {
+    timeJoined: number;
+    tenantIds: string[];
+};
+
+export type EmailPasswordUser = CommonUserInformation & {
+    email: string;
+};
+
+export type ThirdPartyUser = CommonUserInformation & {
+    email: string;
+    thirdParty: {
         id: string;
         userId: string;
     };

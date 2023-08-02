@@ -27,6 +27,9 @@
     -   In `lib/ts/version.ts`
 -   [ ] Had run `npm run build-pretty`
 -   [ ] Had installed and ran the pre-commit hook
+-   [ ] If new thirdparty provider is added,
+    -   [ ] update switch statement in `recipe/thirdparty/providers/configUtils.ts` file, `createProvider` function.
+    -   [ ] add an icon on the user management dashboard.
 -   [ ] Issue this PR against the latest non released version branch.
     -   To know which one it is, run find the latest released tag (`git tag`) in the format `vX.Y.Z`, and then find the latest branch (`git branch --all`) whose `X.Y` is greater than the latest released tag.
     -   If no such branch exists, then create one from the latest released branch.

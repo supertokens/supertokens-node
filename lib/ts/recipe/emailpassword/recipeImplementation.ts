@@ -13,6 +13,7 @@ import {
     mockUpdateEmailOrPassword,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
+import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -24,23 +25,27 @@ export default function getRecipeInterface(
             {
                 email,
                 password,
+                tenantId,
                 userContext,
             }: {
                 email: string;
                 password: string;
+                tenantId: string;
                 userContext: any;
             }
         ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            let response = await this.createNewRecipeUser({
+            const response = await this.createNewRecipeUser({
                 email,
                 password,
+                tenantId,
                 userContext,
             });
-            if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            if (response.status !== "OK") {
                 return response;
             }
 
             let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                tenantId,
                 // we can use index 0 cause this is a new recipe user
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
@@ -60,6 +65,7 @@ export default function getRecipeInterface(
         },
 
         createNewRecipeUser: async function (input: {
+            tenantId: string;
             email: string;
             password: string;
             userContext: any;
@@ -71,10 +77,15 @@ export default function getRecipeInterface(
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             if (process.env.MOCK !== "true") {
-                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
-                    email: input.email,
-                    password: input.password,
-                });
+                return await querier.sendPostRequest(
+                    new NormalisedURLPath(
+                        `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/signup`
+                    ),
+                    {
+                        email: input.email,
+                        password: input.password,
+                    }
+                );
             } else {
                 return mockCreateRecipeUser(input);
             }
@@ -86,19 +97,24 @@ export default function getRecipeInterface(
         signIn: async function ({
             email,
             password,
+            tenantId,
             userContext,
         }: {
             email: string;
             password: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             let response: { status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" };
 
             if (process.env.MOCK !== "true") {
-                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
-                    email,
-                    password,
-                });
+                response = await querier.sendPostRequest(
+                    new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
+                    {
+                        email,
+                        password,
+                    }
+                );
             } else {
                 response = await mockSignIn({ email, password });
             }
@@ -115,6 +131,7 @@ export default function getRecipeInterface(
                     }
                 }
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    tenantId,
                     recipeUserId: recipeUserId!,
                     userContext,
                 });
@@ -140,16 +157,23 @@ export default function getRecipeInterface(
         createResetPasswordToken: async function ({
             userId,
             email,
+            tenantId,
         }: {
             userId: string;
             email: string;
+            tenantId: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             if (process.env.MOCK !== "true") {
                 // the input user ID can be a recipe or a primary user ID.
-                return await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
-                    userId,
-                    email,
-                });
+                return await querier.sendPostRequest(
+                    new NormalisedURLPath(
+                        `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset/token`
+                    ),
+                    {
+                        userId,
+                        email,
+                    }
+                );
             } else {
                 return mockCreatePasswordResetToken(email, userId);
             }
@@ -157,8 +181,12 @@ export default function getRecipeInterface(
 
         consumePasswordResetToken: async function ({
             token,
+            newPassword,
+            tenantId,
         }: {
             token: string;
+            newPassword: string;
+            tenantId: string;
         }): Promise<
             | {
                   status: "OK";
@@ -169,9 +197,13 @@ export default function getRecipeInterface(
         > {
             if (process.env.MOCK !== "true") {
                 return await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/user/password/reset/token/consume"),
+                    new NormalisedURLPath(
+                        `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset`
+                    ),
                     {
+                        method: "token",
                         token,
+                        newPassword,
                     }
                 );
             } else {
@@ -184,6 +216,7 @@ export default function getRecipeInterface(
             email?: string;
             password?: string;
             applyPasswordPolicy?: boolean;
+            tenantIdForPasswordPolicy: string;
             userContext: any;
         }): Promise<
             | {
@@ -199,7 +232,7 @@ export default function getRecipeInterface(
                 let formFields = getEmailPasswordConfig().signUpFeature.formFields;
                 if (input.password !== undefined) {
                     const passwordField = formFields.filter((el) => el.id === FORM_FIELD_PASSWORD_ID)[0];
-                    const error = await passwordField.validate(input.password);
+                    const error = await passwordField.validate(input.password, input.tenantIdForPasswordPolicy);
                     if (error !== undefined) {
                         return {
                             status: "PASSWORD_POLICY_VIOLATED_ERROR",
@@ -233,6 +266,7 @@ export default function getRecipeInterface(
 
             if (response.status === "OK") {
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                    tenantId: input.tenantIdForPasswordPolicy,
                     recipeUserId: input.recipeUserId,
                     userContext: input.userContext,
                 });

@@ -14,6 +14,7 @@
  */
 const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
+let Multitenancy = require("../../lib/build/recipe/multitenancy");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
@@ -27,42 +28,34 @@ let { middleware, errorHandler } = require("../../framework/express");
 describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
+                    ...oI,
+                    getConfigForClientType: async function (input) {
+                        result = await oI.getConfigForClientType(input);
+                        const dynamic = input.userContext?._default?.request.getKeyValueFromQuery("dynamic");
+                        result.authorizationEndpointQueryParams = {
+                            dynamic,
+                            ...(result.authorizationEndpointQueryParams || {}),
+                        };
+                        return result;
                     },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                        params: {
-                            scope: "test",
-                            client_id: "supertokens",
-                            dynamic: function dynamicParam(request) {
-                                return request.query.dynamic;
-                            },
-                        },
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: true,
                             },
                         };
                     },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
                 };
-            },
-        };
-
-        this.customProvider2 = {
-            id: "custom",
-            get: (recipe, authCode) => {
-                throw new Error("error from get function");
             },
         };
     });
@@ -95,10 +88,17 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Google({
-                                clientId: "4398792-test-id",
-                                clientSecret: "test-secret",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "4398792-test-id",
+                                            clientSecret: "test-secret",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
@@ -113,7 +113,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         let response1 = await new Promise((resolve) =>
             request(app)
-                .get("/auth/authorisationurl?thirdPartyId=google")
+                .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -126,10 +126,116 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
 
-        let url = new URL(response1.body.url);
+        let url = new URL(response1.body.urlWithQueryParams);
         assert.strictEqual(url.origin, "https://supertokens.io");
 
         assert.strictEqual(url.pathname, "/dev/oauth/redirect-to-provider");
+    });
+
+    it("test calling authorisation url API with empty init", async function () {
+        await startST();
+
+        // testing with the google OAuth development key
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirPartyRecipe.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        app.use((err, req, res, next) => {
+            res.status(500).send(err.message);
+        });
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.status, 400);
+        assert.strictEqual(response1.body.message, "the provider google could not be found in the configuration");
+    });
+
+    it("test calling authorisation url API with empty init with dynamic third party provider", async function () {
+        await startST();
+
+        // testing with the google OAuth development key
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
+                ThirPartyRecipe.init(),
+            ],
+        });
+
+        await Multitenancy.createOrUpdateThirdPartyConfig("public", {
+            thirdPartyId: "google",
+            name: "Google",
+            clients: [
+                {
+                    clientId: "google-client-id",
+                    clientSecret: "google-client-secret",
+                },
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        app.use((err, req, res, next) => {
+            res.status(500).send(err.message);
+        });
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.body.status, "OK");
+        assert.strictEqual(
+            response1.body.urlWithQueryParams,
+            "https://accounts.google.com/o/oauth2/v2/auth?client_id=google-client-id&redirect_uri=redirect&response_type=code&scope=openid+email&included_grant_scopes=true&access_type=offline"
+        );
     });
 
     it("test minimum config for thirdparty module", async function () {
@@ -161,7 +267,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         let response1 = await new Promise((resolve) =>
             request(app)
-                .get("/auth/authorisationurl?thirdPartyId=custom&dynamic=example.com")
+                .get(
+                    "/auth/authorisationurl?thirdPartyId=custom&redirectURIOnProviderDashboard=redirect&dynamic=example.com"
+                )
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -173,58 +281,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(
-            response1.body.url,
-            "https://test.com/oauth/auth?scope=test&client_id=supertokens&dynamic=example.com"
+            response1.body.urlWithQueryParams,
+            "https://test.com/oauth/auth?client_id=supetokens&redirect_uri=redirect&response_type=code&scope=test&dynamic=example.com"
         );
-    });
-
-    it("test provider get function throws error", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({ getTokenTransferMethod: () => "cookie", antiCsrf: "VIA_TOKEN" }),
-                ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider2],
-                    },
-                }),
-            ],
-        });
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        app.use((err, request, response, next) => {
-            response.status(500).send({
-                message: err.message,
-            });
-        });
-
-        let response1 = await new Promise((resolve) =>
-            request(app)
-                .get("/auth/authorisationurl?thirdPartyId=custom")
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert.notStrictEqual(response1, undefined);
-        assert.strictEqual(response1.statusCode, 500);
-        assert.deepStrictEqual(response1.body, { message: "error from get function" });
     });
 
     it("test thirdparty provider doesn't exist", async function () {
@@ -256,7 +315,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         let response1 = await new Promise((resolve) =>
             request(app)
-                .get("/auth/authorisationurl?thirdPartyId=google")
+                .get("/auth/authorisationurl?thirdPartyId=google&redirectURIOnProviderDashboard=redirect")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -266,10 +325,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                 })
         );
         assert.strictEqual(response1.statusCode, 400);
-        assert.strictEqual(
-            response1.body.message,
-            "The third party provider google seems to be missing from the backend configs."
-        );
+        assert.strictEqual(response1.body.message, "the provider google could not be found in the configuration");
     });
 
     it("test invalid GET params for thirdparty module", async function () {

@@ -16,18 +16,20 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
-import { findRightProvider } from "../utils";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
-    options: APIOptions
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean> {
     if (apiImplementation.authorisationUrlGET === undefined) {
         return false;
     }
 
-    let thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
+    const thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
+    const redirectURIOnProviderDashboard = options.req.getKeyValueFromQuery("redirectURIOnProviderDashboard");
+    const clientType = options.req.getKeyValueFromQuery("clientType");
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -36,18 +38,34 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    let provider = findRightProvider(options.providers, thirdPartyId, undefined);
-    if (provider === undefined) {
+    if (redirectURIOnProviderDashboard === undefined || typeof redirectURIOnProviderDashboard !== "string") {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "The third party provider " + thirdPartyId + ` seems to be missing from the backend configs.`,
+            message: "Please provide the redirectURIOnProviderDashboard as a GET param",
         });
     }
 
+    const providerResponse = await options.recipeImplementation.getProvider({
+        thirdPartyId,
+        clientType,
+        tenantId,
+        userContext,
+    });
+
+    if (providerResponse === undefined) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: `the provider ${thirdPartyId} could not be found in the configuration`,
+        });
+    }
+
+    const provider = providerResponse;
     let result = await apiImplementation.authorisationUrlGET({
         provider,
+        redirectURIOnProviderDashboard,
+        tenantId,
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     send200Response(options.res, result);

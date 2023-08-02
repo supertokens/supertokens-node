@@ -14,7 +14,14 @@ import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static thirdPartySignInUp(
+    static thirdPartyGetProvider(
+        tenantId: string,
+        thirdPartyId: string,
+        clientType: string | undefined,
+        userContext?: any
+    ): Promise<TypeProvider | undefined>;
+    static thirdPartyManuallyCreateOrUpdateUser(
+        tenantId: string,
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: string,
@@ -25,6 +32,10 @@ export default class Wrapper {
               status: "OK";
               createdNewUser: boolean;
               user: import("../emailpassword").User;
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -41,6 +52,7 @@ export default class Wrapper {
               }
         ) & {
             userInputCode?: string;
+            tenantId: string;
             userContext?: any;
         }
     ): Promise<{
@@ -56,6 +68,7 @@ export default class Wrapper {
     static createNewCodeForDevice(input: {
         deviceId: string;
         userInputCode?: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<
         | {
@@ -78,11 +91,13 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<
@@ -101,6 +116,7 @@ export default class Wrapper {
           }
     >;
     static updatePasswordlessUser(input: {
+        tenantId: string;
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
@@ -112,10 +128,12 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<{
@@ -123,34 +141,41 @@ export default class Wrapper {
     }>;
     static revokeCode(input: {
         codeId: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<{
         status: "OK";
     }>;
     static listCodesByEmail(input: {
         email: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<import("../passwordless/types").DeviceType[]>;
     static listCodesByPhoneNumber(input: {
         phoneNumber: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<import("../passwordless/types").DeviceType[]>;
     static listCodesByDeviceId(input: {
         deviceId: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<import("../passwordless/types").DeviceType | undefined>;
     static listCodesByPreAuthSessionId(input: {
         preAuthSessionId: string;
+        tenantId: string;
         userContext?: any;
     }): Promise<import("../passwordless/types").DeviceType | undefined>;
     static createMagicLink(
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<string>;
@@ -158,10 +183,12 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  tenantId: string;
                   userContext?: any;
               }
             | {
                   phoneNumber: string;
+                  tenantId: string;
                   userContext?: any;
               }
     ): Promise<{
@@ -169,14 +196,6 @@ export default class Wrapper {
         createdNewUser: boolean;
         user: import("../emailpassword").User;
     }>;
-    static Google: typeof import("../thirdparty/providers/google").default;
-    static Github: typeof import("../thirdparty/providers/github").default;
-    static Facebook: typeof import("../thirdparty/providers/facebook").default;
-    static Apple: typeof import("../thirdparty/providers/apple").default;
-    static Discord: typeof import("../thirdparty/providers/discord").default;
-    static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
-    static Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
-    static GitLab: typeof import("../thirdparty/providers/gitlab").default;
     static sendEmail(
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
             userContext?: any;
@@ -190,7 +209,8 @@ export default class Wrapper {
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
-export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
+export declare let thirdPartyGetProvider: typeof Wrapper.thirdPartyGetProvider;
+export declare let thirdPartyManuallyCreateOrUpdateUser: typeof Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 export declare let passwordlessSignInUp: typeof Wrapper.passwordlessSignInUp;
 export declare let createCode: typeof Wrapper.createCode;
 export declare let consumeCode: typeof Wrapper.consumeCode;
@@ -203,14 +223,6 @@ export declare let updatePasswordlessUser: typeof Wrapper.updatePasswordlessUser
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
-export declare let Google: typeof import("../thirdparty/providers/google").default;
-export declare let Github: typeof import("../thirdparty/providers/github").default;
-export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;
-export declare let Apple: typeof import("../thirdparty/providers/apple").default;
-export declare let Discord: typeof import("../thirdparty/providers/discord").default;
-export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
-export declare let Bitbucket: typeof import("../thirdparty/providers/bitbucket").default;
-export declare let GitLab: typeof import("../thirdparty/providers/gitlab").default;
 export type { RecipeInterface, TypeProvider, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export declare let sendSms: typeof Wrapper.sendSms;

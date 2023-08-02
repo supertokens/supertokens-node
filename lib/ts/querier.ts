@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import axios from "axios";
+import fetch, { Response } from "cross-fetch";
 
 import { getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
@@ -50,16 +50,18 @@ export class Querier {
         let response = await this.sendRequestHelper(
             new NormalisedURLPath("/apiversion"),
             "GET",
-            (url: string) => {
+            async (url: string) => {
                 let headers: any = {};
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         "api-key": Querier.apiKey,
                     };
                 }
-                return axios.get(url, {
+                let response = await fetch(url, {
+                    method: "GET",
                     headers,
                 });
+                return response;
             },
             this.__hosts?.length || 0
         );
@@ -129,10 +131,9 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios({
+                return fetch(url, {
                     method: "POST",
-                    url,
-                    data: body,
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },
@@ -147,12 +148,11 @@ export class Querier {
             "DELETE",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion };
+                let headers: any = { "cdi-version": apiVersion, "content-type": "application/json; charset=utf-8" };
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
                         "api-key": Querier.apiKey,
-                        "content-type": "application/json; charset=utf-8",
                     };
                 }
                 if (path.isARecipePath() && this.rIdToCore !== undefined) {
@@ -161,12 +161,14 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios({
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(params);
+                finalURL.search = searchParams.toString();
+
+                return fetch(finalURL.toString(), {
                     method: "DELETE",
-                    url,
-                    data: body,
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
-                    params,
                 });
             },
             this.__hosts?.length || 0
@@ -174,7 +176,10 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendGetRequest = async (path: NormalisedURLPath, params: any): Promise<any> => {
+    sendGetRequest = async (
+        path: NormalisedURLPath,
+        params: Record<string, boolean | number | string | undefined>
+    ): Promise<any> => {
         return this.sendRequestHelper(
             path,
             "GET",
@@ -193,8 +198,13 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios.get(url, {
-                    params,
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
+                );
+                finalURL.search = searchParams.toString();
+                return await fetch(finalURL.toString(), {
+                    method: "GET",
                     headers,
                 });
             },
@@ -222,10 +232,10 @@ export class Querier {
                         rid: this.rIdToCore,
                     };
                 }
-                return await axios({
+
+                return fetch(url, {
                     method: "PUT",
-                    url,
-                    data: body,
+                    body: body !== undefined ? JSON.stringify(body) : undefined,
                     headers,
                 });
             },
@@ -252,7 +262,7 @@ export class Querier {
     private sendRequestHelper = async (
         path: NormalisedURLPath,
         method: string,
-        axiosFunction: (url: string) => Promise<any>,
+        requestFunc: (url: string) => Promise<Response>,
         numberOfTries: number
     ): Promise<any> => {
         if (this.__hosts === undefined) {
@@ -270,28 +280,34 @@ export class Querier {
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
-            let response = await axiosFunction(url);
+            let response = await requestFunc(url);
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
             if (response.status !== 200) {
                 throw response;
             }
-            return response.data;
-        } catch (err) {
-            if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
-                return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
+            if (response.headers.get("content-type")?.startsWith("text")) {
+                return await response.text();
             }
-            if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
+            return await response.json();
+        } catch (err) {
+            if (
+                err.message !== undefined &&
+                (err.message.includes("Failed to fetch") || err.message.includes("ECONNREFUSED"))
+            ) {
+                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1);
+            }
+            if (err instanceof Response) {
                 throw new Error(
                     "SuperTokens core threw an error for a " +
                         method +
                         " request to path: '" +
                         path.getAsStringDangerous() +
                         "' with status code: " +
-                        err.response.status +
+                        err.status +
                         " and message: " +
-                        err.response.data
+                        (await err.text())
                 );
             } else {
                 throw err;

@@ -39,26 +39,23 @@ let bodyParser = require("body-parser");
 describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function (oAuthTokens) {
                         return {
-                            id: "user",
+                            thirdPartyUserId: "user",
                             email: {
                                 id: "email@test.com",
                                 isVerified: true,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },
@@ -97,10 +94,17 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         },
                     },
                     providers: [
-                        ThirdPartyEmailPassword.Google({
-                            clientId: "test",
-                            clientSecret: "test-secret",
-                        }),
+                        {
+                            config: {
+                                thirdPartyId: "google",
+                                clients: [
+                                    {
+                                        clientId: "test",
+                                        clientSecret: "test-secret",
+                                    },
+                                ],
+                            },
+                        },
                     ],
                 }),
             ],
@@ -117,8 +121,12 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "google",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -242,8 +250,12 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                 .post("/auth/signinup")
                 .send({
                     thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
+                    redirectURIInfo: {
+                        redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                        redirectURIQueryParams: {
+                            code: "abcdefghj",
+                        },
+                    },
                 })
                 .end((err, res) => {
                     if (err) {
@@ -666,7 +678,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -719,7 +731,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -746,7 +758,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestEmptyJSON(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -772,7 +784,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -798,7 +810,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 
@@ -825,7 +837,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(errorHandler());
 
         let response = await signUPRequestNoBody(app);
-        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert.strictEqual(JSON.parse(response.text).message, "Missing input param: formFields");
         assert(response.status === 400);
     });
 

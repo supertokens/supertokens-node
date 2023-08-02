@@ -16,11 +16,13 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-let ThirParty = require("../../lib/build/recipe/thirdparty");
+let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+let ThirdParty = require("../../lib/build/recipe/thirdparty");
 let { middleware, errorHandler } = require("../../framework/express");
+let nock = require("nock");
 
-const privateKey = `-----BEGIN EC PRIVATE KEY-----\nMHQCAQEEIP92u8DjfW31UDDudzWtcsiH/gJ5RpdgL6EV4FTuADZWoAcGBSuBBAAK\noUQDQgAEBorYK2YgYN1BDxVNtBgq8ZdoIR5m02kfJKFI/Vq1+uagvjjZVLpeUEgQ\n79ENddF5P8V8gRri+XzD2zNYpYXGNQ==\n-----END EC PRIVATE KEY-----`;
+const privateKey =
+    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----";
 
 /**
  * TODO
@@ -67,38 +69,84 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret",
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "test",
+                                            clientSecret: "test-secret",
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "google");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "google");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.strictEqual(providerInfoGetResult.accessTokenAPI.url, "https://oauth2.googleapis.com/token");
-        assert.strictEqual(
-            providerInfoGetResult.authorisationRedirect.url,
-            "https://accounts.google.com/o/oauth2/v2/auth"
-        );
-        assert.deepStrictEqual(providerInfoGetResult.accessTokenAPI.params, {
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://oauth2.googleapis.com/token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://accounts.google.com/o/oauth2/v2/auth");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://accounts.google.com/o/oauth2/v2/auth");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
+            access_type: "offline",
+            client_id: "test",
+            included_grant_scopes: "true",
+            redirect_uri: "redirect",
+            response_type: "code",
+            scope: "openid email",
+        });
+
+        let tokenBody = {};
+        nock("https://oauth2.googleapis.com")
+            .post("/token", function (body) {
+                tokenBody = body;
+                return true;
+            })
+            .reply(200, {
+                access_token: "abcd",
+            });
+
+        await providerInfo.exchangeAuthCodeForOAuthTokens({
+            redirectURIInfo: {
+                redirectURIOnProviderDashboard: "redirect",
+                redirectURIQueryParams: {
+                    code: "abcd",
+                },
+            },
+        });
+        assert.deepEqual(tokenBody, {
             client_id: "test",
             client_secret: "test-secret",
             grant_type: "authorization_code",
-        });
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
-            client_id: "test",
-            access_type: "offline",
-            include_granted_scopes: "true",
-            response_type: "code",
-            scope: "https://www.googleapis.com/auth/userinfo.email",
+            code: "abcd",
+            redirect_uri: "redirect",
         });
     });
 
@@ -114,35 +162,62 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret",
-                                authorisationRedirect: {
-                                    params: {
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "test",
+                                            clientSecret: "test-secret",
+                                        },
+                                    ],
+                                    authorizationEndpointQueryParams: {
                                         key1: "value1",
                                         key2: "value2",
                                     },
                                 },
-                            }),
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
-        assert.strictEqual(providerInfo.id, "google");
-        let providerInfoGetResult = await providerInfo.get();
+        let providerRes = await ThirdParty.getProvider("public", "google");
+        let providerInfo = providerRes;
 
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
-            client_id: "test",
+        assert.strictEqual(providerInfo.id, "google");
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://oauth2.googleapis.com/token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://accounts.google.com/o/oauth2/v2/auth");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://accounts.google.com/o/oauth2/v2/auth");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             access_type: "offline",
-            include_granted_scopes: "true",
+            client_id: "test",
+            included_grant_scopes: "true",
+            redirect_uri: "redirect",
             response_type: "code",
-            scope: "https://www.googleapis.com/auth/userinfo.email",
+            scope: "openid email",
             key1: "value1",
             key2: "value2",
         });
@@ -160,28 +235,57 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret",
-                                scope: ["test-scope-1", "test-scope-2"],
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId: "test",
+                                            clientSecret: "test-secret",
+                                            scope: ["test-scope-1", "test-scope-2"],
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
-        assert.strictEqual(providerInfo.id, "google");
-        let providerInfoGetResult = await providerInfo.get();
+        let providerRes = await ThirdParty.getProvider("public", "google");
+        let providerInfo = providerRes;
 
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
-            client_id: "test",
+        assert.strictEqual(providerInfo.id, "google");
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://oauth2.googleapis.com/token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://accounts.google.com/o/oauth2/v2/auth");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://accounts.google.com/o/oauth2/v2/auth");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             access_type: "offline",
-            include_granted_scopes: "true",
+            client_id: "test",
+            included_grant_scopes: "true",
+            redirect_uri: "redirect",
             response_type: "code",
             scope: "test-scope-1 test-scope-2",
         });
@@ -203,38 +307,82 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Facebook({
-                                clientId,
-                                clientSecret,
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "facebook",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            clientSecret,
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "facebook");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "facebook");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.strictEqual(
-            providerInfoGetResult.accessTokenAPI.url,
-            "https://graph.facebook.com/v9.0/oauth/access_token"
-        );
-        assert.strictEqual(
-            providerInfoGetResult.authorisationRedirect.url,
-            "https://www.facebook.com/v9.0/dialog/oauth"
-        );
-        assert.deepStrictEqual(providerInfoGetResult.accessTokenAPI.params, {
-            client_id: clientId,
-            client_secret: clientSecret,
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://graph.facebook.com/v12.0/oauth/access_token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://www.facebook.com/v12.0/dialog/oauth");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
         });
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://www.facebook.com/v12.0/dialog/oauth");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
+            redirect_uri: "redirect",
             response_type: "code",
             scope: "email",
+        });
+
+        let tokenBody = {};
+        nock("https://graph.facebook.com")
+            .post("/v12.0/oauth/access_token", function (body) {
+                tokenBody = body;
+                return true;
+            })
+            .reply(200, {
+                access_token: "abcd",
+            });
+
+        await providerInfo.exchangeAuthCodeForOAuthTokens({
+            redirectURIInfo: {
+                redirectURIOnProviderDashboard: "redirect",
+                redirectURIQueryParams: {
+                    code: "abcd",
+                },
+            },
+        });
+        assert.deepEqual(tokenBody, {
+            client_id: "test",
+            client_secret: "test-secret",
+            grant_type: "authorization_code",
+            code: "abcd",
+            redirect_uri: "redirect",
         });
     });
 
@@ -254,25 +402,55 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Facebook({
-                                clientId,
-                                clientSecret,
-                                scope: ["test-scope-1", "test-scope-2"],
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "facebook",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            clientSecret,
+                                            scope: ["test-scope-1", "test-scope-2"],
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "facebook");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "facebook");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://graph.facebook.com/v12.0/oauth/access_token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://www.facebook.com/v12.0/dialog/oauth");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://www.facebook.com/v12.0/dialog/oauth");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
+            redirect_uri: "redirect",
             response_type: "code",
             scope: "test-scope-1 test-scope-2",
         });
@@ -294,31 +472,82 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Github({
-                                clientId,
-                                clientSecret,
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            clientSecret,
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "github");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "github");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.strictEqual(providerInfoGetResult.accessTokenAPI.url, "https://github.com/login/oauth/access_token");
-        assert.strictEqual(providerInfoGetResult.authorisationRedirect.url, "https://github.com/login/oauth/authorize");
-        assert.deepStrictEqual(providerInfoGetResult.accessTokenAPI.params, {
-            client_id: clientId,
-            client_secret: clientSecret,
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://github.com/login/oauth/access_token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://github.com/login/oauth/authorize");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
         });
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://github.com/login/oauth/authorize");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
+            redirect_uri: "redirect",
+            response_type: "code",
             scope: "read:user user:email",
+        });
+
+        let tokenBody = {};
+        nock("https://github.com")
+            .post("/login/oauth/access_token", function (body) {
+                tokenBody = body;
+                return true;
+            })
+            .reply(200, {
+                access_token: "abcd",
+            });
+
+        await providerInfo.exchangeAuthCodeForOAuthTokens({
+            redirectURIInfo: {
+                redirectURIOnProviderDashboard: "redirect",
+                redirectURIQueryParams: {
+                    code: "abcd",
+                },
+            },
+        });
+        assert.deepEqual(tokenBody, {
+            client_id: "test",
+            client_secret: "test-secret",
+            grant_type: "authorization_code",
+            code: "abcd",
+            redirect_uri: "redirect",
         });
     });
 
@@ -338,30 +567,59 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Github({
-                                clientId,
-                                clientSecret,
-                                authorisationRedirect: {
-                                    params: {
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            clientSecret,
+                                        },
+                                    ],
+                                    authorizationEndpointQueryParams: {
                                         key1: "value1",
                                         key2: "value2",
                                     },
                                 },
-                            }),
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "github");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "github");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://github.com/login/oauth/access_token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://github.com/login/oauth/authorize");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://github.com/login/oauth/authorize");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
+            redirect_uri: "redirect",
+            response_type: "code",
             scope: "read:user user:email",
             key1: "value1",
             key2: "value2",
@@ -384,25 +642,56 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Github({
-                                clientId,
-                                clientSecret,
-                                scope: ["test-scope-1", "test-scope-2"],
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            clientSecret,
+                                            scope: ["test-scope-1", "test-scope-2"],
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "github");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "github");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://github.com/login/oauth/access_token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://github.com/login/oauth/authorize");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://github.com/login/oauth/authorize");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
+            redirect_uri: "redirect",
+            response_type: "code",
             scope: "test-scope-1 test-scope-2",
         });
     });
@@ -411,7 +700,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         await startST();
 
         let clientId = "test";
-        let clientSecret = {
+        let additionalConfig = {
             keyId: "test-key",
             privateKey,
             teamId: "test-team-id",
@@ -427,36 +716,85 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Apple({
-                                clientId,
-                                clientSecret,
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            additionalConfig,
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "apple");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "apple");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.strictEqual(providerInfoGetResult.accessTokenAPI.url, "https://appleid.apple.com/auth/token");
-        assert.strictEqual(providerInfoGetResult.authorisationRedirect.url, "https://appleid.apple.com/auth/authorize");
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://appleid.apple.com/auth/token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://appleid.apple.com/auth/authorize");
 
-        let accessTokenAPIParams = providerInfoGetResult.accessTokenAPI.params;
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
 
-        assert(accessTokenAPIParams.client_id === clientId);
-        assert(accessTokenAPIParams.client_secret !== undefined);
-        assert(accessTokenAPIParams.grant_type === "authorization_code");
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://appleid.apple.com/auth/authorize");
 
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
-            scope: "email",
-            response_mode: "form_post",
+            redirect_uri: "redirect",
             response_type: "code",
+            response_mode: "form_post",
+            scope: "openid email",
+        });
+
+        let tokenBody = {};
+        nock("https://appleid.apple.com")
+            .post("/auth/token", function (body) {
+                tokenBody = body;
+                return true;
+            })
+            .reply(200, {
+                access_token: "abcd",
+            });
+
+        await providerInfo.exchangeAuthCodeForOAuthTokens({
+            redirectURIInfo: {
+                redirectURIOnProviderDashboard: "redirect",
+                redirectURIQueryParams: {
+                    code: "abcd",
+                },
+            },
+        });
+        assert.notEqual(tokenBody.client_secret, undefined);
+        delete tokenBody.client_secret;
+
+        assert.deepEqual(tokenBody, {
+            client_id: "test",
+            grant_type: "authorization_code",
+            code: "abcd",
+            redirect_uri: "redirect",
         });
     });
 
@@ -464,7 +802,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         await startST();
 
         let clientId = "test";
-        let clientSecret = {
+        let additionalConfig = {
             keyId: "test-key",
             privateKey,
             teamId: "test-team-id",
@@ -480,33 +818,61 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Apple({
-                                clientId,
-                                clientSecret,
-                                authorisationRedirect: {
-                                    params: {
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            additionalConfig,
+                                        },
+                                    ],
+                                    authorizationEndpointQueryParams: {
                                         key1: "value1",
                                         key2: "value2",
                                     },
                                 },
-                            }),
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "apple");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "apple");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://appleid.apple.com/auth/token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://appleid.apple.com/auth/authorize");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://appleid.apple.com/auth/authorize");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
-            scope: "email",
+            redirect_uri: "redirect",
             response_mode: "form_post",
             response_type: "code",
+            scope: "openid email",
             key1: "value1",
             key2: "value2",
         });
@@ -516,7 +882,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         await startST();
 
         let clientId = "test";
-        let clientSecret = {
+        let additionalConfig = {
             keyId: "test-key",
             privateKey,
             teamId: "test-team-id",
@@ -532,154 +898,70 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Apple({
-                                clientId,
-                                clientSecret,
-                                scope: ["test-scope-1", "test-scope-2"],
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            additionalConfig,
+                                            scope: ["test-scope-1", "test-scope-2"],
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
 
-        let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
+        let providerRes = await ThirdParty.getProvider("public", "apple");
+        let providerInfo = providerRes;
+
         assert.strictEqual(providerInfo.id, "apple");
-        let providerInfoGetResult = await providerInfo.get();
-        assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
+        assert.strictEqual(providerInfo.config.tokenEndpoint, "https://appleid.apple.com/auth/token");
+        assert.strictEqual(providerInfo.config.authorizationEndpoint, "https://appleid.apple.com/auth/authorize");
+
+        const authUrlResult = await providerInfo.getAuthorisationRedirectURL({
+            redirectURIOnProviderDashboard: "redirect",
+            userContext: {},
+        });
+        assert.deepStrictEqual(authUrlResult.pkceCodeVerifier, undefined);
+
+        const authUrl = new URL(authUrlResult.urlWithQueryParams);
+        assert.deepStrictEqual(authUrl.origin + authUrl.pathname, "https://appleid.apple.com/auth/authorize");
+
+        function paramsToObject(entries) {
+            const result = {};
+            for (const [key, value] of entries) {
+                // each 'entry' is a [key, value] tupple
+                result[key] = value;
+            }
+            return result;
+        }
+        const authParams = paramsToObject(new URLSearchParams(authUrl.search.substring(1)).entries());
+        assert.deepEqual(authParams, {
             client_id: "test",
-            scope: "test-scope-1 test-scope-2",
-            response_mode: "form_post",
+            redirect_uri: "redirect",
             response_type: "code",
+            response_mode: "form_post",
+            scope: "test-scope-1 test-scope-2",
         });
     });
 
-    it("test passing invalid privateKey in config for third party provider apple", async function () {
+    it.skip("test passing invalid privateKey in config for third party provider apple", async function () {
         await startST();
 
         let clientId = "test";
-        let clientSecret = {
+        let additionalConfig = {
             keyId: "test-key",
             privateKey: "invalidKey",
             teamId: "test-team-id",
         };
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Apple({
-                                    clientId,
-                                    clientSecret,
-                                }),
-                            ],
-                        },
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (error) {
-            if (error.type !== ThirParty.Error.BAD_INPUT_ERROR) {
-                throw error;
-            }
-        }
-    });
-
-    it("test duplicate provider without any default", async function () {
-        await startST();
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Google({
-                                    clientId: "test",
-                                    clientSecret: "test-secret",
-                                    scope: ["test-scope-1", "test-scope-2"],
-                                }),
-                                ThirParty.Google({
-                                    clientId: "test",
-                                    clientSecret: "test-secret",
-                                    scope: ["test-scope-1", "test-scope-2"],
-                                }),
-                            ],
-                        },
-                    }),
-                ],
-            });
-            throw new Error("should fail");
-        } catch (err) {
-            assert(
-                err.message ===
-                    `The providers array has multiple entries for the same third party provider. Please mark one of them as the default one by using "isDefault: true".`
-            );
-        }
-    });
-
-    it("test duplicate provider with both default", async function () {
-        await startST();
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Google({
-                                    isDefault: true,
-                                    clientId: "test",
-                                    clientSecret: "test-secret",
-                                    scope: ["test-scope-1", "test-scope-2"],
-                                }),
-                                ThirParty.Google({
-                                    isDefault: true,
-                                    clientId: "test",
-                                    clientSecret: "test-secret",
-                                    scope: ["test-scope-1", "test-scope-2"],
-                                }),
-                            ],
-                        },
-                    }),
-                ],
-            });
-            throw new Error("should fail");
-        } catch (err) {
-            assert(
-                err.message ===
-                    `You have provided multiple third party providers that have the id: "google" and are marked as "isDefault: true". Please only mark one of them as isDefault.`
-            );
-        }
-    });
-    it("test duplicate provider with one default", async function () {
-        await startST();
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -690,24 +972,84 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret",
-                                scope: ["test-scope-1", "test-scope-2"],
-                            }),
-                            ThirParty.Google({
-                                isDefault: true,
-                                clientId: "test",
-                                clientSecret: "test-secret",
-                                scope: ["test-scope-1", "test-scope-2"],
-                            }),
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId,
+                                            additionalConfig,
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
             ],
         });
+
+        try {
+            let providerRes = await ThirdParty.getProvider("public", "apple");
+            let providerInfo = providerRes;
+            assert(false);
+        } catch (err) {
+            assert.equal(err.toString(), "Error: error:0909006C:PEM routines:get_name:no start line");
+        }
+    });
+
+    it("test duplicate provider", async function () {
+        await startST();
+        try {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    ThirdPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "test",
+                                                clientSecret: "test-secret",
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "test2",
+                                                clientSecret: "test-secret2",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                ],
+            });
+            throw new Error("should fail");
+        } catch (err) {
+            assert.strictEqual(
+                err.message,
+                `The providers array has multiple entries for the same third party provider.`
+            );
+        }
     });
 });

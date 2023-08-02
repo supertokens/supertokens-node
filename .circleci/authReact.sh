@@ -48,7 +48,7 @@ while [ $i -lt $frontendDriverLength ]; do
     -H 'api-version: 0'`
     if [[ `echo $frontendVersionXY | jq .frontend` == "null" ]]
     then
-        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: webiste gave response: $frontend. Please make sure all relevant versions have been pushed."
+        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: website gave response: $frontend. Please make sure all relevant versions have been pushed."
         exit 1
     fi
     frontendVersionXY=$(echo $frontendVersionXY | jq .frontend | tr -d '"')

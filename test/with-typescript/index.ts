@@ -8,6 +8,7 @@ import { middleware, errorHandler, SessionRequest } from "../../framework/expres
 import NextJS from "../../nextjs";
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import ThirdParty from "../../recipe/thirdparty";
+import Multitenancy from "../../recipe/multitenancy";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
 import { SMTPService as SMTPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
@@ -41,6 +42,7 @@ UserRoles.init({
                 addRoleToUser: async function (input) {
                     return oI.addRoleToUser({
                         role: input.role,
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                         userId: input.userId,
                     });
@@ -71,6 +73,7 @@ UserRoles.init({
                 },
                 getRolesForUser: async function (input) {
                     return oI.getRolesForUser({
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                         userId: input.userId,
                     });
@@ -83,6 +86,7 @@ UserRoles.init({
                 },
                 getUsersThatHaveRole: async function (input) {
                     return oI.getUsersThatHaveRole({
+                        tenantId: input.tenantId,
                         role: input.role,
                         userContext: input.userContext,
                     });
@@ -97,6 +101,7 @@ UserRoles.init({
                 removeUserRole: async function (input) {
                     return oI.removeUserRole({
                         role: input.role,
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                         userId: input.userId,
                     });
@@ -121,10 +126,12 @@ UserMetadata.getUserMetadata("xyz").then((data) => {
 
 ThirdPartyPasswordless.init({
     providers: [
-        ThirdPartyPasswordless.Google({
-            clientId: "",
-            clientSecret: "",
-        }),
+        {
+            config: {
+                thirdPartyId: "google",
+                clients: [{ clientId: "" }],
+            },
+        },
     ],
     smsDelivery: {
         override: (oI) => {
@@ -309,10 +316,12 @@ Passwordless.init({
 
 ThirdPartyPasswordless.init({
     providers: [
-        ThirdPartyPasswordless.Google({
-            clientId: "",
-            clientSecret: "",
-        }),
+        {
+            config: {
+                thirdPartyId: "google",
+                clients: [{ clientId: "" }],
+            },
+        },
     ],
     smsDelivery: {
         service: new TwilioServiceTPP({
@@ -373,10 +382,12 @@ ThirdPartyPasswordless.init({
 
 ThirdPartyPasswordless.init({
     providers: [
-        ThirdPartyPasswordless.Google({
-            clientId: "",
-            clientSecret: "",
-        }),
+        {
+            config: {
+                thirdPartyId: "google",
+                clients: [{ clientId: "" }],
+            },
+        },
     ],
     smsDelivery: {
         service: new SupertokensServiceTPP(""),
@@ -812,9 +823,94 @@ ThirdPartyEmailPassword.init({
     },
 });
 
+ThirdParty.init();
+
+ThirdParty.init({});
+
+ThirdParty.init({
+    signInAndUpFeature: {},
+});
+
 ThirdParty.init({
     signInAndUpFeature: {
         providers: [],
+    },
+});
+
+Multitenancy.init();
+
+Multitenancy.init({});
+
+Multitenancy.init({
+    getAllowedDomainsForTenantId: async function (tenantId, userContext) {
+        return ["example.com"];
+    },
+});
+
+Multitenancy.init({
+    getAllowedDomainsForTenantId: async function (tenantId, userContext) {
+        return undefined;
+    },
+});
+
+Multitenancy.init({
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+                loginMethodsGET: async function ({ tenantId, clientType, options, userContext }) {
+                    return {
+                        status: "OK",
+                        emailPassword: {
+                            enabled: true,
+                        },
+                        passwordless: {
+                            enabled: true,
+                        },
+                        thirdParty: {
+                            enabled: true,
+                            providers: [],
+                        },
+                    };
+                },
+            };
+        },
+        functions: (oI) => {
+            return {
+                ...oI,
+                getTenantId: async function ({ tenantIdFromFrontend, userContext }) {
+                    return tenantIdFromFrontend;
+                },
+
+                createOrUpdateTenant: async function ({ tenantId, config, userContext }) {
+                    return await oI.createOrUpdateTenant({
+                        tenantId,
+                        config,
+                        userContext,
+                    });
+                },
+
+                deleteTenant: async function ({ tenantId, userContext }) {
+                    return await oI.deleteTenant({ tenantId, userContext });
+                },
+
+                getTenant: async function ({ tenantId, userContext }) {
+                    return await oI.getTenant({ tenantId, userContext });
+                },
+
+                listAllTenants: async function ({ userContext }) {
+                    return await oI.listAllTenants({ userContext });
+                },
+
+                createOrUpdateThirdPartyConfig: async function ({ tenantId, config, skipValidation, userContext }) {
+                    return await oI.createOrUpdateThirdPartyConfig({ tenantId, config, skipValidation, userContext });
+                },
+
+                deleteThirdPartyConfig: async function ({ tenantId, thirdPartyId, userContext }) {
+                    return await oI.deleteThirdPartyConfig({ tenantId, thirdPartyId, userContext });
+                },
+            };
+        },
     },
 });
 
@@ -840,6 +936,7 @@ let sessionConfig: SessionTypeInput = {
                         getSessionDataFromDatabase: session.getSessionDataFromDatabase,
                         getUserId: session.getUserId,
                         getRecipeUserId: session.getRecipeUserId,
+                        getTenantId: session.getTenantId,
                         revokeSession: session.revokeSession,
                         updateSessionDataInDatabase: session.updateSessionDataInDatabase,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
@@ -1144,12 +1241,14 @@ async function f() {
     let n2: number = await Supertokens.getUserCount();
 
     await Supertokens.getUsersOldestFirst({
+        tenantId: "public",
         includeRecipeIds: [""],
         limit: 1,
         paginationToken: "",
     });
 
     await Supertokens.getUsersNewestFirst({
+        tenantId: "public",
         includeRecipeIds: [""],
         limit: 1,
         paginationToken: "",
@@ -1170,6 +1269,7 @@ EmailPassword.init({
                     let response = await options.recipeImplementation.signIn({
                         email,
                         password,
+                        tenantId: input.tenantId,
                         userContext: input.userContext,
                     });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {
@@ -1186,6 +1286,7 @@ EmailPassword.init({
                         let session = await Session.createNewSession(
                             options.req,
                             options.res,
+                            "public",
                             Supertokens.convertToRecipeUserId(user.id)
                         );
                         return {
@@ -1227,7 +1328,7 @@ Session.init({
                     input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
-                        ...(await boolClaim.build(input.userId, input.userContext)),
+                        ...(await boolClaim.build(input.userId, input.recipeUserId, input.tenantId, input.userContext)),
                         lastTokenRefresh: Date.now(),
                     };
                     return originalImplementation.createNewSession(input);
@@ -1249,6 +1350,7 @@ Session.validateClaimsForSessionHandle(
 );
 
 EmailVerification.sendEmail({
+    tenantId: "public",
     emailVerifyLink: "",
     type: "EMAIL_VERIFICATION",
     user: {
@@ -1259,6 +1361,7 @@ EmailVerification.sendEmail({
 });
 
 ThirdPartyEmailPassword.sendEmail({
+    tenantId: "public",
     type: "PASSWORD_RESET",
     passwordResetLink: "",
     user: {
@@ -1268,6 +1371,7 @@ ThirdPartyEmailPassword.sendEmail({
     },
 });
 ThirdPartyEmailPassword.sendEmail({
+    tenantId: "public",
     type: "PASSWORD_RESET",
     passwordResetLink: "",
     user: {
@@ -1279,6 +1383,7 @@ ThirdPartyEmailPassword.sendEmail({
 });
 
 ThirdPartyPasswordless.sendEmail({
+    tenantId: "public",
     codeLifetime: 234,
     email: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1287,6 +1392,7 @@ ThirdPartyPasswordless.sendEmail({
     urlWithLinkCode: "",
 });
 ThirdPartyPasswordless.sendEmail({
+    tenantId: "public",
     codeLifetime: 234,
     email: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1295,6 +1401,7 @@ ThirdPartyPasswordless.sendEmail({
 });
 
 ThirdPartyPasswordless.sendSms({
+    tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1303,6 +1410,7 @@ ThirdPartyPasswordless.sendSms({
     urlWithLinkCode: "",
 });
 ThirdPartyPasswordless.sendSms({
+    tenantId: "public",
     codeLifetime: 234,
     phoneNumber: "",
     type: "PASSWORDLESS_LOGIN",
@@ -1422,11 +1530,13 @@ Passwordless.init({
                 ...original,
                 consumeCode: async function (input) {
                     let device = await Passwordless.listCodesByPreAuthSessionId({
+                        tenantId: input.tenantId,
                         preAuthSessionId: input.preAuthSessionId,
                     });
                     if (device !== undefined && input.userContext.calledManually === undefined) {
                         if (device.phoneNumber === "TEST_PHONE_NUMBER") {
                             let user = await Passwordless.signInUp({
+                                tenantId: "test",
                                 phoneNumber: "TEST_PHONE_NUMBER",
                                 userContext: { calledManually: true },
                             });
@@ -1560,7 +1670,10 @@ async function getSessionWithoutRequestWithErrorHandler(req: express.Request, re
 async function createNewSessionWithoutRequestResponse(req: express.Request, resp: express.Response) {
     const userId = "user-id"; // This would be fetched from somewhere
 
-    const session = await Session.createNewSessionWithoutRequestResponse(Supertokens.convertToRecipeUserId(userId));
+    const session = await Session.createNewSessionWithoutRequestResponse(
+        "public",
+        Supertokens.convertToRecipeUserId(userId)
+    );
 
     const tokens = session.getAllSessionTokensDangerously();
     if (tokens.accessAndFrontTokenUpdated) {
@@ -1608,3 +1721,10 @@ async function refreshSessionWithoutRequestResponse(req: express.Request, resp: 
         }
     }
 }
+
+ThirdParty.init();
+ThirdPartyEmailPassword.init();
+ThirdPartyPasswordless.init({
+    contactMethod: "EMAIL",
+    flowType: "MAGIC_LINK",
+});

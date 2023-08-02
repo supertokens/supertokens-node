@@ -11,7 +11,7 @@ export default function getAPIInterface(): APIInterface {
     return {
         verifyEmailPOST: async function (
             this: APIInterface,
-            { token, options, session, userContext }
+            { token, tenantId, options, session, userContext }
         ): Promise<
             | { status: "OK"; user: User; newSession?: SessionContainerInterface }
             | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
@@ -19,6 +19,7 @@ export default function getAPIInterface(): APIInterface {
         > {
             const verifyTokenResponse = await options.recipeImplementation.verifyEmailUsingToken({
                 token,
+                tenantId,
                 attemptAccountLinking: true,
                 userContext,
             });
@@ -127,9 +128,7 @@ export default function getAPIInterface(): APIInterface {
             | GeneralErrorResponse
         > {
             // In this API, we generate the email verification token for session's recipe user ID.
-
-            // In case the email is already verified, we do the same thing
-            // as what happens in the verifyEmailPOST API post email verification (cause maybe the session is outdated).
+            const tenantId = session.getTenantId();
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
                 session.getRecipeUserId(),
@@ -161,9 +160,12 @@ export default function getAPIInterface(): APIInterface {
                 let response = await options.recipeImplementation.createEmailVerificationToken({
                     recipeUserId: session.getRecipeUserId(),
                     email: emailInfo.email,
+                    tenantId,
                     userContext,
                 });
 
+                // In case the email is already verified, we do the same thing
+                // as what happens in the verifyEmailPOST API post email verification (cause maybe the session is outdated).
                 if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
                     logDebugMessage(
                         `Email verification email not sent to user ${session
@@ -196,6 +198,7 @@ export default function getAPIInterface(): APIInterface {
                     appInfo: options.appInfo,
                     token: response.token,
                     recipeId: options.recipeId,
+                    tenantId,
                 });
 
                 logDebugMessage(`Sending email verification email to ${emailInfo}`);
@@ -207,6 +210,7 @@ export default function getAPIInterface(): APIInterface {
                         email: emailInfo.email,
                     },
                     emailVerifyLink,
+                    tenantId,
                     userContext,
                 });
 

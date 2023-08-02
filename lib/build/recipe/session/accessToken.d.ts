@@ -16,6 +16,7 @@ export declare function getInfoFromAccessToken(
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
+    tenantId: string;
 }>;
 export declare function validateAccessTokenStructure(payload: any, version: number): void;
 export declare function sanitizeNumberInput(field: any): number | undefined;

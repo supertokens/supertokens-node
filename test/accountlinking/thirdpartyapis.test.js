@@ -38,54 +38,58 @@ let nock = require("nock");
 describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.test.js]")}`, function () {
     before(function () {
         this.customProviderWithEmailVerified = {
-            id: "custom-ev",
-            get: (recipe, authCode) => {
-                return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
+            config: {
+                thirdPartyId: "custom-ev",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [
+                    {
+                        clientId: "supertokens",
+                        clientSecret: "",
                     },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
-                        return {
-                            id: "user",
-                            email: {
-                                id: "email@test.com",
-                                isVerified: true,
-                            },
-                        };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
-                };
+                ],
             },
+            override: (oI) => ({
+                ...oI,
+                exchangeAuthCodeForOAuthTokens: () => ({}),
+                getUserInfo: () => {
+                    return {
+                        thirdPartyUserId: "user",
+                        email: {
+                            id: "email@test.com",
+                            isVerified: true,
+                        },
+                        rawUserInfoFromProvider: {},
+                    };
+                },
+            }),
         };
         this.customProviderWithEmailNotVerified = {
-            id: "custom-no-ev",
-            get: (recipe, authCode) => {
-                return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
+            config: {
+                thirdPartyId: "custom-no-ev",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [
+                    {
+                        clientId: "supertokens",
+                        clientSecret: "",
                     },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
-                        return {
-                            id: "user",
-                            email: {
-                                id: "email@test.com",
-                                isVerified: false,
-                            },
-                        };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
-                    },
-                };
+                ],
             },
+            override: (oI) => ({
+                ...oI,
+                exchangeAuthCodeForOAuthTokens: () => ({}),
+                getUserInfo: () => {
+                    return {
+                        thirdPartyUserId: "user",
+                        email: {
+                            id: "email@test.com",
+                            isVerified: false,
+                        },
+                        rawUserInfoFromProvider: {},
+                    };
+                },
+            }),
         };
     });
     beforeEach(async function () {
@@ -121,10 +125,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -145,16 +157,26 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("google", "abc", "email@test.com", true)).user;
-            assert(tpUser.isPrimaryUser === true);
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", "email@test.com", true)
+            ).user;
+            assert(tpUser.isPrimaryUser);
 
+            assert.strictEqual(
+                await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED),
+                undefined
+            );
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -167,8 +189,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
 
             assert(response.body.status === "OK");
-            assert(
-                (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) !== undefined
+            assert.notStrictEqual(
+                await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED),
+                undefined
             );
         });
 
@@ -193,10 +216,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -217,16 +248,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("custom-ev", "user", "email2@test.com", true)).user;
-            assert(tpUser.isPrimaryUser === true);
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email2@test.com", true)
+            ).user;
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -265,10 +302,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailNotVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -289,16 +334,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
-            assert(tpUser.isPrimaryUser === true);
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
+            ).user;
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -337,10 +388,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -361,16 +420,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
-            assert(tpUser.isPrimaryUser === true);
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
+            ).user;
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -422,10 +487,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -451,11 +523,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
-            assert(tpUser.isPrimaryUser === true);
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
+            ).user;
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let tpUser2 = (
-                await ThirdParty.signInUp("custom-ev", "user", "email@test.com", true, {
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email@test.com", true, {
                     doNotLink: true,
                 })
             ).user;
@@ -466,8 +540,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -537,10 +615,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -561,16 +647,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("google", "abcd", "email@test.com", true)).user;
-            assert(tpUser.isPrimaryUser === true);
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd", "email@test.com", true)
+            ).user;
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
             let response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -615,10 +707,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -639,10 +739,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("custom-ev", "user", "email2@test.com", true)).user;
-            assert(tpUser.isPrimaryUser === true);
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-ev", "user", "email2@test.com", true)
+            ).user;
+            await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
 
-            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            let tpUser2 = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", true)
+            ).user;
             assert(tpUser2.isPrimaryUser === true);
 
             let response = await new Promise((resolve) =>
@@ -650,8 +754,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -694,10 +802,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailNotVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -718,10 +834,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", false)).user;
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email2@test.com", false)
+            ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            let tpUser2 = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", true)
+            ).user;
             assert(tpUser2.isPrimaryUser === true);
 
             let response = await new Promise((resolve) =>
@@ -729,8 +849,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -776,10 +900,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailNotVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -806,19 +938,22 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
             let tpUser = (
-                await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", true, {
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email2@test.com", true, {
                     doNotLink: true,
                 })
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
             let token = await EmailVerification.createEmailVerificationToken(
+                "public",
                 tpUser.loginMethods[0].recipeUserId,
                 "email@test.com"
             );
-            await EmailVerification.verifyEmailUsingToken(token.token);
+            await EmailVerification.verifyEmailUsingToken("public", token.token);
 
-            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            let tpUser2 = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", true)
+            ).user;
             assert(tpUser2.isPrimaryUser === true);
 
             let response = await new Promise((resolve) =>
@@ -826,8 +961,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -867,10 +1006,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailNotVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -891,10 +1038,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("custom-no-ev", "user", "email@test.com", false)).user;
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email@test.com", false)
+            ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            let tpUser2 = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", true)
+            ).user;
             assert(tpUser2.isPrimaryUser === true);
 
             let response = await new Promise((resolve) =>
@@ -902,8 +1053,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -943,10 +1098,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailNotVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -973,13 +1136,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
             let tpUser = (
-                await ThirdParty.signInUp("custom-no-ev", "user", "email@test.com", true, {
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email@test.com", true, {
                     doNotLink: true,
                 })
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", true)).user;
+            let tpUser2 = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", true)
+            ).user;
             assert(tpUser2.isPrimaryUser === true);
 
             let response = await new Promise((resolve) =>
@@ -987,8 +1152,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -1032,10 +1201,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailNotVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1056,10 +1233,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", false)).user;
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email2@test.com", false)
+            ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", false)).user;
+            let tpUser2 = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", false)
+            ).user;
             assert(tpUser2.isPrimaryUser === false);
 
             let response = await new Promise((resolve) =>
@@ -1067,8 +1248,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -1108,10 +1293,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         signInAndUpFeature: {
                             providers: [
                                 this.customProviderWithEmailNotVerified,
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -1132,31 +1325,40 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
             nock("https://test.com").post("/oauth/token").reply(200, {});
 
-            let tpUser = (await ThirdParty.signInUp("custom-no-ev", "user", "email2@test.com", false)).user;
+            let tpUser = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "custom-no-ev", "user", "email2@test.com", false)
+            ).user;
             assert(tpUser.isPrimaryUser === false);
 
             let token = await EmailVerification.createEmailVerificationToken(
+                "public",
                 tpUser.loginMethods[0].recipeUserId,
                 "email@test.com"
             );
-            await EmailVerification.verifyEmailUsingToken(token.token);
+            await EmailVerification.verifyEmailUsingToken("public", token.token);
 
-            let tpUser2 = (await ThirdParty.signInUp("google", "user", "email@test.com", false)).user;
+            let tpUser2 = (
+                await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "user", "email@test.com", false)
+            ).user;
             assert(tpUser2.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(tpUser2.loginMethods[0].recipeUserId);
 
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
                         thirdPartyId: "custom-no-ev",
-                        code: "abcdefghj",
-                        redirectURI: "http://127.0.0.1/callback",
+                        redirectURIInfo: {
+                            redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                            redirectURIQueryParams: {
+                                code: "abcdefghj",
+                            },
+                        },
                     })
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }

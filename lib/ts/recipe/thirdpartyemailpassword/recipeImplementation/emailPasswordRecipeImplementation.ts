@@ -8,6 +8,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         signUp: async function (input: {
             email: string;
             password: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await recipeInterface.emailPasswordSignUp(input);
@@ -16,6 +17,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         signIn: async function (input: {
             email: string;
             password: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return recipeInterface.emailPasswordSignIn(input);
@@ -24,12 +26,18 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         createResetPasswordToken: async function (input: {
             userId: string;
             email: string;
+            tenantId: string;
             userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return recipeInterface.createResetPasswordToken(input);
         },
 
-        consumePasswordResetToken: async function (input: { token: string; userContext: any }) {
+        consumePasswordResetToken: async function (input: {
+            token: string;
+            newPassword: string;
+            tenantId: string;
+            userContext: any;
+        }) {
             return recipeInterface.consumePasswordResetToken(input);
         },
 
@@ -53,6 +61,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password?: string;
             userContext: any;
             applyPasswordPolicy: boolean;
+            tenantIdForPasswordPolicy: string;
         }): Promise<
             | {
                   status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";

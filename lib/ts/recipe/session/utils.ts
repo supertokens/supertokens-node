@@ -24,7 +24,6 @@ import {
     TokenTransferMethod,
 } from "./types";
 import { setFrontTokenInHeaders, setToken, getAuthModeFromHeader } from "./cookieAndHeaders";
-import { URL } from "url";
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH, hundredYearsInMs } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -296,6 +295,7 @@ export async function getRequiredClaimValidators(
         {
             userId: session.getUserId(),
             recipeUserId: session.getRecipeUserId(),
+            tenantId: session.getTenantId(),
             claimValidatorsAddedByOtherRecipes,
             userContext,
         }

@@ -28,7 +28,6 @@ export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     getEmailDeliveryConfig: (
-        recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -43,7 +42,7 @@ export type TypeNormalisedInput = {
 
 export type TypeInputFormField = {
     id: string;
-    validate?: (value: any) => Promise<string | undefined>;
+    validate?: (value: any, tenantId: string) => Promise<string | undefined>;
     optional?: boolean;
 };
 
@@ -55,7 +54,7 @@ export type TypeInputSignUp = {
 
 export type NormalisedFormField = {
     id: string;
-    validate: (value: any) => Promise<string | undefined>;
+    validate: (value: any, tenantId: string) => Promise<string | undefined>;
     optional: boolean;
 };
 
@@ -88,6 +87,7 @@ export type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -104,6 +104,7 @@ export type RecipeInterface = {
     createNewRecipeUser(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -116,6 +117,7 @@ export type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
@@ -127,11 +129,14 @@ export type RecipeInterface = {
     createResetPasswordToken(input: {
         userId: string; // the id can be either recipeUserId or primaryUserId
         email: string;
+        tenantId: string;
         userContext: any;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
 
     consumePasswordResetToken(input: {
         token: string;
+        newPassword: string;
+        tenantId: string;
         userContext: any;
     }): Promise<
         | {
@@ -150,6 +155,7 @@ export type RecipeInterface = {
         password?: string;
         userContext: any;
         applyPasswordPolicy?: boolean;
+        tenantIdForPasswordPolicy: string;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
@@ -178,6 +184,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               email: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -195,6 +202,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -216,6 +224,7 @@ export type APIInterface = {
                   value: string;
               }[];
               token: string;
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -238,6 +247,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -259,6 +269,7 @@ export type APIInterface = {
                   id: string;
                   value: string;
               }[];
+              tenantId: string;
               options: APIOptions;
               userContext: any;
           }) => Promise<
@@ -272,40 +283,6 @@ export type APIInterface = {
                 }
               | GeneralErrorResponse
           >);
-
-    // This is commented out because we have decided to not add this feature for now,
-    // and add it at a later iteration in the project.
-    // linkAccountWithUserFromSessionPOST:
-    //     | undefined
-    //     | ((input: {
-    //           formFields: {
-    //               id: string;
-    //               value: string;
-    //           }[];
-    //           session: SessionContainerInterface;
-    //           options: APIOptions;
-    //           userContext: any;
-    //       }) => Promise<
-    //           | {
-    //                 status: "OK";
-    //                 wereAccountsAlreadyLinked: boolean;
-    //             }
-    //           | {
-    //                 status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-    //                 description: string;
-    //             }
-    //           | {
-    //                 status: "WRONG_CREDENTIALS_ERROR";
-    //             }
-    //           | {
-    //                 status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-    //                 description: string;
-    //                 recipeUserId: string;
-    //                 email: string;
-    //                 primaryUserId: string;
-    //             }
-    //           | GeneralErrorResponse
-    //       >);
 };
 
 export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
@@ -316,6 +293,7 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
         email: string;
     };
     passwordResetLink: string;
+    tenantId: string;
 };
 
 export type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;

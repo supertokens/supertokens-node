@@ -34,8 +34,6 @@ let { middleware, errorHandler } = require("../../framework/express");
 let { maxVersion } = require("../../lib/build/utils");
 
 /**
- * TODO: (later) in passwordResetFunctions.ts:
- *        - (later) check that createAndSendCustomEmail works fine
  * TODO: generate token API:
  *        - (later) Call the createResetPasswordToken function with valid input
  *        - (later) Call the createResetPasswordToken with unknown userId and test error thrown
@@ -126,15 +124,13 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             recipeList: [
                 EmailPassword.init({
                     emailDelivery: {
-                        override: (oI) => {
-                            return {
-                                ...oI,
-                                sendEmail: async (input) => {
-                                    resetURL = input.passwordResetLink.split("?")[0];
-                                    tokenInfo = input.passwordResetLink.split("?")[1].split("&")[0];
-                                    ridInfo = input.passwordResetLink.split("?")[1].split("&")[1];
-                                },
-                            };
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.passwordResetLink).search);
+                                resetURL = input.passwordResetLink.split("?")[0];
+                                tokenInfo = searchParams.get("token");
+                                ridInfo = searchParams.get("rid");
+                            },
                         },
                     },
                 }),
@@ -172,8 +168,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 })
         );
         assert(resetURL === "https://supertokens.io/auth/reset-password");
-        assert(tokenInfo.startsWith("token="));
-        assert(ridInfo.startsWith("rid=emailpassword"));
+        assert.notStrictEqual(tokenInfo, undefined);
+        assert.notStrictEqual(tokenInfo, null);
+        assert.strictEqual(ridInfo, "emailpassword");
     });
 
     /*
@@ -374,6 +371,14 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                             };
                         },
                     },
+                    emailDelivery: {
+                        service: {
+                            sendEmail: async (input) => {
+                                const searchParams = new URLSearchParams(new URL(input.passwordResetLink).search);
+                                token = searchParams.get("token");
+                            },
+                        },
+                    },
                 }),
                 Session.init({ getTokenTransferMethod: () => "cookie" }),
             ],
@@ -491,52 +496,6 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         assert(successResponse.user.email === userInfo.email);
     });
 
-    describe("getPasswordResetTokenInfo tests", function () {
-        it("getPasswordResetTokenInfo with valid token should return correct info", async function () {
-            await startST();
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [EmailPassword.init()],
-            });
-
-            let user = await EmailPassword.signUp("test@example.com", "password1234");
-
-            let resetPassword = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
-
-            let info = await EmailPassword.getPasswordResetTokenInfo(resetPassword.token);
-
-            assert(info.status === "OK");
-            assert(info.userId === user.user.id);
-            assert(info.email === "test@example.com");
-        });
-
-        it("getPasswordResetTokenInfo returns UNKNOWN_USER_ID_ERROR if the token doesnt exist", async function () {
-            await startST();
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [EmailPassword.init()],
-            });
-
-            let info = await EmailPassword.getPasswordResetTokenInfo("random");
-
-            assert(info.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
-        });
-    });
-
     describe("createPasswordResetToken tests", function () {
         it("createPasswordResetToken with random user ID fails", async function () {
             await startST();
@@ -552,7 +511,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 recipeList: [EmailPassword.init()],
             });
 
-            let resetPassword = await EmailPassword.createResetPasswordToken("random", "test@example.com");
+            let resetPassword = await EmailPassword.createResetPasswordToken("public", "random", "test@example.com");
 
             assert(resetPassword.status === "UNKNOWN_USER_ID_ERROR");
         });
@@ -573,21 +532,34 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
                 ],
             });
 
-            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let user = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
 
-            let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
+            let tokenInfo = await EmailPassword.createResetPasswordToken("public", user.user.id, "test@example.com");
 
-            assert(tokenInfo.status === "OK");
+            assert.strictEqual(tokenInfo.status, "OK");
         });
     });
 
@@ -606,11 +578,15 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 recipeList: [EmailPassword.init()],
             });
 
-            let user = await EmailPassword.signUp("test@example.com", "password1234");
+            let user = await EmailPassword.signUp("public", "test@example.com", "password1234");
 
-            let resetPassword = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
+            let resetPassword = await EmailPassword.createResetPasswordToken(
+                "public",
+                user.user.id,
+                "test@example.com"
+            );
 
-            let info = await EmailPassword.consumePasswordResetToken(resetPassword.token);
+            let info = await EmailPassword.consumePasswordResetToken("public", resetPassword.token);
 
             assert(info.status === "OK");
             assert(info.userId === user.user.id);
@@ -652,21 +628,34 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
                 ],
             });
 
-            let user = await ThirdParty.signInUp("google", "abcd", "test@example.com", false);
+            let user = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abcd",
+                "test@example.com",
+                false
+            );
 
-            let tokenInfo = await EmailPassword.createResetPasswordToken(user.user.id, "test@example.com");
+            let tokenInfo = await EmailPassword.createResetPasswordToken("public", user.user.id, "test@example.com");
 
-            let info = await EmailPassword.consumePasswordResetToken(tokenInfo.token);
+            let info = await EmailPassword.consumePasswordResetToken("public", tokenInfo.token);
 
             assert(info.status === "OK");
             assert(info.userId === user.user.id);

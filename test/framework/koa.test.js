@@ -29,7 +29,6 @@ const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 const Passwordless = require("../../recipe/passwordless");
 const ThirdParty = require("../../recipe/thirdparty");
-const { Google, Github, Apple } = require("../../recipe/thirdparty");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
@@ -84,7 +83,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
 
@@ -157,7 +156,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
 
@@ -232,7 +231,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
 
@@ -336,7 +335,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
 
@@ -433,7 +432,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
 
@@ -587,7 +586,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
 
@@ -653,7 +652,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
 
@@ -804,7 +803,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "id1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "id1", {}, {});
             ctx.body = "";
         });
 
@@ -888,7 +887,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "id1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "id1", {}, {});
             ctx.body = "";
         });
 
@@ -973,11 +972,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
         router.post("/usercreate", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "someUniqueUserId", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "someUniqueUserId", {}, {});
             ctx.body = "";
         });
         router.post("/session/revoke", async (ctx, _) => {
@@ -1110,7 +1109,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
             ctx.body = "";
         });
         router.post("/updateSessionData", async (ctx, _) => {
@@ -1259,7 +1258,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "user1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", "user1", {}, {});
             ctx.body = "";
         });
         router.post("/updateAccessTokenPayload", async (ctx, _) => {
@@ -1312,7 +1311,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1337,7 +1336,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
@@ -1380,7 +1379,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.key, "value");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 10);
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1404,7 +1403,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.strictEqual(frontendInfo.up.sub, "user1");
         assert.strictEqual(frontendInfo.up.exp, Math.floor(frontendInfo.ate / 1000));
-        assert.strictEqual(Object.keys(frontendInfo.up).length, 8);
+        assert.strictEqual(Object.keys(frontendInfo.up).length, 9);
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
@@ -1434,6 +1433,8 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 "sessionHandle",
                 "sub",
                 "iss",
+                "tId",
+                "recipeUserId",
             ])
         );
         //invalid session handle when updating the jwt payload
@@ -1975,23 +1976,45 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            Google({
-                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                clientSecret: "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",
-                            }),
-                            Github({
-                                clientId: "467101b197249757c71f",
-                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                            }),
-                            Apple({
-                                clientId: "4398792-io.supertokens.example.service",
-                                clientSecret: {
-                                    keyId: "7M48Y4RYDL",
-                                    privateKey:
-                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                    teamId: "YWQCXGJRJL",
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId:
+                                                "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            clientSecret: "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",
+                                        },
+                                    ],
                                 },
-                            }),
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId: "467101b197249757c71f",
+                                            clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId: "4398792-io.supertokens.example.service",
+                                            additionalConfig: {
+                                                keyId: "7M48Y4RYDL",
+                                                privateKey:
+                                                    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                                teamId: "YWQCXGJRJL",
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),
@@ -2061,23 +2084,45 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 ThirdParty.init({
                     signInAndUpFeature: {
                         providers: [
-                            Google({
-                                clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
-                                clientSecret: "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",
-                            }),
-                            Github({
-                                clientId: "467101b197249757c71f",
-                                clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
-                            }),
-                            Apple({
-                                clientId: "4398792-io.supertokens.example.service",
-                                clientSecret: {
-                                    keyId: "7M48Y4RYDL",
-                                    privateKey:
-                                        "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
-                                    teamId: "YWQCXGJRJL",
+                            {
+                                config: {
+                                    thirdPartyId: "google",
+                                    clients: [
+                                        {
+                                            clientId:
+                                                "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                                            clientSecret: "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",
+                                        },
+                                    ],
                                 },
-                            }),
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "github",
+                                    clients: [
+                                        {
+                                            clientId: "467101b197249757c71f",
+                                            clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                config: {
+                                    thirdPartyId: "apple",
+                                    clients: [
+                                        {
+                                            clientId: "4398792-io.supertokens.example.service",
+                                            additionalConfig: {
+                                                keyId: "7M48Y4RYDL",
+                                                privateKey:
+                                                    "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
+                                                teamId: "YWQCXGJRJL",
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
                         ],
                     },
                 }),

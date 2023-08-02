@@ -17,9 +17,13 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
-export default async function createCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function createCode(
+    apiImplementation: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<boolean> {
     if (apiImplementation.createCodePOST === undefined) {
         return false;
     }
@@ -55,7 +59,7 @@ export default async function createCode(apiImplementation: APIInterface, option
         (options.config.contactMethod === "EMAIL" || options.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
         email = email.trim();
-        const validateError = await options.config.validateEmailAddress(email);
+        const validateError = await options.config.validateEmailAddress(email, tenantId);
         if (validateError !== undefined) {
             send200Response(options.res, {
                 status: "GENERAL_ERROR",
@@ -69,7 +73,7 @@ export default async function createCode(apiImplementation: APIInterface, option
         phoneNumber !== undefined &&
         (options.config.contactMethod === "PHONE" || options.config.contactMethod === "EMAIL_OR_PHONE")
     ) {
-        const validateError = await options.config.validatePhoneNumber(phoneNumber);
+        const validateError = await options.config.validatePhoneNumber(phoneNumber, tenantId);
         if (validateError !== undefined) {
             send200Response(options.res, {
                 status: "GENERAL_ERROR",
@@ -89,8 +93,8 @@ export default async function createCode(apiImplementation: APIInterface, option
 
     let result = await apiImplementation.createCodePOST(
         email !== undefined
-            ? { email, options, userContext: makeDefaultUserContextFromAPI(options.req) }
-            : { phoneNumber: phoneNumber!, options, userContext: makeDefaultUserContextFromAPI(options.req) }
+            ? { email, tenantId, options, userContext }
+            : { phoneNumber: phoneNumber!, tenantId, options, userContext }
     );
 
     send200Response(options.res, result);

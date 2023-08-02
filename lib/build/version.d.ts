@@ -1,4 +1,4 @@
 // @ts-nocheck
-export declare const version = "14.1.2";
+export declare const version = "15.0.0";
 export declare const cdiSupported: string[];
-export declare const dashboardVersion = "0.6";
+export declare const dashboardVersion = "0.7";

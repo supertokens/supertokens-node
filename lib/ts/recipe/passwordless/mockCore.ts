@@ -1,21 +1,18 @@
-import axios from "axios";
 import { createUserObject, mockGetUser } from "../accountlinking/mockCore";
 import RecipeUserId from "../../recipeUserId";
 import AccountLinking from "../accountlinking/recipe";
 import { RecipeInterface } from "./types";
 
-const baseURL = "http://localhost:8080/";
 export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (input) {
     let resp;
     try {
-        resp = await axios("/recipe/signinup/code/consume", {
+        resp = await fetch("http://localhost:8080/recipe/signinup/code/consume", {
             method: "POST",
-            baseURL,
             headers: {
                 rid: "passwordless",
                 "content-type": "application/json",
             },
-            data: copyAndRemoveUserContext(input),
+            body: JSON.stringify(copyAndRemoveUserContext(input)),
         });
     } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
@@ -31,13 +28,14 @@ export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (i
         }
     }
 
-    if (resp.data.status !== "OK") {
-        return resp.data;
+    const respBody = await resp.json();
+    if (respBody.status !== "OK") {
+        return respBody;
     }
 
-    const user = resp.data.user;
-    if (resp.data.createdNewUser) {
-        resp.data.user = createUserObject({
+    const user = respBody.user;
+    if (respBody.createdNewUser) {
+        respBody.user = createUserObject({
             id: user.id,
             timeJoined: user.timeJoined,
             isPrimaryUser: false,
@@ -52,112 +50,125 @@ export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (i
                     verified: true,
                     email: user.email,
                     phoneNumber: user.phoneNumber,
+                    tenantIds: user.tenantIds,
                 },
             ],
         });
     } else {
-        resp.data.user = (await mockGetUser({
-            userId: resp.data.user.id,
+        respBody.user = (await mockGetUser({
+            userId: respBody.user.id,
         }))!;
     }
-    return resp.data;
+    return respBody;
 };
 export const mockCreateCode: RecipeInterface["createCode"] = async function (input) {
-    const resp = await axios("/recipe/signinup/code", {
+    const resp = await fetch("http://localhost:8080/recipe/signinup/code", {
         method: "POST",
-        baseURL,
         headers: {
             rid: "passwordless",
             "content-type": "application/json",
         },
-        data: copyAndRemoveUserContext(input),
+        body: JSON.stringify(copyAndRemoveUserContext(input)),
     });
-    return resp.data;
+    const respBody = await resp.json();
+    return respBody;
 };
 export const mockCreateNewCodeForDevice: RecipeInterface["createNewCodeForDevice"] = async function (input) {
-    const resp = await axios("/recipe/signinup/code", {
+    const resp = await fetch("http://localhost:8080/recipe/signinup/code", {
         method: "POST",
-        baseURL,
         headers: {
             rid: "passwordless",
             "content-type": "application/json",
         },
-        data: copyAndRemoveUserContext(input),
+        body: JSON.stringify(copyAndRemoveUserContext(input)),
     });
-    return resp.data;
+    const respBody = await resp.json();
+    return respBody;
 };
 export const mockListCodesByDeviceId: RecipeInterface["listCodesByDeviceId"] = async function (input) {
-    const resp = await axios("/recipe/signinup/codes", {
-        method: "GET",
-        baseURL,
-        headers: {
-            rid: "passwordless",
-            "content-type": "application/json",
-        },
-        params: copyAndRemoveUserContext(input),
-    });
-    return resp.data;
+    const resp = await fetch(
+        "http://localhost:8080/recipe/signinup/codes?" +
+            new URLSearchParams(copyAndRemoveUserContext(input)).toString(),
+        {
+            method: "GET",
+            headers: {
+                rid: "passwordless",
+                "content-type": "application/json",
+            },
+        }
+    );
+    const respBody = await resp.json();
+    return respBody;
 };
 export const mockListCodesByEmail: RecipeInterface["listCodesByEmail"] = async function (input) {
-    const resp = await axios("/recipe/signinup/codes", {
-        method: "GET",
-        baseURL,
-        headers: {
-            rid: "passwordless",
-            "content-type": "application/json",
-        },
-        params: copyAndRemoveUserContext(input),
-    });
-    return resp.data;
+    const resp = await fetch(
+        "http://localhost:8080/recipe/signinup/codes?" +
+            new URLSearchParams(copyAndRemoveUserContext(input)).toString(),
+        {
+            method: "GET",
+            headers: {
+                rid: "passwordless",
+                "content-type": "application/json",
+            },
+        }
+    );
+    const respBody = await resp.json();
+    return respBody;
 };
 export const mockListCodesByPhoneNumber: RecipeInterface["listCodesByPhoneNumber"] = async function (input) {
-    const resp = await axios("/recipe/signinup/codes", {
-        method: "GET",
-        baseURL,
-        headers: {
-            rid: "passwordless",
-            "content-type": "application/json",
-        },
-        params: copyAndRemoveUserContext(input),
-    });
-    return resp.data;
+    const resp = await fetch(
+        "http://localhost:8080/recipe/signinup/codes?" +
+            new URLSearchParams(copyAndRemoveUserContext(input)).toString(),
+        {
+            method: "GET",
+            headers: {
+                rid: "passwordless",
+                "content-type": "application/json",
+            },
+        }
+    );
+    const respBody = await resp.json();
+    return respBody;
 };
 export const mockListCodesByPreAuthSessionId: RecipeInterface["listCodesByPreAuthSessionId"] = async function (input) {
-    const resp = await axios("/recipe/signinup/codes", {
-        method: "GET",
-        baseURL,
-        headers: {
-            rid: "passwordless",
-            "content-type": "application/json",
-        },
-        params: copyAndRemoveUserContext(input),
-    });
-    return resp.data;
+    const resp = await fetch(
+        "http://localhost:8080/recipe/signinup/codes?" +
+            new URLSearchParams(copyAndRemoveUserContext(input)).toString(),
+        {
+            method: "GET",
+            headers: {
+                rid: "passwordless",
+                "content-type": "application/json",
+            },
+        }
+    );
+    const respBody = await resp.json();
+    return respBody;
 };
 
 export const mockRevokeCode: RecipeInterface["revokeCode"] = async function (input) {
-    const resp = await axios("/recipe/signinup/code/remove", {
+    const resp = await fetch("http://localhost:8080/recipe/signinup/code/remove", {
         method: "POST",
-        baseURL,
         headers: {
             rid: "passwordless",
             "content-type": "application/json",
         },
-        data: copyAndRemoveUserContext(input),
+        body: JSON.stringify(copyAndRemoveUserContext(input)),
     });
-    return resp.data;
+    const respBody = await resp.json();
+    return respBody;
 };
 export const mockRevokeAllCodes: RecipeInterface["revokeAllCodes"] = async function (input) {
-    const resp = await axios("/recipe/signinup/codes/remove", {
+    const resp = await fetch("http://localhost:8080/recipe/signinup/codes/remove", {
         method: "POST",
-        baseURL,
         headers: {
             rid: "passwordless",
             "content-type": "application/json",
         },
-        data: copyAndRemoveUserContext(input),
+        body: JSON.stringify(copyAndRemoveUserContext(input)),
     });
-    return resp.data;
+    const respBody = await resp.json();
+    return respBody;
 };
 export const mockUpdateUser: RecipeInterface["updateUser"] = async function (input) {
     if (input.email !== null) {
@@ -189,19 +200,21 @@ export const mockUpdateUser: RecipeInterface["updateUser"] = async function (inp
         }
     }
     try {
-        const resp = await axios("/recipe/user", {
+        const resp = await fetch("http://localhost:8080/recipe/user", {
             method: "PUT",
-            baseURL,
             headers: {
                 rid: "passwordless",
                 "content-type": "application/json",
             },
-            data: copyAndRemoveUserContext({
-                ...input,
-                userId: input.recipeUserId.getAsString(),
-            }),
+            body: JSON.stringify(
+                copyAndRemoveUserContext({
+                    ...input,
+                    userId: input.recipeUserId.getAsString(),
+                })
+            ),
         });
-        return resp.data;
+        const respBody = await resp.json();
+        return respBody;
     } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
             throw new Error(

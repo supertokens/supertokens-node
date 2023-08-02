@@ -15,7 +15,12 @@ type Response =
           error: string;
       };
 
-export const userPasswordPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userPasswordPut = async (
+    _: APIInterface,
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const recipeUserId = requestBody.recipeUserId;
     const newPassword = requestBody.newPassword;
@@ -57,6 +62,8 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
         const updateResponse = await EmailPassword.updateEmailOrPassword({
             recipeUserId: new RecipeUserId(recipeUserId),
             password: newPassword,
+            tenantIdForPasswordPolicy: tenantId,
+            userContext,
         });
 
         if (
@@ -80,6 +87,8 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
     const updateResponse = await ThirdPartyEmailPassword.updateEmailOrPassword({
         recipeUserId: new RecipeUserId(recipeUserId),
         password: newPassword,
+        tenantIdForPasswordPolicy: tenantId,
+        userContext,
     });
 
     if (

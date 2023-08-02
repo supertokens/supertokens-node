@@ -17,14 +17,17 @@ import { VerifySessionOptions } from "..";
 import { FastifyRequest, FastifyResponse, SessionRequest } from "../../../framework/fastify/framework";
 import { FastifyReply } from "fastify";
 import SuperTokens from "../../../supertokens";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, res: FastifyReply) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(res);
+        const userContext = makeDefaultUserContextFromAPI(request);
+
         try {
-            req.session = await sessionRecipe.verifySession(options, request, response);
+            req.session = await sessionRecipe.verifySession(options, request, response, userContext);
         } catch (err) {
             const supertokens = SuperTokens.getInstanceOrThrowError();
             await supertokens.errorHandler(err, request, response);

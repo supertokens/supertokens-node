@@ -17,7 +17,7 @@ import type { MiddlewareContext, Request, Response, Middleware } from "@loopback
 import type { Next } from "@loopback/core";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import { HTTPMethod } from "../../types";
-import { normaliseHttpMethod } from "../../utils";
+import { makeDefaultUserContextFromAPI, normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import {
@@ -150,8 +150,10 @@ export const middleware: Middleware = async (ctx: MiddlewareContext, next: Next)
     let supertokens = SuperTokens.getInstanceOrThrowError();
     let request = new LoopbackRequest(ctx);
     let response = new LoopbackResponse(ctx);
+    const userContext = makeDefaultUserContextFromAPI(request);
+
     try {
-        let result = await supertokens.middleware(request, response);
+        let result = await supertokens.middleware(request, response, userContext);
         if (!result) {
             return await next();
         }

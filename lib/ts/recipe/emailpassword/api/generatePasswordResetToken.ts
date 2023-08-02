@@ -16,11 +16,12 @@
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
-import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function generatePasswordResetToken(
     apiImplementation: APIInterface,
-    options: APIOptions
+    tenantId: string,
+    options: APIOptions,
+    userContext: any
 ): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
@@ -34,13 +35,15 @@ export default async function generatePasswordResetToken(
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
-        (await options.req.getJSONBody()).formFields
+        (await options.req.getJSONBody()).formFields,
+        tenantId
     );
 
     let result = await apiImplementation.generatePasswordResetTokenPOST({
         formFields,
+        tenantId,
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        userContext,
     });
 
     send200Response(options.res, result);

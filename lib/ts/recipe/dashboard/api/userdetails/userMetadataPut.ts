@@ -7,7 +7,12 @@ type Response = {
     status: "OK";
 };
 
-export const userMetadataPut = async (_: APIInterface, options: APIOptions): Promise<Response> => {
+export const userMetadataPut = async (
+    _: APIInterface,
+    ___: string,
+    options: APIOptions,
+    userContext: any
+): Promise<Response> => {
     const requestBody = await options.req.getJSONBody();
     const userId = requestBody.userId;
     const data = requestBody.data;
@@ -62,8 +67,8 @@ export const userMetadataPut = async (_: APIInterface, options: APIOptions): Pro
      *
      * Removing first ensures that the final data is exactly what the user wanted it to be
      */
-    await UserMetaData.clearUserMetadata(userId);
-    await UserMetaData.updateUserMetadata(userId, JSON.parse(data));
+    await UserMetaData.clearUserMetadata(userId, userContext);
+    await UserMetaData.updateUserMetadata(userId, JSON.parse(data), userContext);
 
     return {
         status: "OK",

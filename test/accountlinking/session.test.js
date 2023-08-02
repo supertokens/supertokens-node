@@ -62,9 +62,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             assert(session.getUserId() === session.getRecipeUserId().getAsString());
         });
@@ -83,14 +86,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             assert(session.getUserId() !== session.getRecipeUserId().getAsString());
             assert(session.getUserId() === epUser.id);
@@ -112,6 +118,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random")
             );
 
@@ -135,14 +142,14 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
             const app = express();
 
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, epUser.loginMethods[0].recipeUserId, {}, {});
+                await Session.createNewSession(req, res, "public", epUser.loginMethods[0].recipeUserId, {}, {});
                 res.status(200).send("");
             });
 
@@ -183,19 +190,19 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             const app = express();
 
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, epUser2.loginMethods[0].recipeUserId, {}, {});
+                await Session.createNewSession(req, res, "public", epUser2.loginMethods[0].recipeUserId, {}, {});
                 res.status(200).send("");
             });
 
@@ -243,7 +250,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, supertokens.convertToRecipeUserId("random"), {}, {});
+                await Session.createNewSession(req, res, "public", supertokens.convertToRecipeUserId("random"), {}, {});
                 res.status(200).send("");
             });
 
@@ -287,9 +294,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
@@ -310,14 +320,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             session = await Session.getSessionWithoutRequestResponse(session.getAccessToken());
 
@@ -341,6 +354,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random")
             );
 
@@ -364,9 +378,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             session = await Session.getSessionWithoutRequestResponse(session.getAccessToken(), undefined, {
                 checkDatabase: true,
@@ -389,14 +406,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             session = await Session.getSessionWithoutRequestResponse(session.getAccessToken(), undefined, {
                 checkDatabase: true,
@@ -422,6 +442,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random")
             );
 
@@ -451,9 +472,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser.loginMethods[0].recipeUserId,
                 {},
                 {}
@@ -505,14 +527,15 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser2.loginMethods[0].recipeUserId,
                 {},
                 {}
@@ -567,6 +590,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random"),
                 {},
                 {}
@@ -619,9 +643,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             info = await Session.getSessionInformation(session.getHandle());
 
@@ -642,14 +669,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             info = await Session.getSessionInformation(session.getHandle());
 
@@ -673,6 +703,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random")
             );
 
@@ -698,9 +729,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
 
             session = await Session.refreshSessionWithoutRequestResponse(
                 session.getAllSessionTokensDangerously().refreshToken
@@ -723,14 +757,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             session = await Session.refreshSessionWithoutRequestResponse(
                 session.getAllSessionTokensDangerously().refreshToken
@@ -756,6 +793,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random")
             );
 
@@ -781,14 +819,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             let refreshToken = session.getAllSessionTokensDangerously().refreshToken;
 
@@ -822,14 +863,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             const app = express();
 
@@ -883,18 +927,20 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser2.loginMethods[0].recipeUserId
             );
 
             let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser.loginMethods[0].recipeUserId
             );
 
@@ -919,18 +965,20 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser2.loginMethods[0].recipeUserId
             );
 
             let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser.loginMethods[0].recipeUserId
             );
 
@@ -955,18 +1003,20 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser2.loginMethods[0].recipeUserId
             );
 
             let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser.loginMethods[0].recipeUserId
             );
 
@@ -993,18 +1043,20 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser2.loginMethods[0].recipeUserId
             );
 
             let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser.loginMethods[0].recipeUserId
             );
 
@@ -1029,18 +1081,20 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser2.loginMethods[0].recipeUserId
             );
 
             let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser.loginMethods[0].recipeUserId
             );
 
@@ -1064,18 +1118,20 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 recipeList: [EmailPassword.init(), Session.init()],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser2.loginMethods[0].recipeUserId
             );
 
             let epuser1session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 epUser.loginMethods[0].recipeUserId
             );
 
@@ -1102,6 +1158,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random")
             );
 
@@ -1145,6 +1202,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
                 supertokens.convertToRecipeUserId("random")
             );
 
@@ -1192,9 +1250,13 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             });
 
             try {
-                await Session.createNewSessionWithoutRequestResponse(supertokens.convertToRecipeUserId("random"), {
-                    sessionHandle: "new string",
-                });
+                await Session.createNewSessionWithoutRequestResponse(
+                    "public",
+                    supertokens.convertToRecipeUserId("random"),
+                    {
+                        sessionHandle: "new string",
+                    }
+                );
                 assert(false);
             } catch (err) {
                 assert(
@@ -1204,9 +1266,13 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             }
 
             try {
-                await Session.createNewSessionWithoutRequestResponse(supertokens.convertToRecipeUserId("random"), {
-                    recipeUserId: "new string",
-                });
+                await Session.createNewSessionWithoutRequestResponse(
+                    "public",
+                    supertokens.convertToRecipeUserId("random"),
+                    {
+                        recipeUserId: "new string",
+                    }
+                );
                 assert(false);
             } catch (err) {
                 assert(
@@ -1244,14 +1310,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 },
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             await session.fetchAndSetClaim(primitiveClaim);
 
@@ -1285,14 +1354,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 },
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             await Session.fetchAndSetClaim(session.getHandle(), primitiveClaim);
 
@@ -1345,14 +1417,17 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 ],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             assert(userIdInCallback === epUser.id);
             assert(recipeUserIdInCallback.getAsString() === epUser2.loginMethods[0].recipeUserId.getAsString());
@@ -1381,17 +1456,23 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 ],
             });
 
-            let epUser = (await EmailPassword.signUp("test@example.com", "password123")).user;
-            let token = await EmailVerification.createEmailVerificationToken(epUser.loginMethods[0].recipeUserId);
-            await EmailVerification.verifyEmailUsingToken(token.token);
+            let epUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
+            let token = await EmailVerification.createEmailVerificationToken(
+                "public",
+                epUser.loginMethods[0].recipeUserId
+            );
+            await EmailVerification.verifyEmailUsingToken("public", token.token);
 
             await AccountLinking.createPrimaryUser(epUser.loginMethods[0].recipeUserId);
 
-            let epUser2 = (await EmailPassword.signUp("test2@example.com", "password123")).user;
+            let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
 
-            let session = await Session.createNewSessionWithoutRequestResponse(epUser2.loginMethods[0].recipeUserId);
+            let session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                epUser2.loginMethods[0].recipeUserId
+            );
 
             let resp = await Session.validateClaimsForSessionHandle(session.getHandle());
 

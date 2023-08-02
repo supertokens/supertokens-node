@@ -12,127 +12,105 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import fetch from "cross-fetch";
+import { ProviderInput, TypeProvider, UserInfo } from "../types";
+import NewProvider from "./custom";
 
-type TypeThirdPartyProviderGithubConfig = {
-    clientId: string;
-    clientSecret: string;
-    scope?: string[];
-    authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: any) => string) };
-    };
-    isDefault?: boolean;
-};
-
-export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
-    const id = "github";
-
-    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = "https://github.com/login/oauth/access_token";
-        let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
-            client_secret: config.clientSecret,
-        };
-        if (authCodeFromRequest !== undefined) {
-            accessTokenAPIParams.code = authCodeFromRequest;
-        }
-        if (redirectURI !== undefined) {
-            accessTokenAPIParams.redirect_uri = redirectURI;
-        }
-        let authorisationRedirectURL = "https://github.com/login/oauth/authorize";
-        let scopes = ["read:user", "user:email"];
-        if (config.scope !== undefined) {
-            scopes = config.scope;
-            scopes = Array.from(new Set(scopes));
-        }
-        let additionalParams =
-            config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
-                ? {}
-                : config.authorisationRedirect.params;
-        let authorizationRedirectParams: { [key: string]: string } = {
-            scope: scopes.join(" "),
-            client_id: config.clientId,
-            ...additionalParams,
-        };
-
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
-                method: "get",
-                url: "https://api.github.com/user",
-                headers: {
-                    Authorization: authHeader,
-                    Accept: "application/vnd.github.v3+json",
-                },
-            });
-            let emailsInfoResponse = await axios({
-                url: "https://api.github.com/user/emails",
-                headers: {
-                    Authorization: authHeader,
-                    Accept: "application/vnd.github.v3+json",
-                },
-            });
-            let userInfo = response.data;
-            let emailsInfo = emailsInfoResponse.data;
-            let id = userInfo.id.toString(); // github userId will be a number
-            /*
-                if user has choosen not to show their email publicly, userInfo here will
-                have email as null. So we instead get the info from the emails api and
-                use the email which is marked as primary one.
-
-                Sample github response for email info
-                [
-                    {
-                        email: '<email>',
-                        primary: true,
-                        verified: true,
-                        visibility: 'public'
-                    }
-                ]
-            */
-            let emailInfo = emailsInfo.find((e: any) => e.primary);
-            if (emailInfo === undefined) {
-                return {
-                    id,
-                };
-            }
-            let isVerified = emailInfo !== undefined ? emailInfo.verified : false;
-            return {
-                id,
-                email:
-                    emailInfo.email === undefined
-                        ? undefined
-                        : {
-                              id: emailInfo.email,
-                              isVerified,
-                          },
-            };
-        }
-        return {
-            accessTokenAPI: {
-                url: accessTokenAPIURL,
-                params: accessTokenAPIParams,
-            },
-            authorisationRedirect: {
-                url: authorisationRedirectURL,
-                params: authorizationRedirectParams,
-            },
-            getProfileInfo,
-            getClientId: () => {
-                return config.clientId;
-            },
-        };
+function getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoResponse: {
+    fromIdTokenPayload?: any;
+    fromUserInfoAPI?: any;
+}): UserInfo {
+    if (rawUserInfoResponse.fromUserInfoAPI === undefined) {
+        throw new Error("rawUserInfoResponse.fromUserInfoAPI is not available");
     }
 
-    return {
-        id,
-        get,
-        isDefault: config.isDefault,
+    const result: UserInfo = {
+        thirdPartyUserId: `${rawUserInfoResponse.fromUserInfoAPI.user.id}`, // coz user.id is a number
+        rawUserInfoFromProvider: {
+            fromIdTokenPayload: {},
+            fromUserInfoAPI: {},
+        },
     };
+
+    const emailsInfo: any[] = rawUserInfoResponse.fromUserInfoAPI.emails;
+    for (const info of emailsInfo) {
+        if (info.primary) {
+            result.email = {
+                id: info.email,
+                isVerified: info.verified,
+            };
+        }
+    }
+
+    return result;
+}
+
+export default function Github(input: ProviderInput): TypeProvider {
+    if (input.config.name === undefined) {
+        input.config.name = "Github";
+    }
+
+    if (input.config.authorizationEndpoint === undefined) {
+        input.config.authorizationEndpoint = "https://github.com/login/oauth/authorize";
+    }
+
+    if (input.config.tokenEndpoint === undefined) {
+        input.config.tokenEndpoint = "https://github.com/login/oauth/access_token";
+    }
+
+    const oOverride = input.override;
+
+    input.override = function (originalImplementation) {
+        const oGetConfig = originalImplementation.getConfigForClientType;
+        originalImplementation.getConfigForClientType = async function (input) {
+            const config = await oGetConfig(input);
+
+            if (config.scope === undefined) {
+                config.scope = ["read:user", "user:email"];
+            }
+
+            return config;
+        };
+
+        originalImplementation.getUserInfo = async function (input) {
+            const headers = {
+                Authorization: `Bearer ${input.oAuthTokens.access_token}`,
+                Accept: "application/vnd.github.v3+json",
+            };
+            const rawResponse: { [key: string]: any } = {};
+
+            const emailInfoResp = await fetch("https://api.github.com/user/emails", { headers });
+            if (emailInfoResp.status >= 400) {
+                throw new Error(`Getting userInfo failed with ${emailInfoResp.status}: ${await emailInfoResp.text()}`);
+            }
+            const emailInfo = await emailInfoResp.json();
+            rawResponse.emails = emailInfo;
+
+            const userInfoResp = await fetch("https://api.github.com/user", { headers });
+            if (userInfoResp.status >= 400) {
+                throw new Error(`Getting userInfo failed with ${userInfoResp.status}: ${await userInfoResp.text()}`);
+            }
+            const userInfo = await userInfoResp.json();
+            rawResponse.user = userInfo;
+
+            const rawUserInfoFromProvider = {
+                fromUserInfoAPI: rawResponse,
+                fromIdTokenPayload: {},
+            };
+            const userInfoResult = getSupertokensUserInfoFromRawUserInfoResponseForGithub(rawUserInfoFromProvider);
+
+            return {
+                ...userInfoResult,
+                rawUserInfoFromProvider,
+            };
+        };
+
+        if (oOverride !== undefined) {
+            originalImplementation = oOverride(originalImplementation);
+        }
+
+        return originalImplementation;
+    };
+
+    return NewProvider(input);
 }

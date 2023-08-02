@@ -51,8 +51,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -71,6 +73,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             user = (
                 await Passwordless.signInUp({
+                    tenantId: "public",
                     email,
                 })
             ).user;
@@ -95,6 +98,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             user = (
                 await Passwordless.signInUp({
+                    tenantId: "public",
                     email: "test@example.com",
                 })
             ).user;
@@ -124,6 +128,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             const phoneNumber = "+1234567890";
             user = (
                 await Passwordless.signInUp({
+                    tenantId: "public",
                     phoneNumber,
                 })
             ).user;
@@ -161,8 +166,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -175,6 +182,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let resp = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -191,6 +199,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let resp = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
                 userInputCode: "123",
             });
@@ -224,8 +233,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -238,10 +249,12 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let resp = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             resp = await Passwordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: resp.deviceId,
             });
 
@@ -258,10 +271,12 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let resp = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             resp = await Passwordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: resp.deviceId,
                 userInputCode: "1234",
             });
@@ -279,10 +294,12 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let resp = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             resp = await Passwordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: "random",
             });
 
@@ -292,11 +309,13 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let resp = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
                 userInputCode: "1234",
             });
 
             resp = await Passwordless.createNewCodeForDevice({
+                tenantId: "public",
                 deviceId: resp.deviceId,
                 userInputCode: "1234",
             });
@@ -323,8 +342,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -337,10 +358,12 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             let resp = await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -358,10 +381,12 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             let resp = await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: "random",
                 deviceId: codeInfo.deviceId,
@@ -375,11 +400,13 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             try {
                 await Passwordless.consumeCode({
+                    tenantId: "public",
                     preAuthSessionId: "random",
                     userInputCode: codeInfo.userInputCode,
                     deviceId: codeInfo.deviceId,
@@ -409,8 +436,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -423,12 +452,14 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let codeInfo = await Passwordless.createCode({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
             await new Promise((r) => setTimeout(r, 2000)); // wait for code to expire
 
             let resp = await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
@@ -459,8 +490,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -472,6 +505,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let userInfo = await Passwordless.signInUp({
+            tenantId: "public",
             email: "test@example.com",
         });
 
@@ -498,6 +532,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         {
             // update user with an email that already exists
             let userInfo2 = await Passwordless.signInUp({
+                tenantId: "public",
                 email: "test3@example.com",
             });
 
@@ -527,8 +562,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -544,6 +581,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         let phoneNumber_3 = "+1234567893";
 
         let userInfo = await Passwordless.signInUp({
+            tenantId: "public",
             phoneNumber: phoneNumber_1,
         });
 
@@ -562,6 +600,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         {
             // update user with a phoneNumber that already exists
             let userInfo2 = await Passwordless.signInUp({
+                tenantId: "public",
                 phoneNumber: phoneNumber_3,
             });
 
@@ -592,8 +631,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -605,15 +646,18 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let codeInfo_1 = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let codeInfo_2 = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         {
             let result = await Passwordless.revokeAllCodes({
+                tenantId: "public",
                 email: "test@example.com",
             });
 
@@ -622,6 +666,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result_1 = await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
                 deviceId: codeInfo_1.deviceId,
                 userInputCode: codeInfo_1.userInputCode,
@@ -630,6 +675,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result_1.status === "RESTART_FLOW_ERROR");
 
             let result_2 = await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_2.preAuthSessionId,
                 deviceId: codeInfo_2.deviceId,
                 userInputCode: codeInfo_2.userInputCode,
@@ -656,8 +702,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -669,15 +717,18 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let codeInfo_1 = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let codeInfo_2 = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         {
             let result = await Passwordless.revokeCode({
+                tenantId: "public",
                 codeId: codeInfo_1.codeId,
             });
 
@@ -686,6 +737,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result_1 = await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
                 deviceId: codeInfo_1.deviceId,
                 userInputCode: codeInfo_1.userInputCode,
@@ -694,6 +746,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result_1.status === "RESTART_FLOW_ERROR");
 
             let result_2 = await Passwordless.consumeCode({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_2.preAuthSessionId,
                 deviceId: codeInfo_2.deviceId,
                 userInputCode: codeInfo_2.userInputCode,
@@ -721,8 +774,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        return;
+                    emailDelivery: {
+                        sendEmail: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -734,14 +789,17 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let codeInfo_1 = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let codeInfo_2 = await Passwordless.createCode({
+            tenantId: "public",
             email: "test@example.com",
         });
 
         let result = await Passwordless.listCodesByEmail({
+            tenantId: "public",
             email: "test@example.com",
         });
         assert(result.length === 2);
@@ -772,8 +830,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -785,14 +845,17 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let codeInfo_1 = await Passwordless.createCode({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
         let codeInfo_2 = await Passwordless.createCode({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
         let result = await Passwordless.listCodesByPhoneNumber({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
         assert(result.length === 2);
@@ -823,8 +886,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -836,11 +901,13 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let codeInfo_1 = await Passwordless.createCode({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
         {
             let result = await Passwordless.listCodesByDeviceId({
+                tenantId: "public",
                 deviceId: codeInfo_1.deviceId,
             });
             assert(result.codes[0].codeId === codeInfo_1.codeId);
@@ -848,6 +915,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result = await Passwordless.listCodesByPreAuthSessionId({
+                tenantId: "public",
                 preAuthSessionId: codeInfo_1.preAuthSessionId,
             });
             assert(result.codes[0].codeId === codeInfo_1.codeId);
@@ -876,8 +944,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -889,6 +959,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let result = await Passwordless.createMagicLink({
+            tenantId: "public",
             phoneNumber: "+1234567890",
         });
 
@@ -919,8 +990,10 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomTextMessage: (input) => {
-                        return;
+                    smsDelivery: {
+                        sendSms: async (input) => {
+                            return;
+                        },
                     },
                 }),
             ],
@@ -932,6 +1005,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let result = await Passwordless.signInUp({
+            tenantId: "public",
             phoneNumber: "+12345678901",
         });
 

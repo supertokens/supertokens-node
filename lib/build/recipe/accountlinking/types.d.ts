@@ -120,6 +120,7 @@ export declare type RecipeInterface = {
           }
     >;
     linkAccounts: (input: {
+        tenantId: string;
         recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: any;
@@ -196,6 +197,7 @@ export declare type AccountInfoWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
 } & AccountInfo;
 export declare type RecipeLevelUser = {
+    tenantIds: string[];
     timeJoined: number;
     recipeUserId: RecipeUserId;
 } & AccountInfoWithRecipeId;

@@ -1,7 +1,6 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
-import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
@@ -15,6 +14,7 @@ export default class Wrapper {
      * no linking that happened.
      */
     static createPrimaryUserIdOrLinkAccounts(input: {
+        tenantId: string;
         recipeUserId: RecipeUserId;
         checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
@@ -66,55 +66,6 @@ export default class Wrapper {
               description: string;
           }
     >;
-    /**
-     * This function is similar to linkAccounts, but it specifically
-     * works for when trying to link accounts with a user that you are already logged
-     * into. This can be used to implement, for example, connecting social accounts to your *
-     * existing email password account.
-     *
-     * This function also creates a new recipe user for the newUser if required, and for that,
-     * it allows you to provide two functions:
-     *  - createRecipeUserFunc: Used to create a new account for newUser
-     *  - verifyCredentialsFunc: If the new account already exists, this function will be called
-     *      and you can verify the input credentials before we attempt linking. If the input
-     *      credentials are not OK, then you can return a `CUSTOM_RESPONSE` status and that
-     *      will be returned back to you from this function call.
-     */
-    static linkAccountsWithUserFromSession<T>(input: {
-        session: SessionContainerInterface;
-        newUser: AccountInfoWithRecipeId;
-        createRecipeUserFunc: (userContext: any) => Promise<void>;
-        verifyCredentialsFunc: (
-            userContext: any
-        ) => Promise<
-            | {
-                  status: "OK";
-              }
-            | {
-                  status: "CUSTOM_RESPONSE";
-                  resp: T;
-              }
-        >;
-        userContext?: any;
-    }): Promise<
-        | {
-              status: "OK";
-              wereAccountsAlreadyLinked: boolean;
-          }
-        | {
-              status: "ACCOUNT_LINKING_NOT_ALLOWED_ERROR";
-              description: string;
-          }
-        | {
-              status: "NEW_ACCOUNT_NEEDS_TO_BE_VERIFIED_ERROR";
-              primaryUserId: string;
-              recipeUserId: RecipeUserId;
-          }
-        | {
-              status: "CUSTOM_RESPONSE";
-              resp: T;
-          }
-    >;
     static canLinkAccounts(
         recipeUserId: RecipeUserId,
         primaryUserId: string,
@@ -139,6 +90,7 @@ export default class Wrapper {
           }
     >;
     static linkAccounts(
+        tenantId: string,
         recipeUserId: RecipeUserId,
         primaryUserId: string,
         userContext?: any
@@ -205,7 +157,6 @@ export declare const fetchFromAccountToLinkTable: typeof Wrapper.fetchFromAccoun
 export declare const storeIntoAccountToLinkTable: typeof Wrapper.storeIntoAccountToLinkTable;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
 export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
-export declare const linkAccountsWithUserFromSession: typeof Wrapper.linkAccountsWithUserFromSession;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export declare const isSignInAllowed: typeof Wrapper.isSignInAllowed;
 export declare const isEmailChangeAllowed: typeof Wrapper.isEmailChangeAllowed;

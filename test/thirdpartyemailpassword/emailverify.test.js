@@ -37,26 +37,23 @@ let { middleware, errorHandler } = require("../../framework/express");
 describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
-            id: "custom",
-            get: (recipe, authCode) => {
+            config: {
+                thirdPartyId: "custom",
+                authorizationEndpoint: "https://test.com/oauth/auth",
+                tokenEndpoint: "https://test.com/oauth/token",
+                clients: [{ clientId: "supetokens", clientSecret: "secret", scope: ["test"] }],
+            },
+            override: (oI) => {
                 return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
+                    ...oI,
+                    getUserInfo: async function ({ oAuthTokens }) {
                         return {
-                            id: authCodeResponse.id,
+                            thirdPartyUserId: oAuthTokens.id,
                             email: {
-                                id: authCodeResponse.email,
+                                id: oAuthTokens.email,
                                 isVerified: false,
                             },
                         };
-                    },
-                    getClientId: () => {
-                        return "supertokens";
                     },
                 };
             },
@@ -143,8 +140,8 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let email = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken(userId, email);
-        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, email);
+        await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
 
@@ -213,14 +210,11 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
                 EmailVerification.init({
                     mode: "OPTIONAL",
                     emailDelivery: {
-                        override: (oI) => {
-                            return {
-                                ...oI,
-                                sendEmail: async function (input) {
-                                    userInfo = input.user;
-                                    emailToken = input.emailVerifyLink;
-                                },
-                            };
+                        service: {
+                            sendEmail: async (input) => {
+                                userInfo = input.user;
+                                emailToken = input.emailVerifyLink;
+                            },
                         },
                     },
                 }),
@@ -278,14 +272,11 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
                 EmailVerification.init({
                     mode: "OPTIONAL",
                     emailDelivery: {
-                        override: (oI) => {
-                            return {
-                                ...oI,
-                                sendEmail: async function (input) {
-                                    userInfo = input.user;
-                                    emailToken = input.emailVerifyLink;
-                                },
-                            };
+                        service: {
+                            sendEmail: async (input) => {
+                                userInfo = input.user;
+                                emailToken = input.emailVerifyLink;
+                            },
                         },
                     },
                 }),

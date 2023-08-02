@@ -13,7 +13,6 @@
  * under the License.
  */
 import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";
-import { RecipeInterface as EmailPasswordRecipeInterface } from "../../../../emailpassword";
 import { NormalisedAppinfo } from "../../../../../types";
 import EmailPasswordBackwardCompatibilityService from "../../../../emailpassword/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
@@ -22,14 +21,9 @@ export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
     private emailPasswordBackwardCompatibilityService: EmailPasswordBackwardCompatibilityService;
 
-    constructor(
-        emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean
-    ) {
+    constructor(appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) {
         {
             this.emailPasswordBackwardCompatibilityService = new EmailPasswordBackwardCompatibilityService(
-                emailPasswordRecipeInterfaceImpl,
                 appInfo,
                 isInServerlessEnv
             );

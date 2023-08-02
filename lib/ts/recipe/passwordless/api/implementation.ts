@@ -2,13 +2,15 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
-import { getUser, listUsersByAccountInfo } from "../../..";
+import { listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         consumeCodePOST: async function (input) {
             const deviceInfo = await input.options.recipeImplementation.listCodesByPreAuthSessionId({
+                tenantId: input.tenantId,
                 preAuthSessionId: input.preAuthSessionId,
                 userContext: input.userContext,
             });
@@ -66,11 +68,13 @@ export default function getAPIImplementation(): APIInterface {
                           preAuthSessionId: input.preAuthSessionId,
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
+                          tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
                     : {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
+                          tenantId: input.tenantId,
                           userContext: input.userContext,
                       }
             );
@@ -108,22 +112,14 @@ export default function getAPIImplementation(): APIInterface {
                         reason: "Cannot sign in / up due to security reasons. Please contact support.",
                     };
                 }
-
-                // we do account linking only during sign in here cause during sign up,
-                // the recipe function above does account linking for us.
-                let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
-                    recipeUserId: loginMethod.recipeUserId,
-                    checkAccountsToLinkTableAsWell: true,
-                    userContext: input.userContext,
-                });
-
-                response.user = (await getUser(userId, input.userContext))!;
             }
+            let user = response.user;
 
             const session = await Session.createNewSession(
                 input.options.req,
                 input.options.res,
-                loginMethod.recipeUserId,
+                input.tenantId,
+                new RecipeUserId(user.id), // TODO: change to recipeUserId
                 {},
                 {},
                 input.userContext
@@ -204,7 +200,11 @@ export default function getAPIImplementation(): APIInterface {
                           userInputCode:
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
-                                  : await input.options.config.getCustomUserInputCode(input.userContext),
+                                  : await input.options.config.getCustomUserInputCode(
+                                        input.tenantId,
+                                        input.userContext
+                                    ),
+                          tenantId: input.tenantId,
                       }
                     : {
                           userContext: input.userContext,
@@ -212,7 +212,11 @@ export default function getAPIImplementation(): APIInterface {
                           userInputCode:
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
-                                  : await input.options.config.getCustomUserInputCode(input.userContext),
+                                  : await input.options.config.getCustomUserInputCode(
+                                        input.tenantId,
+                                        input.userContext
+                                    ),
+                          tenantId: input.tenantId,
                       }
             );
 
@@ -229,6 +233,8 @@ export default function getAPIImplementation(): APIInterface {
                     input.options.recipeId +
                     "&preAuthSessionId=" +
                     response.preAuthSessionId +
+                    "&tenantId=" +
+                    input.tenantId +
                     "#" +
                     response.linkCode;
             }
@@ -251,6 +257,7 @@ export default function getAPIImplementation(): APIInterface {
                     preAuthSessionId: response.preAuthSessionId,
                     urlWithLinkCode: magicLink,
                     userInputCode,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
             } else {
@@ -262,6 +269,7 @@ export default function getAPIImplementation(): APIInterface {
                     preAuthSessionId: response.preAuthSessionId,
                     urlWithLinkCode: magicLink,
                     userInputCode,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
             }
@@ -277,6 +285,7 @@ export default function getAPIImplementation(): APIInterface {
             let users = await listUsersByAccountInfo(
                 {
                     email: input.email,
+                    // tenantId: input.tenantId,
                 },
                 input.userContext
             );
@@ -290,6 +299,7 @@ export default function getAPIImplementation(): APIInterface {
             let users = await listUsersByAccountInfo(
                 {
                     phoneNumber: input.phoneNumber,
+                    // tenantId: input.tenantId,
                 },
                 input.userContext
             );
@@ -303,6 +313,7 @@ export default function getAPIImplementation(): APIInterface {
             let deviceInfo = await input.options.recipeImplementation.listCodesByDeviceId({
                 userContext: input.userContext,
                 deviceId: input.deviceId,
+                tenantId: input.tenantId,
             });
 
             if (deviceInfo === undefined) {
@@ -329,7 +340,8 @@ export default function getAPIImplementation(): APIInterface {
                     userInputCode:
                         input.options.config.getCustomUserInputCode === undefined
                             ? undefined
-                            : await input.options.config.getCustomUserInputCode(input.userContext),
+                            : await input.options.config.getCustomUserInputCode(input.tenantId, input.userContext),
+                    tenantId: input.tenantId,
                 });
 
                 if (response.status === "USER_INPUT_CODE_ALREADY_USED_ERROR") {
@@ -356,6 +368,8 @@ export default function getAPIImplementation(): APIInterface {
                             input.options.recipeId +
                             "&preAuthSessionId=" +
                             response.preAuthSessionId +
+                            "&tenantId=" +
+                            input.tenantId +
                             "#" +
                             response.linkCode;
                     }
@@ -379,6 +393,7 @@ export default function getAPIImplementation(): APIInterface {
                             preAuthSessionId: response.preAuthSessionId,
                             urlWithLinkCode: magicLink,
                             userInputCode,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     } else {
@@ -390,6 +405,7 @@ export default function getAPIImplementation(): APIInterface {
                             preAuthSessionId: response.preAuthSessionId,
                             urlWithLinkCode: magicLink,
                             userInputCode,
+                            tenantId: input.tenantId,
                             userContext: input.userContext,
                         });
                     }

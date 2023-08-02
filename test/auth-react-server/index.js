@@ -38,15 +38,21 @@ const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassw
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
 const { default: DashboardRaw } = require("../../lib/build/recipe/dashboard/recipe");
+const { default: MultitenancyRaw } = require("../../lib/build/recipe/multitenancy/recipe");
+const Multitenancy = require("../../lib/build/recipe/multitenancy");
 
 const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
-let { startST, killAllST, setupST, cleanST, customAuth0Provider, stopST } = require("./utils");
+let { startST, killAllST, setupST, cleanST, setKeyValueInConfig, customAuth0Provider, stopST } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
 
 let app = express();
+// morgan.token("body", function (req, res) {
+//     return JSON.stringify(req.body && req.body["formFields"]);
+// });
+// app.use(morgan("[:date[iso]] :url :method :status :response-time ms - :res[content-length] - :body"));
 app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
@@ -57,6 +63,7 @@ let latestURLWithToken = "";
 
 let deviceStore = new Map();
 function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userInputCode }) {
+    console.log(arguments[0]);
     const device = deviceStore.get(preAuthSessionId) || {
         preAuthSessionId,
         codes: [],
@@ -89,6 +96,43 @@ const formFields = (process.env.MIN_FIELDS && []) || [
     },
 ];
 
+const providers = [
+    {
+        config: {
+            thirdPartyId: "google",
+            clients: [
+                {
+                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                    clientId: process.env.GOOGLE_CLIENT_ID,
+                },
+            ],
+        },
+    },
+    {
+        config: {
+            thirdPartyId: "github",
+            clients: [
+                {
+                    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+                    clientId: process.env.GITHUB_CLIENT_ID,
+                },
+            ],
+        },
+    },
+    {
+        config: {
+            thirdPartyId: "facebook",
+            clients: [
+                {
+                    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+                    clientId: process.env.FACEBOOK_CLIENT_ID,
+                },
+            ],
+        },
+    },
+    customAuth0Provider(),
+];
+
 initST();
 
 app.use(
@@ -102,35 +146,6 @@ app.use(
 
 app.use(middleware());
 
-app.post("/beforeeach", async (req, res) => {
-    deviceStore = new Map();
-    res.send();
-});
-
-app.post("/test/setFlow", (req, res) => {
-    initST({
-        passwordlessConfig: {
-            contactMethod: req.body.contactMethod,
-            flowType: req.body.flowType,
-            createAndSendCustomTextMessage: saveCode,
-            createAndSendCustomEmail: saveCode,
-        },
-    });
-    res.sendStatus(200);
-});
-
-app.get("/test/getDevice", (req, res) => {
-    res.send(deviceStore.get(req.query.preAuthSessionId));
-});
-
-app.get("/test/featureFlags", (req, res) => {
-    const available = ["passwordless", "thirdpartypasswordless", "generalerror", "userroles"];
-
-    res.send({
-        available,
-    });
-});
-
 app.get("/ping", async (req, res) => {
     res.send("success");
 });
@@ -142,20 +157,36 @@ app.post("/startst", async (req, res) => {
         }
     }
     let pid = await startST();
+    const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
+        "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
+
+    await fetch(`http://localhost:9000/ee/license`, {
+        method: "PUT",
+        headers: {
+            "content-type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+            licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+        }),
+    });
     res.send(pid + "");
 });
 
 app.post("/beforeeach", async (req, res) => {
     deviceStore = new Map();
 
-    await killAllST();
-    await setupST();
+    if (process.env.INSTALL_PATH !== undefined) {
+        await killAllST();
+        await setupST();
+    }
     res.send();
 });
 
 app.post("/after", async (req, res) => {
-    await killAllST();
-    await cleanST();
+    if (process.env.INSTALL_PATH !== undefined) {
+        await killAllST();
+        await cleanST();
+    }
     res.send();
 });
 
@@ -165,23 +196,32 @@ app.post("/stopst", async (req, res) => {
 });
 
 // custom API that requires session verification
-app.get("/sessioninfo", verifySession(), async (req, res) => {
+app.get("/sessioninfo", verifySession(), async (req, res, next) => {
     let session = req.session;
-    if (session.getJWTPayload !== undefined) {
+    const accessTokenPayload =
+        session.getJWTPayload !== undefined ? session.getJWTPayload() : session.getAccessTokenPayload();
+
+    try {
+        const sessionData = session.getSessionData
+            ? await session.getSessionData()
+            : await session.getSessionDataFromDatabase();
         res.send({
             sessionHandle: session.getHandle(),
             userId: session.getUserId(),
-            accessTokenPayload: session.getJWTPayload(),
-            sessionData: await session.getSessionDataFromDatabase(),
+            accessTokenPayload,
+            sessionData,
         });
-    } else {
-        res.send({
-            sessionHandle: session.getHandle(),
-            userId: session.getUserId(),
-            accessTokenPayload: session.getAccessTokenPayload(),
-            sessionData: await session.getSessionDataFromDatabase(),
-        });
+    } catch (err) {
+        next(err);
     }
+});
+
+app.post("/deleteUser", async (req, res) => {
+    if (req.body.rid !== "emailpassword") {
+        res.status(400).send({ message: "Not implemented" });
+    }
+    const user = await EmailPassword.getUserByEmail("public", req.body.email);
+    res.send(await SuperTokens.deleteUser(user.id));
 });
 
 app.get("/unverifyEmail", verifySession(), async (req, res) => {
@@ -194,7 +234,7 @@ app.get("/unverifyEmail", verifySession(), async (req, res) => {
 app.post("/setRole", verifySession(), async (req, res) => {
     let session = req.session;
     await UserRoles.createNewRoleOrAddPermissions(req.body.role, req.body.permissions);
-    await UserRoles.addRoleToUser(session.getUserId(), req.body.role);
+    await UserRoles.addRoleToUser(session.getTenantId(), session.getUserId(), req.body.role);
     await session.fetchAndSetClaim(UserRoles.UserRoleClaim);
     await session.fetchAndSetClaim(UserRoles.PermissionClaim);
     res.send({ status: "OK" });
@@ -234,8 +274,23 @@ app.post("/test/setFlow", (req, res) => {
         passwordlessConfig: {
             contactMethod: req.body.contactMethod,
             flowType: req.body.flowType,
-            createAndSendCustomTextMessage: saveCode,
-            createAndSendCustomEmail: saveCode,
+
+            emailDelivery: {
+                override: (oI) => {
+                    return {
+                        ...oI,
+                        sendEmail: saveCode,
+                    };
+                },
+            },
+            smsDelivery: {
+                override: (oI) => {
+                    return {
+                        ...oI,
+                        sendSms: saveCode,
+                    };
+                },
+            },
         },
     });
     res.sendStatus(200);
@@ -243,6 +298,20 @@ app.post("/test/setFlow", (req, res) => {
 
 app.get("/test/getDevice", (req, res) => {
     res.send(deviceStore.get(req.query.preAuthSessionId));
+});
+
+app.get("/test/featureFlags", (req, res) => {
+    const available = [];
+
+    available.push("passwordless");
+    available.push("thirdpartypasswordless");
+    available.push("generalerror");
+    available.push("userroles");
+    available.push("multitenancy");
+
+    res.send({
+        available,
+    });
 });
 
 app.use(errorHandler());
@@ -288,7 +357,7 @@ function initST({ passwordlessConfig } = {}) {
     ThirdPartyRaw.reset();
     ThirdPartyEmailPasswordRaw.reset();
     SessionRaw.reset();
-    DashboardRaw.reset();
+    MultitenancyRaw.reset();
 
     SuperTokensRaw.reset();
 
@@ -303,9 +372,16 @@ function initST({ passwordlessConfig } = {}) {
     const recipeList = [
         EmailVerification.init({
             mode: "OPTIONAL",
-            createAndSendCustomEmail: (_, emailVerificationURLWithToken) => {
-                console.log(emailVerificationURLWithToken);
-                latestURLWithToken = emailVerificationURLWithToken;
+            emailDelivery: {
+                override: (oI) => {
+                    return {
+                        ...oI,
+                        sendEmail: async (input) => {
+                            console.log(input.emailVerifyLink);
+                            latestURLWithToken = input.emailVerifyLink;
+                        },
+                    };
+                },
             },
             override: {
                 apis: (oI) => {
@@ -402,30 +478,21 @@ function initST({ passwordlessConfig } = {}) {
             signUpFeature: {
                 formFields,
             },
-            resetPasswordUsingTokenFeature: {
-                createAndSendCustomEmail: (_, passwordResetURLWithToken) => {
-                    console.log(passwordResetURLWithToken);
-                    latestURLWithToken = passwordResetURLWithToken;
+            emailDelivery: {
+                override: (oI) => {
+                    return {
+                        ...oI,
+                        sendEmail: async (input) => {
+                            console.log(input.passwordResetLink);
+                            latestURLWithToken = input.passwordResetLink;
+                        },
+                    };
                 },
             },
         }),
         ThirdParty.init({
             signInAndUpFeature: {
-                providers: [
-                    ThirdParty.Google({
-                        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                        clientId: process.env.GOOGLE_CLIENT_ID,
-                    }),
-                    ThirdParty.Github({
-                        clientSecret: process.env.GITHUB_CLIENT_SECRET,
-                        clientId: process.env.GITHUB_CLIENT_ID,
-                    }),
-                    ThirdParty.Facebook({
-                        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-                        clientId: process.env.FACEBOOK_CLIENT_ID,
-                    }),
-                    customAuth0Provider(),
-                ],
+                providers,
             },
             override: {
                 apis: (originalImplementation) => {
@@ -461,27 +528,18 @@ function initST({ passwordlessConfig } = {}) {
             signUpFeature: {
                 formFields,
             },
-            resetPasswordUsingTokenFeature: {
-                createAndSendCustomEmail: (_, passwordResetURLWithToken) => {
-                    console.log(passwordResetURLWithToken);
-                    latestURLWithToken = passwordResetURLWithToken;
+            emailDelivery: {
+                override: (oI) => {
+                    return {
+                        ...oI,
+                        sendEmail: async (input) => {
+                            console.log(input.passwordResetLink);
+                            latestURLWithToken = input.passwordResetLink;
+                        },
+                    };
                 },
             },
-            providers: [
-                ThirdPartyEmailPassword.Google({
-                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                    clientId: process.env.GOOGLE_CLIENT_ID,
-                }),
-                ThirdPartyEmailPassword.Github({
-                    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-                    clientId: process.env.GITHUB_CLIENT_ID,
-                }),
-                ThirdPartyEmailPassword.Facebook({
-                    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-                    clientId: process.env.FACEBOOK_CLIENT_ID,
-                }),
-                customAuth0Provider(),
-            ],
+            providers,
             override: {
                 apis: (originalImplementation) => {
                     return {
@@ -582,6 +640,38 @@ function initST({ passwordlessConfig } = {}) {
                 },
             },
         }),
+
+        Multitenancy.init({
+            getAllowedDomainsForTenantId: (tenantId) => [
+                `${tenantId}.example.com`,
+                websiteDomain.replace(/https?:\/\/([^:\/]*).*/, "$1"),
+            ],
+        }),
+    ];
+
+    passwordlessConfig = {
+        contactMethod: "EMAIL_OR_PHONE",
+        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        emailDelivery: {
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendEmail: saveCode,
+                };
+            },
+        },
+        smsDelivery: {
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendSms: saveCode,
+                };
+            },
+        },
+        ...passwordlessConfig,
+    };
+
+    recipeList.push(
         Passwordless.init({
             ...passwordlessConfig,
             override: {
@@ -621,24 +711,13 @@ function initST({ passwordlessConfig } = {}) {
                     };
                 },
             },
-        }),
+        })
+    );
+
+    recipeList.push(
         ThirdPartyPasswordless.init({
             ...passwordlessConfig,
-            providers: [
-                ThirdPartyEmailPassword.Google({
-                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                    clientId: process.env.GOOGLE_CLIENT_ID,
-                }),
-                ThirdPartyEmailPassword.Github({
-                    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-                    clientId: process.env.GITHUB_CLIENT_ID,
-                }),
-                ThirdPartyEmailPassword.Facebook({
-                    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-                    clientId: process.env.FACEBOOK_CLIENT_ID,
-                }),
-                customAuth0Provider(),
-            ],
+            providers,
             override: {
                 apis: (originalImplementation) => {
                     return {
@@ -698,9 +777,10 @@ function initST({ passwordlessConfig } = {}) {
                     };
                 },
             },
-        }),
-        UserRoles.init(),
-    ];
+        })
+    );
+
+    recipeList.push(UserRoles.init());
 
     SuperTokens.init({
         appInfo: {
