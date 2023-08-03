@@ -5,7 +5,8 @@ import { Querier } from "../../querier";
 export declare function mockReset(): Promise<void>;
 export declare function mockCreatePasswordResetToken(
     email: string,
-    userId: string
+    userId: string,
+    tenantId: string
 ): Promise<
     | {
           status: "OK";
@@ -16,7 +17,10 @@ export declare function mockCreatePasswordResetToken(
       }
 >;
 export declare function mockConsumePasswordResetToken(
-    token: string
+    token: string,
+    newPassword: string,
+    tenantId: string,
+    querier: Querier
 ): Promise<
     | {
           status: "OK";
@@ -30,6 +34,7 @@ export declare function mockConsumePasswordResetToken(
 export declare function mockSignIn(input: {
     email: string;
     password: string;
+    tenantId: string;
 }): Promise<
     | {
           status: "OK";

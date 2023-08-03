@@ -6,7 +6,7 @@ import { RecipeInterface } from "./types";
 export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (input) {
     let resp;
     try {
-        resp = await fetch("http://localhost:8080/recipe/signinup/code/consume", {
+        resp = await fetch(`http://localhost:8080/${input.tenantId ?? "public"}/recipe/signinup/code/consume`, {
             method: "POST",
             headers: {
                 rid: "passwordless",
@@ -26,6 +26,10 @@ export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (i
         } else {
             throw err;
         }
+    }
+
+    if (resp.status !== 200) {
+        throw new Error(await resp.text());
     }
 
     const respBody = await resp.json();
@@ -62,7 +66,7 @@ export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (i
     return respBody;
 };
 export const mockCreateCode: RecipeInterface["createCode"] = async function (input) {
-    const resp = await fetch("http://localhost:8080/recipe/signinup/code", {
+    const resp = await fetch(`http://localhost:8080/${input.tenantId ?? "public"}/recipe/signinup/code`, {
         method: "POST",
         headers: {
             rid: "passwordless",
@@ -74,7 +78,7 @@ export const mockCreateCode: RecipeInterface["createCode"] = async function (inp
     return respBody;
 };
 export const mockCreateNewCodeForDevice: RecipeInterface["createNewCodeForDevice"] = async function (input) {
-    const resp = await fetch("http://localhost:8080/recipe/signinup/code", {
+    const resp = await fetch(`http://localhost:8080/${input.tenantId ?? "public"}/recipe/signinup/code`, {
         method: "POST",
         headers: {
             rid: "passwordless",
@@ -187,9 +191,9 @@ export const mockUpdateUser: RecipeInterface["updateUser"] = async function (inp
                     userContext: {},
                 }
             );
-            // TODO: can this be anything other than 0 or 1?
+
             let primaryUserForNewEmail = existingUsersWithNewEmail.filter((u) => u.isPrimaryUser);
-            if (primaryUserForNewEmail.length === 1) {
+            if (primaryUserForNewEmail.length !== 0) {
                 if (primaryUserForNewEmail[0].id !== user.id) {
                     return {
                         status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR",

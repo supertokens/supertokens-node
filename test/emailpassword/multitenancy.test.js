@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startSTWithMultitenancy, stopST, killAllST, cleanST, resetAll } = require("../utils");
-let STExpress = require("../../");
+let SuperTokens = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
@@ -27,7 +27,7 @@ let utils = require("../../lib/build/recipe/emailpassword/utils");
 let { middleware, errorHandler } = require("../../framework/express");
 let Multitenancy = require("../../recipe/multitenancy");
 
-describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")}`, function () {
+describe.only(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -43,7 +43,7 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test recipe functions", async function () {
         await startSTWithMultitenancy();
-        STExpress.init({
+        SuperTokens.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
             },
@@ -68,15 +68,16 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
         assert(user1.user.id !== user3.user.id);
         assert(user2.user.id !== user3.user.id);
 
-        assert.deepEqual(user1.user.tenantIds, ["t1"]);
-        assert.deepEqual(user2.user.tenantIds, ["t2"]);
-        assert.deepEqual(user3.user.tenantIds, ["t3"]);
+        assert.deepEqual(user1.user.loginMethods[0].tenantIds, ["t1"]);
+        assert.deepEqual(user2.user.loginMethods[0].tenantIds, ["t2"]);
+        assert.deepEqual(user3.user.loginMethods[0].tenantIds, ["t3"]);
 
         // Sign in
         let sUser1 = await EmailPassword.signIn("t1", "test@example.com", "password1");
         let sUser2 = await EmailPassword.signIn("t2", "test@example.com", "password2");
         let sUser3 = await EmailPassword.signIn("t3", "test@example.com", "password3");
 
+        console.log(sUser1);
         assert(sUser1.user.id === user1.user.id);
         assert(sUser2.user.id === user2.user.id);
         assert(sUser3.user.id === user3.user.id);
@@ -86,40 +87,33 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
         let gUser2 = await SuperTokens.getUser(user2.user.id);
         let gUser3 = await SuperTokens.getUser(user3.user.id);
 
-        assert.deepEqual(gUser1, user1.user);
-        assert.deepEqual(gUser2, user2.user);
-        assert.deepEqual(gUser3, user3.user);
-
-        // get user by email
-        let gUserByEmail1 = await EmailPassword.getUserByEmail("t1", "test@example.com");
-        let gUserByEmail2 = await EmailPassword.getUserByEmail("t2", "test@example.com");
-        let gUserByEmail3 = await EmailPassword.getUserByEmail("t3", "test@example.com");
-
-        assert.deepEqual(gUserByEmail1, user1.user);
-        assert.deepEqual(gUserByEmail2, user2.user);
-        assert.deepEqual(gUserByEmail3, user3.user);
+        assert.deepEqual(gUser1.toJson(), user1.user.toJson());
+        assert.deepEqual(gUser2.toJson(), user2.user.toJson());
+        assert.deepEqual(gUser3.toJson(), user3.user.toJson());
 
         // create password reset token
         let passwordResetLink1 = await EmailPassword.createResetPasswordToken("t1", user1.user.id);
         let passwordResetLink2 = await EmailPassword.createResetPasswordToken("t2", user2.user.id);
         let passwordResetLink3 = await EmailPassword.createResetPasswordToken("t3", user3.user.id);
 
+        console.log(passwordResetLink1);
         assert(passwordResetLink1.token !== undefined);
         assert(passwordResetLink2.token !== undefined);
         assert(passwordResetLink3.token !== undefined);
 
         // reset password using token
-        await EmailPassword.resetPasswordUsingToken("t1", passwordResetLink1.token, "newpassword1");
-        await EmailPassword.resetPasswordUsingToken("t2", passwordResetLink2.token, "newpassword2");
-        await EmailPassword.resetPasswordUsingToken("t3", passwordResetLink3.token, "newpassword3");
+        await EmailPassword.consumePasswordResetToken("t1", passwordResetLink1.token, "newpassword1");
+        await EmailPassword.consumePasswordResetToken("t2", passwordResetLink2.token, "newpassword2");
+        await EmailPassword.consumePasswordResetToken("t3", passwordResetLink3.token, "newpassword3");
 
         // new password should work
         sUser1 = await EmailPassword.signIn("t1", "test@example.com", "newpassword1");
         sUser2 = await EmailPassword.signIn("t2", "test@example.com", "newpassword2");
         sUser3 = await EmailPassword.signIn("t3", "test@example.com", "newpassword3");
 
-        assert.deepEqual(sUser1.user, user1.user);
-        assert.deepEqual(sUser2.user, user2.user);
-        assert.deepEqual(sUser3.user, user3.user);
+        console.log(sUser1);
+        assert.deepEqual(sUser1.user.toJson(), user1.user.toJson());
+        assert.deepEqual(sUser2.user.toJson(), user2.user.toJson());
+        assert.deepEqual(sUser3.user.toJson(), user3.user.toJson());
     });
 });

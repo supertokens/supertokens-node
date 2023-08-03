@@ -15,6 +15,7 @@ import {
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailVerification from "../emailverification/recipe";
 import { User } from "../../types";
+import { logDebugMessage } from "../../logger";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContextAndTenantId(input: any): any {
@@ -39,6 +40,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 response = await mockConsumeCode(input);
             }
             if (response.status === "OK") {
+                logDebugMessage("Passwordless.consumeCode code consumed OK");
                 const loginMethod = response.user.loginMethods.find(
                     (m: User["loginMethods"][number]) => m.recipeId === "passwordless"
                 )!;
@@ -46,8 +48,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     throw new Error("This should never happen: login method not found after signin");
                 }
                 if (loginMethod.email !== undefined) {
+                    logDebugMessage("Passwordless.consumeCode checking if email verification is initialized");
                     const emailVerificationInstance = EmailVerification.getInstance();
                     if (emailVerificationInstance) {
+                        logDebugMessage("Passwordless.consumeCode checking email verification status");
                         const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
                             {
                                 tenantId: input.tenantId,
@@ -58,6 +62,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                         );
 
                         if (tokenResponse.status === "OK") {
+                            logDebugMessage("Passwordless.consumeCode verifying email address");
                             await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
                                 tenantId: input.tenantId,
                                 token: tokenResponse.token,

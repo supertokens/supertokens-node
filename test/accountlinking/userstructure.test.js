@@ -73,7 +73,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
         let jsonifiedUser = user.toJson();
 
         user.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
-        assert.deepEqual(jsonifiedUser, user);
+        assert.deepEqual(jsonifiedUser, JSON.parse(JSON.stringify(user)));
     });
 
     it("hasSameThirdPartyInfoAs function in user object work", async function () {

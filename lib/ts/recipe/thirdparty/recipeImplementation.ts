@@ -49,7 +49,13 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     email: { id: email },
                 });
             } else {
-                response = await mockCreateNewOrUpdateEmailOfRecipeUser(thirdPartyId, thirdPartyUserId, email, querier);
+                response = await mockCreateNewOrUpdateEmailOfRecipeUser(
+                    thirdPartyId,
+                    thirdPartyUserId,
+                    email,
+                    tenantId,
+                    querier
+                );
             }
 
             if (response.status === "OK") {

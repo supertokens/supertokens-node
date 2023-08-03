@@ -112,7 +112,7 @@ const createCodeBehaviours = [
     },
     // calling signInPOST creates session with correct userId and recipeUserId in case accounts are not
     {
-        only: true,
+        // only: true,
         pwlessUser: { exists: true, linked: false },
         otherRecipeUser: { verified: true, primary: false },
         accountLinking: { enabled: true, requiresVerification: true },
@@ -177,10 +177,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -200,7 +207,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             app.use(errorHandler());
 
             const email = "test@example.com";
-            let tpUser = await ThirdParty.signInUp("google", "abc", email, false);
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
 
             // createCodeAPI with email
@@ -253,10 +260,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -281,7 +295,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             app.use(errorHandler());
 
             const email = "test@example.com";
-            let tpUser = await ThirdParty.signInUp("google", "abc", email, true, { doNotLink: true });
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, true, {
+                doNotLink: true,
+            });
 
             // createCodeAPI with email
             let createCodeResponse = await new Promise((resolve) =>
@@ -330,10 +346,17 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     ThirdParty.init({
                         signInAndUpFeature: {
                             providers: [
-                                ThirdParty.Google({
-                                    clientId: "",
-                                    clientSecret: "",
-                                }),
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     }),
@@ -353,7 +376,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             app.use(errorHandler());
 
             const email = "test@example.com";
-            let tpUser = await ThirdParty.signInUp("google", "abc", email, true, { doNotLink: true });
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, true, {
+                doNotLink: true,
+            });
 
             // createCodeAPI with email
             let createCodeResponse = await new Promise((resolve) =>
@@ -456,10 +481,17 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
             ThirdParty.init({
                 signInAndUpFeature: {
                     providers: [
-                        ThirdParty.Google({
-                            clientId: "",
-                            clientSecret: "",
-                        }),
+                        {
+                            config: {
+                                thirdPartyId: "google",
+                                clients: [
+                                    {
+                                        clientId: "",
+                                        clientSecret: "",
+                                    },
+                                ],
+                            },
+                        },
                     ],
                 },
             }),
@@ -490,9 +522,16 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
 
     let tpUser;
     if (otherRecipeUser) {
-        tpUser = await ThirdParty.signInUp("google", "abc", email, otherRecipeUser.verified, {
-            doNotLink: !otherRecipeUser.primary,
-        });
+        tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+            "public",
+            "google",
+            "abc",
+            email,
+            otherRecipeUser.verified,
+            {
+                doNotLink: !otherRecipeUser.primary,
+            }
+        );
 
         assert.strictEqual(tpUser.status, "OK");
         if (otherRecipeUser.primary) {
@@ -502,10 +541,11 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
     }
 
     if (pwlessUser?.exists === true) {
-        const code = await Passwordless.createCode({ email });
+        const code = await Passwordless.createCode({ tenantId: "public", email });
         assert.strictEqual(code.status, "OK");
         const consumeResp = await Passwordless.consumeCode(
             {
+                tenantId: "public",
                 preAuthSessionId: code.preAuthSessionId,
                 deviceId: code.deviceId,
                 userInputCode: code.userInputCode,
@@ -517,6 +557,7 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
         assert.strictEqual(consumeResp.status, "OK");
         if (pwlessUser.linked === true) {
             const linkResp = await AccountLinking.linkAccounts(
+                "public",
                 consumeResp.user.loginMethods[0].recipeUserId,
                 tpUser.user.id
             );

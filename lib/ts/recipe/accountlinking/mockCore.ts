@@ -414,52 +414,6 @@ export async function mockGetUsers(
 }
 
 export function createUserObject(input: UserWithoutHelperFunctions): User {
-    function getHasSameEmailAs(lM: RecipeLevelUser) {
-        function hasSameEmailAs(email: string | undefined): boolean {
-            if (email === undefined) {
-                return false;
-            }
-            // this needs to be the same as what's done in the core.
-            email = email.toLowerCase().trim();
-            return lM.email !== undefined && lM.email === email;
-        }
-        return hasSameEmailAs;
-    }
-
-    function getHasSamePhoneNumberAs(lM: RecipeLevelUser) {
-        function hasSamePhoneNumberAs(phoneNumber: string | undefined): boolean {
-            if (phoneNumber === undefined) {
-                return false;
-            }
-            const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
-            if (parsedPhoneNumber === undefined) {
-                // this means that the phone number is not valid according to the E.164 standard.
-                // but we still just trim it.
-                phoneNumber = phoneNumber.trim();
-            } else {
-                phoneNumber = parsedPhoneNumber.format("E.164");
-            }
-            return lM.phoneNumber !== undefined && lM.phoneNumber === phoneNumber;
-        }
-        return hasSamePhoneNumberAs;
-    }
-
-    function getHasSameThirdPartyInfoAs(lM: RecipeLevelUser) {
-        function hasSameThirdPartyInfoAs(thirdParty?: { id: string; userId: string }): boolean {
-            if (thirdParty === undefined) {
-                return false;
-            }
-            thirdParty.id = thirdParty.id.trim();
-            thirdParty.userId = thirdParty.userId.trim();
-            return (
-                lM.thirdParty !== undefined &&
-                lM.thirdParty.id === thirdParty.id &&
-                lM.thirdParty.userId === thirdParty.userId
-            );
-        }
-        return hasSameThirdPartyInfoAs;
-    }
-
     // remove duplicate items from the input.emails array
     input.emails = input.emails.filter((email, index) => {
         return input.emails.indexOf(email) === index;
@@ -493,15 +447,23 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
             };
         }),
         toJson: function () {
-            return {
+            const ret = {
                 ...this,
                 loginMethods: this.loginMethods.map((lM: any) => {
-                    return {
+                    const ret = {
                         ...lM,
                         recipeUserId: lM.recipeUserId.getAsString(),
                     };
+
+                    delete ret.hasSameEmailAs;
+                    delete ret.hasSamePhoneNumberAs;
+                    delete ret.hasSameThirdPartyInfoAs;
+
+                    return ret;
                 }),
             };
+            delete ret.toJson;
+            return ret;
         },
     };
 }
@@ -1027,4 +989,50 @@ export async function mockStoreIntoAccountToLinkTable(input: {
         status: "OK",
         didInsertNewRow: true,
     };
+}
+
+function getHasSameEmailAs(lM: RecipeLevelUser) {
+    function hasSameEmailAs(email: string | undefined): boolean {
+        if (email === undefined) {
+            return false;
+        }
+        // this needs to be the same as what's done in the core.
+        email = email.toLowerCase().trim();
+        return lM.email !== undefined && lM.email === email;
+    }
+    return hasSameEmailAs;
+}
+
+function getHasSamePhoneNumberAs(lM: RecipeLevelUser) {
+    function hasSamePhoneNumberAs(phoneNumber: string | undefined): boolean {
+        if (phoneNumber === undefined) {
+            return false;
+        }
+        const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
+        if (parsedPhoneNumber === undefined) {
+            // this means that the phone number is not valid according to the E.164 standard.
+            // but we still just trim it.
+            phoneNumber = phoneNumber.trim();
+        } else {
+            phoneNumber = parsedPhoneNumber.format("E.164");
+        }
+        return lM.phoneNumber !== undefined && lM.phoneNumber === phoneNumber;
+    }
+    return hasSamePhoneNumberAs;
+}
+
+function getHasSameThirdPartyInfoAs(lM: RecipeLevelUser) {
+    function hasSameThirdPartyInfoAs(thirdParty?: { id: string; userId: string }): boolean {
+        if (thirdParty === undefined) {
+            return false;
+        }
+        thirdParty.id = thirdParty.id.trim();
+        thirdParty.userId = thirdParty.userId.trim();
+        return (
+            lM.thirdParty !== undefined &&
+            lM.thirdParty.id === thirdParty.id &&
+            lM.thirdParty.userId === thirdParty.userId
+        );
+    }
+    return hasSameThirdPartyInfoAs;
 }

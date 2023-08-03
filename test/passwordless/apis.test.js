@@ -648,6 +648,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         // add users phoneNumber to userInfo
         await Passwordless.updateUser({
+            tenantId: "public",
             recipeUserId: new RecipeUserId(emailUserInputCodeResponse.user.id),
             phoneNumber: "+12345678901",
         });
@@ -1788,8 +1789,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                     }
                 })
         );
-        assert(response.status === "RESTART_FLOW_ERROR");
-        assert(isCreateAndSendCustomEmailCalled === false);
+        assert.strictEqual(response.status, "RESTART_FLOW_ERROR");
+        assert.strictEqual(isCreateAndSendCustomEmailCalled, false);
     });
 });
 
@@ -1825,6 +1826,7 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
         recipeUserId: validUserInputCodeResponse.user.id,
         timeJoined: validUserInputCodeResponse.user.timeJoined,
         verified: true,
+        tenantIds: ["public"],
     };
     if (email) {
         loginMethod.email = email;

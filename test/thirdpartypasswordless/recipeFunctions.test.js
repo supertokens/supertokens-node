@@ -22,7 +22,7 @@ const EmailVerification = require("../../recipe/emailverification");
 let { isCDIVersionCompatible } = require("../utils");
 const { default: RecipeUserId } = require("../../lib/build/recipeUserId");
 
-describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {
+describe.only(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -148,14 +148,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             email: "test@example.com",
         });
 
-        // verify the user's email
-        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(
-            "public",
-            response.user.id,
-            response.user.email
-        );
-        await EmailVerification.verifyEmailUsingToken("public", emailVerificationToken.token);
-
         // check that the Passwordless user's email is verified
         assert(await EmailVerification.isEmailVerified(response.user.id, response.user.email));
 
@@ -229,12 +221,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             let userId = user.id;
             let result = await STExpress.getUser(userId);
 
-            assert(result.id === user.id);
-            assert(result.emails[0] === email);
-            assert(result.phoneNumbers.length === 0);
-            assert(typeof result.timeJoined === "number");
-            assert(result.tenantIds.length === 1);
-            assert(Object.keys(result).length === 9);
+            assert.strictEqual(result.id, user.id);
+            assert.strictEqual(result.emails[0], email);
+            assert.strictEqual(result.phoneNumbers.length, 0);
+            assert.strictEqual(typeof result.timeJoined, "number");
+            assert.strictEqual(result.loginMethods[0].tenantIds.length, 1);
+            assert.strictEqual(Object.keys(result).length, 8);
         }
 
         {
@@ -259,12 +251,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
             let userInfo = result[0];
 
-            assert(userInfo.id === user.id);
-            assert(userInfo.emails[0] === email);
-            assert(userInfo.phoneNumbers.length === 0);
-            assert(typeof userInfo.timeJoined === "number");
-            assert(userInfo.tenantIds.length === 1);
-            assert(Object.keys(userInfo).length === 9);
+            assert.strictEqual(userInfo.id, user.id);
+            assert.strictEqual(userInfo.emails[0], email);
+            assert.strictEqual(userInfo.phoneNumbers.length, 0);
+            assert.strictEqual(typeof userInfo.timeJoined, "number");
+            assert.strictEqual(userInfo.loginMethods[0].tenantIds.length, 1);
+            assert.strictEqual(Object.keys(userInfo).length, 8);
         }
 
         {
@@ -285,12 +277,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             let result = await STExpress.listUsersByAccountInfo({
                 phoneNumber,
             });
-            assert(result[0].id === user.id);
-            assert(result[0].phoneNumbers[0] === phoneNumber);
-            assert(result[0].emails.length === 0);
-            assert(typeof result[0].timeJoined === "number");
-            assert(result.tenantIds.length === 1);
-            assert(Object.keys(result[0]).length === 9);
+            assert.strictEqual(result[0].id, user.id);
+            assert.strictEqual(result[0].phoneNumbers[0], phoneNumber);
+            assert.strictEqual(result[0].emails.length, 0);
+            assert.strictEqual(typeof result[0].timeJoined, "number");
+            assert.strictEqual(result[0].loginMethods[0].tenantIds.length, 1);
+            assert.strictEqual(Object.keys(result[0]).length, 8);
         }
     });
 
@@ -1163,7 +1155,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         assert.strictEqual(result.user.phoneNumbers[0], "+12345678901");
         assert.strictEqual(typeof result.user.id, "string");
         assert.strictEqual(typeof result.user.timeJoined, "number");
-        assert(result.user.tenantIds.length === 1);
+        assert(result.user.loginMethods[0].tenantIds.length === 1);
         assert.strictEqual(Object.keys(result.user).length, 8);
     });
 });

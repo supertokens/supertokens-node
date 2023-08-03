@@ -619,7 +619,8 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         // add users phoneNumber to userInfo
         await ThirdPartyPasswordless.updatePasswordlessUser({
-            recipeUserId: emailUserInputCodeResponse.user.loginMethods[0].recipeUserId,
+            tenantId: "public",
+            recipeUserId: STExpress.convertToRecipeUserId(emailUserInputCodeResponse.user.loginMethods[0].recipeUserId),
             phoneNumber: "+12345678901",
         });
 
@@ -1652,6 +1653,7 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
         recipeUserId: validUserInputCodeResponse.user.id,
         timeJoined: validUserInputCodeResponse.user.timeJoined,
         verified: true,
+        tenantIds: ["public"],
     };
     if (email) {
         loginMethod.email = email;
