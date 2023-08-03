@@ -20,7 +20,6 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import {
     mockListUsersByAccountInfo,
     mockGetUser,
-    mockFetchFromAccountToLinkTable,
     mockGetUsers,
     mockCreatePrimaryUser,
     mockCanCreatePrimaryUser,
@@ -28,7 +27,6 @@ import {
     mockCanLinkAccounts,
     mockUnlinkAccount,
     mockDeleteUser,
-    mockStoreIntoAccountToLinkTable,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 import type AccountLinkingRecipe from "./recipe";
@@ -341,56 +339,6 @@ export default function getRecipeImplementation(
                 });
             } else {
                 return await mockDeleteUser({ userId, removeAllLinkedAccounts, querier });
-            }
-        },
-
-        fetchFromAccountToLinkTable: async function ({
-            recipeUserId,
-        }: {
-            recipeUserId: RecipeUserId;
-        }): Promise<string | undefined> {
-            if (process.env.MOCK !== "true") {
-                let result = await querier.sendGetRequest(
-                    new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
-                    {
-                        recipeUserId: recipeUserId.getAsString(),
-                    }
-                );
-                return result.user;
-            } else {
-                return mockFetchFromAccountToLinkTable({ recipeUserId });
-            }
-        },
-        storeIntoAccountToLinkTable: async function ({
-            recipeUserId,
-            primaryUserId,
-        }: {
-            recipeUserId: RecipeUserId;
-            primaryUserId: string;
-        }): Promise<
-            | {
-                  status: "OK";
-                  didInsertNewRow: boolean;
-              }
-            | {
-                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-              }
-            | {
-                  status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
-              }
-        > {
-            if (process.env.MOCK !== "true") {
-                let result = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/accountlinking/user/link/table"),
-                    {
-                        recipeUserId,
-                        primaryUserId,
-                    }
-                );
-                return result;
-            } else {
-                return mockStoreIntoAccountToLinkTable({ recipeUserId, primaryUserId });
             }
         },
     };

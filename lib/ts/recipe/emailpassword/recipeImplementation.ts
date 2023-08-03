@@ -48,7 +48,6 @@ export default function getRecipeInterface(
                 tenantId,
                 // we can use index 0 cause this is a new recipe user
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
                 userContext,
             });
 

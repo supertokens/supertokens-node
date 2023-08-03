@@ -548,7 +548,6 @@ export default function getAPIImplementation(): APIInterface {
                         let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                             tenantId,
                             recipeUserId: createUserResponse.user.loginMethods[0].recipeUserId,
-                            checkAccountsToLinkTableAsWell: true,
                             userContext,
                         });
                         if (linkedToUserId !== existingUser.id) {
@@ -634,7 +633,6 @@ export default function getAPIImplementation(): APIInterface {
             let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
                 recipeUserId: emailPasswordRecipeUser.recipeUserId!,
-                checkAccountsToLinkTableAsWell: true,
                 userContext,
             });
 

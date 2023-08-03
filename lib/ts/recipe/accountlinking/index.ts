@@ -32,13 +32,11 @@ export default class Wrapper {
     static async createPrimaryUserIdOrLinkAccounts(input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }) {
         return await Recipe.getInstance().createPrimaryUserIdOrLinkAccounts({
             tenantId: input.tenantId,
             recipeUserId: input.recipeUserId,
-            checkAccountsToLinkTableAsWell: input.checkAccountsToLinkTableAsWell ?? true,
             userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
@@ -54,12 +52,10 @@ export default class Wrapper {
      */
     static async getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }) {
         return await Recipe.getInstance().getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
             recipeUserId: input.recipeUserId,
-            checkAccountsToLinkTableAsWell: input.checkAccountsToLinkTableAsWell ?? true,
             userContext: input.userContext === undefined ? {} : input.userContext,
         });
     }
@@ -102,21 +98,6 @@ export default class Wrapper {
         });
     }
 
-    static async fetchFromAccountToLinkTable(recipeUserId: RecipeUserId, userContext?: any) {
-        return await Recipe.getInstance().recipeInterfaceImpl.fetchFromAccountToLinkTable({
-            recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
-    static async storeIntoAccountToLinkTable(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
-        return await Recipe.getInstance().recipeInterfaceImpl.storeIntoAccountToLinkTable({
-            recipeUserId,
-            primaryUserId,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
-
     static async isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any) {
         return await Recipe.getInstance().isSignUpAllowed({
             newUser,
@@ -153,8 +134,6 @@ export const createPrimaryUser = Wrapper.createPrimaryUser;
 export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccount = Wrapper.unlinkAccount;
-export const fetchFromAccountToLinkTable = Wrapper.fetchFromAccountToLinkTable;
-export const storeIntoAccountToLinkTable = Wrapper.storeIntoAccountToLinkTable;
 export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
 export const getPrimaryUserIdThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;

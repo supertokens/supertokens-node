@@ -102,7 +102,6 @@ export default function getRecipeInterface(
                         let AccountLinking = require("../accountlinking");
                         await AccountLinking.createPrimaryUserIdOrLinkAccounts({
                             recipeUserId: new RecipeUserId(response.userId),
-                            checkAccountsToLinkTableAsWell: true,
                             userContext,
                         });
                     }

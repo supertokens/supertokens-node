@@ -176,26 +176,6 @@ export type RecipeInterface = {
         removeAllLinkedAccounts: boolean;
         userContext: any;
     }) => Promise<{ status: "OK" }>;
-
-    // these two functions and table is there in the core only because
-    // if the user clicks on the email verification link and opens it in a new
-    // browser which doesn't have the session, it will fetch from this table
-    // and do the linking. If these functions / table was not there, then
-    // the email verification POST API in this case would not know which recipeUserId
-    // to link to.
-    fetchFromAccountToLinkTable: (input: {
-        recipeUserId: RecipeUserId;
-        userContext: any;
-    }) => Promise<string | undefined>;
-    storeIntoAccountToLinkTable: (input: {
-        recipeUserId: RecipeUserId;
-        primaryUserId: string;
-        userContext: any;
-    }) => Promise<
-        | { status: "OK"; didInsertNewRow: boolean }
-        | { status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"; primaryUserId: string }
-        | { status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR" }
-    >;
 };
 
 export type AccountInfo = {

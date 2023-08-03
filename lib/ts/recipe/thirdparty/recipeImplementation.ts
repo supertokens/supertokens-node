@@ -148,7 +148,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
                 recipeUserId: recipeUserId!,
-                checkAccountsToLinkTableAsWell: true,
                 userContext,
             });
 

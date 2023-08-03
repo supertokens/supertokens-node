@@ -163,27 +163,6 @@ export declare type RecipeInterface = {
     }) => Promise<{
         status: "OK";
     }>;
-    fetchFromAccountToLinkTable: (input: {
-        recipeUserId: RecipeUserId;
-        userContext: any;
-    }) => Promise<string | undefined>;
-    storeIntoAccountToLinkTable: (input: {
-        recipeUserId: RecipeUserId;
-        primaryUserId: string;
-        userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-              didInsertNewRow: boolean;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-          }
-        | {
-              status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
-          }
-    >;
 };
 export declare type AccountInfo = {
     email?: string;

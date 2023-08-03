@@ -254,7 +254,6 @@ export default function getAPIInterface(): APIInterface {
                 let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId,
                     recipeUserId: loginMethod.recipeUserId,
-                    checkAccountsToLinkTableAsWell: true,
                     userContext,
                 });
 

@@ -16,7 +16,6 @@ export default class Wrapper {
     static createPrimaryUserIdOrLinkAccounts(input: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }): Promise<string>;
     /**
@@ -30,7 +29,6 @@ export default class Wrapper {
      */
     static getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell?: boolean;
         userContext?: any;
     }): Promise<import("../emailpassword").User | undefined>;
     static canCreatePrimaryUser(
@@ -120,24 +118,6 @@ export default class Wrapper {
         status: "OK";
         wasRecipeUserDeleted: boolean;
     }>;
-    static fetchFromAccountToLinkTable(recipeUserId: RecipeUserId, userContext?: any): Promise<string | undefined>;
-    static storeIntoAccountToLinkTable(
-        recipeUserId: RecipeUserId,
-        primaryUserId: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              didInsertNewRow: boolean;
-          }
-        | {
-              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-          }
-        | {
-              status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
-          }
-    >;
     static isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any): Promise<boolean>;
     static isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
     static isEmailChangeAllowed(
@@ -153,8 +133,6 @@ export declare const createPrimaryUser: typeof Wrapper.createPrimaryUser;
 export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
 export declare const unlinkAccount: typeof Wrapper.unlinkAccount;
-export declare const fetchFromAccountToLinkTable: typeof Wrapper.fetchFromAccountToLinkTable;
-export declare const storeIntoAccountToLinkTable: typeof Wrapper.storeIntoAccountToLinkTable;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
 export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
