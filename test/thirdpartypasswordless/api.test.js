@@ -89,12 +89,13 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         app.use(errorHandler());
 
+        const email = "test@example.com";
         // createCodeAPI with email
         let validCreateCodeResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    email: "test@example.com",
+                    email,
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -130,13 +131,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 })
         );
 
-        assert(validUserInputCodeResponse.status === "OK");
-        assert(validUserInputCodeResponse.createdNewUser === true);
-        assert(typeof validUserInputCodeResponse.user.id === "string");
-        assert(typeof validUserInputCodeResponse.user.email === "string");
-        assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
-        assert(Object.keys(validUserInputCodeResponse).length === 3);
+        checkConsumeResponse(validUserInputCodeResponse, {
+            email,
+            phoneNumber: undefined,
+            isNew: true,
+            isPrimary: false,
+        });
     });
 
     /**
@@ -192,12 +192,13 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         app.use(errorHandler());
 
+        const phoneNumber = "+12345678901";
         // createCodeAPI with phoneNumber
         let validCreateCodeResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+12345678901",
+                    phoneNumber,
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -233,14 +234,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                 })
         );
 
-        assert(validUserInputCodeResponse.status === "OK");
-        assert(validUserInputCodeResponse.createdNewUser === true);
-        assert(typeof validUserInputCodeResponse.user.id === "string");
-        assert(typeof validUserInputCodeResponse.user.phoneNumber === "string");
-        assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-        assert(validUserInputCodeResponse.user.tenantIds.length === 1);
-        assert(Object.keys(validUserInputCodeResponse.user).length === 4);
-        assert(Object.keys(validUserInputCodeResponse).length === 3);
+        checkConsumeResponse(validUserInputCodeResponse, {
+            email: undefined,
+            phoneNumber,
+            isNew: true,
+            isPrimary: false,
+        });
     });
 
     /**
@@ -620,7 +619,8 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         // add users phoneNumber to userInfo
         await ThirdPartyPasswordless.updatePasswordlessUser({
-            userId: emailUserInputCodeResponse.user.id,
+            tenantId: "public",
+            recipeUserId: STExpress.convertToRecipeUserId(emailUserInputCodeResponse.user.loginMethods[0].recipeUserId),
             phoneNumber: "+12345678901",
         });
 
@@ -767,9 +767,10 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         app.use(errorHandler());
 
+        const email = "test@example.com";
         let codeInfo = await ThirdPartyPasswordless.createCode({
             tenantId: "public",
-            email: "test@example.com",
+            email,
         });
 
         {
@@ -813,13 +814,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                     })
             );
 
-            assert(validLinkCodeResponse.status === "OK");
-            assert(validLinkCodeResponse.createdNewUser === true);
-            assert(typeof validLinkCodeResponse.user.id === "string");
-            assert(typeof validLinkCodeResponse.user.email === "string");
-            assert(typeof validLinkCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validLinkCodeResponse.user).length === 4);
-            assert(Object.keys(validLinkCodeResponse).length === 3);
+            checkConsumeResponse(validLinkCodeResponse, {
+                email,
+                phoneNumber: undefined,
+                isNew: true,
+                isPrimary: false,
+            });
         }
     });
 
@@ -860,9 +860,10 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         app.use(errorHandler());
 
+        const email = "test@example.com";
         let codeInfo = await ThirdPartyPasswordless.createCode({
             tenantId: "public",
-            email: "test@example.com",
+            email,
         });
 
         {
@@ -912,13 +913,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
                     })
             );
 
-            assert(validUserInputCodeResponse.status === "OK");
-            assert(validUserInputCodeResponse.createdNewUser === true);
-            assert(typeof validUserInputCodeResponse.user.id === "string");
-            assert(typeof validUserInputCodeResponse.user.email === "string");
-            assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
-            assert(Object.keys(validUserInputCodeResponse.user).length === 4);
-            assert(Object.keys(validUserInputCodeResponse).length === 3);
+            checkConsumeResponse(validUserInputCodeResponse, {
+                email,
+                phoneNumber: undefined,
+                isNew: true,
+                isPrimary: false,
+            });
         }
 
         {
@@ -1620,3 +1620,49 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
         }
     });
 });
+
+function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, isNew, isPrimary }) {
+    assert.strictEqual(validUserInputCodeResponse.status, "OK");
+    assert.strictEqual(validUserInputCodeResponse.createdNewUser, isNew);
+
+    assert.strictEqual(typeof validUserInputCodeResponse.user.id, "string");
+    assert.strictEqual(typeof validUserInputCodeResponse.user.timeJoined, "number");
+    assert.strictEqual(validUserInputCodeResponse.user.isPrimaryUser, isPrimary);
+
+    assert(validUserInputCodeResponse.user.emails instanceof Array);
+    if (email !== undefined) {
+        assert.strictEqual(validUserInputCodeResponse.user.emails.length, 1);
+        assert.strictEqual(validUserInputCodeResponse.user.emails[0], email);
+    } else {
+        assert.strictEqual(validUserInputCodeResponse.user.emails.length, 0);
+    }
+
+    assert(validUserInputCodeResponse.user.phoneNumbers instanceof Array);
+    if (phoneNumber !== undefined) {
+        assert.strictEqual(validUserInputCodeResponse.user.phoneNumbers.length, 1);
+        assert.strictEqual(validUserInputCodeResponse.user.phoneNumbers[0], phoneNumber);
+    } else {
+        assert.strictEqual(validUserInputCodeResponse.user.phoneNumbers.length, 0);
+    }
+
+    assert.strictEqual(validUserInputCodeResponse.user.thirdParty.length, 0);
+
+    assert.strictEqual(validUserInputCodeResponse.user.loginMethods.length, 1);
+    const loginMethod = {
+        recipeId: "passwordless",
+        recipeUserId: validUserInputCodeResponse.user.id,
+        timeJoined: validUserInputCodeResponse.user.timeJoined,
+        verified: true,
+        tenantIds: ["public"],
+    };
+    if (email) {
+        loginMethod.email = email;
+    }
+    if (phoneNumber) {
+        loginMethod.phoneNumber = phoneNumber;
+    }
+    assert.deepStrictEqual(validUserInputCodeResponse.user.loginMethods, [loginMethod]);
+
+    assert.strictEqual(Object.keys(validUserInputCodeResponse.user).length, 7);
+    assert.strictEqual(Object.keys(validUserInputCodeResponse).length, 3);
+}

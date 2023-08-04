@@ -331,6 +331,6 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
 
         newUser = await SuperTokens.getUser(userId);
 
-        assert(newUser.tenantIds.length === 1); // only public
+        assert(newUser.loginMethods[0].tenantIds.length === 1); // only public
     });
 });

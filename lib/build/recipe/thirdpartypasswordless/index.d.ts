@@ -10,6 +10,7 @@ import {
 } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -115,7 +116,8 @@ export default class Wrapper {
           }
     >;
     static updatePasswordlessUser(input: {
-        userId: string;
+        tenantId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;

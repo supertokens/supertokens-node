@@ -22,6 +22,7 @@ import {
     TypePasswordlessEmailDeliveryInput,
     TypePasswordlessSmsDeliveryInput,
 } from "./types";
+import RecipeUserId from "../../recipeUserId";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -79,7 +80,8 @@ export default class Wrapper {
     }
 
     static updateUser(input: {
-        userId: string;
+        tenantId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;

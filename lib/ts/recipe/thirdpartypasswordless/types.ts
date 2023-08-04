@@ -37,6 +37,7 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import { GeneralErrorResponse, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type DeviceType = DeviceTypeOriginal;
 
@@ -239,7 +240,8 @@ export type RecipeInterface = {
     >;
 
     updatePasswordlessUser: (input: {
-        userId: string;
+        tenantId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext: any;
@@ -379,6 +381,10 @@ export type APIInterface = {
                     preAuthSessionId: string;
                     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
                 }
+              | {
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
+                    reason: string;
+                }
               | GeneralErrorResponse
           >);
 
@@ -425,7 +431,7 @@ export type APIInterface = {
               | GeneralErrorResponse
               | { status: "RESTART_FLOW_ERROR" }
               | {
-                    status: "SIGNUP_NOT_ALLOWED";
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
           >);

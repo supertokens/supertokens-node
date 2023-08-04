@@ -20,6 +20,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
 let { isCDIVersionCompatible } = require("../utils");
+const { default: RecipeUserId } = require("../../lib/build/recipeUserId");
 
 describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
@@ -63,6 +64,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
+        const email = "test@example.com";
 
         {
             let user = await STExpress.getUser("random");
@@ -72,19 +74,19 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             user = (
                 await Passwordless.signInUp({
                     tenantId: "public",
-                    email: "test@example.com",
+                    email,
                 })
             ).user;
 
             let result = await STExpress.getUser(user.id);
 
-            assert(result.id === user.id);
-            assert(result.emails[0] === user.email);
-            assert(result.phoneNumbers.length === 0);
-            assert(result.thirdParty.length === 0);
-            assert(result.loginMethods.length === 1);
-            assert(typeof result.loginMethods[0].timeJoined === "number");
-            assert(Object.keys(result).length === 8);
+            assert.strictEqual(result.id, user.id);
+            assert.strictEqual(result.emails[0], email);
+            assert.strictEqual(result.phoneNumbers.length, 0);
+            assert.strictEqual(result.thirdParty.length, 0);
+            assert.strictEqual(result.loginMethods.length, 1);
+            assert.strictEqual(typeof result.loginMethods[0].timeJoined, "number");
+            assert.strictEqual(Object.keys(result).length, 8);
         }
 
         {
@@ -102,13 +104,13 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ).user;
 
             let result = await STExpress.listUsersByAccountInfo({
-                email: user.email,
+                email: email,
             });
             assert(result.length === 1);
             result = result[0];
 
             assert(result.id === user.id);
-            assert(result.emails[0] === user.email);
+            assert(result.emails[0] === email);
             assert(result.phoneNumbers.length === 0);
             assert(result.thirdParty.length === 0);
             assert(result.loginMethods.length === 1);
@@ -123,22 +125,23 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             assert(user.length === 0);
 
+            const phoneNumber = "+1234567890";
             user = (
                 await Passwordless.signInUp({
                     tenantId: "public",
-                    phoneNumber: "+1234567890",
+                    phoneNumber,
                 })
             ).user;
 
             let result = await STExpress.listUsersByAccountInfo({
-                phoneNumber: user.phoneNumber,
+                phoneNumber: phoneNumber,
             });
             assert(result.length === 1);
             result = result[0];
 
             assert(result.id === user.id);
             assert(result.emails.length === 0);
-            assert(result.phoneNumbers[0] === user.phoneNumber);
+            assert(result.phoneNumbers[0] === phoneNumber);
             assert(result.thirdParty.length === 0);
             assert(result.loginMethods.length === 1);
             assert(typeof result.loginMethods[0].timeJoined === "number");
@@ -368,12 +371,12 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             assert(resp.status === "OK");
             assert(resp.createdNewUser);
-            assert(typeof resp.user.id === "string");
-            assert(resp.user.email === "test@example.com");
-            assert(resp.user.phoneNumber === undefined);
-            assert(typeof resp.user.timeJoined === "number");
-            assert(Object.keys(resp).length === 3);
-            assert(Object.keys(resp.user).length === 4);
+            assert.strictEqual(typeof resp.user.id, "string");
+            assert.strictEqual(resp.user.emails[0], "test@example.com");
+            assert.strictEqual(resp.user.phoneNumbers[0], undefined);
+            assert.strictEqual(typeof resp.user.timeJoined, "number");
+            assert.strictEqual(Object.keys(resp).length, 3);
+            assert.strictEqual(Object.keys(resp.user).length, 8);
         }
 
         {
@@ -509,7 +512,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         {
             // update users email
             let response = await Passwordless.updateUser({
-                userId: userInfo.user.id,
+                recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
             });
             assert(response.status === "OK");
@@ -521,7 +524,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         {
             // update user with invalid userId
             let response = await Passwordless.updateUser({
-                userId: "invalidUserId",
+                recipeUserId: new RecipeUserId("invalidUserId"),
                 email: "test2@example.com",
             });
             assert(response.status === "UNKNOWN_USER_ID_ERROR");
@@ -534,7 +537,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             let result = await Passwordless.updateUser({
-                userId: userInfo2.user.id,
+                recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
             });
 
@@ -585,7 +588,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         {
             // update users email
             let response = await Passwordless.updateUser({
-                userId: userInfo.user.id,
+                recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
             });
             assert(response.status === "OK");
@@ -602,7 +605,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             let result = await Passwordless.updateUser({
-                userId: userInfo2.user.id,
+                recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
             });
 
@@ -1010,9 +1013,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         assert(result.createdNewUser === true);
         assert(Object.keys(result).length === 3);
 
-        assert(result.user.phoneNumber === "+12345678901");
+        assert(result.user.phoneNumbers[0] === "+12345678901");
         assert(typeof result.user.id === "string");
         assert(typeof result.user.timeJoined === "number");
-        assert(Object.keys(result.user).length === 4);
+        assert(Object.keys(result.user).length === 8);
     });
 });

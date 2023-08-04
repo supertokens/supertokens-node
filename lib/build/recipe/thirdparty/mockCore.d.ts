@@ -5,6 +5,7 @@ export declare function mockCreateNewOrUpdateEmailOfRecipeUser(
     thirdPartyId: string,
     thirdPartyUserId: string,
     email: string,
+    tenantId: string,
     querier: Querier
 ): Promise<
     | {

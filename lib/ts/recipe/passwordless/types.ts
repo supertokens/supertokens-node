@@ -27,6 +27,7 @@ import {
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 import { GeneralErrorResponse, NormalisedAppinfo, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 export type TypeInput = (
@@ -174,7 +175,8 @@ export type RecipeInterface = {
     >;
 
     updateUser: (input: {
-        userId: string; // the id can be either recipeUserId or primaryUserId
+        tenantId: string;
+        recipeUserId: RecipeUserId; // the id can be either recipeUserId or primaryUserId
         email?: string | null;
         phoneNumber?: string | null;
         userContext: any;
@@ -268,6 +270,10 @@ export type APIInterface = {
               preAuthSessionId: string;
               flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
           }
+        | {
+              status: "SIGN_IN_UP_NOT_ALLOWED";
+              reason: string;
+          }
         | GeneralErrorResponse
     >;
 
@@ -310,7 +316,7 @@ export type APIInterface = {
         | GeneralErrorResponse
         | { status: "RESTART_FLOW_ERROR" }
         | {
-              status: "SIGNUP_NOT_ALLOWED";
+              status: "SIGN_IN_UP_NOT_ALLOWED";
               reason: string;
           }
     >;

@@ -116,7 +116,7 @@ export default function getRecipeInterface(
                     }
                 );
             } else {
-                response = await mockSignIn({ email, password });
+                response = await mockSignIn({ email, password, tenantId });
             }
 
             if (response.status === "OK") {
@@ -175,7 +175,7 @@ export default function getRecipeInterface(
                     }
                 );
             } else {
-                return mockCreatePasswordResetToken(email, userId);
+                return mockCreatePasswordResetToken(email, userId, tenantId);
             }
         },
 
@@ -207,7 +207,7 @@ export default function getRecipeInterface(
                     }
                 );
             } else {
-                return mockConsumePasswordResetToken(token);
+                return mockConsumePasswordResetToken(token, newPassword, tenantId, querier);
             }
         },
 

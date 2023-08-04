@@ -13,9 +13,10 @@ export async function mockReset() {
 
 export async function mockCreatePasswordResetToken(
     email: string,
-    userId: string
+    userId: string,
+    tenantId: string
 ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-    let response = await fetch(`http://localhost:8080/recipe/user/password/reset/token`, {
+    let response = await fetch(`http://localhost:8080/${tenantId ?? "public"}/recipe/user/password/reset/token`, {
         method: "post",
         headers: {
             rid: "emailpassword",
@@ -26,6 +27,9 @@ export async function mockCreatePasswordResetToken(
             userId,
         }),
     });
+    if (response.status !== 200) {
+        throw new Error(await response.text());
+    }
     const respBody = await response.json();
 
     if (respBody.status === "UNKNOWN_USER_ID_ERROR") {
@@ -52,7 +56,10 @@ export async function mockCreatePasswordResetToken(
 }
 
 export async function mockConsumePasswordResetToken(
-    token: string
+    token: string,
+    newPassword: string,
+    tenantId: string,
+    querier: Querier
 ): Promise<
     | {
           status: "OK";
@@ -66,9 +73,24 @@ export async function mockConsumePasswordResetToken(
             status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
         };
     }
+
+    const res = await querier.sendPostRequest(
+        new NormalisedURLPath(`/${tenantId ?? "public"}/recipe/user/password/reset`),
+        {
+            method: "token",
+            token,
+            newPassword,
+        }
+    );
+
+    if (res.status !== "OK") {
+        return res;
+    }
+
     let userId = passwordResetTokens[token].userId;
     let email = passwordResetTokens[token].email;
     delete passwordResetTokens[token];
+
     return {
         status: "OK",
         userId,
@@ -79,8 +101,9 @@ export async function mockConsumePasswordResetToken(
 export async function mockSignIn(input: {
     email: string;
     password: string;
+    tenantId: string;
 }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-    let response = await fetch(`http://localhost:8080/recipe/signin`, {
+    let response = await fetch(`http://localhost:8080/${input.tenantId ?? "public"}/recipe/signin`, {
         method: "post",
         headers: {
             rid: "emailpassword",
@@ -130,7 +153,7 @@ export async function mockCreateRecipeUser(input: {
         }),
     });
     const respBody = await response.json();
-
+    console.log(respBody);
     if (respBody.status === "EMAIL_ALREADY_EXISTS_ERROR") {
         return respBody;
     }
@@ -147,12 +170,12 @@ export async function mockCreateRecipeUser(input: {
             thirdParty: [],
             loginMethods: [
                 {
-                    tenantIds: ["public"], // TODO: fix this
                     recipeId: "emailpassword",
                     recipeUserId: new RecipeUserId(user.id),
                     timeJoined: user.timeJoined,
                     verified: false,
                     email: user.email,
+                    tenantIds: user.tenantIds,
                 },
             ],
         }),

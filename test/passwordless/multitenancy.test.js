@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startSTWithMultitenancy, stopST, killAllST, cleanST, resetAll } = require("../utils");
-let STExpress = require("../../");
+let SuperTokens = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
@@ -41,7 +41,7 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
 
     it("test recipe functions", async function () {
         await startSTWithMultitenancy();
-        STExpress.init({
+        SuperTokens.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
             },
@@ -79,21 +79,18 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
         });
 
         let user1 = await Passwordless.consumeCode({
-            tenantId: "public",
             preAuthSessionId: code1.preAuthSessionId,
             deviceId: code1.deviceId,
             userInputCode: "123456",
             tenantId: "t1",
         });
         let user2 = await Passwordless.consumeCode({
-            tenantId: "public",
             preAuthSessionId: code2.preAuthSessionId,
             deviceId: code2.deviceId,
             userInputCode: "456789",
             tenantId: "t2",
         });
         let user3 = await Passwordless.consumeCode({
-            tenantId: "public",
             preAuthSessionId: code3.preAuthSessionId,
             deviceId: code3.deviceId,
             userInputCode: "789123",
@@ -104,26 +101,17 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
         assert(user1.user.id !== user3.user.id);
         assert(user2.user.id !== user3.user.id);
 
-        assert.deepEqual(user1.user.tenantIds, ["t1"]);
-        assert.deepEqual(user2.user.tenantIds, ["t2"]);
-        assert.deepEqual(user3.user.tenantIds, ["t3"]);
+        assert.deepEqual(user1.user.loginMethods[0].tenantIds, ["t1"]);
+        assert.deepEqual(user2.user.loginMethods[0].tenantIds, ["t2"]);
+        assert.deepEqual(user3.user.loginMethods[0].tenantIds, ["t3"]);
 
         // get user by id
-        let gUser1 = await SuperTokens.getUser({ userId: user1.user.id });
-        let gUser2 = await SuperTokens.getUser({ userId: user2.user.id });
-        let gUser3 = await SuperTokens.getUser({ userId: user3.user.id });
+        let gUser1 = await SuperTokens.getUser(user1.user.id);
+        let gUser2 = await SuperTokens.getUser(user2.user.id);
+        let gUser3 = await SuperTokens.getUser(user3.user.id);
 
-        assert.deepEqual(gUser1, user1.user);
-        assert.deepEqual(gUser2, user2.user);
-        assert.deepEqual(gUser3, user3.user);
-
-        // get user by email
-        let gUserByEmail1 = await Passwordless.getUserByEmail({ email: "test@example.com", tenantId: "t1" });
-        let gUserByEmail2 = await Passwordless.getUserByEmail({ email: "test@example.com", tenantId: "t2" });
-        let gUserByEmail3 = await Passwordless.getUserByEmail({ email: "test@example.com", tenantId: "t3" });
-
-        assert.deepEqual(gUserByEmail1, user1.user);
-        assert.deepEqual(gUserByEmail2, user2.user);
-        assert.deepEqual(gUserByEmail3, user3.user);
+        assert.deepEqual(gUser1.toJson(), user1.user.toJson());
+        assert.deepEqual(gUser2.toJson(), user2.user.toJson());
+        assert.deepEqual(gUser3.toJson(), user3.user.toJson());
     });
 });

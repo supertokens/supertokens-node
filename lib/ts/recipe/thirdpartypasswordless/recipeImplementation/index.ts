@@ -51,7 +51,7 @@ export default function getRecipeInterface(
         },
 
         updatePasswordlessUser: async function (this: RecipeInterface, input) {
-            let user = await getUser(input.userId, input.userContext);
+            let user = await getUser(input.recipeUserId.getAsString(), input.userContext);
             if (user === undefined) {
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",

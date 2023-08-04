@@ -8,6 +8,7 @@ import {
     TypePasswordlessEmailDeliveryInput,
     TypePasswordlessSmsDeliveryInput,
 } from "./types";
+import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -85,7 +86,8 @@ export default class Wrapper {
           }
     >;
     static updateUser(input: {
-        userId: string;
+        tenantId: string;
+        recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
         userContext?: any;

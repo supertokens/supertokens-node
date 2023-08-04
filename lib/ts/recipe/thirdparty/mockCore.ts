@@ -8,6 +8,7 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
     thirdPartyId: string,
     thirdPartyUserId: string,
     email: string,
+    tenantId: string,
     querier: Querier
 ): Promise<
     | { status: "OK"; createdNewUser: boolean; user: User }
@@ -48,7 +49,7 @@ export async function mockCreateNewOrUpdateEmailOfRecipeUser(
         }
     }
 
-    let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+    let response = await querier.sendPostRequest(new NormalisedURLPath(`${tenantId}/recipe/signinup`), {
         thirdPartyId,
         thirdPartyUserId,
         email: { id: email },
