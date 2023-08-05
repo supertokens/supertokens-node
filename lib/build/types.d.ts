@@ -56,6 +56,7 @@ export declare type User = {
     id: string;
     timeJoined: number;
     isPrimaryUser: boolean;
+    tenantIds: string[];
     emails: string[];
     phoneNumbers: string[];
     thirdParty: {
@@ -67,6 +68,7 @@ export declare type User = {
         hasSameEmailAs: (email: string | undefined) => boolean;
         hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
         hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
+        toJson: () => any;
     })[];
     toJson: () => any;
 };

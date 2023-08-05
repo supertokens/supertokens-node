@@ -1,8 +1,7 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo } from "../../types";
-import RecipeUserId from "../../recipeUserId";
+import { NormalisedAppinfo, User } from "../../types";
 export declare type TypeInput = {
     apiKey?: string;
     override?: {
@@ -48,32 +47,7 @@ export declare type APIFunction = (
 ) => Promise<any>;
 export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 export declare type AuthMode = "api-key" | "email-password";
-export declare type CommonUserInformation = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    recipeUserId: RecipeUserId;
-    timeJoined: number;
-    tenantIds: string[];
-};
-export declare type EmailPasswordUser = CommonUserInformation & {
-    email: string;
-};
-export declare type ThirdPartyUser = CommonUserInformation & {
-    email: string;
-    thirdParty: {
-        id: string;
-        userId: string;
-    };
-};
-export declare type RecipeLevelUserWithFirstAndLastName = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    timeJoined: number;
-    recipeUserId: RecipeUserId;
-    email?: string;
-    phoneNumber?: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
-    firstName: string;
-    lastName: string;
+export declare type UserWithFirstAndLastName = User & {
+    firstName?: string;
+    lastName?: string;
 };

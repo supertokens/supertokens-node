@@ -1,25 +1,9 @@
-import { AccountInfo, RecipeLevelUser } from "./types";
-import type { User } from "../../types";
+import { AccountInfo } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import Session from "../session";
-import parsePhoneNumber from "libphonenumber-js/max";
-
-type UserWithoutHelperFunctions = {
-    id: string; // primaryUserId or recipeUserId
-    timeJoined: number; // minimum timeJoined value from linkedRecipes
-    isPrimaryUser: boolean;
-    emails: string[];
-    phoneNumbers: string[];
-    thirdParty: {
-        id: string;
-        userId: string;
-    }[];
-    loginMethods: (RecipeLevelUser & {
-        verified: boolean;
-    })[];
-};
+import { User, UserWithoutHelperFunctions } from "../../user";
 
 let primaryUserMap: Map<string, RecipeUserId[]> = new Map(); // primary user id -> recipe user id[]
 
@@ -391,10 +375,11 @@ export async function mockGetUsers(
             emails: user.email === undefined ? [] : [user.email],
             phoneNumbers: user.phoneNumber === undefined ? [] : [user.phoneNumber],
             thirdParty: user.thirdParty === undefined ? [] : [user.thirdParty],
+            tenantIds: user.tenantIds,
             loginMethods: [
                 {
                     recipeId: userObj.recipeId,
-                    recipeUserId: new RecipeUserId(user.id),
+                    recipeUserId: user.id,
                     timeJoined: user.timeJoined,
                     verified,
                     email: user.email,
@@ -436,36 +421,7 @@ export function createUserObject(input: UserWithoutHelperFunctions): User {
         return indexFound === index;
     });
 
-    return {
-        ...input,
-        loginMethods: input.loginMethods.map((lM) => {
-            return {
-                ...lM,
-                hasSameEmailAs: getHasSameEmailAs(lM),
-                hasSamePhoneNumberAs: getHasSamePhoneNumberAs(lM),
-                hasSameThirdPartyInfoAs: getHasSameThirdPartyInfoAs(lM),
-            };
-        }),
-        toJson: function () {
-            const ret = {
-                ...this,
-                loginMethods: this.loginMethods.map((lM: any) => {
-                    const ret = {
-                        ...lM,
-                        recipeUserId: lM.recipeUserId.getAsString(),
-                    };
-
-                    delete ret.hasSameEmailAs;
-                    delete ret.hasSamePhoneNumberAs;
-                    delete ret.hasSameThirdPartyInfoAs;
-
-                    return ret;
-                }),
-            };
-            delete ret.toJson;
-            return ret;
-        },
-    };
+    return new User(input);
 }
 
 async function isEmailVerified(userId: string, email: string | undefined): Promise<boolean> {
@@ -691,6 +647,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
     }
 
     let finalResult: UserWithoutHelperFunctions = {
+        tenantIds: [],
         id: userId,
         isPrimaryUser,
         timeJoined: 9684609700828, // this is there cause we get the min from the loop below.
@@ -715,7 +672,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                 let verified = await isEmailVerified(user.id, user.email);
                 finalResult.loginMethods.push({
                     recipeId: "emailpassword",
-                    recipeUserId: new RecipeUserId(user.id),
+                    recipeUserId: user.id,
                     timeJoined: user.timeJoined,
                     verified,
                     email: user.email,
@@ -723,6 +680,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                 });
                 finalResult.emails.push(user.email);
                 finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
+                finalResult.tenantIds = finalResult.tenantIds.concat(user.tenantIds);
             }
         }
 
@@ -739,7 +697,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                 let verified = await isEmailVerified(user.id, user.email);
                 finalResult.loginMethods.push({
                     recipeId: "thirdparty",
-                    recipeUserId: new RecipeUserId(user.id),
+                    recipeUserId: user.id,
                     timeJoined: user.timeJoined,
                     verified,
                     email: user.email,
@@ -749,6 +707,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                 finalResult.emails.push(user.email);
                 finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
                 finalResult.thirdParty.push(user.thirdParty);
+                finalResult.tenantIds = finalResult.tenantIds.concat(user.tenantIds);
             }
         }
 
@@ -766,7 +725,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
 
                 finalResult.loginMethods.push({
                     recipeId: "passwordless",
-                    recipeUserId: new RecipeUserId(user.id),
+                    recipeUserId: user.id,
                     timeJoined: user.timeJoined,
                     verified,
                     email: user.email,
@@ -780,6 +739,7 @@ export async function mockGetUser({ userId }: { userId: string }): Promise<User 
                     finalResult.phoneNumbers.push(user.phoneNumber);
                 }
                 finalResult.timeJoined = Math.min(finalResult.timeJoined, user.timeJoined);
+                finalResult.tenantIds = finalResult.tenantIds.concat(user.tenantIds);
             }
         }
     }
@@ -902,137 +862,4 @@ export async function mockDeleteUser({
     return {
         status: "OK",
     };
-}
-
-export async function mockFetchFromAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-}): Promise<string | undefined> {
-    let recipeUser = await mockGetUser({ userId: input.recipeUserId.getAsString() });
-    if (recipeUser === undefined || recipeUser.isPrimaryUser) {
-        accountToLink.delete(input.recipeUserId.getAsString());
-        return undefined;
-    }
-
-    let primaryUserId = accountToLink.get(input.recipeUserId.getAsString());
-
-    if (primaryUserId === undefined) {
-        return undefined;
-    }
-
-    let primaryUser = await mockGetUser({ userId: primaryUserId });
-    if (primaryUser === undefined) {
-        accountToLink.delete(input.recipeUserId.getAsString());
-        return undefined;
-    }
-
-    if (!primaryUser.isPrimaryUser) {
-        for (const [recipeUserId, primaryUserId] of accountToLink) {
-            if (primaryUserId === primaryUser.id) {
-                accountToLink.delete(recipeUserId);
-            }
-        }
-        return undefined;
-    }
-
-    return primaryUserId;
-}
-
-export async function mockStoreIntoAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-    primaryUserId: string;
-}): Promise<
-    | {
-          status: "OK";
-          didInsertNewRow: boolean;
-      }
-    | {
-          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-          primaryUserId: string;
-      }
-    | {
-          status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
-      }
-> {
-    let recipeUser = await mockGetUser({ userId: input.recipeUserId.getAsString() });
-    if (recipeUser === undefined) {
-        throw new Error("Input recipeUser does not exist");
-    }
-
-    if (recipeUser.isPrimaryUser) {
-        return {
-            status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR",
-            primaryUserId: recipeUser.id,
-        };
-    }
-
-    let primaryUser = await mockGetUser({ userId: input.primaryUserId });
-    if (primaryUser === undefined) {
-        throw new Error("Input primaryUser does not exist");
-    }
-
-    if (!primaryUser.isPrimaryUser) {
-        return {
-            status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR",
-        };
-    }
-
-    let existingPrimaryUserId = accountToLink.get(input.recipeUserId.getAsString());
-    if (existingPrimaryUserId !== undefined && existingPrimaryUserId === input.primaryUserId) {
-        return {
-            status: "OK",
-            didInsertNewRow: false,
-        };
-    }
-    // this will also override any existing to link entry.
-    accountToLink.set(input.recipeUserId.getAsString(), input.primaryUserId);
-    return {
-        status: "OK",
-        didInsertNewRow: true,
-    };
-}
-
-function getHasSameEmailAs(lM: RecipeLevelUser) {
-    function hasSameEmailAs(email: string | undefined): boolean {
-        if (email === undefined) {
-            return false;
-        }
-        // this needs to be the same as what's done in the core.
-        email = email.toLowerCase().trim();
-        return lM.email !== undefined && lM.email === email;
-    }
-    return hasSameEmailAs;
-}
-
-function getHasSamePhoneNumberAs(lM: RecipeLevelUser) {
-    function hasSamePhoneNumberAs(phoneNumber: string | undefined): boolean {
-        if (phoneNumber === undefined) {
-            return false;
-        }
-        const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
-        if (parsedPhoneNumber === undefined) {
-            // this means that the phone number is not valid according to the E.164 standard.
-            // but we still just trim it.
-            phoneNumber = phoneNumber.trim();
-        } else {
-            phoneNumber = parsedPhoneNumber.format("E.164");
-        }
-        return lM.phoneNumber !== undefined && lM.phoneNumber === phoneNumber;
-    }
-    return hasSamePhoneNumberAs;
-}
-
-function getHasSameThirdPartyInfoAs(lM: RecipeLevelUser) {
-    function hasSameThirdPartyInfoAs(thirdParty?: { id: string; userId: string }): boolean {
-        if (thirdParty === undefined) {
-            return false;
-        }
-        thirdParty.id = thirdParty.id.trim();
-        thirdParty.userId = thirdParty.userId.trim();
-        return (
-            lM.thirdParty !== undefined &&
-            lM.thirdParty.id === thirdParty.id &&
-            lM.thirdParty.userId === thirdParty.userId
-        );
-    }
-    return hasSameThirdPartyInfoAs;
 }

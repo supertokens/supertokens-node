@@ -56,8 +56,7 @@ export default function getRecipeInterface(
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",
                 };
-            } else if (user.thirdParty.length > 0) {
-                // TODO: the above if condition is wrong.
+            } else if (user.loginMethods.every((m) => m.recipeId !== "passwordless")) {
                 throw new Error(
                     "Cannot update passwordless user info for those who signed up using third party login."
                 );

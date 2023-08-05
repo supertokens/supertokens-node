@@ -1,8 +1,8 @@
-import { APIInterface, APIOptions, User } from "../";
+import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
-import { GeneralErrorResponse } from "../../../types";
+import { GeneralErrorResponse, User } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";

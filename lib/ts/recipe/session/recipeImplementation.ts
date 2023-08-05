@@ -43,7 +43,7 @@ export const protectedProps = [
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
     "antiCsrfToken",
-    "recipeUserId",
+    // "recipeUserId", TODO: revert this after session is implemented
     "tId",
 ];
 
@@ -389,7 +389,7 @@ export default function getRecipeInterface(
                 session: {
                     handle: response.session.handle,
                     userId: response.session.userId,
-                    recipeUserId: new RecipeUserId(response.session.recipeUserId),
+                    recipeUserId: new RecipeUserId(response.session.recipeUserId ?? newAccessTokenPayload.recipeUserId), // TODO: revert this after session impl
                     userDataInJWT: response.session.userDataInJWT,
                     tenantId: response.session.tenantId,
                 },

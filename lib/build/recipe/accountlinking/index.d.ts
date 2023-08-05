@@ -30,7 +30,7 @@ export default class Wrapper {
     static getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
         recipeUserId: RecipeUserId;
         userContext?: any;
-    }): Promise<import("../emailpassword").User | undefined>;
+    }): Promise<import("../../types").User | undefined>;
     static canCreatePrimaryUser(
         recipeUserId: RecipeUserId,
         userContext?: any
@@ -53,7 +53,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: import("../emailpassword").User;
+              user: import("../../types").User;
               wasAlreadyAPrimaryUser: boolean;
           }
         | {

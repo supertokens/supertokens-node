@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { User } from "../../types";
+import { User } from "../../user";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
 export declare function mockReset(): Promise<void>;

@@ -119,9 +119,10 @@ export default class Wrapper {
     static async createResetPasswordLink(
         tenantId: string,
         userId: string,
+        email: string,
         userContext?: any
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-        let token = await createResetPasswordToken(userId, tenantId, userContext);
+        let token = await createResetPasswordToken(userId, tenantId, email, userContext);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
             return token;
         }
@@ -141,9 +142,10 @@ export default class Wrapper {
     static async sendResetPasswordEmail(
         tenantId: string,
         userId: string,
+        email: string,
         userContext?: any
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
-        let link = await createResetPasswordLink(userId, tenantId, userContext);
+        let link = await createResetPasswordLink(userId, tenantId, email, userContext);
         if (link.status === "UNKNOWN_USER_ID_ERROR") {
             return link;
         }
@@ -153,8 +155,7 @@ export default class Wrapper {
             return { status: "UNKNOWN_USER_ID_ERROR" };
         }
 
-        // TODO: what if there are multiple EP users linked
-        const loginMethod = user.loginMethods.find((m) => m.recipeId === "emailpassword");
+        const loginMethod = user.loginMethods.find((m) => m.recipeId === "emailpassword" && m.hasSameEmailAs(email));
         if (!loginMethod) {
             return { status: "UNKNOWN_USER_ID_ERROR" };
         }

@@ -74,7 +74,7 @@ export default class Wrapper {
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: import("../emailpassword").User;
+              user: import("../../types").User;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -164,7 +164,7 @@ export default class Wrapper {
     ): Promise<{
         status: string;
         createdNewUser: boolean;
-        user: import("../emailpassword").User;
+        user: import("../../types").User;
     }>;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {

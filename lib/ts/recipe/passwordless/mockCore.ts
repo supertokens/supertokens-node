@@ -1,5 +1,4 @@
 import { createUserObject, mockGetUser } from "../accountlinking/mockCore";
-import RecipeUserId from "../../recipeUserId";
 import AccountLinking from "../accountlinking/recipe";
 import { RecipeInterface } from "./types";
 
@@ -40,6 +39,7 @@ export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (i
     const user = respBody.user;
     if (respBody.createdNewUser) {
         respBody.user = createUserObject({
+            tenantIds: user.tenantIds,
             id: user.id,
             timeJoined: user.timeJoined,
             isPrimaryUser: false,
@@ -49,7 +49,7 @@ export const mockConsumeCode: RecipeInterface["consumeCode"] = async function (i
             loginMethods: [
                 {
                     recipeId: "passwordless",
-                    recipeUserId: new RecipeUserId(user.id),
+                    recipeUserId: user.id,
                     timeJoined: user.timeJoined,
                     verified: true,
                     email: user.email,

@@ -12,42 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { APIInterface, APIOptions } from "../types";
+import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
 import STError from "../../../error";
 import { getUsersNewestFirst, getUsersOldestFirst } from "../../..";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
-import { RecipeLevelUser } from "../../accountlinking/types";
-
-type User = {
-    id: string; // primaryUserId or recipeUserId
-    timeJoined: number; // minimum timeJoined value from linkedRecipes
-    isPrimaryUser: boolean;
-    emails: string[];
-    phoneNumbers: string[];
-    thirdParty: {
-        id: string;
-        userId: string;
-    }[];
-    firstName?: string;
-    lastName?: string;
-    loginMethods: (RecipeLevelUser & {
-        verified: boolean;
-        hasSameEmailAs: (email: string | undefined) => boolean;
-        hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
-        hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
-    })[];
-
-    // this function will be used in the send200Response function in utils to
-    // convert this object to JSON before sending it to the client. So that in RecipeLevelUser
-    // the recipeUserId can be converted to string from the RecipeUserId object type.
-    toJson: () => any;
-};
 
 export type Response = {
     status: "OK";
     nextPaginationToken?: string;
-    users: User[];
+    users: UserWithFirstAndLastName[];
 };
 
 export default async function usersGet(
@@ -109,7 +83,7 @@ export default async function usersGet(
         };
     }
 
-    let updatedUsersArray: User[] = [];
+    let updatedUsersArray: UserWithFirstAndLastName[] = [];
     let metaDataFetchPromises: (() => Promise<any>)[] = [];
 
     for (let i = 0; i < usersResponse.users.length; i++) {

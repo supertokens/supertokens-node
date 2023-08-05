@@ -16,7 +16,6 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
-import { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { getPasswordResetLink } from "./utils";
@@ -97,9 +96,10 @@ export default class Wrapper {
     static async createResetPasswordLink(
         tenantId: string,
         userId: string,
+        email: string,
         userContext?: any
     ): Promise<{ status: "OK"; link: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-        let token = await createResetPasswordToken(tenantId, userId, userContext);
+        let token = await createResetPasswordToken(tenantId, userId, email, userContext);
         if (token.status === "UNKNOWN_USER_ID_ERROR") {
             return token;
         }
@@ -119,9 +119,10 @@ export default class Wrapper {
     static async sendResetPasswordEmail(
         tenantId: string,
         userId: string,
+        email: string,
         userContext?: any
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
-        let link = await createResetPasswordLink(tenantId, userId, userContext);
+        let link = await createResetPasswordLink(tenantId, userId, email, userContext);
         if (link.status === "UNKNOWN_USER_ID_ERROR") {
             return link;
         }
@@ -130,8 +131,7 @@ export default class Wrapper {
             return { status: "UNKNOWN_USER_ID_ERROR" };
         }
 
-        // TODO: what if there are multiple EP users linked
-        const loginMethod = user.loginMethods.find((m) => m.recipeId === "emailpassword");
+        const loginMethod = user.loginMethods.find((m) => m.recipeId === "emailpassword" && m.hasSameEmailAs(email));
         if (!loginMethod) {
             return { status: "UNKNOWN_USER_ID_ERROR" };
         }
@@ -177,7 +177,7 @@ export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface };
 
 export let createResetPasswordLink = Wrapper.createResetPasswordLink;
 

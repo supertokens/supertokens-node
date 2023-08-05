@@ -329,6 +329,7 @@ export default class Recipe extends RecipeModule {
                     await Session.revokeAllSessionsForUser(
                         input.recipeUserIdWhoseEmailGotVerified.getAsString(),
                         false,
+                        input.session.getTenantId(),
                         input.userContext
                     );
 

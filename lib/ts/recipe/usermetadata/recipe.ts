@@ -83,7 +83,7 @@ export default class Recipe extends RecipeModule {
     // This stub is required to implement RecipeModule
     handleAPIRequest = async (
         _: string,
-        ______: string | undefined, // TODO tenantId
+        _tenantId: string | undefined,
         __: BaseRequest,
         ___: BaseResponse,
         ____: normalisedURLPath,
