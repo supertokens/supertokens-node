@@ -12,7 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    assertJSONEquals,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -150,7 +160,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signUpResponse.body.user, user);
+        assertJSONEquals(signUpResponse.body.user, user);
 
         user = undefined;
         assert.strictEqual(user, undefined);
@@ -181,7 +191,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signInResponse.user, user);
+        assertJSONEquals(signInResponse.user, user);
 
         user = undefined;
         assert.strictEqual(user, undefined);
@@ -203,7 +213,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(userByIdResponse, user);
+        assertJSONEquals(userByIdResponse, user);
     });
 
     it("overriding api tests", async () => {
@@ -302,7 +312,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signUpResponse.body.user, user);
+        assertJSONEquals(signUpResponse.body.user, user);
 
         emailExistsResponse = await new Promise((resolve) =>
             request(app)
@@ -351,7 +361,7 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signInResponse.user, user);
+        assertJSONEquals(signInResponse.user, user);
     });
 
     it("overriding functions tests, throws error", async () => {

@@ -22,6 +22,7 @@ const {
     resetAll,
     signUPRequest,
     isCDIVersionCompatible,
+    assertJSONEquals,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -196,7 +197,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
 
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, true);
-        assert.deepStrictEqual(signUpResponse.user, user);
+        assertJSONEquals(signUpResponse.user, user);
 
         user = undefined;
         assert.strictEqual(user, undefined);
@@ -224,7 +225,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
 
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, false);
-        assert.deepStrictEqual(signInResponse.user, user);
+        assertJSONEquals(signInResponse.user, user);
 
         user = undefined;
         assert.strictEqual(user, undefined);
@@ -246,7 +247,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(userByIdResponse, user);
+        assertJSONEquals(userByIdResponse, user);
     });
 
     it("overriding api tests", async function () {
@@ -340,7 +341,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
 
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, true);
-        assert.deepStrictEqual(signUpResponse.user, user);
+        assertJSONEquals(signUpResponse.user, user);
 
         user = undefined;
         assert.strictEqual(user, undefined);
@@ -368,7 +369,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
 
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, false);
-        assert.deepStrictEqual(signInResponse.user, user);
+        assertJSONEquals(signInResponse.user, user);
     });
 
     it("overriding functions tests, throws error", async function () {

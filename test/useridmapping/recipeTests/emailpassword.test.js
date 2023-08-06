@@ -237,7 +237,8 @@ describe(`userIdMapping with emailpassword: ${printPath(
             // create the password resestToken
             let createResetPasswordTokenResponse = await EmailPasswordRecipe.createResetPasswordToken(
                 "public",
-                externalId
+                externalId,
+                email
             );
             assert.strictEqual(createResetPasswordTokenResponse.status, "OK");
 
@@ -245,8 +246,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             const newPassword = "newTestPass123";
             let resetPasswordUsingTokenResponse = await EmailPasswordRecipe.consumePasswordResetToken(
                 "public",
-                createResetPasswordTokenResponse.token,
-                newPassword
+                createResetPasswordTokenResponse.token
             );
             assert.strictEqual(resetPasswordUsingTokenResponse.status, "OK");
             assert.strictEqual(resetPasswordUsingTokenResponse.userId, externalId);

@@ -40,7 +40,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
     });
 
     describe("createNewSession", () => {
-        it("should create a V4 token", async function () {
+        it("should create a V5 token", async function () {
             await startST();
             SuperTokens.init({
                 supertokens: {
@@ -75,14 +75,14 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.frontToken !== undefined);
 
             const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-            assert.strictEqual(parsedToken.version, 4);
+            assert.strictEqual(parsedToken.version, 5);
 
             const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
             assert.strictEqual(typeof parsedHeader.kid, "string");
             assert(parsedHeader.kid.startsWith("d-"));
         });
 
-        it("should create a V4 token signed by a static key if set in session recipe config", async function () {
+        it("should create a V5 token signed by a static key if set in session recipe config", async function () {
             await startST();
             SuperTokens.init({
                 supertokens: {
@@ -121,7 +121,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.frontToken !== undefined);
 
             const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-            assert.strictEqual(parsedToken.version, 4);
+            assert.strictEqual(parsedToken.version, 5);
 
             const parsedHeader = JSON.parse(Buffer.from(parsedToken.header, "base64").toString());
             assert.strictEqual(typeof parsedHeader.kid, "string");
@@ -319,12 +319,12 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookiesAfterRefresh.refreshTokenFromAny !== undefined);
             assert(cookiesAfterRefresh.frontToken !== undefined);
 
-            assert.strictEqual(parseJWTWithoutSignatureVerification(cookiesAfterRefresh.accessTokenFromAny).version, 4);
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookiesAfterRefresh.accessTokenFromAny).version, 5);
 
             const parsedTokenAfterRefresh = parseJWTWithoutSignatureVerification(
                 cookiesAfterRefresh.accessTokenFromAny
             );
-            assert.strictEqual(parsedTokenAfterRefresh.version, 4);
+            assert.strictEqual(parsedTokenAfterRefresh.version, 5);
             assert.strictEqual(parsedTokenAfterRefresh.payload.sub, "test-user-id");
             assert.strictEqual(parsedTokenAfterRefresh.payload.appSub, "asdf");
 
@@ -389,10 +389,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.refreshTokenFromAny !== undefined);
             assert(cookies.frontToken !== undefined);
 
-            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 4);
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 5);
 
             const parsedToken = parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny);
-            assert.strictEqual(parsedToken.version, 4);
+            assert.strictEqual(parsedToken.version, 5);
             assert.strictEqual(parsedToken.payload.sub, "test-user-id");
             assert.strictEqual(parsedToken.payload.appSub, "asdf");
 
@@ -549,7 +549,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             });
         });
 
-        it("should validate v4 tokens with check database enabled", async function () {
+        it("should validate v5 tokens with check database enabled", async function () {
             await startST();
             SuperTokens.init({
                 supertokens: {
@@ -756,7 +756,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert(cookies.refreshTokenFromAny !== undefined);
             assert(cookies.frontToken !== undefined);
 
-            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 4);
+            assert.strictEqual(parseJWTWithoutSignatureVerification(cookies.accessTokenFromAny).version, 5);
         });
 
         it("should throw when refreshing legacy session with protected prop in payload", async function () {

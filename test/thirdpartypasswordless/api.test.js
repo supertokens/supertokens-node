@@ -1652,7 +1652,7 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
         recipeId: "passwordless",
         recipeUserId: validUserInputCodeResponse.user.id,
         timeJoined: validUserInputCodeResponse.user.timeJoined,
-        verified: true,
+        verified: phoneNumber !== undefined ? true : false, // Email based users will not be verified since EV is not enabled in this test
         tenantIds: ["public"],
     };
     if (email) {
@@ -1663,6 +1663,6 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
     }
     assert.deepStrictEqual(validUserInputCodeResponse.user.loginMethods, [loginMethod]);
 
-    assert.strictEqual(Object.keys(validUserInputCodeResponse.user).length, 7);
+    assert.strictEqual(Object.keys(validUserInputCodeResponse.user).length, 8);
     assert.strictEqual(Object.keys(validUserInputCodeResponse).length, 3);
 }

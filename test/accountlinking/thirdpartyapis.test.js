@@ -104,7 +104,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
     });
 
     describe("signInUpPOST tests", function () {
-        it("signInUpPOST calls isSignUpAllowed if it's sign up even if user with email already exists with third party.", async function () {
+        it("signInUpPOST calls isSignUpAllowed if it's sign up even if user with email already exists with third party", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -166,7 +166,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED),
                 undefined
             );
-            let response = await new Promise((resolve) =>
+            let response = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signinup")
                     .send({
@@ -181,7 +181,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }

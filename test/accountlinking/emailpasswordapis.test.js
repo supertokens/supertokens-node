@@ -1194,7 +1194,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(tpUser.user.isPrimaryUser === false);
             assert(tpUser.user.loginMethods[0].verified === true);
 
-            let res = await new Promise((resolve) =>
+            let res = await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/signup")
                     .send({
@@ -1212,7 +1212,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     .expect(200)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }

@@ -1235,7 +1235,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 "sub",
                 "iss",
                 "tId",
-                "recipeUserId",
+                "rsub",
             ])
         );
         //invalid session handle when updating the jwt payload

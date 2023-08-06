@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, assertJSONEquals } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -69,7 +69,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         // we do the json parse/stringify to remove the toJson and other functions in the login
         // method array in each of the below user objects.
-        assert.deepStrictEqual(JSON.parse(JSON.stringify(refetchedUser)), JSON.parse(JSON.stringify(response.user)));
+        assertJSONEquals(refetchedUser, response.user);
     });
 
     it("make primary user succcess - already is a primary user", async function () {
@@ -322,18 +322,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         // when we link accounts, cause these users are already linked.
         await Session.createNewSessionWithoutRequestResponse("public", user2.loginMethods[0].recipeUserId);
         let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
-        assert(sessions.length === 1);
+        assert.strictEqual(sessions.length, 1);
 
         let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
-        assert(response.status === "OK");
+        assert.strictEqual(response.status, "OK");
         assert(response.accountsAlreadyLinked);
 
-        assert(primaryUserInCallback === undefined);
-        assert(newAccountInfoInCallback === undefined);
+        assert.strictEqual(primaryUserInCallback, undefined);
+        assert.strictEqual(newAccountInfoInCallback, undefined);
 
         sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
-        assert(sessions.length === 1);
+        assert.strictEqual(sessions.length, 1);
     });
 
     it("link accounts failure - recipe user id already linked with another primary user id", async function () {

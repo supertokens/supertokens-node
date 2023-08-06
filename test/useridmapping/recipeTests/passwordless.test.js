@@ -390,7 +390,8 @@ describe(`userIdMapping with passwordless: ${printPath(
             });
 
             let updateUserResponse = await PasswordlessRecipe.updateUser({
-                userId: externalId,
+                tenantId: "public",
+                recipeUserId: STExpress.convertToRecipeUserId(externalId),
                 email,
             });
             assert.strictEqual(updateUserResponse.status, "OK");

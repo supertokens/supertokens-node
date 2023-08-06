@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
+const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST, removeAppAndTenants } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -739,6 +739,8 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
     it("test getProvider and signInUp on an app and tenant", async function () {
         await startSTWithMultitenancy();
 
+        await removeAppAndTenants("a1");
+
         // Create app
         await fetch("http://localhost:8080/recipe/multitenancy/app", {
             method: "PUT",
@@ -823,9 +825,9 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "google");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "googleuser");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "google");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "googleuser");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         await Multitenancy.createOrUpdateTenant("t1", {
             emailPasswordEnabled: true,
@@ -857,9 +859,9 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
         assert.strictEqual(response1.body.createdNewUser, true);
-        assert.strictEqual(response1.body.user.thirdParty.id, "google");
-        assert.strictEqual(response1.body.user.thirdParty.userId, "googleuser");
-        assert.strictEqual(response1.body.user.email, "email@test.com");
+        assert.strictEqual(response1.body.user.thirdParty[0].id, "google");
+        assert.strictEqual(response1.body.user.thirdParty[0].userId, "googleuser");
+        assert.strictEqual(response1.body.user.emails[0], "email@test.com");
         assert.deepEqual(response1.body.user.tenantIds, ["t1"]);
     });
 });

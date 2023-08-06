@@ -22,7 +22,7 @@ const EmailVerification = require("../../recipe/emailverification");
 let { isCDIVersionCompatible } = require("../utils");
 const { default: RecipeUserId } = require("../../lib/build/recipeUserId");
 
-describe.only(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {
+describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -650,6 +650,7 @@ describe.only(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipe
             let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
+                tenantId: "public",
             });
             assert(response.status === "OK");
 
@@ -660,8 +661,9 @@ describe.only(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipe
         {
             // update user with invalid userId
             let response = await ThirdPartyPasswordless.updatePasswordlessUser({
-                recipeUserId: new RecipeUserId("invalidUserId"),
+                recipeUserId: STExpress.convertToRecipeUserId("invalidUserId"),
                 email: "test2@example.com",
+                tenantId: "public",
             });
 
             assert(response.status === "UNKNOWN_USER_ID_ERROR");
@@ -676,6 +678,7 @@ describe.only(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipe
             let result = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
+                tenantId: "public",
             });
 
             assert(result.status === "EMAIL_ALREADY_EXISTS_ERROR");
@@ -727,6 +730,7 @@ describe.only(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipe
             let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
+                tenantId: "public",
             });
             assert(response.status === "OK");
 
@@ -744,6 +748,7 @@ describe.only(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipe
             let result = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
+                tenantId: "public",
             });
 
             assert(result.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR");

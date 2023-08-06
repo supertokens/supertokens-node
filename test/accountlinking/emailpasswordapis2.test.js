@@ -2081,10 +2081,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert.deepStrictEqual(res2, {
                 status: "OK",
             });
-            assert(emailPostPasswordReset === "test@example.com");
+            assert.strictEqual(emailPostPasswordReset, "test@example.com");
             assert(!userPostPasswordReset.isPrimaryUser);
-            assert(userPostPasswordReset.loginMethods.length === 1);
-            assert(userPostPasswordReset.id === epUser.user.id);
+            assert.strictEqual(userPostPasswordReset.loginMethods.length, 1);
+            assert.strictEqual(userPostPasswordReset.id, epUser.user.id);
         });
 
         it("calling passwordResetPOST with bad password returns a PASSWORD_POLICY_VIOLATED_ERROR", async function () {

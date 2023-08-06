@@ -23,6 +23,7 @@ const {
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
+    assertJSONEquals,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -1186,6 +1187,6 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 })
         );
         assert(customUser !== undefined);
-        assert.deepStrictEqual(response.user, customUser);
+        assertJSONEquals(response.user, customUser);
     });
 });
