@@ -40,7 +40,6 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 export async function createNewSession(
     helpers: Helpers,
     tenantId: string,
-    userId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
     accessTokenPayload: any = {},
@@ -51,9 +50,8 @@ export async function createNewSession(
         sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
 
     const requestBody = {
-        userId,
-        recipeUserId: recipeUserId.getAsString(),
-        userDataInJWT: accessTokenPayload,
+        userId: recipeUserId.getAsString(),
+        userDataInJWT: { ...accessTokenPayload },
         userDataInDatabase: sessionDataInDatabase,
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",

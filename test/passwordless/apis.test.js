@@ -649,7 +649,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         // add users phoneNumber to userInfo
         await Passwordless.updateUser({
             tenantId: "public",
-            recipeUserId: new RecipeUserId(emailUserInputCodeResponse.user.id),
+            recipeUserId: emailUserInputCodeResponse.user.loginMethods[0].recipeUserId,
             phoneNumber: "+12345678901",
         });
 
@@ -1825,7 +1825,7 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
         recipeId: "passwordless",
         recipeUserId: validUserInputCodeResponse.user.id,
         timeJoined: validUserInputCodeResponse.user.timeJoined,
-        verified: true,
+        verified: phoneNumber !== undefined ? true : false, // false, since EV is not enabled in these tests
         tenantIds: ["public"],
     };
     if (email) {
@@ -1836,6 +1836,6 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
     }
     assert.deepStrictEqual(validUserInputCodeResponse.user.loginMethods, [loginMethod]);
 
-    assert.strictEqual(Object.keys(validUserInputCodeResponse.user).length, 7);
+    assert.strictEqual(Object.keys(validUserInputCodeResponse.user).length, 8);
     assert.strictEqual(Object.keys(validUserInputCodeResponse).length, 3);
 }

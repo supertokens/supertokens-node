@@ -1063,8 +1063,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
             let result = await Session.getAllSessionHandlesForUser(epUser2.id);
             assert(result.length === 2);
 
-            assert(result[0] === epuser2session.getHandle());
-            assert(result[1] === epuser1session.getHandle());
+            assert.deepStrictEqual(new Set(result), new Set([epuser1session.getHandle(), epuser2session.getHandle()]));
         });
 
         it("getAllSessionHandlesForUser with linked accounts should return only specific account's sessions if fetchSessionsForAllLinkedAccounts is false", async function () {
@@ -1143,7 +1142,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
     });
 
     describe("protected props tests", function () {
-        it("mergeIntoAccessTokenPayload should not allow recipeUserID since it's a protected claim", async function () {
+        it("mergeIntoAccessTokenPayload should not allow rsub since it's a protected claim", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -1168,26 +1167,26 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 });
                 assert(false);
             } catch (err) {
-                assert(
-                    err.message ===
-                        "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
+                assert.strictEqual(
+                    err.message,
+                    "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
                 );
             }
 
             try {
                 await session.mergeIntoAccessTokenPayload({
-                    recipeUserId: "new string",
+                    rsub: "new string",
                 });
                 assert(false);
             } catch (err) {
-                assert(
-                    err.message ===
-                        "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
+                assert.strictEqual(
+                    err.message,
+                    "SuperTokens core threw an error for a POST request to path: '/recipe/session/regenerate' with status code: 400 and message: The user payload contains protected field\n"
                 );
             }
         });
 
-        it("mergeIntoAccessTokenPayload with session handle not allow recipeUserID since it's a protected claim", async function () {
+        it("mergeIntoAccessTokenPayload with session handle not allow rsub since it's a protected claim", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -1212,30 +1211,30 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 });
                 assert(false);
             } catch (err) {
-                assert(
-                    err.message ===
-                        "SuperTokens core threw an error for a PUT request to path: '/recipe/jwt/data' with status code: 400 and message: The user payload contains protected field\n"
+                assert.strictEqual(
+                    err.message,
+                    "SuperTokens core threw an error for a PUT request to path: '/recipe/jwt/data' with status code: 400 and message: The user payload contains protected field\n"
                 );
             }
 
             try {
                 await Session.mergeIntoAccessTokenPayload(session.getHandle(), {
-                    recipeUserId: "new string",
+                    rsub: "new string",
                 });
                 assert(false);
             } catch (err) {
-                assert(
-                    err.message ===
-                        "SuperTokens core threw an error for a PUT request to path: '/recipe/jwt/data' with status code: 400 and message: The user payload contains protected field\n"
+                assert.strictEqual(
+                    err.message,
+                    "SuperTokens core threw an error for a PUT request to path: '/recipe/jwt/data' with status code: 400 and message: The user payload contains protected field\n"
                 );
             }
         });
 
-        it("protected props contains recipeUserId", async function () {
-            assert(protectedProps.indexOf("recipeUserId") !== -1);
+        it("protected props contains rsub", async function () {
+            assert(protectedProps.indexOf("rsub") !== -1);
         });
 
-        it("createNewSession should not allow recipeUserID since it's a protected claim", async function () {
+        it("createNewSession should not allow rsub since it's a protected claim", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -1259,9 +1258,9 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                 );
                 assert(false);
             } catch (err) {
-                assert(
-                    err.message ===
-                        "SuperTokens core threw an error for a POST request to path: '/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
+                assert.strictEqual(
+                    err.message,
+                    "SuperTokens core threw an error for a POST request to path: '/public/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
                 );
             }
 
@@ -1270,14 +1269,14 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
                     "public",
                     supertokens.convertToRecipeUserId("random"),
                     {
-                        recipeUserId: "new string",
+                        rsub: "new string",
                     }
                 );
                 assert(false);
             } catch (err) {
-                assert(
-                    err.message ===
-                        "SuperTokens core threw an error for a POST request to path: '/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
+                assert.strictEqual(
+                    err.message,
+                    "SuperTokens core threw an error for a POST request to path: '/public/recipe/session' with status code: 400 and message: The user payload contains protected field\n"
                 );
             }
         });

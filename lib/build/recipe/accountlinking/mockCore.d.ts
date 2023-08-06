@@ -1,22 +1,8 @@
 // @ts-nocheck
-import { AccountInfo, RecipeLevelUser } from "./types";
-import type { User } from "../../types";
+import { AccountInfo } from "./types";
 import { Querier } from "../../querier";
 import RecipeUserId from "../../recipeUserId";
-declare type UserWithoutHelperFunctions = {
-    id: string;
-    timeJoined: number;
-    isPrimaryUser: boolean;
-    emails: string[];
-    phoneNumbers: string[];
-    thirdParty: {
-        id: string;
-        userId: string;
-    }[];
-    loginMethods: (RecipeLevelUser & {
-        verified: boolean;
-    })[];
-};
+import { User, UserWithoutHelperFunctions } from "../../user";
 export declare function mockReset(): Promise<void>;
 export declare function mockCanLinkAccounts({
     recipeUserId,
@@ -144,23 +130,3 @@ export declare function mockDeleteUser({
 }): Promise<{
     status: "OK";
 }>;
-export declare function mockFetchFromAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-}): Promise<string | undefined>;
-export declare function mockStoreIntoAccountToLinkTable(input: {
-    recipeUserId: RecipeUserId;
-    primaryUserId: string;
-}): Promise<
-    | {
-          status: "OK";
-          didInsertNewRow: boolean;
-      }
-    | {
-          status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
-          primaryUserId: string;
-      }
-    | {
-          status: "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR";
-      }
->;
-export {};

@@ -96,12 +96,12 @@ export default class Recipe extends RecipeModule {
     }
 
     handleAPIRequest = async (
-        _: string,
-        ____: string | undefined, // TODO tenantId
+        _id: string,
+        _tenantId: string | undefined,
         req: BaseRequest,
         res: BaseResponse,
-        __: normalisedURLPath,
-        ___: HTTPMethod,
+        _path: normalisedURLPath,
+        _method: HTTPMethod,
         userContext: any
     ): Promise<boolean> => {
         let options = {

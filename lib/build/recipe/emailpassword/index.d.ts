@@ -2,7 +2,6 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, TypeEmailPasswordEmailDeliveryInput } from "./types";
-import { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
@@ -15,7 +14,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: import("../../types").User;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -29,7 +28,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: import("../../types").User;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
@@ -63,7 +62,6 @@ export default class Wrapper {
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
-        newPassword: string,
         userContext?: any
     ): Promise<
         | {
@@ -98,6 +96,7 @@ export default class Wrapper {
     static createResetPasswordLink(
         tenantId: string,
         userId: string,
+        email: string,
         userContext?: any
     ): Promise<
         | {
@@ -111,6 +110,7 @@ export default class Wrapper {
     static sendResetPasswordEmail(
         tenantId: string,
         userId: string,
+        email: string,
         userContext?: any
     ): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR";
@@ -128,7 +128,7 @@ export declare let signIn: typeof Wrapper.signIn;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
-export type { RecipeInterface, User, APIOptions, APIInterface };
+export type { RecipeInterface, APIOptions, APIInterface };
 export declare let createResetPasswordLink: typeof Wrapper.createResetPasswordLink;
 export declare let sendResetPasswordEmail: typeof Wrapper.sendResetPasswordEmail;
 export declare let sendEmail: typeof Wrapper.sendEmail;

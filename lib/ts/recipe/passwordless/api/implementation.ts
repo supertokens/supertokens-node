@@ -4,7 +4,6 @@ import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
 import { listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
-import RecipeUserId from "../../../recipeUserId";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -44,7 +43,7 @@ export default function getAPIImplementation(): APIInterface {
                         email: deviceInfo.email,
                         phoneNumber: deviceInfo.phoneNumber,
                     },
-                    isVerified: true, // TODO: validate that phonenumbers are considered verified
+                    isVerified: true,
                     userContext: input.userContext,
                 });
 
@@ -113,13 +112,12 @@ export default function getAPIImplementation(): APIInterface {
                     };
                 }
             }
-            let user = response.user;
 
             const session = await Session.createNewSession(
                 input.options.req,
                 input.options.res,
                 input.tenantId,
-                new RecipeUserId(user.id), // TODO: change to recipeUserId
+                loginMethod.recipeUserId,
                 {},
                 {},
                 input.userContext
@@ -155,7 +153,7 @@ export default function getAPIImplementation(): APIInterface {
                         recipeId: "passwordless",
                         ...accountInfo,
                     },
-                    isVerified: true, // TODO: validate that phonenumbers are considered verified
+                    isVerified: true,
                     userContext: input.userContext,
                 });
 
@@ -287,6 +285,7 @@ export default function getAPIImplementation(): APIInterface {
                     email: input.email,
                     // tenantId: input.tenantId,
                 },
+                false,
                 input.userContext
             );
 
@@ -301,6 +300,7 @@ export default function getAPIImplementation(): APIInterface {
                     phoneNumber: input.phoneNumber,
                     // tenantId: input.tenantId,
                 },
+                false,
                 input.userContext
             );
 

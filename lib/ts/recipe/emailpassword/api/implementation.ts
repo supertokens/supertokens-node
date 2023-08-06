@@ -1,8 +1,8 @@
-import { APIInterface, APIOptions, User } from "../";
+import { APIInterface, APIOptions } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
-import { GeneralErrorResponse } from "../../../types";
+import { GeneralErrorResponse, User } from "../../../types";
 import { listUsersByAccountInfo, getUser } from "../../../";
 import AccountLinking from "../../accountlinking/recipe";
 import EmailVerification from "../../emailverification/recipe";
@@ -451,7 +451,6 @@ export default function getAPIImplementation(): APIInterface {
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
-                newPassword,
                 tenantId,
                 userContext,
             });
@@ -548,7 +547,6 @@ export default function getAPIImplementation(): APIInterface {
                         let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                             tenantId,
                             recipeUserId: createUserResponse.user.loginMethods[0].recipeUserId,
-                            checkAccountsToLinkTableAsWell: true,
                             userContext,
                         });
                         if (linkedToUserId !== existingUser.id) {
@@ -634,7 +632,6 @@ export default function getAPIImplementation(): APIInterface {
             let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
                 recipeUserId: emailPasswordRecipeUser.recipeUserId!,
-                checkAccountsToLinkTableAsWell: true,
                 userContext,
             });
 

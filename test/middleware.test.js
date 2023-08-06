@@ -272,7 +272,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         assert(r2Optional === false);
 
         let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            await new Promise((resolve, reject) =>
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
@@ -280,7 +280,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
-                            resolve(undefined);
+                            reject(err);
                         } else {
                             resolve(res);
                         }

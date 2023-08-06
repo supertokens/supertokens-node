@@ -32,12 +32,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return recipeInterface.createResetPasswordToken(input);
         },
 
-        consumePasswordResetToken: async function (input: {
-            token: string;
-            newPassword: string;
-            tenantId: string;
-            userContext: any;
-        }) {
+        consumePasswordResetToken: async function (input: { token: string; tenantId: string; userContext: any }) {
             return recipeInterface.consumePasswordResetToken(input);
         },
 

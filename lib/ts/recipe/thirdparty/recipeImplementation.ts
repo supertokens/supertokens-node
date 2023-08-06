@@ -9,7 +9,8 @@ import MultitenancyRecipe from "../multitenancy/recipe";
 import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
-import { User } from "../../types";
+import { User as UserType } from "../../types";
+import { User } from "../../user";
 
 export default function getRecipeImplementation(querier: Querier, providers: ProviderInput[]): RecipeInterface {
     return {
@@ -31,7 +32,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext: any;
             }
         ): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | { status: "OK"; createdNewUser: boolean; user: UserType }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -59,6 +60,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             }
 
             if (response.status === "OK") {
+                response.user = new User(response.user);
                 let recipeUserId: RecipeUserId | undefined = undefined;
                 for (let i = 0; i < response.user.loginMethods.length; i++) {
                     if (
@@ -148,7 +150,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
                 recipeUserId: recipeUserId!,
-                checkAccountsToLinkTableAsWell: true,
                 userContext,
             });
 
@@ -185,7 +186,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             | {
                   status: "OK";
                   createdNewUser: boolean;
-                  user: User;
+                  user: UserType;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";

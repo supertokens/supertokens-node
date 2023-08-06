@@ -79,6 +79,7 @@ export type User = {
     id: string; // primaryUserId or recipeUserId
     timeJoined: number; // minimum timeJoined value from linkedRecipes
     isPrimaryUser: boolean;
+    tenantIds: string[];
     emails: string[];
     phoneNumbers: string[];
     thirdParty: {
@@ -90,6 +91,7 @@ export type User = {
         hasSameEmailAs: (email: string | undefined) => boolean;
         hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
         hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
+        toJson: () => any;
     })[];
 
     // this function will be used in the send200Response function in utils to

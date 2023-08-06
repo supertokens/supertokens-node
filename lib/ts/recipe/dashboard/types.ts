@@ -15,8 +15,7 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import type { BaseRequest, BaseResponse } from "../../framework";
-import { NormalisedAppinfo } from "../../types";
-import RecipeUserId from "../../recipeUserId";
+import { NormalisedAppinfo, User } from "../../types";
 
 export type TypeInput = {
     apiKey?: string;
@@ -71,35 +70,7 @@ export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
 
 export type AuthMode = "api-key" | "email-password";
 
-export type CommonUserInformation = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    recipeUserId: RecipeUserId;
-    timeJoined: number;
-    tenantIds: string[];
-};
-
-export type EmailPasswordUser = CommonUserInformation & {
-    email: string;
-};
-
-export type ThirdPartyUser = CommonUserInformation & {
-    email: string;
-    thirdParty: {
-        id: string;
-        userId: string;
-    };
-};
-
-export type RecipeLevelUserWithFirstAndLastName = {
-    recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    timeJoined: number;
-    recipeUserId: RecipeUserId;
-    email?: string;
-    phoneNumber?: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
-    firstName: string;
-    lastName: string;
+export type UserWithFirstAndLastName = User & {
+    firstName?: string;
+    lastName?: string;
 };

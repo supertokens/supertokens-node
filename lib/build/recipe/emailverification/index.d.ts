@@ -21,18 +21,6 @@ export default class Wrapper {
               status: "EMAIL_ALREADY_VERIFIED_ERROR";
           }
     >;
-    static getEmailVerificationTokenInfo(
-        token: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-          }
-    >;
     static createEmailVerificationLink(
         tenantId: string,
         recipeUserId: RecipeUserId,
@@ -108,5 +96,4 @@ export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVeri
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 export type { RecipeInterface, APIOptions, APIInterface, User };
 export declare let sendEmail: typeof Wrapper.sendEmail;
-export declare let getEmailVerificationTokenInfo: typeof Wrapper.getEmailVerificationTokenInfo;
 export { EmailVerificationClaim } from "./emailVerificationClaim";

@@ -66,12 +66,6 @@ export default class Wrapper {
         });
     }
 
-    static async getEmailVerificationTokenInfo(token: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getEmailVerificationTokenInfo({
-            token,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-    }
     static async createEmailVerificationLink(
         tenantId: string,
         recipeUserId: RecipeUserId,
@@ -290,7 +284,5 @@ export let unverifyEmail = Wrapper.unverifyEmail;
 export type { RecipeInterface, APIOptions, APIInterface, User };
 
 export let sendEmail = Wrapper.sendEmail;
-
-export let getEmailVerificationTokenInfo = Wrapper.getEmailVerificationTokenInfo;
 
 export { EmailVerificationClaim } from "./emailVerificationClaim";

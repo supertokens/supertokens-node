@@ -607,7 +607,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                 recipeList: [EmailPassword.init()],
             });
 
-            let info = await EmailPassword.consumePasswordResetToken("random");
+            let info = await EmailPassword.consumePasswordResetToken("public", "random");
 
             assert(info.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
         });

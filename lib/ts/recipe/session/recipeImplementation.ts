@@ -43,7 +43,7 @@ export const protectedProps = [
     "parentRefreshTokenHash1",
     "refreshTokenHash1",
     "antiCsrfToken",
-    "recipeUserId",
+    "rsub",
     "tId",
 ];
 
@@ -89,7 +89,6 @@ export default function getRecipeInterface(
 
     let obj: RecipeInterface = {
         createNewSession: async function ({
-            userId,
             recipeUserId,
             accessTokenPayload = {},
             sessionDataInDatabase = {},
@@ -109,7 +108,6 @@ export default function getRecipeInterface(
             let response = await SessionFunctions.createNewSession(
                 helpers,
                 tenantId,
-                userId,
                 recipeUserId,
                 disableAntiCsrf === true,
                 accessTokenPayload,

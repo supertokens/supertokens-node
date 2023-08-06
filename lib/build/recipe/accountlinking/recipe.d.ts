@@ -36,21 +36,17 @@ export default class Recipe extends RecipeModule {
     createPrimaryUserIdOrLinkAccounts: ({
         tenantId,
         recipeUserId,
-        checkAccountsToLinkTableAsWell,
         userContext,
     }: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<string>;
     getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
         recipeUserId,
-        checkAccountsToLinkTableAsWell,
         userContext,
     }: {
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }) => Promise<User | undefined>;
     isSignInAllowed: ({

@@ -1,30 +1,9 @@
 // @ts-nocheck
-import { APIInterface, APIOptions } from "../types";
-import { RecipeLevelUser } from "../../accountlinking/types";
-declare type User = {
-    id: string;
-    timeJoined: number;
-    isPrimaryUser: boolean;
-    emails: string[];
-    phoneNumbers: string[];
-    thirdParty: {
-        id: string;
-        userId: string;
-    }[];
-    firstName?: string;
-    lastName?: string;
-    loginMethods: (RecipeLevelUser & {
-        verified: boolean;
-        hasSameEmailAs: (email: string | undefined) => boolean;
-        hasSamePhoneNumberAs: (phoneNumber: string | undefined) => boolean;
-        hasSameThirdPartyInfoAs: (thirdParty?: { id: string; userId: string }) => boolean;
-    })[];
-    toJson: () => any;
-};
+import { APIInterface, APIOptions, UserWithFirstAndLastName } from "../types";
 export declare type Response = {
     status: "OK";
     nextPaginationToken?: string;
-    users: User[];
+    users: UserWithFirstAndLastName[];
 };
 export default function usersGet(
     _: APIInterface,
@@ -37,4 +16,3 @@ export declare function getSearchParamsFromURL(
 ): {
     [key: string]: string;
 };
-export {};

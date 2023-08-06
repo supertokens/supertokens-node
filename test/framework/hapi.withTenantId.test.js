@@ -1270,7 +1270,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.withTenantId.test.js]")}`, fun
                 "sub",
                 "iss",
                 "tId",
-                "recipeUserId",
+                "rsub",
             ])
         );
 

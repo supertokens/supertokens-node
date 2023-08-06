@@ -135,12 +135,10 @@ export default class Recipe extends RecipeModule {
     createPrimaryUserIdOrLinkAccounts = async ({
         tenantId,
         recipeUserId,
-        checkAccountsToLinkTableAsWell,
         userContext,
     }: {
         tenantId: string;
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }): Promise<string> => {
         let recipeUser = await this.recipeInterfaceImpl.getUser({ userId: recipeUserId.getAsString(), userContext });
@@ -158,7 +156,6 @@ export default class Recipe extends RecipeModule {
         // now we try and find a linking candidate.
         let primaryUser = await this.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
             recipeUserId,
-            checkAccountsToLinkTableAsWell,
             userContext,
         });
 
@@ -201,7 +198,6 @@ export default class Recipe extends RecipeModule {
             return await this.createPrimaryUserIdOrLinkAccounts({
                 tenantId,
                 recipeUserId,
-                checkAccountsToLinkTableAsWell,
                 userContext,
             });
         } else {
@@ -255,7 +251,6 @@ export default class Recipe extends RecipeModule {
                 return await this.createPrimaryUserIdOrLinkAccounts({
                     tenantId,
                     recipeUserId,
-                    checkAccountsToLinkTableAsWell,
                     userContext,
                 });
             } else {
@@ -275,7 +270,6 @@ export default class Recipe extends RecipeModule {
                 return await this.createPrimaryUserIdOrLinkAccounts({
                     tenantId,
                     recipeUserId,
-                    checkAccountsToLinkTableAsWell: false,
                     userContext,
                 });
             }
@@ -284,11 +278,9 @@ export default class Recipe extends RecipeModule {
 
     getPrimaryUserIdThatCanBeLinkedToRecipeUserId = async ({
         recipeUserId,
-        checkAccountsToLinkTableAsWell,
         userContext,
     }: {
         recipeUserId: RecipeUserId;
-        checkAccountsToLinkTableAsWell: boolean;
         userContext: any;
     }): Promise<User | undefined> => {
         // first we check if this user itself is a
@@ -299,20 +291,6 @@ export default class Recipe extends RecipeModule {
         }
         if (user.isPrimaryUser) {
             return user;
-        }
-
-        // then we check the accounts to link table. This
-        // table can have an entry if this user was trying
-        // to be linked to another user post sign in but required
-        // email verification.
-        if (checkAccountsToLinkTableAsWell) {
-            let pUserId = await this.recipeInterfaceImpl.fetchFromAccountToLinkTable({ recipeUserId, userContext });
-            if (pUserId !== undefined) {
-                let pUser = await this.recipeInterfaceImpl.getUser({ userId: pUserId, userContext });
-                if (pUser !== undefined && pUser.isPrimaryUser) {
-                    return pUser;
-                }
-            }
         }
 
         // finally, we try and find a primary user based on

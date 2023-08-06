@@ -1691,7 +1691,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 "sessionHandle",
                 "sub",
                 "tId",
-                "recipeUserId",
+                "rsub",
             ])
         );
         assert.strictEqual(response2.body.iss, "https://api.supertokens.io/auth");

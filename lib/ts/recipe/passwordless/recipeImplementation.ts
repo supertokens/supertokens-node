@@ -14,8 +14,9 @@ import {
 } from "./mockCore";
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailVerification from "../emailverification/recipe";
-import { User } from "../../types";
 import { logDebugMessage } from "../../logger";
+import { User } from "../../user";
+import { getUser } from "../..";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContextAndTenantId(input: any): any {
@@ -24,6 +25,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         };
         delete result.userContext;
         delete result.tenantId;
+        if (result.recipeUserId !== undefined && result.recipeUserId.getAsString !== undefined) {
+            result.recipeUserId = result.recipeUserId.getAsString();
+        }
         return result;
     }
 
@@ -41,6 +45,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
             if (response.status === "OK") {
                 logDebugMessage("Passwordless.consumeCode code consumed OK");
+                response.user = new User(response.user);
                 const loginMethod = response.user.loginMethods.find(
                     (m: User["loginMethods"][number]) => m.recipeId === "passwordless"
                 )!;
@@ -69,6 +74,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                                 attemptAccountLinking: false,
                                 userContext: input.userContext,
                             });
+                            // we do this so that we get the updated user (in case the above
+                            // function updated the verification status) and can return that
+                            response.user = await getUser(loginMethod.recipeUserId.getAsString(), input.userContext);
                         }
                     }
                 }

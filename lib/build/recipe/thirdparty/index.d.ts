@@ -22,7 +22,7 @@ export default class Wrapper {
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: import("../emailpassword").User;
+              user: import("../../types").User;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

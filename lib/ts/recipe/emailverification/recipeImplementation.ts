@@ -3,7 +3,7 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc } from "./types";
-import { mockGetEmailVerificationTokenInfo, mockCreateEmailVerificationToken } from "./mockCore";
+import { mockCreateEmailVerificationToken } from "./mockCore";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -54,24 +54,6 @@ export default function getRecipeInterface(
             }
         },
 
-        getEmailVerificationTokenInfo: async function ({
-            token,
-        }: {
-            token: string;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
-            if (process.env.MOCK !== "true") {
-                let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/token"), {
-                    method: "token",
-                    token,
-                });
-                return response;
-            } else {
-                return mockGetEmailVerificationTokenInfo({
-                    token,
-                });
-            }
-        },
-
         verifyEmailUsingToken: async function ({
             token,
             attemptAccountLinking,
@@ -102,7 +84,6 @@ export default function getRecipeInterface(
                         let AccountLinking = require("../accountlinking");
                         await AccountLinking.createPrimaryUserIdOrLinkAccounts({
                             recipeUserId: new RecipeUserId(response.userId),
-                            checkAccountsToLinkTableAsWell: true,
                             userContext,
                         });
                     }

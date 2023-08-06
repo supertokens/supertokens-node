@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, assertJSONEquals } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -69,7 +69,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         // we do the json parse/stringify to remove the toJson and other functions in the login
         // method array in each of the below user objects.
-        assert.deepStrictEqual(JSON.parse(JSON.stringify(refetchedUser)), JSON.parse(JSON.stringify(response.user)));
+        assertJSONEquals(refetchedUser, response.user);
     });
 
     it("make primary user succcess - already is a primary user", async function () {
@@ -322,18 +322,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         // when we link accounts, cause these users are already linked.
         await Session.createNewSessionWithoutRequestResponse("public", user2.loginMethods[0].recipeUserId);
         let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
-        assert(sessions.length === 1);
+        assert.strictEqual(sessions.length, 1);
 
         let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
 
-        assert(response.status === "OK");
+        assert.strictEqual(response.status, "OK");
         assert(response.accountsAlreadyLinked);
 
-        assert(primaryUserInCallback === undefined);
-        assert(newAccountInfoInCallback === undefined);
+        assert.strictEqual(primaryUserInCallback, undefined);
+        assert.strictEqual(newAccountInfoInCallback, undefined);
 
         sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
-        assert(sessions.length === 1);
+        assert.strictEqual(sessions.length, 1);
     });
 
     it("link accounts failure - recipe user id already linked with another primary user id", async function () {
@@ -759,265 +759,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
             let user = await supertokens.getUser(user2.id);
             assert(user === undefined);
         }
-    });
-
-    it("set in account to link table success", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-        assert(primaryUser.isPrimaryUser === false);
-        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
-
-        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-        assert(user.isPrimaryUser === false);
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        assert(storeResponse.status === "OK");
-        assert(storeResponse.didInsertNewRow);
-
-        let response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response !== undefined);
-        assert(response === primaryUser.id);
-    });
-
-    it("set in account to link table success - already inserted", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-        assert(primaryUser.isPrimaryUser === false);
-        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
-
-        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-        assert(user.isPrimaryUser === false);
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        assert(storeResponse.status === "OK");
-        assert(!storeResponse.didInsertNewRow);
-
-        let response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response !== undefined);
-        assert(response === primaryUser.id);
-    });
-
-    it("set in account to link table failure - already linked", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-        assert(primaryUser.isPrimaryUser === false);
-        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
-
-        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-        assert(user.isPrimaryUser === false);
-        await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, primaryUser.id);
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        assert(storeResponse.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR");
-        assert(storeResponse.primaryUserId === primaryUser.id);
-    });
-
-    it("set in account to link table failure - input user id not a primary user", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let user1 = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-
-        let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user1.loginMethods[0].recipeUserId,
-            user2.id
-        );
-        assert(storeResponse.status === "INPUT_USER_ID_IS_NOT_A_PRIMARY_USER_ERROR");
-    });
-
-    it("set in account to link table failure - already linked", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-        assert(primaryUser.isPrimaryUser === false);
-        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
-
-        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-        assert(user.isPrimaryUser === false);
-        await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, primaryUser.id);
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        assert(storeResponse.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR");
-        assert(storeResponse.primaryUserId === primaryUser.id);
-    });
-
-    it("entry is removed from account to link table when linked", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-        assert(primaryUser.isPrimaryUser === false);
-        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
-
-        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-        assert(user.isPrimaryUser === false);
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        assert(storeResponse.status === "OK");
-        let response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response !== undefined);
-
-        await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, primaryUser.id);
-        response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response === undefined);
-    });
-
-    it("entry is removed from account to link table when made primary", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-        assert(primaryUser.isPrimaryUser === false);
-        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
-
-        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-        assert(user.isPrimaryUser === false);
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        assert(storeResponse.status === "OK");
-        let response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response !== undefined);
-
-        await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-
-        response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response === undefined);
-    });
-
-    it("entry is removed from account to link table when unlinked", async function () {
-        await startST();
-        supertokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        let primaryUser = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-        assert(primaryUser.isPrimaryUser === false);
-        await AccountLinking.createPrimaryUser(primaryUser.loginMethods[0].recipeUserId);
-
-        let user = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
-        assert(user.isPrimaryUser === false);
-
-        let storeResponse = await AccountLinking.storeIntoAccountToLinkTable(
-            user.loginMethods[0].recipeUserId,
-            primaryUser.id
-        );
-        assert(storeResponse.status === "OK");
-        let response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response !== undefined);
-
-        await AccountLinking.unlinkAccount(primaryUser.loginMethods[0].recipeUserId);
-
-        response = await AccountLinking.fetchFromAccountToLinkTable(user.loginMethods[0].recipeUserId);
-        assert(response === undefined);
     });
 
     it("link accounts success causes new account's email to be verified if same email", async function () {

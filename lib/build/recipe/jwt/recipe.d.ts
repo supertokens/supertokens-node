@@ -18,12 +18,12 @@ export default class Recipe extends RecipeModule {
     static reset(): void;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (
-        _: string,
-        ____: string | undefined,
+        _id: string,
+        _tenantId: string | undefined,
         req: BaseRequest,
         res: BaseResponse,
-        __: normalisedURLPath,
-        ___: HTTPMethod,
+        _path: normalisedURLPath,
+        _method: HTTPMethod,
         userContext: any
     ) => Promise<boolean>;
     handleError(error: error, _: BaseRequest, __: BaseResponse): Promise<void>;

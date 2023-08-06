@@ -1239,6 +1239,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
     describe("getEmailForRecipeUserId tests", function () {
         it("calling getEmailForRecipeUserId returns email provided from the config", async function () {
             await startST();
+            let email;
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -1257,6 +1258,15 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                                 status: "OK",
                                 email: "random@example.com",
                             };
+                        },
+                        override: {
+                            functions: (oI) => ({
+                                ...oI,
+                                isEmailVerified: (input) => {
+                                    email = input.email;
+                                    return oI.isEmailVerified(input);
+                                },
+                            }),
                         },
                     }),
                     Session.init(),
@@ -1278,18 +1288,14 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
             let epUser = await EmailPassword.signUp("public", "random2@example.com", "password1234");
 
-            let token = await EmailVerification.createEmailVerificationToken(
-                "public",
-                epUser.user.loginMethods[0].recipeUserId
-            );
+            await EmailVerification.isEmailVerified(epUser.user.loginMethods[0].recipeUserId);
 
-            let user = (await EmailVerification.getEmailVerificationTokenInfo(token.token)).user;
-
-            assert(user.email === "random@example.com");
+            assert.strictEqual(email, "random@example.com");
         });
 
         it("calling getEmailForRecipeUserId falls back on default method of getting email if UNKNOWN_USER_ID_ERROR is returned", async function () {
             await startST();
+            let email;
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -1307,6 +1313,15 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                             return {
                                 status: "UNKNOWN_USER_ID_ERROR",
                             };
+                        },
+                        override: {
+                            functions: (oI) => ({
+                                ...oI,
+                                isEmailVerified: (input) => {
+                                    email = input.email;
+                                    return oI.isEmailVerified(input);
+                                },
+                            }),
                         },
                     }),
                     Session.init(),
@@ -1328,13 +1343,8 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
             let epUser = await EmailPassword.signUp("public", "random@example.com", "password1234");
 
-            let token = await EmailVerification.createEmailVerificationToken(
-                "public",
-                epUser.user.loginMethods[0].recipeUserId
-            );
-
-            let user = (await EmailVerification.getEmailVerificationTokenInfo(token.token)).user;
-            assert(user.email === "random@example.com");
+            await EmailVerification.isEmailVerified(epUser.user.loginMethods[0].recipeUserId);
+            assert.strictEqual(email, "random@example.com");
         });
 
         it("calling getEmailForRecipeUserId with recipe user id that has many other linked recipe user ids returns the right email", async function () {
@@ -1356,6 +1366,15 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                             return {
                                 status: "UNKNOWN_USER_ID_ERROR",
                             };
+                        },
+                        override: {
+                            functions: (oI) => ({
+                                ...oI,
+                                isEmailVerified: (input) => {
+                                    email = input.email;
+                                    return oI.isEmailVerified(input);
+                                },
+                            }),
                         },
                     }),
                     Session.init(),
@@ -1386,13 +1405,8 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             assert(pUser.loginMethods.length === 2);
             assert(pUser.id === epUser.user.id);
 
-            let token = await EmailVerification.createEmailVerificationToken(
-                "public",
-                epUser2.user.loginMethods[0].recipeUserId
-            );
-
-            let user = (await EmailVerification.getEmailVerificationTokenInfo(token.token)).user;
-            assert(user.email === "random2@example.com");
+            await EmailVerification.isEmailVerified(epUser2.user.loginMethods[0].recipeUserId);
+            assert.strictEqual(email, "random2@example.com");
         });
     });
 

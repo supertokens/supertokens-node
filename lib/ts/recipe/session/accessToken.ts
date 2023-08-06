@@ -86,7 +86,7 @@ export async function getInfoFromAccessToken(
         let sessionHandle = sanitizeStringInput(payload.sessionHandle)!;
 
         // we use ?? below cause recipeUserId may be undefined for JWTs that are of an older version.
-        let recipeUserId = new RecipeUserId(sanitizeStringInput(payload.recipeUserId) ?? userId);
+        let recipeUserId = new RecipeUserId(sanitizeStringInput(payload.rsub) ?? userId);
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1)!;
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
@@ -128,14 +128,27 @@ export async function getInfoFromAccessToken(
 }
 
 export function validateAccessTokenStructure(payload: any, version: number) {
-    if (version >= 4) {
+    if (version >= 5) {
         if (
             typeof payload.sub !== "string" ||
             typeof payload.exp !== "number" ||
             typeof payload.iat !== "number" ||
             typeof payload.sessionHandle !== "string" ||
             typeof payload.refreshTokenHash1 !== "string" ||
-            typeof payload.recipeUserId !== "string"
+            typeof payload.rsub !== "string"
+        ) {
+            logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
+            // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR
+            // it would come here if we change the structure of the JWT.
+            throw Error("Access token does not contain all the information. Maybe the structure has changed?");
+        }
+    } else if (version >= 4) {
+        if (
+            typeof payload.sub !== "string" ||
+            typeof payload.exp !== "number" ||
+            typeof payload.iat !== "number" ||
+            typeof payload.sessionHandle !== "string" ||
+            typeof payload.refreshTokenHash1 !== "string"
         ) {
             logDebugMessage("validateAccessTokenStructure: Access token is using version >= 4");
             // The error message below will be logged by the error handler that translates this into a TRY_REFRESH_TOKEN_ERROR

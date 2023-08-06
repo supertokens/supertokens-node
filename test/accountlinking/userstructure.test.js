@@ -12,13 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, assertJSONEquals } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
 let ThirdParty = require("../../recipe/thirdparty");
+let Passwordless = require("../../recipe/passwordless");
 
 describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.test.js]")}`, function () {
     beforeEach(async function () {
@@ -73,7 +74,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
         let jsonifiedUser = user.toJson();
 
         user.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
-        assert.deepEqual(jsonifiedUser, JSON.parse(JSON.stringify(user)));
+        assertJSONEquals(jsonifiedUser, user);
     });
 
     it("hasSameThirdPartyInfoAs function in user object work", async function () {
@@ -166,6 +167,36 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
     });
 
     it("hasSamePhoneNumberAs function in user object work", async function () {
-        // TODO:...
+        await startST();
+        supertokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const { status, user } = await Passwordless.signInUp({ tenantId: "public", phoneNumber: "+36701234123" });
+
+        assert.strictEqual(status, "OK");
+
+        assert(user.loginMethods[0].hasSamePhoneNumberAs("+36701234123"));
+        assert(user.loginMethods[0].hasSamePhoneNumberAs("      \t+36701234123 \t       "));
+        assert(user.loginMethods[0].hasSamePhoneNumberAs("      \t+36-70/1234 123 \t       "));
+        assert(user.loginMethods[0].hasSamePhoneNumberAs("      \t+36-70/1234-123 \t       "));
+        // TODO: validate these cases should map to false
+        assert(!user.loginMethods[0].hasSamePhoneNumberAs("36701234123"));
+        assert(!user.loginMethods[0].hasSamePhoneNumberAs("0036701234123"));
+        assert(!user.loginMethods[0].hasSamePhoneNumberAs("06701234123"));
+        assert(!user.loginMethods[0].hasSamePhoneNumberAs("p36701234123"));
     });
 });

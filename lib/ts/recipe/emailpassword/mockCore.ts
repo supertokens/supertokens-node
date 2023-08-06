@@ -1,4 +1,4 @@
-import type { User } from "../../types";
+import { User } from "../../user";
 import { createUserObject, mockGetUser } from "../accountlinking/mockCore";
 import RecipeUserId from "../../recipeUserId";
 import { Querier } from "../../querier";
@@ -57,7 +57,6 @@ export async function mockCreatePasswordResetToken(
 
 export async function mockConsumePasswordResetToken(
     token: string,
-    newPassword: string,
     tenantId: string,
     querier: Querier
 ): Promise<
@@ -79,7 +78,6 @@ export async function mockConsumePasswordResetToken(
         {
             method: "token",
             token,
-            newPassword,
         }
     );
 
@@ -153,7 +151,6 @@ export async function mockCreateRecipeUser(input: {
         }),
     });
     const respBody = await response.json();
-    console.log(respBody);
     if (respBody.status === "EMAIL_ALREADY_EXISTS_ERROR") {
         return respBody;
     }
@@ -162,6 +159,7 @@ export async function mockCreateRecipeUser(input: {
     return {
         status: "OK",
         user: createUserObject({
+            tenantIds: user.tenantIds,
             id: user.id,
             emails: [user.email],
             timeJoined: user.timeJoined,
@@ -171,7 +169,7 @@ export async function mockCreateRecipeUser(input: {
             loginMethods: [
                 {
                     recipeId: "emailpassword",
-                    recipeUserId: new RecipeUserId(user.id),
+                    recipeUserId: user.id,
                     timeJoined: user.timeJoined,
                     verified: false,
                     email: user.email,

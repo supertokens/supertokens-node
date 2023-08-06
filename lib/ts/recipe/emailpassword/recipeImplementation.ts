@@ -3,17 +3,17 @@ import AccountLinking from "../accountlinking/recipe";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
-import { User } from "../../types";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
 import {
     mockCreateRecipeUser,
-    mockSignIn,
     mockConsumePasswordResetToken,
     mockCreatePasswordResetToken,
     mockUpdateEmailOrPassword,
 } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
+import { User as UserType } from "../../types";
+import { User } from "../../user";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -33,7 +33,7 @@ export default function getRecipeInterface(
                 tenantId: string;
                 userContext: any;
             }
-        ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        ): Promise<{ status: "OK"; user: UserType } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             const response = await this.createNewRecipeUser({
                 email,
                 password,
@@ -48,7 +48,6 @@ export default function getRecipeInterface(
                 tenantId,
                 // we can use index 0 cause this is a new recipe user
                 recipeUserId: response.user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
                 userContext,
             });
 
@@ -77,7 +76,7 @@ export default function getRecipeInterface(
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
             if (process.env.MOCK !== "true") {
-                return await querier.sendPostRequest(
+                const resp = await querier.sendPostRequest(
                     new NormalisedURLPath(
                         `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/signup`
                     ),
@@ -86,6 +85,10 @@ export default function getRecipeInterface(
                         password: input.password,
                     }
                 );
+                if (resp.status === "OK") {
+                    resp.user = new User(resp.user);
+                }
+                return resp;
             } else {
                 return mockCreateRecipeUser(input);
             }
@@ -104,22 +107,18 @@ export default function getRecipeInterface(
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-            let response: { status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" };
-
-            if (process.env.MOCK !== "true") {
-                response = await querier.sendPostRequest(
-                    new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
-                    {
-                        email,
-                        password,
-                    }
-                );
-            } else {
-                response = await mockSignIn({ email, password, tenantId });
-            }
+        }): Promise<{ status: "OK"; user: UserType } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            const response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
+                {
+                    email,
+                    password,
+                }
+            );
 
             if (response.status === "OK") {
+                response.user = new User(response.user as any); // TODO:
+
                 let recipeUserId: RecipeUserId | undefined = undefined;
                 for (let i = 0; i < response.user.loginMethods.length; i++) {
                     if (
@@ -181,11 +180,9 @@ export default function getRecipeInterface(
 
         consumePasswordResetToken: async function ({
             token,
-            newPassword,
             tenantId,
         }: {
             token: string;
-            newPassword: string;
             tenantId: string;
         }): Promise<
             | {
@@ -198,16 +195,17 @@ export default function getRecipeInterface(
             if (process.env.MOCK !== "true") {
                 return await querier.sendPostRequest(
                     new NormalisedURLPath(
-                        `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset`
+                        `/${
+                            tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
+                        }/recipe/user/password/reset/token/consume`
                     ),
                     {
                         method: "token",
                         token,
-                        newPassword,
                     }
                 );
             } else {
-                return mockConsumePasswordResetToken(token, newPassword, tenantId, querier);
+                return mockConsumePasswordResetToken(token, tenantId, querier);
             }
         },
 
@@ -253,7 +251,7 @@ export default function getRecipeInterface(
             if (process.env.MOCK !== "true") {
                 // the input userId must be a recipe user ID.
                 response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
-                    userId: input.recipeUserId.getAsString(),
+                    recipeUserId: input.recipeUserId.getAsString(),
                     email: input.email,
                     password: input.password,
                 });
