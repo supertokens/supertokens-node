@@ -57,7 +57,7 @@ export default function getRecipeImplementation(
             users: UserType[];
             nextPaginationToken?: string;
         }> {
-            if (process.env.TEST_MODE !== "testing") {
+            if (process.env.MOCK !== "true") {
                 let includeRecipeIdsStr = undefined;
                 if (includeRecipeIds !== undefined) {
                     includeRecipeIdsStr = includeRecipeIds.join(",");

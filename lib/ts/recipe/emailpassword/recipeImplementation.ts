@@ -180,11 +180,9 @@ export default function getRecipeInterface(
 
         consumePasswordResetToken: async function ({
             token,
-            newPassword,
             tenantId,
         }: {
             token: string;
-            newPassword: string;
             tenantId: string;
         }): Promise<
             | {
@@ -204,11 +202,10 @@ export default function getRecipeInterface(
                     {
                         method: "token",
                         token,
-                        newPassword,
                     }
                 );
             } else {
-                return mockConsumePasswordResetToken(token, newPassword, tenantId, querier);
+                return mockConsumePasswordResetToken(token, tenantId, querier);
             }
         },
 
@@ -254,7 +251,7 @@ export default function getRecipeInterface(
             if (process.env.MOCK !== "true") {
                 // the input userId must be a recipe user ID.
                 response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
-                    userId: input.recipeUserId.getAsString(),
+                    recipeUserId: input.recipeUserId.getAsString(),
                     email: input.email,
                     password: input.password,
                 });

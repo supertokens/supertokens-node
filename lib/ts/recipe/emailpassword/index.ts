@@ -64,10 +64,9 @@ export default class Wrapper {
         });
     }
 
-    static consumePasswordResetToken(tenantId: string, token: string, newPassword: string, userContext?: any) {
+    static consumePasswordResetToken(tenantId: string, token: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
-            newPassword,
             tenantId: tenantId === undefined ? DEFAULT_TENANT_ID : tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });

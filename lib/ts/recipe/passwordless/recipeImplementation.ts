@@ -25,6 +25,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         };
         delete result.userContext;
         delete result.tenantId;
+        if (result.recipeUserId !== undefined && result.recipeUserId.getAsString !== undefined) {
+            result.recipeUserId = result.recipeUserId.getAsString();
+        }
         return result;
     }
 

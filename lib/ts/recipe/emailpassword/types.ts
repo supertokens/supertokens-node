@@ -135,7 +135,6 @@ export type RecipeInterface = {
 
     consumePasswordResetToken(input: {
         token: string;
-        newPassword: string;
         tenantId: string;
         userContext: any;
     }): Promise<

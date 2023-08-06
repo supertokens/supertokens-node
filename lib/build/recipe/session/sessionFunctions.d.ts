@@ -9,7 +9,6 @@ import RecipeUserId from "../../recipeUserId";
 export declare function createNewSession(
     helpers: Helpers,
     tenantId: string,
-    userId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
     accessTokenPayload?: any,

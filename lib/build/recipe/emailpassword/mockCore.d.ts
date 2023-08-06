@@ -18,7 +18,6 @@ export declare function mockCreatePasswordResetToken(
 >;
 export declare function mockConsumePasswordResetToken(
     token: string,
-    newPassword: string,
     tenantId: string,
     querier: Querier
 ): Promise<

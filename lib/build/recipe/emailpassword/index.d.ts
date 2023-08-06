@@ -62,7 +62,6 @@ export default class Wrapper {
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
-        newPassword: string,
         userContext?: any
     ): Promise<
         | {

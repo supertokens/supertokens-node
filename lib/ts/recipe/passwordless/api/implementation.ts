@@ -285,6 +285,7 @@ export default function getAPIImplementation(): APIInterface {
                     email: input.email,
                     // tenantId: input.tenantId,
                 },
+                false,
                 input.userContext
             );
 
@@ -299,6 +300,7 @@ export default function getAPIImplementation(): APIInterface {
                     phoneNumber: input.phoneNumber,
                     // tenantId: input.tenantId,
                 },
+                false,
                 input.userContext
             );
 

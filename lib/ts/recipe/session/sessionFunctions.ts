@@ -40,7 +40,6 @@ import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 export async function createNewSession(
     helpers: Helpers,
     tenantId: string,
-    userId: string,
     recipeUserId: RecipeUserId,
     disableAntiCsrf: boolean,
     accessTokenPayload: any = {},
@@ -51,9 +50,8 @@ export async function createNewSession(
         sessionDataInDatabase === null || sessionDataInDatabase === undefined ? {} : sessionDataInDatabase;
 
     const requestBody = {
-        userId,
-        recipeUserId: recipeUserId.getAsString(),
-        userDataInJWT: { ...accessTokenPayload, recipeUserId: recipeUserId.getAsString() }, // TODO: revert this after session impl
+        userId: recipeUserId.getAsString(),
+        userDataInJWT: { ...accessTokenPayload },
         userDataInDatabase: sessionDataInDatabase,
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
@@ -72,7 +70,7 @@ export async function createNewSession(
         session: {
             handle: response.session.handle,
             userId: response.session.userId,
-            recipeUserId: recipeUserId, // new RecipeUserId(response.session.recipeUserId), TODO: revert this after session impl
+            recipeUserId: new RecipeUserId(response.session.recipeUserId),
             userDataInJWT: response.session.userDataInJWT,
             tenantId: response.session.tenantId,
         },
@@ -230,7 +228,7 @@ export async function getSession(
             session: {
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
-                recipeUserId: accessTokenInfo.recipeUserId ?? accessTokenInfo.userData.recipeUserId, // TODO: revert this after session impl
+                recipeUserId: accessTokenInfo.recipeUserId,
                 userDataInJWT: accessTokenInfo.userData,
                 expiryTime: accessTokenInfo.expiryTime,
                 tenantId: accessTokenInfo.tenantId,
@@ -261,7 +259,7 @@ export async function getSession(
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
-                recipeUserId: new RecipeUserId(response.session.recipeUserId ?? parsedAccessToken.payload.recipeUserId), // TODO: revert this after session impl
+                recipeUserId: new RecipeUserId(response.session.recipeUserId),
                 expiryTime:
                     response.accessToken?.expiry || // if we got a new accesstoken we take the expiry time from there
                     accessTokenInfo?.expiryTime || // if we didn't get a new access token but could validate the token take that info (alwaysCheckCore === true, or parentRefreshTokenHash1 !== null)
@@ -314,7 +312,7 @@ export async function getSessionInformation(
             timeCreated: response.timeCreated,
             expiry: response.expiry,
             userId: response.userId,
-            recipeUserId: new RecipeUserId(response.recipeUserId ?? response.userDataInJWT.recipeUserId), // TODO: revert this after session impl
+            recipeUserId: new RecipeUserId(response.recipeUserId),
             sessionDataInDatabase: response.userDataInDatabase,
             customClaimsInAccessTokenPayload: response.userDataInJWT,
             tenantId: response.tenantId,
@@ -361,9 +359,7 @@ export async function refreshSession(
             session: {
                 handle: response.session.handle,
                 userId: response.session.userId,
-                recipeUserId: new RecipeUserId(
-                    response.session.recipeUserId ?? response.session.userDataInJWT.recipeUserId
-                ), // TODO: revert this after session impl
+                recipeUserId: new RecipeUserId(response.session.recipeUserId),
                 userDataInJWT: response.session.userDataInJWT,
                 tenantId: response.session.tenantId,
             },

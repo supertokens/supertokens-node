@@ -57,7 +57,6 @@ export async function mockCreatePasswordResetToken(
 
 export async function mockConsumePasswordResetToken(
     token: string,
-    newPassword: string,
     tenantId: string,
     querier: Querier
 ): Promise<
@@ -79,7 +78,6 @@ export async function mockConsumePasswordResetToken(
         {
             method: "token",
             token,
-            newPassword,
         }
     );
 

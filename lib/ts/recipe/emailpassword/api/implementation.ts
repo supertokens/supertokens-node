@@ -451,7 +451,6 @@ export default function getAPIImplementation(): APIInterface {
 
             let tokenConsumptionResponse = await options.recipeImplementation.consumePasswordResetToken({
                 token,
-                newPassword,
                 tenantId,
                 userContext,
             });
