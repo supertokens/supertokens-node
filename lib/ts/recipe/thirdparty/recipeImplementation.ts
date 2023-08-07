@@ -6,7 +6,6 @@ import AccountLinking from "../accountlinking/recipe";
 import EmailVerification from "../emailverification";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
-import { mockCreateNewOrUpdateEmailOfRecipeUser } from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
 import { User as UserType } from "../../types";
@@ -42,22 +41,11 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                   reason: string;
               }
         > {
-            let response;
-            if (process.env.MOCK !== "true") {
-                response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
-                    thirdPartyId,
-                    thirdPartyUserId,
-                    email: { id: email },
-                });
-            } else {
-                response = await mockCreateNewOrUpdateEmailOfRecipeUser(
-                    thirdPartyId,
-                    thirdPartyUserId,
-                    email,
-                    tenantId,
-                    querier
-                );
-            }
+            let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
+                thirdPartyId,
+                thirdPartyUserId,
+                email: { id: email },
+            });
 
             if (response.status === "OK") {
                 response.user = new User(response.user);

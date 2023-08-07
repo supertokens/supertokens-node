@@ -28,7 +28,6 @@ import supertokens from "../../supertokens";
 import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
-import { mockReset } from "./mockCore";
 import EmailVerificationRecipe from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {
@@ -128,7 +127,6 @@ export default class Recipe extends RecipeModule {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;
-        mockReset();
     }
 
     // this function returns the user ID for which the session will be created.

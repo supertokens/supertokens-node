@@ -3,7 +3,6 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc } from "./types";
-import { mockCreateEmailVerificationToken } from "./mockCore";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -25,32 +24,22 @@ export default function getRecipeInterface(
               }
             | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
         > {
-            if (process.env.MOCK !== "true") {
-                let response = await querier.sendPostRequest(
-                    new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify/token`),
-                    {
-                        userId: recipeUserId.getAsString(),
-                        email,
-                    }
-                );
-                if (response.status === "OK") {
-                    return {
-                        status: "OK",
-                        token: response.token,
-                    };
-                } else {
-                    return {
-                        status: "EMAIL_ALREADY_VERIFIED_ERROR",
-                    };
+            let response = await querier.sendPostRequest(
+                new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify/token`),
+                {
+                    userId: recipeUserId.getAsString(),
+                    email,
                 }
+            );
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                    token: response.token,
+                };
             } else {
-                return mockCreateEmailVerificationToken(
-                    {
-                        recipeUserId,
-                        email,
-                    },
-                    querier
-                );
+                return {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                };
             }
         },
 

@@ -4,12 +4,6 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getUser } from "../..";
 import { FORM_FIELD_PASSWORD_ID } from "./constants";
-import {
-    mockCreateRecipeUser,
-    mockConsumePasswordResetToken,
-    mockCreatePasswordResetToken,
-    mockUpdateEmailOrPassword,
-} from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { User as UserType } from "../../types";
@@ -75,23 +69,19 @@ export default function getRecipeInterface(
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
-            if (process.env.MOCK !== "true") {
-                const resp = await querier.sendPostRequest(
-                    new NormalisedURLPath(
-                        `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/signup`
-                    ),
-                    {
-                        email: input.email,
-                        password: input.password,
-                    }
-                );
-                if (resp.status === "OK") {
-                    resp.user = new User(resp.user);
+            const resp = await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${input.tenantId === undefined ? DEFAULT_TENANT_ID : input.tenantId}/recipe/signup`
+                ),
+                {
+                    email: input.email,
+                    password: input.password,
                 }
-                return resp;
-            } else {
-                return mockCreateRecipeUser(input);
+            );
+            if (resp.status === "OK") {
+                resp.user = new User(resp.user);
             }
+            return resp;
 
             // we do not do email verification here cause it's a new user and email password
             // users are always initially unverified.
@@ -162,20 +152,16 @@ export default function getRecipeInterface(
             email: string;
             tenantId: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-            if (process.env.MOCK !== "true") {
-                // the input user ID can be a recipe or a primary user ID.
-                return await querier.sendPostRequest(
-                    new NormalisedURLPath(
-                        `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset/token`
-                    ),
-                    {
-                        userId,
-                        email,
-                    }
-                );
-            } else {
-                return mockCreatePasswordResetToken(email, userId, tenantId);
-            }
+            // the input user ID can be a recipe or a primary user ID.
+            return await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset/token`
+                ),
+                {
+                    userId,
+                    email,
+                }
+            );
         },
 
         consumePasswordResetToken: async function ({
@@ -192,21 +178,15 @@ export default function getRecipeInterface(
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
-            if (process.env.MOCK !== "true") {
-                return await querier.sendPostRequest(
-                    new NormalisedURLPath(
-                        `/${
-                            tenantId === undefined ? DEFAULT_TENANT_ID : tenantId
-                        }/recipe/user/password/reset/token/consume`
-                    ),
-                    {
-                        method: "token",
-                        token,
-                    }
-                );
-            } else {
-                return mockConsumePasswordResetToken(token, tenantId, querier);
-            }
+            return await querier.sendPostRequest(
+                new NormalisedURLPath(
+                    `/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/user/password/reset/token/consume`
+                ),
+                {
+                    method: "token",
+                    token,
+                }
+            );
         },
 
         updateEmailOrPassword: async function (input: {
@@ -247,20 +227,11 @@ export default function getRecipeInterface(
             // a change in email. The check for email verification should actually go in
             // an update email API (post login update).
 
-            let response;
-            if (process.env.MOCK !== "true") {
-                // the input userId must be a recipe user ID.
-                response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
-                    recipeUserId: input.recipeUserId.getAsString(),
-                    email: input.email,
-                    password: input.password,
-                });
-            } else {
-                response = await mockUpdateEmailOrPassword({
-                    ...input,
-                    querier,
-                });
-            }
+            let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
+                recipeUserId: input.recipeUserId.getAsString(),
+                email: input.email,
+                password: input.password,
+            });
 
             if (response.status === "OK") {
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({

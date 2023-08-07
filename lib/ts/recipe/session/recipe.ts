@@ -42,7 +42,6 @@ import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
-import { mockReset } from "./mockCore";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -118,7 +117,6 @@ export default class SessionRecipe extends RecipeModule {
             throw new Error("calling testing function in non testing env");
         }
         SessionRecipe.instance = undefined;
-        mockReset();
     }
 
     addClaimFromOtherRecipe = (claim: SessionClaim<any>) => {

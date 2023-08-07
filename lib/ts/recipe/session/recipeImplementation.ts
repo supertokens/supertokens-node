@@ -21,7 +21,6 @@ import { ParsedJWTInfo, parseJWTWithoutSignatureVerification } from "./jwt";
 import { validateAccessTokenStructure } from "./accessToken";
 import SessionError from "./error";
 import RecipeUserId from "../../recipeUserId";
-import { mockRegenerateSession } from "./mockCore";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 export type Helpers = {
@@ -370,15 +369,10 @@ export default function getRecipeInterface(
                     ? {}
                     : input.newAccessTokenPayload;
 
-            let response;
-            if (process.env.MOCK !== "true") {
-                response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
-                    accessToken: input.accessToken,
-                    userDataInJWT: newAccessTokenPayload,
-                });
-            } else {
-                response = await mockRegenerateSession(input.accessToken, newAccessTokenPayload, querier);
-            }
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
+                accessToken: input.accessToken,
+                userDataInJWT: newAccessTokenPayload,
+            });
             if (response.status === "UNAUTHORISED") {
                 return undefined;
             }
@@ -420,7 +414,6 @@ export default function getRecipeInterface(
             fetchSessionsForAllLinkedAccounts,
             tenantId,
             fetchAcrossAllTenants,
-            userContext,
         }: {
             userId: string;
             fetchSessionsForAllLinkedAccounts: boolean;
@@ -433,8 +426,7 @@ export default function getRecipeInterface(
                 userId,
                 fetchSessionsForAllLinkedAccounts,
                 tenantId,
-                fetchAcrossAllTenants,
-                userContext
+                fetchAcrossAllTenants
             );
         },
 
