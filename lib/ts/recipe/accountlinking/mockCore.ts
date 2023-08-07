@@ -760,6 +760,7 @@ export async function mockUnlinkAccount({
 }): Promise<{
     status: "OK";
     wasRecipeUserDeleted: boolean;
+    wasLinked: boolean;
 }> {
     let primaryUser = await mockGetUser({ userId: recipeUserId.getAsString() });
 
@@ -794,6 +795,7 @@ export async function mockUnlinkAccount({
                 return {
                     status: "OK",
                     wasRecipeUserDeleted: true,
+                    wasLinked: true,
                 };
             }
         }
@@ -808,6 +810,7 @@ export async function mockUnlinkAccount({
     return {
         status: "OK",
         wasRecipeUserDeleted: false,
+        wasLinked: true,
     };
 }
 

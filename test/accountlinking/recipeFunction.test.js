@@ -503,6 +503,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         let response = await AccountLinking.unlinkAccount(user2.loginMethods[0].recipeUserId);
         assert(response.wasRecipeUserDeleted === false);
+        assert(response.wasLinked === true);
 
         let primaryUser = await supertokens.getUser(user.id);
         assert(primaryUser !== undefined);
@@ -545,6 +546,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         let response = await AccountLinking.unlinkAccount(user.loginMethods[0].recipeUserId);
         assert(response.wasRecipeUserDeleted === false);
+        assert(response.wasLinked === true);
 
         let primaryUser = await supertokens.getUser(user.id);
         assert(primaryUser !== undefined);
@@ -586,6 +588,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         let response = await AccountLinking.unlinkAccount(user.loginMethods[0].recipeUserId);
         assert(response.wasRecipeUserDeleted === true);
+        assert(response.wasLinked === true);
 
         let primaryUser = await supertokens.getUser(user.id);
         assert(primaryUser !== undefined);

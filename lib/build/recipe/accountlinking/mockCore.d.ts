@@ -118,6 +118,7 @@ export declare function mockUnlinkAccount({
 }): Promise<{
     status: "OK";
     wasRecipeUserDeleted: boolean;
+    wasLinked: boolean;
 }>;
 export declare function mockDeleteUser({
     userId,

@@ -162,6 +162,7 @@ export type RecipeInterface = {
     }) => Promise<{
         status: "OK";
         wasRecipeUserDeleted: boolean;
+        wasLinked: boolean;
     }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {

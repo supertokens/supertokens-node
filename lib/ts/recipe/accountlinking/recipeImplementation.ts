@@ -289,6 +289,7 @@ export default function getRecipeImplementation(
         ): Promise<{
             status: "OK";
             wasRecipeUserDeleted: boolean;
+            wasLinked: boolean;
         }> {
             if (process.env.MOCK !== "true") {
                 let accountsUnlinkingResult = await querier.sendPostRequest(

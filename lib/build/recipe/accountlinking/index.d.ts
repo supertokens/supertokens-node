@@ -118,6 +118,7 @@ export default class Wrapper {
     ): Promise<{
         status: "OK";
         wasRecipeUserDeleted: boolean;
+        wasLinked: boolean;
     }>;
     static isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any): Promise<boolean>;
     static isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
