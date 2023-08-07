@@ -199,7 +199,6 @@ export default function getAPIImplementation(): APIInterface {
                     email,
                 },
                 primaryUserAssociatedWithEmail,
-                undefined,
                 userContext
             );
 

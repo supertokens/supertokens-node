@@ -297,7 +297,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -450,7 +450,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -863,7 +863,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1162,7 +1162,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1265,7 +1265,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1364,7 +1364,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1562,7 +1562,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2095,7 +2095,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2357,7 +2357,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2462,7 +2462,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doLink) {
                                 return {
                                     shouldAutomaticallyLink: true,
@@ -2566,7 +2566,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2669,7 +2669,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,

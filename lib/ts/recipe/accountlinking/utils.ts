@@ -14,7 +14,6 @@
  */
 
 import type { NormalisedAppinfo, User } from "../../types";
-import { SessionContainer } from "../session";
 import type {
     TypeInput,
     RecipeLevelUser,
@@ -28,7 +27,6 @@ async function defaultOnAccountLinked(_user: User, _newAccountInfo: RecipeLevelU
 async function defaultShouldDoAutomaticAccountLinking(
     _newAccountInfo: AccountInfoWithRecipeId,
     _user: User | undefined,
-    _session: SessionContainer | undefined,
     _userContext: any
 ): Promise<{
     shouldAutomaticallyLink: false;

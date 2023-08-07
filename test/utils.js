@@ -326,6 +326,35 @@ module.exports.startSTWithMultitenancy = async function (host = "localhost", por
     });
 };
 
+module.exports.removeAppAndTenants = async function (appId) {
+    const tenantsResp = await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/list`);
+    if (tenantsResp.status === 200) {
+        const tenants = (await tenantsResp.json()).tenants;
+        for (const t of tenants) {
+            if (t.tenantId !== "public") {
+                await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/remove`, {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json; charset=utf-8",
+                    },
+                    body: JSON.stringify({
+                        tenantId: t.tenantId,
+                    }),
+                });
+            }
+        }
+        await fetch(`http://localhost:8080/recipe/multitenancy/app/remove`, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json; charset=utf-8",
+            },
+            body: JSON.stringify({
+                appId: `${appId}`,
+            }),
+        });
+    }
+};
+
 async function getListOfPids() {
     let installationPath = process.env.INSTALL_PATH;
     let currList;

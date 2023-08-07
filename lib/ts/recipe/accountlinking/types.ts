@@ -15,7 +15,6 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import type { User } from "../../types";
-import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {
@@ -23,7 +22,6 @@ export type TypeInput = {
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
-        session: SessionContainerInterface | undefined,
         userContext: any
     ) => Promise<
         | {
@@ -47,7 +45,6 @@ export type TypeNormalisedInput = {
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
-        session: SessionContainerInterface | undefined,
         userContext: any
     ) => Promise<
         | {

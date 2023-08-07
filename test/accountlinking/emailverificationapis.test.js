@@ -1271,7 +1271,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     }),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                        shouldDoAutomaticAccountLinking: async function (_, __, userContext) {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1326,7 +1326,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     }),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                        shouldDoAutomaticAccountLinking: async function (_, __, userContext) {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1379,7 +1379,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                     }),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                        shouldDoAutomaticAccountLinking: async function (_, __, userContext) {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1503,7 +1503,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                 }),
                 Session.init(),
                 AccountLinking.init({
-                    shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                    shouldDoAutomaticAccountLinking: async function (_, __, userContext) {
                         return {
                             shouldAutomaticallyLink: true,
                             shouldRequireVerification: true,
@@ -1647,7 +1647,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
                 }),
                 Session.init(),
                 AccountLinking.init({
-                    shouldDoAutomaticAccountLinking: async function (_, __, ___, userContext) {
+                    shouldDoAutomaticAccountLinking: async function (_, __, userContext) {
                         return {
                             shouldAutomaticallyLink: true,
                             shouldRequireVerification: true,

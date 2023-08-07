@@ -275,7 +275,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -499,7 +499,7 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
                 mode: "REQUIRED",
             }),
             AccountLinking.init({
-                shouldDoAutomaticAccountLinking: async (userInfo, __, ___, userContext) => {
+                shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
                     if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                         return {
                             shouldAutomaticallyLink: false,

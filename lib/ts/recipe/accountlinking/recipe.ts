@@ -167,7 +167,6 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 recipeUser.loginMethods[0],
                 undefined,
-                undefined,
                 userContext
             );
 
@@ -213,7 +212,6 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 recipeUser.loginMethods[0],
                 primaryUser,
-                undefined,
                 userContext
             );
 
@@ -460,7 +458,6 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 accountInfo,
                 undefined,
-                undefined,
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
@@ -530,7 +527,6 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 accountInfo,
                 primaryUser,
-                undefined,
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
@@ -676,7 +672,6 @@ export default class Recipe extends RecipeModule {
                 let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                     user.loginMethods[0],
                     primaryUserForNewEmail[0],
-                    undefined,
                     input.userContext
                 );
 
