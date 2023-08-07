@@ -69,7 +69,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         // we do the json parse/stringify to remove the toJson and other functions in the login
         // method array in each of the below user objects.
-        assertJSONEquals(refetchedUser, response.user);
+        assertJSONEquals(refetchedUser.toJson(), response.user.toJson());
     });
 
     it("make primary user succcess - already is a primary user", async function () {
@@ -224,10 +224,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let linkedUser = await supertokens.getUser(user.id);
         // we do the json parse/stringify to remove the toJson and other functions in the login
         // method array in each of the below user objects.
-        assert.deepStrictEqual(
-            JSON.parse(JSON.stringify(linkedUser)),
-            JSON.parse(JSON.stringify(primaryUserInCallback))
-        );
+        assertJSONEquals(linkedUser, primaryUserInCallback);
+        assertJSONEquals(linkedUser, response.user);
 
         assert(newAccountInfoInCallback.recipeId === "emailpassword");
         assert(newAccountInfoInCallback.email === "test2@example.com");
@@ -280,6 +278,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         let linkedUser = await supertokens.getUser(user.id);
         assert(linkedUser.loginMethods.length === 3);
+        assertJSONEquals(linkedUser, response.user);
     });
 
     it("link accounts success - already linked", async function () {
@@ -313,7 +312,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        const initialResp = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        assert.strictEqual(initialResp.status, "OK");
+        assert.notStrictEqual(initialResp.user, undefined);
 
         primaryUserInCallback = undefined;
         newAccountInfoInCallback = undefined;
@@ -328,6 +329,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         assert.strictEqual(response.status, "OK");
         assert(response.accountsAlreadyLinked);
+        assertJSONEquals(response.user.toJson(), initialResp.user.toJson());
 
         assert.strictEqual(primaryUserInCallback, undefined);
         assert.strictEqual(newAccountInfoInCallback, undefined);
@@ -594,7 +596,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         // we do the json parse/stringify to remove the toJson and other functions in the login
         // method array in each of the below user objects.
-        assert.deepStrictEqual(JSON.parse(JSON.stringify(recipeUser)), JSON.parse(JSON.stringify(primaryUser)));
+        assertJSONEquals(recipeUser.toJson(), primaryUser.toJson());
 
         sessions = await Session.getAllSessionHandlesForUser(user.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 0);

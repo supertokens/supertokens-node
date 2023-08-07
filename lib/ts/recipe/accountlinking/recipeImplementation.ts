@@ -213,6 +213,7 @@ export default function getRecipeImplementation(
             | {
                   status: "OK";
                   accountsAlreadyLinked: boolean;
+                  user: User;
               }
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -241,28 +242,38 @@ export default function getRecipeImplementation(
                 accountsLinkingResult = await mockLinkAccounts({ recipeUserId, primaryUserId });
             }
 
-            if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
-                await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    tenantId,
-                    recipeUserId,
-                    userContext,
-                });
+            if (accountsLinkingResult.status === "OK") {
+                let user: UserType | undefined;
+                if (!accountsLinkingResult.accountsAlreadyLinked) {
+                    await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                        tenantId,
+                        recipeUserId,
+                        userContext,
+                    });
 
-                let user: UserType | undefined = await this.getUser({
-                    userId: primaryUserId,
-                    userContext,
-                });
-                if (user === undefined) {
-                    throw Error("this error should never be thrown");
-                }
-                let loginMethodInfo = user.loginMethods.find(
-                    (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
-                );
-                if (loginMethodInfo === undefined) {
-                    throw Error("this error should never be thrown");
-                }
+                    user = await this.getUser({
+                        userId: primaryUserId,
+                        userContext,
+                    });
+                    if (user === undefined) {
+                        throw Error("this error should never be thrown");
+                    }
+                    let loginMethodInfo = user.loginMethods.find(
+                        (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
+                    );
+                    if (loginMethodInfo === undefined) {
+                        throw Error("this error should never be thrown");
+                    }
 
-                await config.onAccountLinked(user, loginMethodInfo, userContext);
+                    await config.onAccountLinked(user, loginMethodInfo, userContext);
+                } else {
+                    // In the other case we get it after email verification
+                    user = await this.getUser({
+                        userId: primaryUserId,
+                        userContext,
+                    });
+                }
+                accountsLinkingResult.user = user;
             }
 
             return accountsLinkingResult;

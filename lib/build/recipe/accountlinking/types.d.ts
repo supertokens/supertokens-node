@@ -125,6 +125,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               accountsAlreadyLinked: boolean;
+              user: User;
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";

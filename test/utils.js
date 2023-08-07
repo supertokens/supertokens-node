@@ -40,6 +40,7 @@ const { wrapRequest } = require("../framework/express");
 const { join } = require("path");
 
 const users = require("./users.json");
+let assert = require("assert");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -671,4 +672,8 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
             await thirdparty.manuallyCreateOrUpdateUser("public", user.provider, user.userId, user.email);
         }
     }
+};
+
+module.exports.assertJSONEquals = (actual, expected) => {
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(actual)), JSON.parse(JSON.stringify(expected)));
 };
