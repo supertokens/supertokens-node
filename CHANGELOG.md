@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [15.1.0] - 2023-08-07
+
+### Changes
+
+-   Added a `Cache-Control` header to `/jwt/jwks.json` (`getJWKSGET`)
+-   Added `validityInSeconds` to the return value of the overrideable `getJWKS` function.
+    -   This can be used to control the `Cache-Control` header mentioned above.
+    -   It defaults to `60` or the value set in the cache-control header returned by the core
+    -   This is optional (so you are not required to update your overrides). Returning undefined means that the header is not set.
+
 ## [15.0.2] - 2023-07-31
 
 -   Fixes an issue where the user management dashboard would incorrectly show an email as unverified even if it was verified

@@ -77,6 +77,7 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<{
         keys: JsonWebKey[];
+        validityInSeconds?: number;
     }>;
 };
 
