@@ -26,6 +26,7 @@ const { middleware, errorHandler } = require("../../framework/express");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 const { verifySession } = require("../../recipe/session/framework/express");
 const { json } = require("body-parser");
+const { validateAccessTokenStructure } = require("../../lib/build/recipe/session/accessToken");
 
 describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.test.js]")}`, function () {
     beforeEach(async function () {
@@ -812,6 +813,57 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             assert.strictEqual(cookies.accessTokenFromAny, "");
             assert.strictEqual(cookies.refreshTokenFromAny, "");
             assert.strictEqual(cookies.frontToken, "remove");
+        });
+    });
+
+    describe("validateAccessTokenStructure", () => {
+        /**
+            We want to make sure that for access token claims that can be null, the SDK does not fail access token validation if the
+            core does not send them as part of the payload.
+            For this we verify that validation passes when the keys are nil, empty or a different type
+            For now this test checks for:
+            - antiCsrfToken
+            - parentRefreshTokenHash1
+            But this test should be updated to include any keys that the core considers optional in the payload (i.e either it sends
+            JSON null or skips them entirely)
+        */
+        it("should accept skipped nullable props (v3)", () => {
+            validateAccessTokenStructure(
+                {
+                    sessionHandle: "",
+                    sub: "",
+                    refreshTokenHash1: "",
+                    exp: 0,
+                    iat: 0,
+                },
+                3
+            );
+
+            validateAccessTokenStructure(
+                {
+                    sessionHandle: "",
+                    sub: "",
+                    refreshTokenHash1: "",
+                    exp: 0,
+                    iat: 0,
+                    parentRefreshTokenHash1: "",
+                    antiCsrfToken: "",
+                },
+                3
+            );
+
+            validateAccessTokenStructure(
+                {
+                    sessionHandle: "",
+                    sub: "",
+                    refreshTokenHash1: "",
+                    exp: 0,
+                    iat: 0,
+                    parentRefreshTokenHash1: 1,
+                    antiCsrfToken: 1,
+                },
+                3
+            );
         });
     });
 });
