@@ -31,7 +31,7 @@ export const userSessionsGet: APIFunction = async (
         });
     }
 
-    const response = await Session.getAllSessionHandlesForUser(userId, undefined, userContext);
+    const response = await Session.getAllSessionHandlesForUser(userId, undefined, undefined, userContext);
 
     let sessions: SessionType[] = [];
     let sessionInfoPromises: Promise<void>[] = [];
