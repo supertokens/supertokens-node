@@ -16,17 +16,6 @@
 import { AccountInfo, RecipeInterface, TypeNormalisedInput } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import {
-    mockListUsersByAccountInfo,
-    mockGetUser,
-    mockGetUsers,
-    mockCreatePrimaryUser,
-    mockCanCreatePrimaryUser,
-    mockLinkAccounts,
-    mockCanLinkAccounts,
-    mockUnlinkAccount,
-    mockDeleteUser,
-} from "./mockCore";
 import RecipeUserId from "../../recipeUserId";
 import type AccountLinkingRecipe from "./recipe";
 import { User } from "../../user";
@@ -57,31 +46,21 @@ export default function getRecipeImplementation(
             users: UserType[];
             nextPaginationToken?: string;
         }> {
-            if (process.env.MOCK !== "true") {
-                let includeRecipeIdsStr = undefined;
-                if (includeRecipeIds !== undefined) {
-                    includeRecipeIdsStr = includeRecipeIds.join(",");
-                }
-                let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
-                    includeRecipeIds: includeRecipeIdsStr,
-                    timeJoinedOrder: timeJoinedOrder,
-                    limit: limit,
-                    paginationToken: paginationToken,
-                    ...query,
-                });
-                return {
-                    users: response.users.map((u: any) => new User(u)),
-                    nextPaginationToken: response.nextPaginationToken,
-                };
-            } else {
-                return await mockGetUsers(querier, {
-                    timeJoinedOrder,
-                    limit,
-                    paginationToken,
-                    includeRecipeIds,
-                    query,
-                });
+            let includeRecipeIdsStr = undefined;
+            if (includeRecipeIds !== undefined) {
+                includeRecipeIdsStr = includeRecipeIds.join(",");
             }
+            let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+                includeRecipeIds: includeRecipeIdsStr,
+                timeJoinedOrder: timeJoinedOrder,
+                limit: limit,
+                paginationToken: paginationToken,
+                ...query,
+            });
+            return {
+                users: response.users.map((u: any) => new User(u)),
+                nextPaginationToken: response.nextPaginationToken,
+            };
         },
         canCreatePrimaryUser: async function (
             this: RecipeInterface,
@@ -103,16 +82,9 @@ export default function getRecipeImplementation(
                   description: string;
               }
         > {
-            if (process.env.MOCK !== "true") {
-                return await querier.sendGetRequest(
-                    new NormalisedURLPath("/recipe/accountlinking/user/primary/check"),
-                    {
-                        recipeUserId: recipeUserId.getAsString(),
-                    }
-                );
-            } else {
-                return await mockCanCreatePrimaryUser(recipeUserId);
-            }
+            return await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary/check"), {
+                recipeUserId: recipeUserId.getAsString(),
+            });
         },
 
         createPrimaryUser: async function (
@@ -137,20 +109,13 @@ export default function getRecipeImplementation(
                   description: string;
               }
         > {
-            if (process.env.MOCK !== "true") {
-                let response = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/accountlinking/user/primary"),
-                    {
-                        recipeUserId: recipeUserId.getAsString(),
-                    }
-                );
-                if (response.status === "OK") {
-                    response.user = new User(response.user);
-                }
-                return response;
-            } else {
-                return await mockCreatePrimaryUser(recipeUserId);
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/accountlinking/user/primary"), {
+                recipeUserId: recipeUserId.getAsString(),
+            });
+            if (response.status === "OK") {
+                response.user = new User(response.user);
             }
+            return response;
         },
 
         canLinkAccounts: async function (
@@ -181,19 +146,12 @@ export default function getRecipeImplementation(
                   status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
               }
         > {
-            if (process.env.MOCK !== "true") {
-                let result = await querier.sendGetRequest(
-                    new NormalisedURLPath("/recipe/accountlinking/user/link/check"),
-                    {
-                        recipeUserId: recipeUserId.getAsString(),
-                        primaryUserId,
-                    }
-                );
+            let result = await querier.sendGetRequest(new NormalisedURLPath("/recipe/accountlinking/user/link/check"), {
+                recipeUserId: recipeUserId.getAsString(),
+                primaryUserId,
+            });
 
-                return result;
-            } else {
-                return await mockCanLinkAccounts({ recipeUserId, primaryUserId });
-            }
+            return result;
         },
 
         linkAccounts: async function (
@@ -213,6 +171,7 @@ export default function getRecipeImplementation(
             | {
                   status: "OK";
                   accountsAlreadyLinked: boolean;
+                  user: User;
               }
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -228,41 +187,46 @@ export default function getRecipeImplementation(
                   status: "INPUT_USER_IS_NOT_A_PRIMARY_USER";
               }
         > {
-            let accountsLinkingResult;
-            if (process.env.MOCK !== "true") {
-                accountsLinkingResult = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/accountlinking/user/link"),
-                    {
-                        recipeUserId: recipeUserId.getAsString(),
-                        primaryUserId,
+            const accountsLinkingResult = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/accountlinking/user/link"),
+                {
+                    recipeUserId: recipeUserId.getAsString(),
+                    primaryUserId,
+                }
+            );
+
+            if (accountsLinkingResult.status === "OK") {
+                let user: UserType | undefined;
+                if (!accountsLinkingResult.accountsAlreadyLinked) {
+                    await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                        tenantId,
+                        recipeUserId,
+                        userContext,
+                    });
+
+                    user = await this.getUser({
+                        userId: primaryUserId,
+                        userContext,
+                    });
+                    if (user === undefined) {
+                        throw Error("this error should never be thrown");
                     }
-                );
-            } else {
-                accountsLinkingResult = await mockLinkAccounts({ recipeUserId, primaryUserId });
-            }
+                    let loginMethodInfo = user.loginMethods.find(
+                        (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
+                    );
+                    if (loginMethodInfo === undefined) {
+                        throw Error("this error should never be thrown");
+                    }
 
-            if (accountsLinkingResult.status === "OK" && !accountsLinkingResult.accountsAlreadyLinked) {
-                await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    tenantId,
-                    recipeUserId,
-                    userContext,
-                });
-
-                let user: UserType | undefined = await this.getUser({
-                    userId: primaryUserId,
-                    userContext,
-                });
-                if (user === undefined) {
-                    throw Error("this error should never be thrown");
+                    await config.onAccountLinked(user, loginMethodInfo, userContext);
+                } else {
+                    // In the other case we get it after email verification
+                    user = await this.getUser({
+                        userId: primaryUserId,
+                        userContext,
+                    });
                 }
-                let loginMethodInfo = user.loginMethods.find(
-                    (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
-                );
-                if (loginMethodInfo === undefined) {
-                    throw Error("this error should never be thrown");
-                }
-
-                await config.onAccountLinked(user, loginMethodInfo, userContext);
+                accountsLinkingResult.user = user;
             }
 
             return accountsLinkingResult;
@@ -278,50 +242,39 @@ export default function getRecipeImplementation(
         ): Promise<{
             status: "OK";
             wasRecipeUserDeleted: boolean;
+            wasLinked: boolean;
         }> {
-            if (process.env.MOCK !== "true") {
-                let accountsUnlinkingResult = await querier.sendPostRequest(
-                    new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
-                    {
-                        recipeUserId: recipeUserId.getAsString(),
-                    }
-                );
-                return accountsUnlinkingResult;
-            } else {
-                return await mockUnlinkAccount({ recipeUserId, querier });
-            }
+            let accountsUnlinkingResult = await querier.sendPostRequest(
+                new NormalisedURLPath("/recipe/accountlinking/user/unlink"),
+                {
+                    recipeUserId: recipeUserId.getAsString(),
+                }
+            );
+            return accountsUnlinkingResult;
         },
 
         getUser: async function (this: RecipeInterface, { userId }: { userId: string }): Promise<User | undefined> {
-            if (process.env.MOCK !== "true") {
-                let result = await querier.sendGetRequest(new NormalisedURLPath("/user/id"), {
-                    userId,
-                });
-                if (result.status === "OK") {
-                    return new User(result.user);
-                }
-                return undefined;
-            } else {
-                return mockGetUser({ userId });
+            let result = await querier.sendGetRequest(new NormalisedURLPath("/user/id"), {
+                userId,
+            });
+            if (result.status === "OK") {
+                return new User(result.user);
             }
+            return undefined;
         },
 
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
             { accountInfo, doUnionOfAccountInfo }: { accountInfo: AccountInfo; doUnionOfAccountInfo: boolean }
         ): Promise<UserType[]> {
-            if (process.env.MOCK !== "true") {
-                let result = await querier.sendGetRequest(new NormalisedURLPath("/users/by-accountinfo"), {
-                    email: accountInfo.email,
-                    phoneNumber: accountInfo.phoneNumber,
-                    thirdPartyId: accountInfo.thirdParty?.id,
-                    thirdPartyUserId: accountInfo.thirdParty?.userId,
-                    doUnionOfAccountInfo,
-                });
-                return result.users.map((u: any) => new User(u));
-            } else {
-                return mockListUsersByAccountInfo({ accountInfo, doUnionOfAccountInfo });
-            }
+            let result = await querier.sendGetRequest(new NormalisedURLPath("/users/by-accountinfo"), {
+                email: accountInfo.email,
+                phoneNumber: accountInfo.phoneNumber,
+                thirdPartyId: accountInfo.thirdParty?.id,
+                thirdPartyUserId: accountInfo.thirdParty?.userId,
+                doUnionOfAccountInfo,
+            });
+            return result.users.map((u: any) => new User(u));
         },
 
         deleteUser: async function (
@@ -336,14 +289,10 @@ export default function getRecipeImplementation(
         ): Promise<{
             status: "OK";
         }> {
-            if (process.env.MOCK !== "true") {
-                return await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
-                    userId,
-                    removeAllLinkedAccounts,
-                });
-            } else {
-                return await mockDeleteUser({ userId, removeAllLinkedAccounts, querier });
-            }
+            return await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
+                userId,
+                removeAllLinkedAccounts,
+            });
         },
     };
 }

@@ -75,8 +75,7 @@ export declare function getAllSessionHandlesForUser(
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
     tenantId?: string,
-    fetchAcrossAllTenants?: boolean,
-    userContext?: any
+    fetchAcrossAllTenants?: boolean
 ): Promise<string[]>;
 /**
  * @description call to destroy one session

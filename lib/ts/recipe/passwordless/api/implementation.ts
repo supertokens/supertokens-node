@@ -2,7 +2,7 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
-import { listUsersByAccountInfo } from "../../..";
+import { getUser, listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 
 export default function getAPIImplementation(): APIInterface {
@@ -43,7 +43,7 @@ export default function getAPIImplementation(): APIInterface {
                         email: deviceInfo.email,
                         phoneNumber: deviceInfo.phoneNumber,
                     },
-                    isVerified: true,
+                    isVerified: true, // TODO: should this depend on if the EV recipe is enabled?
                     userContext: input.userContext,
                 });
 
@@ -111,6 +111,16 @@ export default function getAPIImplementation(): APIInterface {
                         reason: "Cannot sign in / up due to security reasons. Please contact support.",
                     };
                 }
+
+                // we do account linking only during sign in here cause during sign up,
+                // the recipe function above does account linking for us.
+                let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                    tenantId: input.tenantId,
+                    recipeUserId: loginMethod.recipeUserId,
+                    userContext: input.userContext,
+                });
+
+                response.user = (await getUser(userId, input.userContext))!;
             }
 
             const session = await Session.createNewSession(

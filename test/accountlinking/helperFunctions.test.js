@@ -97,7 +97,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -157,7 +157,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -208,7 +208,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -257,7 +257,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -345,7 +345,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -422,7 +422,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -670,7 +670,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -714,7 +714,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -752,7 +752,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -796,7 +796,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -865,7 +865,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -936,7 +936,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -976,7 +976,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -1018,7 +1018,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -1084,7 +1084,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -1323,7 +1323,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1639,7 +1639,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, session, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldDoAutomaticAccountLinking: false,
@@ -1713,7 +1713,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, session, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldDoAutomaticAccountLinking: false,
@@ -1913,7 +1913,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1989,7 +1989,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: true,
@@ -2066,7 +2066,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2128,7 +2128,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2167,7 +2167,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -2200,7 +2200,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2239,7 +2239,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2303,7 +2303,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2386,7 +2386,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2447,7 +2447,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -2510,7 +2510,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2584,7 +2584,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2652,7 +2652,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2694,7 +2694,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -2747,7 +2747,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2821,7 +2821,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2895,7 +2895,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2964,7 +2964,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, ___, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,

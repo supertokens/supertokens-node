@@ -28,7 +28,6 @@ import supertokens from "../../supertokens";
 import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
-import { mockReset } from "./mockCore";
 import EmailVerificationRecipe from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {
@@ -128,7 +127,6 @@ export default class Recipe extends RecipeModule {
             throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;
-        mockReset();
     }
 
     // this function returns the user ID for which the session will be created.
@@ -166,7 +164,6 @@ export default class Recipe extends RecipeModule {
             // not a primary user.
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 recipeUser.loginMethods[0],
-                undefined,
                 undefined,
                 userContext
             );
@@ -213,7 +210,6 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 recipeUser.loginMethods[0],
                 primaryUser,
-                undefined,
                 userContext
             );
 
@@ -460,7 +456,6 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 accountInfo,
                 undefined,
-                undefined,
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
@@ -530,7 +525,6 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 accountInfo,
                 primaryUser,
-                undefined,
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
@@ -676,7 +670,6 @@ export default class Recipe extends RecipeModule {
                 let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                     user.loginMethods[0],
                     primaryUserForNewEmail[0],
-                    undefined,
                     input.userContext
                 );
 

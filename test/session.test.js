@@ -80,7 +80,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", "testuserid", {}, {});
             res.status(200).send("");
         });
 
@@ -110,6 +110,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
         assert(cookies.frontToken !== undefined);
+
+        let frontendInfo = JSON.parse(new Buffer.from(cookies.frontToken, "base64").toString());
+        assert.strictEqual(frontendInfo.up["rsub"], "testuserid");
     });
 
     // check if output headers and set cookies for refresh session is fine
@@ -131,7 +134,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", "testuserid", {}, {});
             res.status(200).send("");
         });
 
@@ -177,6 +180,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
         assert(cookies.frontToken !== undefined);
+
+        let frontendInfo = JSON.parse(new Buffer.from(cookies.frontToken, "base64").toString());
+        assert.strictEqual(frontendInfo.up["rsub"], "testuserid");
     });
 
     // check if input cookies are missing, an appropriate error is thrown

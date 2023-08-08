@@ -15,7 +15,6 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import type { User } from "../../types";
-import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
 
 export type TypeInput = {
@@ -23,7 +22,6 @@ export type TypeInput = {
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
-        session: SessionContainerInterface | undefined,
         userContext: any
     ) => Promise<
         | {
@@ -47,7 +45,6 @@ export type TypeNormalisedInput = {
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
-        session: SessionContainerInterface | undefined,
         userContext: any
     ) => Promise<
         | {
@@ -143,6 +140,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               accountsAlreadyLinked: boolean;
+              user: User;
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -164,6 +162,7 @@ export type RecipeInterface = {
     }) => Promise<{
         status: "OK";
         wasRecipeUserDeleted: boolean;
+        wasLinked: boolean;
     }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {

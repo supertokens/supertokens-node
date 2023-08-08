@@ -22,16 +22,6 @@ import { Helpers, JWKCacheMaxAgeInMs } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
 import RecipeUserId from "../../recipeUserId";
-import {
-    mockGetRefreshAPIResponse,
-    mockCreateNewSession,
-    mockGetSession,
-    mockGetAllSessionHandlesForUser,
-    mockGetSessionInformation,
-    mockRevokeAllSessionsForUser,
-    mockUpdateAccessTokenPayload,
-    mockRevokeSession,
-} from "./mockCore";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 
 /**
@@ -56,15 +46,10 @@ export async function createNewSession(
         useDynamicSigningKey: helpers.config.useDynamicAccessTokenSigningKey,
         enableAntiCsrf: !disableAntiCsrf && helpers.config.antiCsrf === "VIA_TOKEN",
     };
-    let response;
-    if (process.env.MOCK !== "true") {
-        response = await helpers.querier.sendPostRequest(
-            new NormalisedURLPath(`/${tenantId}/recipe/session`),
-            requestBody
-        );
-    } else {
-        response = await mockCreateNewSession(requestBody, helpers.querier);
-    }
+    let response = await helpers.querier.sendPostRequest(
+        new NormalisedURLPath(`/${tenantId}/recipe/session`),
+        requestBody
+    );
 
     return {
         session: {
@@ -246,12 +231,8 @@ export async function getSession(
         checkDatabase: alwaysCheckCore,
     };
 
-    let response;
-    if (process.env.MOCK !== "true") {
-        response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
-    } else {
-        response = await mockGetSession(requestBody, helpers.querier);
-    }
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
+
     if (response.status === "OK") {
         delete response.status;
         return {
@@ -296,14 +277,9 @@ export async function getSessionInformation(
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");
     }
-    let response;
-    if (process.env.MOCK !== "true") {
-        response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/recipe/session`), {
-            sessionHandle,
-        });
-    } else {
-        response = await mockGetSessionInformation(sessionHandle, helpers.querier);
-    }
+    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/recipe/session`), {
+        sessionHandle,
+    });
 
     if (response.status === "OK") {
         // Change keys to make them more readable
@@ -348,12 +324,8 @@ export async function refreshSession(
         throw new Error("Please either use VIA_TOKEN, NONE or call with doAntiCsrfCheck false");
     }
 
-    let response;
-    if (process.env.MOCK !== "true") {
-        response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
-    } else {
-        response = await mockGetRefreshAPIResponse(requestBody, helpers.querier);
-    }
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
+
     if (response.status === "OK") {
         return {
             session: {
@@ -409,23 +381,12 @@ export async function revokeAllSessionsForUser(
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
     }
-    if (process.env.MOCK !== "true") {
-        let response = await helpers.querier.sendPostRequest(
-            new NormalisedURLPath(`/${tenantId}/recipe/session/remove`),
-            {
-                userId,
-                revokeSessionsForLinkedAccounts,
-                revokeAcrossAllTenants,
-            }
-        );
-        return response.sessionHandlesRevoked;
-    } else {
-        return await mockRevokeAllSessionsForUser({
-            userId,
-            revokeSessionsForLinkedAccounts,
-            querier: helpers.querier,
-        });
-    }
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/remove`), {
+        userId,
+        revokeSessionsForLinkedAccounts,
+        revokeAcrossAllTenants,
+    });
+    return response.sessionHandlesRevoked;
 }
 
 /**
@@ -436,22 +397,17 @@ export async function getAllSessionHandlesForUser(
     userId: string,
     fetchSessionsForAllLinkedAccounts: boolean,
     tenantId?: string,
-    fetchAcrossAllTenants?: boolean,
-    userContext?: any
+    fetchAcrossAllTenants?: boolean
 ): Promise<string[]> {
     if (tenantId === undefined) {
         tenantId = DEFAULT_TENANT_ID;
     }
-    if (process.env.MOCK !== "true" || (userContext !== undefined && userContext.doNotMock === true)) {
-        let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/user`), {
-            userId,
-            fetchSessionsForAllLinkedAccounts,
-            fetchAcrossAllTenants,
-        });
-        return response.sessionHandles;
-    } else {
-        return await mockGetAllSessionHandlesForUser({ userId, fetchSessionsForAllLinkedAccounts });
-    }
+    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath(`/${tenantId}/recipe/session/user`), {
+        userId,
+        fetchSessionsForAllLinkedAccounts,
+        fetchAcrossAllTenants,
+    });
+    return response.sessionHandles;
 }
 
 /**
@@ -459,14 +415,10 @@ export async function getAllSessionHandlesForUser(
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
 export async function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean> {
-    if (process.env.MOCK !== "true") {
-        let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
-            sessionHandles: [sessionHandle],
-        });
-        return response.sessionHandlesRevoked.length === 1;
-    } else {
-        return await mockRevokeSession(sessionHandle, helpers.querier);
-    }
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+        sessionHandles: [sessionHandle],
+    });
+    return response.sessionHandlesRevoked.length === 1;
 }
 
 /**
@@ -506,16 +458,12 @@ export async function updateAccessTokenPayload(
 ): Promise<boolean> {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-    if (process.env.MOCK !== "true") {
-        let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
-            sessionHandle,
-            userDataInJWT: newAccessTokenPayload,
-        });
-        if (response.status === "UNAUTHORISED") {
-            return false;
-        }
-        return true;
-    } else {
-        return await mockUpdateAccessTokenPayload(sessionHandle, newAccessTokenPayload, helpers.querier);
+    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+        sessionHandle,
+        userDataInJWT: newAccessTokenPayload,
+    });
+    if (response.status === "UNAUTHORISED") {
+        return false;
     }
+    return true;
 }

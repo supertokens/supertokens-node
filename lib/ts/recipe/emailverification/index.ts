@@ -31,7 +31,7 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext: any = {}
     ): Promise<
         | {
               status: "OK";
@@ -62,7 +62,7 @@ export default class Wrapper {
             recipeUserId,
             email: email!,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
@@ -70,7 +70,7 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext: any = {}
     ): Promise<
         | {
               status: "OK";
@@ -104,7 +104,7 @@ export default class Wrapper {
         userId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext: any = {}
     ): Promise<
         | {
               status: "OK";
@@ -154,17 +154,17 @@ export default class Wrapper {
         tenantId: string,
         token: string,
         attemptAccountLinking: boolean = true,
-        userContext?: any
+        userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
             token,
             tenantId,
             attemptAccountLinking,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext?: any) {
+    static async isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
         if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
             // This is there cause for tests, we pass in a string in most tests.
             recipeUserId = new RecipeUserId(recipeUserId);
@@ -185,7 +185,7 @@ export default class Wrapper {
         return await recipeInstance.recipeInterfaceImpl.isEmailVerified({
             recipeUserId,
             email,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
@@ -193,7 +193,7 @@ export default class Wrapper {
         tenantId: string,
         recipeUserId: RecipeUserId,
         email?: string,
-        userContext?: any
+        userContext: any = {}
     ) {
         if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
             // This is there cause for tests, we pass in a string in most tests.
@@ -223,11 +223,11 @@ export default class Wrapper {
             recipeUserId,
             email: email!,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async unverifyEmail(recipeUserId: RecipeUserId, email?: string, userContext?: any) {
+    static async unverifyEmail(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
         if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
             // This is there cause for tests, we pass in a string in most tests.
             recipeUserId = new RecipeUserId(recipeUserId);
@@ -249,16 +249,15 @@ export default class Wrapper {
         return await recipeInstance.recipeInterfaceImpl.unverifyEmail({
             recipeUserId,
             email,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
     static async sendEmail(input: TypeEmailVerificationEmailDeliveryInput & { userContext?: any }) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
-            userContext: {},
             ...input,
-            tenantId: input.tenantId,
+            userContext: input.userContext ?? {},
         });
     }
 }

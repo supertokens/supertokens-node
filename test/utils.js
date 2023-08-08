@@ -40,6 +40,7 @@ const { wrapRequest } = require("../framework/express");
 const { join } = require("path");
 
 const users = require("./users.json");
+let assert = require("assert");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -324,6 +325,35 @@ module.exports.startSTWithMultitenancy = async function (host = "localhost", por
             licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
         }),
     });
+};
+
+module.exports.removeAppAndTenants = async function (appId) {
+    const tenantsResp = await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/list`);
+    if (tenantsResp.status === 200) {
+        const tenants = (await tenantsResp.json()).tenants;
+        for (const t of tenants) {
+            if (t.tenantId !== "public") {
+                await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/remove`, {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json; charset=utf-8",
+                    },
+                    body: JSON.stringify({
+                        tenantId: t.tenantId,
+                    }),
+                });
+            }
+        }
+        await fetch(`http://localhost:8080/recipe/multitenancy/app/remove`, {
+            method: "POST",
+            headers: {
+                "content-type": "application/json; charset=utf-8",
+            },
+            body: JSON.stringify({
+                appId: `${appId}`,
+            }),
+        });
+    }
 };
 
 async function getListOfPids() {
@@ -642,4 +672,8 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
             await thirdparty.manuallyCreateOrUpdateUser("public", user.provider, user.userId, user.email);
         }
     }
+};
+
+module.exports.assertJSONEquals = (actual, expected) => {
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(actual)), JSON.parse(JSON.stringify(expected)));
 };

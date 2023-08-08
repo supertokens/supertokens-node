@@ -56,11 +56,21 @@ export default function getRecipeInterface(
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",
                 };
-            } else if (user.loginMethods.every((m) => m.recipeId !== "passwordless")) {
+            }
+            let inputUserIdIsPointingToPasswordlessUser =
+                user.loginMethods.find((lM) => {
+                    return (
+                        lM.recipeId === "passwordless" &&
+                        lM.recipeUserId.getAsString() === input.recipeUserId.getAsString()
+                    );
+                }) !== undefined;
+
+            if (!inputUserIdIsPointingToPasswordlessUser) {
                 throw new Error(
-                    "Cannot update passwordless user info for those who signed up using third party login."
+                    "Cannot update a user who signed up using third party login using updatePasswordlessUser."
                 );
             }
+
             return originalPasswordlessImplementation.updateUser.bind(DerivedPwdless(this))(input);
         },
 

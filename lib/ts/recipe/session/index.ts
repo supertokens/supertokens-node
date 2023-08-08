@@ -222,7 +222,7 @@ export default class SessionWrapper {
             recipeInterfaceImpl,
             config,
             options,
-            userContext,
+            userContext, // userContext is normalized inside the function
         });
     }
 
