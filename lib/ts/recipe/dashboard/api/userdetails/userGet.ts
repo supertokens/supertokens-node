@@ -43,7 +43,7 @@ export const userGet: APIFunction = async (
         return {
             status: "OK",
             user: {
-                ...user,
+                ...user.toJson(),
                 firstName: "FEATURE_NOT_ENABLED",
                 lastName: "FEATURE_NOT_ENABLED",
             },

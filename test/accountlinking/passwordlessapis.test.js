@@ -497,12 +497,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     b.accountLinking.enabled ? "enabled" : "disabled"
                 } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
 
-                (b.only
-                    ? it.only
-                    : it)(
-                    `should return status: ${b.expect.status} if ${otherUserSegment} with ${accountLinkingSegment}`,
-                    () => getCreateCodeTestCase(b)
-                );
+                // (b.only ? it.only : it)
+                it(`should return status: ${b.expect.status} if ${otherUserSegment} with ${accountLinkingSegment}`, () =>
+                    getCreateCodeTestCase(b));
             }
         });
 
@@ -518,12 +515,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     b.accountLinking.enabled ? "enabled" : "disabled"
                 } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
 
-                (b.only ? it.only : it)(
-                    `should return status: ${b.expect.status} for a ${
-                        b.pwlessUser.linked ? "primary" : "not-linked"
-                    } user if ${otherUserSegment} with ${accountLinkingSegment}`,
-                    () => getCreateCodeTestCase(b)
-                );
+                // (b.only ? it.only : it)(
+                it(`should return status: ${b.expect.status} for a ${
+                    b.pwlessUser.linked ? "primary" : "not-linked"
+                } user if ${otherUserSegment} with ${accountLinkingSegment}`, () => getCreateCodeTestCase(b));
             }
         });
     });
