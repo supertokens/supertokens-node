@@ -21,6 +21,7 @@ const {
     cleanST,
     resetAll,
     extractInfoFromResponse,
+    assertJSONEquals,
 } = require("../utils");
 let supertokens = require("../..");
 let Session = require("../../recipe/session");
@@ -126,14 +127,95 @@ const consumeCodeBehaviours = [
     {
         pwlessUser: undefined,
         otherRecipeUser: { verified: true, primary: true },
+        accountLinking: { enabled: false },
+        expect: { status: "OK", isPrimary: false, userId: "self" },
+    },
+    {
+        pwlessUser: undefined,
+        otherRecipeUser: { verified: true, primary: false },
+        accountLinking: { enabled: false },
+        expect: { status: "OK", isPrimary: false, userId: "self" },
+    },
+    {
+        pwlessUser: { exists: true, linked: true },
+        otherRecipeUser: { verified: true, primary: true },
+        accountLinking: { enabled: false },
+        expect: { status: "OK", isPrimary: true, userId: "other" },
+    },
+    {
+        pwlessUser: { exists: true, linked: false },
+        otherRecipeUser: { verified: true, primary: false },
+        accountLinking: { enabled: false },
+        expect: { status: "OK", isPrimary: false, userId: "self" },
+    },
+
+    {
+        pwlessUser: undefined,
+        otherRecipeUser: { verified: true, primary: true },
         accountLinking: { enabled: true, requiresVerification: true },
-        expect: { status: "OK", isPrimary: true },
+        expect: { status: "OK", isPrimary: true, userId: "other" },
+    },
+    {
+        pwlessUser: undefined,
+        otherRecipeUser: { verified: true, primary: false },
+        accountLinking: { enabled: true, requiresVerification: true },
+        expect: { status: "OK", isPrimary: true, userId: "self" },
+    },
+    {
+        pwlessUser: { exists: true, linked: false },
+        otherRecipeUser: { verified: true, primary: false },
+        accountLinking: { enabled: true, requiresVerification: true },
+        expect: { status: "OK", isPrimary: true, userId: "self" },
     },
     {
         pwlessUser: { exists: true, linked: true },
         otherRecipeUser: { verified: true, primary: true },
         accountLinking: { enabled: true, requiresVerification: true },
         expect: { status: "OK", isPrimary: true, userId: "other" },
+    },
+
+    {
+        pwlessUser: undefined,
+        otherRecipeUser: undefined,
+        accountLinking: { enabled: true, requiresVerification: true },
+        expect: { status: "OK", isPrimary: true, userId: "self" },
+    },
+    {
+        pwlessUser: undefined,
+        otherRecipeUser: undefined,
+        accountLinking: { enabled: true, requiresVerification: true },
+        expect: { status: "OK", isPrimary: true, userId: "self" },
+    },
+    {
+        pwlessUser: { exists: true, linked: false },
+        otherRecipeUser: undefined,
+        accountLinking: { enabled: true, requiresVerification: true },
+        expect: { status: "OK", isPrimary: true, userId: "self" },
+    },
+    {
+        pwlessUser: { exists: true, linked: true },
+        otherRecipeUser: undefined,
+        accountLinking: { enabled: true, requiresVerification: true },
+        expect: { status: "OK", isPrimary: true, userId: "self" },
+    },
+
+    {
+        pwlessUser: undefined,
+        otherRecipeUser: undefined,
+        accountLinking: { enabled: false },
+        expect: { status: "OK", isPrimary: false, userId: "self" },
+    },
+    {
+        pwlessUser: { exists: true, linked: false },
+        otherRecipeUser: undefined,
+        accountLinking: { enabled: false },
+        expect: { status: "OK", isPrimary: false, userId: "self" },
+    },
+    {
+        pwlessUser: { exists: true, linked: true },
+        otherRecipeUser: undefined,
+        accountLinking: { enabled: false },
+        expect: { status: "OK", isPrimary: true, userId: "self" },
     },
 ];
 
@@ -438,11 +520,243 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
 
                 (b.only ? it.only : it)(
                     `should return status: ${b.expect.status} for a ${
-                        b.pwlessUser.primary ? "primary" : "not-linked"
+                        b.pwlessUser.linked ? "primary" : "not-linked"
                     } user if ${otherUserSegment} with ${accountLinkingSegment}`,
                     () => getCreateCodeTestCase(b)
                 );
             }
+        });
+    });
+
+    describe("createCodePOST tests", function () {
+        describe("signup", () => {
+            for (const b of consumeCodeBehaviours.filter((b) => b.pwlessUser === undefined)) {
+                const otherUserSegment =
+                    b.otherRecipeUser === undefined
+                        ? "there is no other user with the same email"
+                        : `a non-pwless ${b.otherRecipeUser.primary ? "primary" : "non-primary"} ${
+                              b.otherRecipeUser.verified ? "verified" : "non-verified"
+                          } user exists with the same email`;
+                const accountLinkingSegment = `account linking ${
+                    b.accountLinking.enabled ? "enabled" : "disabled"
+                } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
+
+                (b.only
+                    ? it.only
+                    : it)(
+                    `should return status: ${b.expect.status} if ${otherUserSegment} with ${accountLinkingSegment}`,
+                    () => getConsumeCodeTestCase(b)
+                );
+            }
+        });
+
+        describe("signin", () => {
+            for (const b of consumeCodeBehaviours.filter((b) => b.pwlessUser !== undefined)) {
+                const otherUserSegment =
+                    b.otherRecipeUser === undefined
+                        ? "there is no other user with the same email"
+                        : `a non-pwless ${b.otherRecipeUser.primary ? "primary" : "non-primary"} ${
+                              b.otherRecipeUser.verified ? "verified" : "non-verified"
+                          } user exists with the same email`;
+                const accountLinkingSegment = `account linking ${
+                    b.accountLinking.enabled ? "enabled" : "disabled"
+                } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
+
+                (b.only ? it.only : it)(
+                    `should return status: ${b.expect.status} for a ${
+                        b.pwlessUser.linked ? "primary" : "not-linked"
+                    } user if ${otherUserSegment} with ${accountLinkingSegment}`,
+                    () => getConsumeCodeTestCase(b)
+                );
+            }
+        });
+
+        describe("SIGN_IN_UP_NOT_ALLOWED", () => {
+            it("should be returned if another (non-primary, unverified) user signs up after the code was created for a pwless sign up", async () => {
+                await startST();
+                supertokens.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Passwordless.init({
+                            contactMethod: "EMAIL_OR_PHONE",
+                            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                            createAndSendCustomTextMessage: (input) => {
+                                return;
+                            },
+                            createAndSendCustomEmail: (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        }),
+                        Session.init(),
+                        ThirdParty.init({
+                            signInAndUpFeature: {
+                                providers: [
+                                    {
+                                        config: {
+                                            thirdPartyId: "google",
+                                            clients: [
+                                                {
+                                                    clientId: "",
+                                                    clientSecret: "",
+                                                },
+                                            ],
+                                        },
+                                    },
+                                ],
+                            },
+                        }),
+                        EmailVerification.init({
+                            mode: "REQUIRED",
+                        }),
+                        AccountLinking.init({
+                            shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
+                                if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
+                                    return {
+                                        shouldAutomaticallyLink: false,
+                                    };
+                                }
+                                return {
+                                    shouldAutomaticallyLink: true,
+                                    shouldRequireVerification: true,
+                                };
+                            },
+                        }),
+                    ],
+                });
+
+                const app = express();
+                app.use(middleware());
+                app.use(errorHandler());
+
+                const email = `test-${Date.now()}@example.com`;
+
+                let tpUser;
+
+                const code = await Passwordless.createCode({ tenantId: "public", email });
+
+                tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc" + Date.now(),
+                    email,
+                    false,
+                    {
+                        doNotLink: true,
+                    }
+                );
+
+                assert.strictEqual(tpUser.status, "OK");
+
+                let consumeCodeResponse = await request(app).post("/auth/signinup/code/consume").send({
+                    preAuthSessionId: code.preAuthSessionId,
+                    deviceId: code.deviceId,
+                    userInputCode: code.userInputCode,
+                });
+
+                assert.strictEqual(consumeCodeResponse.body.status, "SIGN_IN_UP_NOT_ALLOWED");
+            });
+
+            it("should be returned if another (primary, unverified) user signs up after the code was created for a pwless sign up", async () => {
+                await startST();
+                supertokens.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Passwordless.init({
+                            contactMethod: "EMAIL_OR_PHONE",
+                            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                            createAndSendCustomTextMessage: (input) => {
+                                return;
+                            },
+                            createAndSendCustomEmail: (input) => {
+                                userInputCode = input.userInputCode;
+                                return;
+                            },
+                        }),
+                        Session.init(),
+                        ThirdParty.init({
+                            signInAndUpFeature: {
+                                providers: [
+                                    {
+                                        config: {
+                                            thirdPartyId: "google",
+                                            clients: [
+                                                {
+                                                    clientId: "",
+                                                    clientSecret: "",
+                                                },
+                                            ],
+                                        },
+                                    },
+                                ],
+                            },
+                        }),
+                        EmailVerification.init({
+                            mode: "REQUIRED",
+                        }),
+                        AccountLinking.init({
+                            shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
+                                if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
+                                    return {
+                                        shouldAutomaticallyLink: false,
+                                    };
+                                }
+                                return {
+                                    shouldAutomaticallyLink: true,
+                                    shouldRequireVerification: true,
+                                };
+                            },
+                        }),
+                    ],
+                });
+
+                const app = express();
+                app.use(middleware());
+                app.use(errorHandler());
+
+                const email = `test-${Date.now()}@example.com`;
+
+                let tpUser;
+
+                const code = await Passwordless.createCode({ tenantId: "public", email });
+
+                tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+                    "public",
+                    "google",
+                    "abc" + Date.now(),
+                    email,
+                    false,
+                    {
+                        doNotLink: true,
+                    }
+                );
+
+                assert.strictEqual(tpUser.status, "OK");
+                const resp = await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+                assert.strictEqual(resp.status, "OK");
+
+                let consumeCodeResponse = await request(app).post("/auth/signinup/code/consume").send({
+                    preAuthSessionId: code.preAuthSessionId,
+                    deviceId: code.deviceId,
+                    userInputCode: code.userInputCode,
+                });
+
+                assert.strictEqual(consumeCodeResponse.body.status, "SIGN_IN_UP_NOT_ALLOWED");
+            });
         });
     });
 });
@@ -582,4 +896,143 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
     );
     assert.notEqual(createCodeResponse, undefined);
     assert.strictEqual(createCodeResponse.status, expect.status);
+}
+
+async function getConsumeCodeTestCase({ pwlessUser, otherRecipeUser, accountLinking, expect }) {
+    await startST();
+    supertokens.init({
+        supertokens: {
+            connectionURI: "http://localhost:8080",
+        },
+        appInfo: {
+            apiDomain: "api.supertokens.io",
+            appName: "SuperTokens",
+            websiteDomain: "supertokens.io",
+        },
+        recipeList: [
+            Passwordless.init({
+                contactMethod: "EMAIL_OR_PHONE",
+                flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                createAndSendCustomTextMessage: (input) => {
+                    return;
+                },
+                createAndSendCustomEmail: (input) => {
+                    userInputCode = input.userInputCode;
+                    return;
+                },
+            }),
+            Session.init(),
+            ThirdParty.init({
+                signInAndUpFeature: {
+                    providers: [
+                        {
+                            config: {
+                                thirdPartyId: "google",
+                                clients: [
+                                    {
+                                        clientId: "",
+                                        clientSecret: "",
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            }),
+            EmailVerification.init({
+                mode: "REQUIRED",
+            }),
+            AccountLinking.init({
+                shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
+                    if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
+                        return {
+                            shouldAutomaticallyLink: false,
+                        };
+                    }
+                    return {
+                        shouldAutomaticallyLink: accountLinking.enabled,
+                        shouldRequireVerification: accountLinking.requiresVerification,
+                    };
+                },
+            }),
+        ],
+    });
+
+    const app = express();
+    app.use(middleware());
+    app.use(errorHandler());
+
+    const email = `test-${Date.now()}@example.com`;
+
+    let tpUser;
+    if (otherRecipeUser) {
+        tpUser = await ThirdParty.manuallyCreateOrUpdateUser(
+            "public",
+            "google",
+            "abc" + Date.now(),
+            email,
+            otherRecipeUser.verified,
+            {
+                doNotLink: !otherRecipeUser.primary,
+            }
+        );
+
+        assert.strictEqual(tpUser.status, "OK");
+        if (otherRecipeUser.primary) {
+            const resp = await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
+            assert.strictEqual(resp.status, "OK");
+        }
+    }
+
+    if (pwlessUser?.exists === true) {
+        const code = await Passwordless.createCode({ tenantId: "public", email });
+        assert.strictEqual(code.status, "OK");
+        const consumeResp = await Passwordless.consumeCode(
+            {
+                tenantId: "public",
+                preAuthSessionId: code.preAuthSessionId,
+                deviceId: code.deviceId,
+                userInputCode: code.userInputCode,
+            },
+            {
+                doNotLink: pwlessUser.linked !== true,
+            }
+        );
+        assert.strictEqual(consumeResp.status, "OK");
+        if (pwlessUser.linked === true) {
+            if (tpUser) {
+                const linkResp = await AccountLinking.linkAccounts(
+                    "public",
+                    consumeResp.user.loginMethods[0].recipeUserId,
+                    tpUser.user.id
+                );
+                assert.strictEqual(linkResp.status, "OK");
+            } else {
+                const primResp = await AccountLinking.createPrimaryUser(consumeResp.user.loginMethods[0].recipeUserId);
+                assert.strictEqual(primResp.status, "OK");
+            }
+        }
+    }
+
+    const code = await Passwordless.createCode({ tenantId: "public", email });
+
+    let consumeCodeResponse = await request(app).post("/auth/signinup/code/consume").send({
+        preAuthSessionId: code.preAuthSessionId,
+        deviceId: code.deviceId,
+        userInputCode: code.userInputCode,
+    });
+
+    assert.strictEqual(consumeCodeResponse.body.status, expect.status);
+    if (expect.status === "OK") {
+        const user = consumeCodeResponse.body.user;
+        const userFromGetUser = await supertokens.getUser(user.id);
+
+        assertJSONEquals(user, userFromGetUser.toJson());
+        assert.strictEqual(user.isPrimaryUser, expect.isPrimary);
+        if (expect.userId === "other") {
+            assert.strictEqual(user.id, tpUser.user.id);
+        } else if (tpUser !== undefined) {
+            assert.notStrictEqual(user.id, tpUser.user.id);
+        }
+    }
 }
