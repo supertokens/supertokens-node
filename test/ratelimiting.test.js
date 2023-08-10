@@ -52,6 +52,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         let numbersOfTimesRetried = 0;
         let numberOfTimesSecondCalled = 0;
+        let numberOfTimesThirdCalled = 0;
 
         const app = express();
 
@@ -70,6 +71,11 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
             }
 
             return res.status(RateLimitedStatus).json({});
+        });
+
+        app.get("/testing3", async (_, res, __) => {
+            numberOfTimesThirdCalled++;
+            return res.status(200).json({});
         });
 
         app.use(errorHandler());
@@ -91,6 +97,9 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
 
         await q.sendGetRequest(new NormalisedURLPath("/testing2"), {});
         assert.equal(numberOfTimesSecondCalled, 3);
+
+        await q.sendGetRequest(new NormalisedURLPath("/testing3"), {});
+        assert.equal(numberOfTimesThirdCalled, 1);
 
         server.close();
     });
