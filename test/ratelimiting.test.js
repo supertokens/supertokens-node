@@ -81,7 +81,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
         try {
             await q.sendGetRequest(new NormalisedURLPath("/testing"), {});
         } catch (e) {
-            if (e.status !== 429) {
+            if (!e.message.includes("with status code: 429")) {
                 throw e;
             }
         }
@@ -139,12 +139,11 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
         try {
             await q.sendGetRequest(new NormalisedURLPath("/testing"), {});
         } catch (e) {
-            if (e.status !== 429) {
+            if (!e.message.includes("with status code: 429")) {
                 throw e;
             }
 
-            const body = await e.json();
-            assert.strictEqual(body.status, "RATE_ERROR");
+            assert.equal(e.message.includes('message: {"status":"RATE_ERROR"}'), true);
         }
 
         server.close();
@@ -201,7 +200,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
             try {
                 await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "1" });
             } catch (e) {
-                if (e.status !== 429) {
+                if (!e.message.includes("with status code: 429")) {
                     throw e;
                 }
             }
@@ -211,7 +210,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
             try {
                 await q.sendGetRequest(new NormalisedURLPath("/testing"), { id: "2" });
             } catch (e) {
-                if (e.status !== 429) {
+                if (!e.message.includes("with status code: 429")) {
                     throw e;
                 }
             }

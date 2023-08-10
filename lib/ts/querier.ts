@@ -32,7 +32,6 @@ export class Querier {
 
     private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined;
     private rIdToCore: string | undefined;
-    private retryInfo: Record<string, Record<string, number>> = {};
 
     // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
     // to support multiple rIds per API
@@ -266,7 +265,7 @@ export class Querier {
         method: string,
         requestFunc: (url: string) => Promise<Response>,
         numberOfTries: number,
-        requestId?: string
+        retryInfoMap?: Record<string, number>
     ): Promise<any> => {
         if (this.__hosts === undefined) {
             throw Error(
@@ -279,6 +278,16 @@ export class Querier {
         let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
         const url = currentDomain + currentBasePath + path.getAsStringDangerous();
+        const maxRetries = 5;
+
+        if (retryInfoMap === undefined) {
+            retryInfoMap = {};
+        }
+
+        if (retryInfoMap[url] === undefined) {
+            retryInfoMap[url] = maxRetries;
+        }
+
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
@@ -299,78 +308,38 @@ export class Querier {
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") || err.message.includes("ECONNREFUSED"))
             ) {
-                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1, requestId);
+                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1, retryInfoMap);
             }
 
             if (err instanceof Response) {
                 if (err.status === RATE_LIMIT_STATUS_CODE) {
-                    const _requestId =
-                        requestId === undefined ? this.generateRequestId(path.getAsStringDangerous()) : requestId;
-                    const host = currentDomain + currentBasePath;
+                    const retriesLeft = retryInfoMap[url];
 
-                    const retryInfoForHost = this.retryInfo[host];
-                    const maxRetries = 5;
-
-                    let retriesLeft = maxRetries;
-
-                    if (retryInfoForHost !== undefined) {
-                        let retriesForId = retryInfoForHost[_requestId];
-
-                        if (retriesForId !== undefined) {
-                            retriesLeft = retriesForId;
-                        }
-                    }
-
-                    if (retriesLeft === 0) {
-                        delete this.retryInfo[host][_requestId];
-                        // We dont need to throw here because it will fall through to the final throw at the end of the function
-                    } else {
-                        if (retryInfoForHost === undefined) {
-                            this.retryInfo[host] = {};
-                        }
-                        this.retryInfo[host][_requestId] = retriesLeft - 1;
+                    if (retriesLeft > 0) {
+                        retryInfoMap[url] = retriesLeft - 1;
 
                         const attemptsMade = maxRetries - retriesLeft;
                         const delay = 10 + 250 * attemptsMade;
 
                         await new Promise((resolve) => setTimeout(resolve, delay));
 
-                        return await this.sendRequestHelper(path, method, requestFunc, numberOfTries, _requestId);
+                        return await this.sendRequestHelper(path, method, requestFunc, numberOfTries, retryInfoMap);
                     }
-                } else {
-                    throw new Error(
-                        "SuperTokens core threw an error for a " +
-                            method +
-                            " request to path: '" +
-                            path.getAsStringDangerous() +
-                            "' with status code: " +
-                            err.status +
-                            " and message: " +
-                            (await err.text())
-                    );
                 }
+
+                throw new Error(
+                    "SuperTokens core threw an error for a " +
+                        method +
+                        " request to path: '" +
+                        path.getAsStringDangerous() +
+                        "' with status code: " +
+                        err.status +
+                        " and message: " +
+                        (await err.text())
+                );
             }
 
             throw err;
         }
-    };
-
-    private generateRequestId = (path: string): string => {
-        let characters = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-        let numbers = "0123456789";
-        let randomString = "";
-        let randomNumberString = "";
-
-        for (let i = 0; i < 5; i++) {
-            let randdomNumber = Math.floor(Math.random() * characters.length);
-            randomString += characters.substring(randdomNumber, randdomNumber + 1);
-        }
-
-        for (let i = 0; i < 5; i++) {
-            let randdomNumber = Math.floor(Math.random() * numbers.length);
-            randomNumberString += numbers.substring(randdomNumber, randdomNumber + 1);
-        }
-
-        return [randomString, randomNumberString, path].join(".");
     };
 }

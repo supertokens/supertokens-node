@@ -10,7 +10,6 @@ export declare class Querier {
     private static hostsAliveForTesting;
     private __hosts;
     private rIdToCore;
-    private retryInfo;
     private constructor();
     getAPIVersion: () => Promise<string>;
     static reset(): void;
@@ -32,5 +31,4 @@ export declare class Querier {
     sendPutRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;
-    private generateRequestId;
 }
