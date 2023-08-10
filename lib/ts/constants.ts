@@ -15,3 +15,4 @@
 
 export const HEADER_RID = "rid";
 export const HEADER_FDI = "fdi-version";
+export const RATE_LIMIT_STATUS_CODE = 429;
