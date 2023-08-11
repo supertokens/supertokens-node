@@ -108,7 +108,7 @@ export default function getAPIInterface(): APIInterface {
             const stateInBase64 = formPostInfoFromProvider.state;
             const state = Buffer.from(stateInBase64, "base64").toString();
             const stateObj = JSON.parse(state);
-            const redirectURI = stateObj.redirectURI;
+            const redirectURI = stateObj.frontendRedirectURI;
 
             const urlObj = new URL(redirectURI);
             for (const [key, value] of Object.entries(formPostInfoFromProvider)) {
