@@ -19,6 +19,7 @@ import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
+import { RATE_LIMIT_STATUS_CODE } from "./constants";
 
 export class Querier {
     private static initCalled = false;
@@ -303,8 +304,9 @@ export class Querier {
         path: NormalisedURLPath,
         method: string,
         requestFunc: (url: string) => Promise<Response>,
-        numberOfTries: number
-    ): Promise<{ body: any; headers: Headers }> => {
+        numberOfTries: number,
+        retryInfoMap?: Record<string, number>
+    ): Promise<any> => {
         if (this.__hosts === undefined) {
             throw Error(
                 "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
@@ -316,6 +318,16 @@ export class Querier {
         let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
         const url = currentDomain + currentBasePath + path.getAsStringDangerous();
+        const maxRetries = 5;
+
+        if (retryInfoMap === undefined) {
+            retryInfoMap = {};
+        }
+
+        if (retryInfoMap[url] === undefined) {
+            retryInfoMap[url] = maxRetries;
+        }
+
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
@@ -336,9 +348,25 @@ export class Querier {
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") || err.message.includes("ECONNREFUSED"))
             ) {
-                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1);
+                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1, retryInfoMap);
             }
+
             if (err instanceof Response) {
+                if (err.status === RATE_LIMIT_STATUS_CODE) {
+                    const retriesLeft = retryInfoMap[url];
+
+                    if (retriesLeft > 0) {
+                        retryInfoMap[url] = retriesLeft - 1;
+
+                        const attemptsMade = maxRetries - retriesLeft;
+                        const delay = 10 + 250 * attemptsMade;
+
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+
+                        return await this.sendRequestHelper(path, method, requestFunc, numberOfTries, retryInfoMap);
+                    }
+                }
+
                 throw new Error(
                     "SuperTokens core threw an error for a " +
                         method +
@@ -349,9 +377,9 @@ export class Querier {
                         " and message: " +
                         (await err.text())
                 );
-            } else {
-                throw err;
             }
+
+            throw err;
         }
     };
 }

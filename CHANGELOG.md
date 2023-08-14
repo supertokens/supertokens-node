@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-## [15.1.0] - 2023-08-07
+## [15.1.0] - 2023-08-14
 
 ### Changes
 
@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   This can be used to control the `Cache-Control` header mentioned above.
     -   It defaults to `60` or the value set in the cache-control header returned by the core
     -   This is optional (so you are not required to update your overrides). Returning undefined means that the header is not set.
+
+## [15.0.4] - 2023-08-11
+
+-   Fixes apple redirect
+
+## [15.0.3] - 2023-08-10
+
+-   Adds logic to retry network calls if the core returns status 429
 
 ## [15.0.2] - 2023-07-31
 
@@ -92,7 +100,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Passwordless recipe changes:
     -   Added `tenantId` param to `validateEmailAddress`, `validatePhoneNumber` and `getCustomUserInputCode` functions in `TypeInput`
     -   Added mandatory `tenantId` field to `TypePasswordlessEmailDeliveryInput` and `TypePasswordlessSmsDeliveryInput`
-    -   The providers array in `TypeInput` accepts `[]ProviderInput` instead of `[]TypeProvider`. TypeProvider interface is re-written. Refer migration section for more info.
     -   Added mandatory `tenantId` in the input to the following recipe index functions:
         -   `createCode`
         -   `createNewCodeForDevice`
@@ -124,6 +131,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `emailExistsGET`
         -   `phoneNumberExistsGET`
 -   ThirdParty recipe changes
+    -   The providers array in `signInUpFeature` accepts `[]ProviderInput` instead of `[]TypeProvider`. TypeProvider interface is re-written. Refer migration section for more info.
     -   Removed `signInUp` and added `manuallyCreateOrUpdateUser` instead in the recipe index functions.
     -   Added `manuallyCreateOrUpdateUser` to recipe interface which is being called by the function mentioned above.
         -   `manuallyCreateOrUpdateUser` recipe interface function should not be overridden as it is not going to be called by the SDK in the sign in/up flow.
@@ -232,14 +240,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     };
     ```
 
--   Single instance with multiple clients of each provider instead of multiple instances of them. Also use `clientType` to differentiate them. `clientType` passed from the frontend will be used to determine the right config.
-
+-   Single instance with multiple clients of each provider instead of multiple instances of them. Also use `clientType` to differentiate them. `clientType` passed from the frontend will be used to determine the right config. `isDefault` option has been removed and `clientType` is expected to be passed when there are more than one client. If there is only one client, `clientType` is optional and will be used by default.
 
     Before:
 
     ```ts
     let providers = [
         thirdParty.Google({
+            isDefault: true,
             clientID: "clientid1",
             clientSecret: "...",
         }),

@@ -492,9 +492,9 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 handler: nextApiHandlerWithMiddleware,
                 url: "/api/auth/callback/apple",
                 test: async ({ fetch }) => {
-                    let state = Buffer.from(JSON.stringify({ redirectURI: "http://localhost:3000/redirect" })).toString(
-                        "base64"
-                    );
+                    let state = Buffer.from(
+                        JSON.stringify({ frontendRedirectURI: "http://localhost:3000/redirect" })
+                    ).toString("base64");
                     let formData = { state, code: "testing" };
                     var encodedData = Object.keys(formData)
                         .map(function (key) {
@@ -514,7 +514,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     assert.deepStrictEqual(res.status, 303);
                     assert.deepEqual(
                         res.headers.get("location"),
-                        "http://localhost:3000/redirect?state=eyJyZWRpcmVjdFVSSSI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9yZWRpcmVjdCJ9&code=testing"
+                        "http://localhost:3000/redirect?state=eyJmcm9udGVuZFJlZGlyZWN0VVJJIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL3JlZGlyZWN0In0%3D&code=testing"
                     );
                 },
             });
