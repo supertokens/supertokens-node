@@ -13,7 +13,7 @@ export const userUnlink = async (
     options: APIOptions,
     userContext: any
 ): Promise<Response> => {
-    const recipeUserId = options.req.getKeyValueFromQuery("recipeUserID");
+    const recipeUserId = options.req.getKeyValueFromQuery("recipeUserId");
 
     if (recipeUserId === undefined) {
         throw new STError({
