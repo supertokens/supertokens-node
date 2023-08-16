@@ -48,7 +48,7 @@ export class Querier {
             return Querier.apiVersion;
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
-        let response = await this.sendRequestHelper(
+        let { body: response } = await this.sendRequestHelper(
             new NormalisedURLPath("/apiversion"),
             "GET",
             async (url: string) => {
@@ -111,7 +111,7 @@ export class Querier {
 
     // path should start with "/"
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any): Promise<T> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
             path,
             "POST",
             async (url: string) => {
@@ -140,11 +140,12 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+        return respBody;
     };
 
     // path should start with "/"
     sendDeleteRequest = async (path: NormalisedURLPath, body: any, params?: any): Promise<any> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
             async (url: string) => {
@@ -174,6 +175,7 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+        return respBody;
     };
 
     // path should start with "/"
@@ -181,7 +183,44 @@ export class Querier {
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>
     ): Promise<any> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
+            path,
+            "GET",
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion();
+                let headers: any = { "cdi-version": apiVersion };
+                if (Querier.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": Querier.apiKey,
+                    };
+                }
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
+                    headers = {
+                        ...headers,
+                        rid: this.rIdToCore,
+                    };
+                }
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
+                );
+                finalURL.search = searchParams.toString();
+                return await fetch(finalURL.toString(), {
+                    method: "GET",
+                    headers,
+                });
+            },
+            this.__hosts?.length || 0
+        );
+        return respBody;
+    };
+
+    sendGetRequestWithResponseHeaders = async (
+        path: NormalisedURLPath,
+        params: Record<string, boolean | number | string | undefined>
+    ): Promise<{ body: any; headers: Headers }> => {
+        return await this.sendRequestHelper(
             path,
             "GET",
             async (url: string) => {
@@ -215,7 +254,7 @@ export class Querier {
 
     // path should start with "/"
     sendPutRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
             path,
             "PUT",
             async (url: string) => {
@@ -242,6 +281,7 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+        return respBody;
     };
 
     public getAllCoreUrlsForPath(path: string) {
@@ -300,9 +340,9 @@ export class Querier {
                 throw response;
             }
             if (response.headers.get("content-type")?.startsWith("text")) {
-                return await response.text();
+                return { body: await response.text(), headers: response.headers };
             }
-            return await response.json();
+            return { body: await response.json(), headers: response.headers };
         } catch (err) {
             if (
                 err.message !== undefined &&
