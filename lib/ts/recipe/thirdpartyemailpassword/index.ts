@@ -103,10 +103,6 @@ export default class Wrapper {
         applyPasswordPolicy?: boolean;
         tenantIdForPasswordPolicy?: string;
     }) {
-        if (typeof input.recipeUserId === "string" && process.env.TEST_MODE === "testing") {
-            // This is there cause for tests, we pass in a string in most tests.
-            input.recipeUserId = new RecipeUserId(input.recipeUserId);
-        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
             ...input,
             userContext: input.userContext ?? {},

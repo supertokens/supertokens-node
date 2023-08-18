@@ -78,7 +78,7 @@ export default async function usersGet(
         // Recipe has not been initialised, return without first name and last name
         return {
             status: "OK",
-            users: usersResponse.users,
+            users: usersResponse.users.map((u) => u.toJson()),
             nextPaginationToken: usersResponse.nextPaginationToken,
         };
     }
@@ -87,7 +87,7 @@ export default async function usersGet(
     let metaDataFetchPromises: (() => Promise<any>)[] = [];
 
     for (let i = 0; i < usersResponse.users.length; i++) {
-        const userObj = usersResponse.users[i];
+        const userObj = usersResponse.users[i].toJson();
         metaDataFetchPromises.push(
             (): Promise<any> =>
                 new Promise(async (resolve, reject) => {

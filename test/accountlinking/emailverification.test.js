@@ -625,7 +625,7 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                 if (lm.recipeId === "emailpassword") {
                     assert(!(await EmailVerification.isEmailVerified(lm.recipeUserId)));
                 } else {
-                    assert(await EmailVerification.isEmailVerified(epUser.id));
+                    assert(await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(epUser.id)));
                 }
             }
         });
@@ -708,7 +708,9 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     if (lm.recipeId === "emailpassword") {
                         assert(await EmailVerification.isEmailVerified(lm.recipeUserId));
                     } else {
-                        assert(await EmailVerification.isEmailVerified(linkedUser.id));
+                        assert(
+                            await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(linkedUser.id))
+                        );
                     }
                 }
             }
@@ -727,7 +729,9 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
                     if (lm.recipeId === "emailpassword") {
                         assert(!(await EmailVerification.isEmailVerified(lm.recipeUserId)));
                     } else {
-                        assert(await EmailVerification.isEmailVerified(linkedUser.id));
+                        assert(
+                            await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(linkedUser.id))
+                        );
                     }
                 }
             }

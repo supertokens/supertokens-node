@@ -140,7 +140,11 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let email = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, email);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(
+            "public",
+            STExpress.convertToRecipeUserId(userId),
+            email
+        );
         await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);

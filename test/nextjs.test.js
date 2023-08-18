@@ -375,7 +375,14 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                 handler: async (request, response) => {
                     const session = await superTokensNextWrapper(
                         async () => {
-                            return await Session.createNewSession(request, response, "public", "1", {}, {});
+                            return await Session.createNewSession(
+                                request,
+                                response,
+                                "public",
+                                SuperTokens.convertToRecipeUserId("1"),
+                                {},
+                                {}
+                            );
                         },
                         request,
                         response

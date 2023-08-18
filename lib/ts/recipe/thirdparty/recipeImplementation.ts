@@ -197,10 +197,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                         "Cannot sign in / up because new email cannot be applied to existing account. Please contact support.",
                 };
             }
-
-            if (response.status === "SIGN_IN_UP_NOT_ALLOWED") {
-                return response;
-            }
             return response;
         },
 

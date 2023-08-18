@@ -283,7 +283,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
 
         assert.strictEqual(
-            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
             true
         );
     });
@@ -800,20 +803,20 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
             let signUpUserInfo = response.body.user;
             let r = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                recipeUserId: signUpUserInfo.id,
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id),
                 email: "test2@example.com",
                 password: "haha@1234",
             });
 
             assert(r.status === "OK");
             let r2 = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                recipeUserId: signUpUserInfo.id + "123",
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id + "123"),
                 email: "test2@example.com",
             });
 
             assert(r2.status === "UNKNOWN_USER_ID_ERROR");
             let r3 = await ThirdPartyEmailPassword.updateEmailOrPassword({
-                recipeUserId: signUpUserInfo.id,
+                recipeUserId: STExpress.convertToRecipeUserId(signUpUserInfo.id),
                 email: "test2@example.com",
                 password: "test",
             });

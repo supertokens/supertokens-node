@@ -87,7 +87,12 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 11);
@@ -136,7 +141,12 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 11);

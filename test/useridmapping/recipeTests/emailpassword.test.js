@@ -252,7 +252,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             assert.strictEqual(resetPasswordUsingTokenResponse.userId, externalId);
 
             let resp = await EmailPasswordRecipe.updateEmailOrPassword({
-                recipeUserId: externalId,
+                recipeUserId: STExpress.convertToRecipeUserId(externalId),
                 password: newPassword,
             });
             assert.strictEqual(resp.status, "OK");
@@ -313,7 +313,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             {
                 {
                     const response = await EmailPasswordRecipe.updateEmailOrPassword({
-                        recipeUserId: externalId,
+                        recipeUserId: STExpress.convertToRecipeUserId(externalId),
                         email: updatedEmail,
                     });
                     assert.strictEqual(response.status, "OK");
@@ -332,7 +332,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
             {
                 {
                     const response = await EmailPasswordRecipe.updateEmailOrPassword({
-                        recipeUserId: externalId,
+                        recipeUserId: STExpress.convertToRecipeUserId(externalId),
                         password: updatedPassword,
                     });
                     assert.strictEqual(response.status, "OK");

@@ -130,7 +130,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, emailId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(
+            "public",
+            STExpress.convertToRecipeUserId(userId),
+            emailId
+        );
         await EmailVerification.verifyEmailUsingToken("public", verifyToken.token);
 
         response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken, infoFromResponse.antiCsrf, userId);
@@ -1224,7 +1228,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response.text).status === "OK");
         assert(response.status === 200);
 
-        let userId = JSON.parse(response.text).user.id;
+        let userId = STExpress.convertToRecipeUserId(JSON.parse(response.text).user.id);
         let infoFromResponse = extractInfoFromResponse(response);
 
         let verifyToken = await EmailVerification.createEmailVerificationToken("public", userId, "test@gmail.com");
@@ -1270,7 +1274,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response.text).status === "OK");
         assert(response.status === 200);
 
-        let userId = JSON.parse(response.text).user.id;
+        let userId = STExpress.convertToRecipeUserId(JSON.parse(response.text).user.id);
         let emailId = JSON.parse(response.text).user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
 
@@ -1388,7 +1392,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(response.body.status, "OK");
         assert.strictEqual(response.status, 200);
 
-        let userId = response.body.user.id;
+        let userId = STExpress.convertToRecipeUserId(response.body.user.id);
         let emailId = response.body.user.emails[0];
         let infoFromResponse = extractInfoFromResponse(response);
         let antiCsrfToken = infoFromResponse.antiCsrf;

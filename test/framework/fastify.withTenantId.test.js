@@ -85,7 +85,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -139,7 +139,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -198,7 +198,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -280,7 +280,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -354,7 +354,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -465,7 +465,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -578,7 +578,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -625,7 +625,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -739,7 +739,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "id1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             return res.send("").code(200);
         });
 
@@ -802,7 +802,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         await this.server.register(FastifyFramework.plugin);
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "id1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             return res.send("").code(200);
         });
 
@@ -866,11 +866,18 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
         this.server.post("/usercreate", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "someUniqueUserId", {}, {});
+            await Session.createNewSession(
+                req,
+                res,
+                "public",
+                SuperTokens.convertToRecipeUserId("someUniqueUserId"),
+                {},
+                {}
+            );
             return res.send("").code(200);
         });
         this.server.post("/session/revoke", async (req, res) => {
@@ -955,7 +962,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             return res.send("").code(200);
         });
 
@@ -1082,7 +1089,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         });
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "user1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("user1"), {}, {});
             return res.send("").code(200);
         });
 
@@ -1370,7 +1377,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.withTenantId.test.js]")}
         await this.server.register(FastifyFramework.plugin);
 
         this.server.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "id1", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             return res.send("").code(200);
         });
 

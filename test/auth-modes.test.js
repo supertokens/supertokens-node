@@ -1100,7 +1100,14 @@ function getTestApp(endpoints) {
     app.use(express.json());
 
     app.post("/create", async (req, res) => {
-        const session = await Session.createNewSession(req, res, "public", "testing-userId", req.body, {});
+        const session = await Session.createNewSession(
+            req,
+            res,
+            "public",
+            SuperTokens.convertToRecipeUserId("testing-userId"),
+            req.body,
+            {}
+        );
         res.status(200).json({ message: true, sessionHandle: session.getHandle() });
     });
 

@@ -313,7 +313,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(
-            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
             true
         );
 
@@ -495,7 +498,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(
-            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
             true
         );
 
@@ -627,7 +633,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies1.frontToken, "remove");
 
         assert.strictEqual(
-            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            await EmailVerification.isEmailVerified(
+                STExpress.convertToRecipeUserId(response1.body.user.id),
+                response1.body.user.email
+            ),
             false
         );
     });

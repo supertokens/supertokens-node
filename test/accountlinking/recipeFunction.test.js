@@ -63,10 +63,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         let refetchedUser = await supertokens.getUser(user.id);
 
-        refetchedUser.loginMethods[0].recipeUserId = user.loginMethods[0].recipeUserId.getAsString();
-
-        response.user.loginMethods[0].recipeUserId = response.user.loginMethods[0].recipeUserId.getAsString();
-
         // we do the json parse/stringify to remove the toJson and other functions in the login
         // method array in each of the below user objects.
         assertJSONEquals(refetchedUser.toJson(), response.user.toJson());

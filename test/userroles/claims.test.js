@@ -50,7 +50,12 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                mockResponse(),
+                "public",
+                STExpress.convertToRecipeUserId("userId")
+            );
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.UserRoleClaim), []);
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.PermissionClaim), []);
         });
@@ -82,7 +87,12 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                mockResponse(),
+                "public",
+                STExpress.convertToRecipeUserId("userId")
+            );
             assert.strictEqual(await session.getClaimValue(UserRoles.UserRoleClaim), undefined);
             assert.strictEqual(await session.getClaimValue(UserRoles.PermissionClaim), undefined);
         });
@@ -110,7 +120,12 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
-            const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                mockResponse(),
+                "public",
+                STExpress.convertToRecipeUserId("userId")
+            );
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.UserRoleClaim), ["test"]);
             assert.deepStrictEqual(await session.getClaimValue(UserRoles.PermissionClaim), ["a", "b"]);
         });
@@ -140,7 +155,12 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
-            const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                mockResponse(),
+                "public",
+                STExpress.convertToRecipeUserId("userId")
+            );
 
             await session.assertClaims([UserRoles.UserRoleClaim.validators.includes("test")]);
 
@@ -186,7 +206,12 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                mockResponse(),
+                "public",
+                STExpress.convertToRecipeUserId("userId")
+            );
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
 
@@ -215,7 +240,12 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
-            const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                mockResponse(),
+                "public",
+                STExpress.convertToRecipeUserId("userId")
+            );
 
             await session.assertClaims([UserRoles.PermissionClaim.validators.includes("a")]);
 
@@ -261,7 +291,12 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
                 return this.skip();
             }
 
-            const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "userId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                mockResponse(),
+                "public",
+                STExpress.convertToRecipeUserId("userId")
+            );
             await UserRoles.createNewRoleOrAddPermissions("test", ["a", "b"]);
             await UserRoles.addRoleToUser("public", "userId", "test");
 

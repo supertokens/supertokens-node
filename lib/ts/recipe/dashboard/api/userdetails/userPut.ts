@@ -459,7 +459,7 @@ export const userPut = async (
                 metaDataUpdate["last_name"] = lastName.trim();
             }
 
-            await UserMetadata.updateUserMetadata(recipeUserId, metaDataUpdate, userContext);
+            await UserMetadata.updateUserMetadata(userResponse.user.id, metaDataUpdate, userContext);
         }
     }
 

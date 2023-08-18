@@ -79,7 +79,12 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             await Session.fetchAndSetClaim(res.getHandle(), TrueClaim);
 

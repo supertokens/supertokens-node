@@ -66,7 +66,14 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         });
 
         let createSession = async (awsEvent, _) => {
-            await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
+            await Session.createNewSession(
+                awsEvent,
+                awsEvent,
+                "public",
+                SuperTokens.convertToRecipeUserId("userId"),
+                {},
+                {}
+            );
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,
@@ -234,7 +241,14 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         });
 
         let createSession = async (awsEvent, _) => {
-            await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
+            await Session.createNewSession(
+                awsEvent,
+                awsEvent,
+                "public",
+                SuperTokens.convertToRecipeUserId("userId"),
+                {},
+                {}
+            );
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,
@@ -452,7 +466,14 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 });
 
                 let createSession = async (awsEvent, _) => {
-                    await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
+                    await Session.createNewSession(
+                        awsEvent,
+                        awsEvent,
+                        "public",
+                        SuperTokens.convertToRecipeUserId("userId"),
+                        {},
+                        {}
+                    );
                     return {
                         body: JSON.stringify(""),
                         statusCode: 200,
@@ -543,7 +564,14 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                 });
 
                 let createSession = async (awsEvent, _) => {
-                    await Session.createNewSession(awsEvent, awsEvent, "public", "userId", {}, {});
+                    await Session.createNewSession(
+                        awsEvent,
+                        awsEvent,
+                        "public",
+                        SuperTokens.convertToRecipeUserId("userId"),
+                        {},
+                        {}
+                    );
                     throw new Session.Error({
                         message: "unauthorised",
                         type: Session.Error.UNAUTHORISED,

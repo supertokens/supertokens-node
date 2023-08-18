@@ -83,7 +83,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -156,7 +156,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -231,7 +231,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -335,7 +335,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -432,7 +432,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -586,7 +586,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -652,7 +652,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
 
@@ -803,7 +803,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "id1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             ctx.body = "";
         });
 
@@ -887,7 +887,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         app.use(KoaFramework.middleware());
 
         router.post("/create", async (ctx, next) => {
-            await Session.createNewSession(ctx, ctx, "public", "id1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId("id1"), {}, {});
             ctx.body = "";
         });
 
@@ -972,11 +972,18 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
         router.post("/usercreate", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "someUniqueUserId", {}, {});
+            await Session.createNewSession(
+                ctx,
+                ctx,
+                "public",
+                SuperTokens.convertToRecipeUserId("someUniqueUserId"),
+                {},
+                {}
+            );
             ctx.body = "";
         });
         router.post("/session/revoke", async (ctx, _) => {
@@ -1109,7 +1116,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             ctx.body = "";
         });
         router.post("/updateSessionData", async (ctx, _) => {
@@ -1258,7 +1265,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         const router = new Router();
         app.use(KoaFramework.middleware());
         router.post("/create", async (ctx, _) => {
-            await Session.createNewSession(ctx, ctx, "public", "user1", {}, {});
+            await Session.createNewSession(ctx, ctx, "public", SuperTokens.convertToRecipeUserId("user1"), {}, {});
             ctx.body = "";
         });
         router.post("/updateAccessTokenPayload", async (ctx, _) => {

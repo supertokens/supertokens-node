@@ -199,11 +199,12 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    const res = await oI.emailExistsGET(input);
                                     input.options.res.setStatusCode(201);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
-                                    return oI.emailExistsGET(input);
+                                    return res;
                                 },
                             };
                         },

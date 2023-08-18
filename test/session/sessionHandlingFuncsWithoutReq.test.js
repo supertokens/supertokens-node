@@ -50,7 +50,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
             const res = await Session.createNewSessionWithoutRequestResponse(
                 "public",
-                "test-user-id",
+                SuperTokens.convertToRecipeUserId("test-user-id"),
                 { tokenProp: true },
                 { dbProp: true }
             );
@@ -87,7 +87,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
             const session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
-                "test-user-id",
+                SuperTokens.convertToRecipeUserId("test-user-id"),
                 { tokenProp: true },
                 { dbProp: true }
             );
@@ -119,7 +119,10 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init()],
             });
 
-            const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                SuperTokens.convertToRecipeUserId("test-user-id")
+            );
             const tokens = createRes.getAllSessionTokensDangerously();
             const session = await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken);
             assert.ok(session);
@@ -152,7 +155,10 @@ describe(`Session handling functions without modifying response: ${printPath(
                 ],
             });
 
-            const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                SuperTokens.convertToRecipeUserId("test-user-id")
+            );
             const tokens = createRes.getAllSessionTokensDangerously();
             const session = await Session.getSessionWithoutRequestResponse(tokens.accessToken, tokens.antiCsrfToken);
 
@@ -199,7 +205,10 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init(), JWT.init()],
             });
 
-            const session = await Session.createNewSessionWithoutRequestResponse("public", "testId");
+            const session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                SuperTokens.convertToRecipeUserId("testId")
+            );
             const originalPayload = session.getAccessTokenPayload();
 
             const customAccessToken = await JWT.createJWT(
@@ -214,8 +223,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
             const customSession = await Session.getSessionWithoutRequestResponse(customAccessToken.jwt);
             const customPayload = customSession.getAccessTokenPayload();
-
-            assert.notEqual(customPayload.exp, originalPayload.exp);
+            assert.strictEqual(customPayload.exp - customPayload.iat, 1234);
         });
 
         it("should validate access tokens created by createJWT w/ checkDatabase", async () => {
@@ -240,7 +248,10 @@ describe(`Session handling functions without modifying response: ${printPath(
                 return;
             }
 
-            const session = await Session.createNewSessionWithoutRequestResponse("public", "testId");
+            const session = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                SuperTokens.convertToRecipeUserId("testId")
+            );
             const originalPayload = session.getAccessTokenPayload();
 
             const customAccessToken = await JWT.createJWT(
@@ -258,8 +269,7 @@ describe(`Session handling functions without modifying response: ${printPath(
                 checkDatabase: true,
             });
             const customPayload = customSession.getAccessTokenPayload();
-
-            assert.notEqual(customPayload.exp, originalPayload.exp);
+            assert.strictEqual(customPayload.exp - customPayload.iat, 1234);
         });
 
         it("should return error for non-tokens", async () => {
@@ -325,7 +335,10 @@ describe(`Session handling functions without modifying response: ${printPath(
                 recipeList: [Session.init()],
             });
 
-            const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                SuperTokens.convertToRecipeUserId("test-user-id")
+            );
             const tokens = createRes.getAllSessionTokensDangerously();
             let caught;
             try {
@@ -360,7 +373,7 @@ describe(`Session handling functions without modifying response: ${printPath(
 
             const createRes = await Session.createNewSessionWithoutRequestResponse(
                 "public",
-                "test-user-id",
+                SuperTokens.convertToRecipeUserId("test-user-id"),
                 { tokenProp: true },
                 { dbProp: true }
             );
@@ -401,7 +414,10 @@ describe(`Session handling functions without modifying response: ${printPath(
                 ],
             });
 
-            const createRes = await Session.createNewSessionWithoutRequestResponse("public", "test-user-id");
+            const createRes = await Session.createNewSessionWithoutRequestResponse(
+                "public",
+                SuperTokens.convertToRecipeUserId("test-user-id")
+            );
             const tokens = createRes.getAllSessionTokensDangerously();
 
             const session = await Session.refreshSessionWithoutRequestResponse(

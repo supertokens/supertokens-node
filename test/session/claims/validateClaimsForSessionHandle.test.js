@@ -71,7 +71,12 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const failingValidator = UndefinedClaim.validators.hasValue(true);
             assert.deepStrictEqual(

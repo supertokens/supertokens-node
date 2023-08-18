@@ -56,7 +56,7 @@ export const userGet: APIFunction = async (
     return {
         status: "OK",
         user: {
-            ...user,
+            ...user.toJson(),
             firstName: first_name === undefined ? "" : first_name,
             lastName: last_name === undefined ? "" : last_name,
         },

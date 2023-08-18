@@ -70,6 +70,7 @@ export default function getRecipeInterface(
                     let emailInfo = await getEmailForRecipeUserId(new RecipeUserId(response.userId), userContext);
                     if (emailInfo.status === "OK" && emailInfo.email === response.email) {
                         // we do this here to prevent cyclic dependencies.
+                        // TODO: Fix this.
                         let AccountLinking = require("../accountlinking");
                         await AccountLinking.createPrimaryUserIdOrLinkAccounts({
                             recipeUserId: new RecipeUserId(response.userId),

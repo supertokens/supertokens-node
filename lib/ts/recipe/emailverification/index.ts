@@ -39,10 +39,6 @@ export default class Wrapper {
           }
         | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
     > {
-        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
-            // This is there cause for tests, we pass in a string in most tests.
-            recipeUserId = new RecipeUserId(recipeUserId);
-        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         if (email === undefined) {
@@ -165,10 +161,6 @@ export default class Wrapper {
     }
 
     static async isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
-        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
-            // This is there cause for tests, we pass in a string in most tests.
-            recipeUserId = new RecipeUserId(recipeUserId);
-        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
             const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
@@ -195,10 +187,6 @@ export default class Wrapper {
         email?: string,
         userContext: any = {}
     ) {
-        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
-            // This is there cause for tests, we pass in a string in most tests.
-            recipeUserId = new RecipeUserId(recipeUserId);
-        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         // If the dev wants to delete the tokens for an old email address of the user they can pass the address
@@ -228,10 +216,6 @@ export default class Wrapper {
     }
 
     static async unverifyEmail(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
-        if (typeof recipeUserId === "string" && process.env.TEST_MODE === "testing") {
-            // This is there cause for tests, we pass in a string in most tests.
-            recipeUserId = new RecipeUserId(recipeUserId);
-        }
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
             const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);

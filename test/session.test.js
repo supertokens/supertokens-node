@@ -80,7 +80,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testuserid", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
             res.status(200).send("");
         });
 
@@ -134,7 +134,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "testuserid", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId("testuserid"), {}, {});
             res.status(200).send("");
         });
 
@@ -205,7 +205,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             res.status(200).send("");
         });
 
@@ -259,7 +259,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "public", "", {}, {});
+            await Session.createNewSession(req, res, "public", SuperTokens.convertToRecipeUserId(""), {}, {});
             res.status(200).send("");
         });
 
@@ -1272,7 +1272,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        const session = await Session.createNewSession(mockRequest(), mockResponse(), "public", "testId");
+        const session = await Session.createNewSession(
+            mockRequest(),
+            mockResponse(),
+            "public",
+            SuperTokens.convertToRecipeUserId("testId")
+        );
 
         const data = await session.getSessionDataFromDatabase();
 

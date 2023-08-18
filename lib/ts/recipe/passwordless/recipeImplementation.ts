@@ -30,51 +30,54 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 userContext: input.userContext,
             });
 
-            if (!deviceInfo) {
-                return {
-                    status: "RESTART_FLOW_ERROR",
-                };
-            }
-
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
                 copyAndRemoveUserContextAndTenantId(input)
             );
-            if (response.status === "OK") {
-                logDebugMessage("Passwordless.consumeCode code consumed OK");
-                response.user = new User(response.user);
-                const loginMethod = response.user.loginMethods.find(
-                    (m: User["loginMethods"][number]) => m.recipeId === "passwordless"
-                )!;
-                if (loginMethod === undefined) {
-                    throw new Error("This should never happen: login method not found after signin");
-                }
-                if (loginMethod.email !== undefined) {
-                    logDebugMessage("Passwordless.consumeCode checking if email verification is initialized");
-                    const emailVerificationInstance = EmailVerification.getInstance();
-                    if (emailVerificationInstance) {
-                        logDebugMessage("Passwordless.consumeCode checking email verification status");
-                        const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                            {
-                                tenantId: input.tenantId,
-                                recipeUserId: loginMethod.recipeUserId,
-                                email: loginMethod.email,
-                                userContext: input.userContext,
-                            }
-                        );
 
-                        if (tokenResponse.status === "OK") {
-                            logDebugMessage("Passwordless.consumeCode verifying email address");
-                            await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                                tenantId: input.tenantId,
-                                token: tokenResponse.token,
-                                attemptAccountLinking: false,
-                                userContext: input.userContext,
-                            });
-                            // we do this so that we get the updated user (in case the above
-                            // function updated the verification status) and can return that
-                            response.user = await getUser(loginMethod.recipeUserId.getAsString(), input.userContext);
+            if (response.status !== "OK") {
+                return response;
+            }
+
+            if (deviceInfo === undefined) {
+                // This means we successfully consumed a code using a preAuthSessionId
+                // but the listing endpoint returned undefined for it
+                throw new Error("Should never come here.");
+            }
+
+            logDebugMessage("Passwordless.consumeCode code consumed OK");
+            response.user = new User(response.user);
+            const loginMethod = response.user.loginMethods.find(
+                (m: User["loginMethods"][number]) => m.recipeId === "passwordless"
+            )!;
+            if (loginMethod === undefined) {
+                throw new Error("This should never happen: login method not found after signin");
+            }
+            if (loginMethod.email !== undefined) {
+                logDebugMessage("Passwordless.consumeCode checking if email verification is initialized");
+                const emailVerificationInstance = EmailVerification.getInstance();
+                if (emailVerificationInstance) {
+                    logDebugMessage("Passwordless.consumeCode checking email verification status");
+                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                        {
+                            tenantId: input.tenantId,
+                            recipeUserId: loginMethod.recipeUserId,
+                            email: loginMethod.email,
+                            userContext: input.userContext,
                         }
+                    );
+
+                    if (tokenResponse.status === "OK") {
+                        logDebugMessage("Passwordless.consumeCode verifying email address");
+                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                            tenantId: input.tenantId,
+                            token: tokenResponse.token,
+                            attemptAccountLinking: false,
+                            userContext: input.userContext,
+                        });
+                        // we do this so that we get the updated user (in case the above
+                        // function updated the verification status) and can return that
+                        response.user = await getUser(loginMethod.recipeUserId.getAsString(), input.userContext);
                     }
                 }
             }
@@ -101,11 +104,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 const m = response.user.loginMethods[i];
                 if (
                     m.recipeId === "passwordless" &&
-                    (m.hasSameEmailAs(deviceInfo.email) || m.hasSameEmailAs(deviceInfo.phoneNumber))
+                    (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(deviceInfo.phoneNumber))
                 ) {
                     recipeUserId = m.recipeUserId;
                     break;
                 }
+            }
+
+            if (recipeUserId === undefined) {
+                throw new Error("Should never come here");
             }
 
             userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({

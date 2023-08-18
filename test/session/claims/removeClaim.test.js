@@ -80,7 +80,12 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const res = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 11);
@@ -126,7 +131,12 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(mockRequest(), response, "public", "someId");
+            const session = await Session.createNewSession(
+                mockRequest(),
+                response,
+                "public",
+                SuperTokens.convertToRecipeUserId("someId")
+            );
 
             const payload = session.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 11);

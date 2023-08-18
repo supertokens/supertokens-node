@@ -107,7 +107,7 @@ export default function getRecipeInterface(
             );
 
             if (response.status === "OK") {
-                response.user = new User(response.user as any); // TODO:
+                response.user = new User(response.user);
 
                 let recipeUserId: RecipeUserId | undefined = undefined;
                 for (let i = 0; i < response.user.loginMethods.length; i++) {
