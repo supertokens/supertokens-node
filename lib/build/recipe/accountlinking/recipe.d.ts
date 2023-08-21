@@ -51,33 +51,40 @@ export default class Recipe extends RecipeModule {
     }) => Promise<User | undefined>;
     isSignInAllowed: ({
         recipeUserId,
+        tenantId,
         userContext,
     }: {
         recipeUserId: RecipeUserId;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     isSignUpAllowed: ({
         newUser,
         isVerified,
+        tenantId,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     isSignInUpAllowedHelper: ({
         accountInfo,
         isVerified,
+        tenantId,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {
         recipeUserId: RecipeUserId;
         newEmail: string;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {

@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
-let supertokens = require("../../");
+let supertokens = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -22,7 +22,7 @@ let ThirdParty = require("../../recipe/thirdparty");
 let AccountLinking = require("../../recipe/accountlinking");
 let EmailVerification = require("../../recipe/emailverification");
 
-describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.test.js]")}`, function () {
+describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -456,66 +456,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             assert(user.loginMethods[0].verified === true);
             assert(user.loginMethods[1].verified === true);
         });
-
-        it("sign in returns the primary user even if accountlinking was later disabled", async function () {
-            await startST();
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    EmailPassword.init(),
-                    AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
-                            if (userContext.doNotLink) {
-                                return {
-                                    shouldAutomaticallyLink: false,
-                                };
-                            }
-                            return {
-                                shouldAutomaticallyLink: true,
-                                shouldRequireVerification: false,
-                            };
-                        },
-                    }),
-                ],
-            });
-
-            const email1 = `test+${Date.now()}@example.com`;
-            let user = (await EmailPassword.signUp("public", email1, "password123")).user;
-            const email2 = `test+${Date.now()}@example.com`;
-            let user2 = (await EmailPassword.signUp("public", email2, "password123", { doNotLink: true })).user;
-
-            const linkResp = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
-            assert.strictEqual(linkResp.status, "OK");
-
-            const primUser = linkResp.user;
-
-            resetAll();
-
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [EmailPassword.init()],
-            });
-
-            const signInResp1 = await EmailPassword.signIn("public", email1, "password123");
-            const signInResp2 = await EmailPassword.signIn("public", email2, "password123");
-
-            assert.deepStrictEqual(signInResp1.user.toJson(), primUser.toJson());
-            assert.deepStrictEqual(signInResp2.user.toJson(), primUser.toJson());
-        });
     });
 
     describe("update email or password tests", function () {
@@ -576,9 +516,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com",
-                false,
-                "public"
+                "test@example.com"
             );
             assert(isAllowed === false);
 
@@ -650,9 +588,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com",
-                false,
-                "public"
+                "test@example.com"
             );
             assert(isAllowed === true);
 
@@ -725,12 +661,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
             await AccountLinking.linkAccounts("public", recipeUserId, user.id);
 
-            let isAllowed = await AccountLinking.isEmailChangeAllowed(
-                recipeUserId,
-                "test@example.com",
-                false,
-                "public"
-            );
+            let isAllowed = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com");
             assert(isAllowed === true);
 
             response = await EmailPassword.updateEmailOrPassword({

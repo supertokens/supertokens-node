@@ -358,7 +358,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -614,7 +614,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                             mode: "REQUIRED",
                         }),
                         AccountLinking.init({
-                            shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
+                            shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
                                 if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                                     return {
                                         shouldAutomaticallyLink: false,
@@ -706,7 +706,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                             mode: "REQUIRED",
                         }),
                         AccountLinking.init({
-                            shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
+                            shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
                                 if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                                     return {
                                         shouldAutomaticallyLink: false,
@@ -810,7 +810,7 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
                 mode: "REQUIRED",
             }),
             AccountLinking.init({
-                shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
+                shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
                     if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                         return {
                             shouldAutomaticallyLink: false,
@@ -940,7 +940,7 @@ async function getConsumeCodeTestCase({ pwlessUser, otherRecipeUser, accountLink
                 mode: "REQUIRED",
             }),
             AccountLinking.init({
-                shouldDoAutomaticAccountLinking: async (userInfo, __, userContext) => {
+                shouldDoAutomaticAccountLinking: async (userInfo, __, _tenantId, userContext) => {
                     if (userContext.doNotLink || userInfo.email?.includes("doNotLink") === true) {
                         return {
                             shouldAutomaticallyLink: false,

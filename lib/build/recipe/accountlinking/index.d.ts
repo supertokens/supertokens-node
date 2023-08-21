@@ -120,12 +120,18 @@ export default class Wrapper {
         wasRecipeUserDeleted: boolean;
         wasLinked: boolean;
     }>;
-    static isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any): Promise<boolean>;
-    static isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
+    static isSignUpAllowed(
+        newUser: AccountInfoWithRecipeId,
+        isVerified: boolean,
+        tenantId: string,
+        userContext?: any
+    ): Promise<boolean>;
+    static isSignInAllowed(recipeUserId: RecipeUserId, tenantId: string, userContext?: any): Promise<boolean>;
     static isEmailChangeAllowed(
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
+        tenantId: string,
         userContext?: any
     ): Promise<boolean>;
 }

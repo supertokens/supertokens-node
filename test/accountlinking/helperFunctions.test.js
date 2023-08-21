@@ -97,7 +97,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -157,7 +157,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -208,7 +208,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -257,7 +257,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -345,7 +345,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -422,7 +422,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -538,6 +538,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
+                tenantId: "public",
             });
 
             assert(response === undefined);
@@ -596,6 +597,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
+                tenantId: "public",
             });
 
             assert(response.id === primaryUser.id);
@@ -621,7 +623,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                true
+                true,
+                "public"
             );
 
             assert(isAllowed);
@@ -647,7 +650,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         phoneNumber: "",
                         email: "test@example.com",
                     },
-                    true
+                    true,
+                    "public"
                 );
                 assert(false);
             } catch (err) {
@@ -670,7 +674,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -693,7 +697,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                false
+                false,
+                "public"
             );
 
             assert(isAllowed);
@@ -714,7 +719,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -731,7 +736,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                false
+                false,
+                "public"
             );
 
             assert(isAllowed);
@@ -752,7 +758,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -775,7 +781,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                false
+                false,
+                "public"
             );
 
             assert(isAllowed);
@@ -796,7 +803,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -819,7 +826,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                false
+                false,
+                "public"
             );
 
             assert(!isAllowed);
@@ -865,7 +873,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -910,7 +918,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                false
+                false,
+                "public"
             );
 
             assert(!isAllowed);
@@ -936,7 +945,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -955,7 +964,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                false
+                false,
+                "public"
             );
 
             assert(!isAllowed);
@@ -976,7 +986,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -994,7 +1004,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                false
+                false,
+                "public"
             );
 
             assert(isAllowed);
@@ -1018,7 +1029,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -1043,7 +1054,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                true
+                true,
+                "public"
             );
 
             assert(isAllowed);
@@ -1084,7 +1096,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -1111,7 +1123,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 {
                     email: "test@example.com",
                 },
-                true
+                true,
+                "public"
             );
 
             assert(isAllowed);
@@ -1283,7 +1296,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
-            response = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com");
+            response = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com", false, "public");
 
             assert(response === false);
         });
@@ -1323,7 +1336,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1356,7 +1369,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
+                "test@example.com",
+                false,
+                "public"
             );
 
             assert(isAllowed === true);
@@ -1421,7 +1436,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             response = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
+                "test@example.com",
+                false,
+                "public"
             );
 
             assert(response === false);
@@ -1477,7 +1494,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             response = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
+                "test@example.com",
+                false,
+                "public"
             );
 
             assert(response === true);
@@ -1542,7 +1561,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             response = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
+                "test@example.com",
+                false,
+                "public"
             );
 
             assert(response === false);
@@ -1598,7 +1619,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             response = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
+                "test@example.com",
+                false,
+                "public"
             );
 
             assert(response === true);
@@ -1639,7 +1662,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldDoAutomaticAccountLinking: false,
@@ -1670,6 +1693,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
+                "public",
                 {
                     doNotLink: true,
                 }
@@ -1713,7 +1737,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldDoAutomaticAccountLinking: false,
@@ -1735,6 +1759,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
+                "public",
                 {
                     doNotLink: true,
                 }
@@ -1805,7 +1830,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             response = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                true
+                true,
+                "public"
             );
 
             assert(response === true);
@@ -1872,7 +1898,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             response = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
+                "test@example.com",
+                false,
+                "public"
             );
 
             assert(response === true);
@@ -1913,7 +1941,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1946,6 +1974,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
+                "public",
                 {
                     doNotLink: true,
                 }
@@ -1989,7 +2018,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: true,
@@ -2023,6 +2052,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
+                "public",
                 {
                     doNotLink: true,
                 }
@@ -2066,7 +2096,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2084,7 +2114,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             response = await AccountLinking.isEmailChangeAllowed(
                 response.user.loginMethods[0].recipeUserId,
                 "test2@example.com",
-                false
+                false,
+                "public"
             );
 
             assert(response === true);
@@ -2108,7 +2139,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             let user = await EmailPassword.signUp("public", "test@example.com", "abcd1234");
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
         });
@@ -2128,7 +2159,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2147,7 +2178,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
         });
@@ -2167,7 +2198,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -2180,7 +2211,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
         });
@@ -2200,7 +2231,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2219,7 +2250,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
         });
@@ -2239,7 +2270,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2258,7 +2289,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
 
             assert(!isAllowed);
             assert(
@@ -2303,7 +2334,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2344,7 +2375,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
             assert(!tpUser.user.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(tpUser.user.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(tpUser.user.loginMethods[0].recipeUserId, "public");
 
             assert(!isAllowed);
             assert(
@@ -2386,7 +2417,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2401,7 +2432,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             pUser = await supertokens.getUser(pUser.id);
             assert(pUser.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
 
@@ -2410,7 +2441,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId);
+            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId, "public");
 
             assert(!isAllowed);
         });
@@ -2447,7 +2478,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -2461,7 +2492,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             pUser = await supertokens.getUser(pUser.id);
             assert(pUser.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
 
@@ -2470,7 +2501,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId);
+            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
         });
@@ -2510,7 +2541,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -2544,7 +2575,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(tpUser.isPrimaryUser === false);
             assert(tpUser.loginMethods[0].verified);
 
-            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId);
+            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
         });
@@ -2584,7 +2615,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         mode: "OPTIONAL",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2615,7 +2646,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 true
             );
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user2.user.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(user2.user.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
         });
@@ -2652,7 +2683,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2667,7 +2698,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             pUser = await supertokens.getUser(pUser.id);
             assert(pUser.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId);
+            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId, "public");
 
             assert(isAllowed);
 
@@ -2694,7 +2725,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                     EmailPassword.init(),
                     Session.init(),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: false,
                             };
@@ -2747,7 +2778,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2821,7 +2852,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2895,7 +2926,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -2964,7 +2995,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,

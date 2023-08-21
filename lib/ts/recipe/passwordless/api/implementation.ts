@@ -44,6 +44,7 @@ export default function getAPIImplementation(): APIInterface {
                         phoneNumber: deviceInfo.phoneNumber,
                     },
                     isVerified: true, // TODO: should this depend on if the EV recipe is enabled?
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
 
@@ -103,6 +104,7 @@ export default function getAPIImplementation(): APIInterface {
 
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     recipeUserId: loginMethod.recipeUserId,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
 
@@ -166,6 +168,7 @@ export default function getAPIImplementation(): APIInterface {
                         ...accountInfo,
                     },
                     isVerified: true,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
 
@@ -190,6 +193,7 @@ export default function getAPIImplementation(): APIInterface {
                 }
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     recipeUserId: loginMethod.recipeUserId,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
                 if (!isSignInAllowed) {

@@ -77,6 +77,7 @@ export default function getAPIInterface(): APIInterface {
                         },
                     },
                     isVerified: emailInfo.isVerified,
+                    tenantId,
                     userContext,
                 });
 
@@ -182,6 +183,7 @@ export default function getAPIInterface(): APIInterface {
                     recipeUserId: recipeUserId!,
                     isVerified: emailInfo.isVerified,
                     newEmail: emailInfo.id,
+                    tenantId,
                     userContext,
                 });
 
@@ -239,6 +241,7 @@ export default function getAPIInterface(): APIInterface {
 
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                     recipeUserId: loginMethod.recipeUserId,
+                    tenantId,
                     userContext,
                 });
 

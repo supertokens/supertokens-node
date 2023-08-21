@@ -14,6 +14,7 @@ export default function getAPIImplementation(): APIInterface {
         emailExistsGET: async function ({
             email,
             userContext,
+            tenantId,
         }: {
             email: string;
             tenantId: string;
@@ -40,8 +41,8 @@ export default function getAPIImplementation(): APIInterface {
                     recipeId: "emailpassword",
                     email,
                 },
-                // tenantId,
                 isVerified: false,
+                tenantId,
                 userContext,
             });
 
@@ -199,6 +200,7 @@ export default function getAPIImplementation(): APIInterface {
                     email,
                 },
                 primaryUserAssociatedWithEmail,
+                tenantId,
                 userContext
             );
 
@@ -230,6 +232,7 @@ export default function getAPIImplementation(): APIInterface {
                         email,
                     },
                     isVerified: true, // cause when the token is consumed, we will mark the email as verified
+                    tenantId,
                     userContext,
                 });
                 if (isSignUpAllowed) {
@@ -619,6 +622,7 @@ export default function getAPIImplementation(): APIInterface {
 
             let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
                 recipeUserId: emailPasswordRecipeUser.recipeUserId,
+                tenantId,
                 userContext,
             });
 
@@ -694,6 +698,7 @@ export default function getAPIImplementation(): APIInterface {
                     email,
                 },
                 isVerified: false,
+                tenantId,
                 userContext,
             });
 

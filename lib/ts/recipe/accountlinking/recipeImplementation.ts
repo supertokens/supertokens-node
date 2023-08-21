@@ -218,7 +218,7 @@ export default function getRecipeImplementation(
                         throw Error("this error should never be thrown");
                     }
 
-                    await config.onAccountLinked(user, loginMethodInfo, userContext);
+                    await config.onAccountLinked(user, loginMethodInfo, tenantId, userContext);
                 } else {
                     // In the other case we get it after email verification
                     user = await this.getUser({

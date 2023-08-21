@@ -165,6 +165,7 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 recipeUser.loginMethods[0],
                 undefined,
+                tenantId,
                 userContext
             );
 
@@ -210,6 +211,7 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 recipeUser.loginMethods[0],
                 primaryUser,
+                tenantId,
                 userContext
             );
 
@@ -328,9 +330,11 @@ export default class Recipe extends RecipeModule {
 
     isSignInAllowed = async ({
         recipeUserId,
+        tenantId,
         userContext,
     }: {
         recipeUserId: RecipeUserId;
+        tenantId: string;
         userContext: any;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED);
@@ -365,6 +369,7 @@ export default class Recipe extends RecipeModule {
         return this.isSignInUpAllowedHelper({
             accountInfo: user.loginMethods[0],
             isVerified,
+            tenantId,
             userContext,
         });
     };
@@ -372,10 +377,12 @@ export default class Recipe extends RecipeModule {
     isSignUpAllowed = async ({
         newUser,
         isVerified,
+        tenantId,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED);
@@ -388,6 +395,7 @@ export default class Recipe extends RecipeModule {
         return this.isSignInUpAllowedHelper({
             accountInfo: newUser,
             isVerified,
+            tenantId,
             userContext,
         });
     };
@@ -395,10 +403,12 @@ export default class Recipe extends RecipeModule {
     isSignInUpAllowedHelper = async ({
         accountInfo,
         isVerified,
+        tenantId,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED);
@@ -456,6 +466,7 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 accountInfo,
                 undefined,
+                tenantId,
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
@@ -525,6 +536,7 @@ export default class Recipe extends RecipeModule {
             let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                 accountInfo,
                 primaryUser,
+                tenantId,
                 userContext
             );
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
@@ -601,6 +613,7 @@ export default class Recipe extends RecipeModule {
         recipeUserId: RecipeUserId;
         newEmail: string;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }): Promise<boolean> => {
         /**
@@ -671,6 +684,7 @@ export default class Recipe extends RecipeModule {
                 let shouldDoAccountLinking = await this.config.shouldDoAutomaticAccountLinking(
                     user.loginMethods[0],
                     primaryUserForNewEmail[0],
+                    input.tenantId,
                     input.userContext
                 );
 

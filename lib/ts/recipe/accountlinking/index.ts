@@ -98,17 +98,24 @@ export default class Wrapper {
         });
     }
 
-    static async isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any) {
+    static async isSignUpAllowed(
+        newUser: AccountInfoWithRecipeId,
+        isVerified: boolean,
+        tenantId: string,
+        userContext?: any
+    ) {
         return await Recipe.getInstance().isSignUpAllowed({
             newUser,
             isVerified,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any) {
+    static async isSignInAllowed(recipeUserId: RecipeUserId, tenantId: string, userContext?: any) {
         return await Recipe.getInstance().isSignInAllowed({
             recipeUserId,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
@@ -117,12 +124,14 @@ export default class Wrapper {
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
+        tenantId: string,
         userContext?: any
     ) {
         return await Recipe.getInstance().isEmailChangeAllowed({
             recipeUserId,
             newEmail,
             isVerified,
+            tenantId,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
