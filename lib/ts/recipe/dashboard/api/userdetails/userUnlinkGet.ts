@@ -22,9 +22,7 @@ export const userUnlink = async (
         });
     }
 
-    const recipeUserIdType = new RecipeUserId(recipeUserId);
-
-    await AccountLinking.unlinkAccount(recipeUserIdType, userContext);
+    await AccountLinking.unlinkAccount(new RecipeUserId(recipeUserId), userContext);
 
     return {
         status: "OK",
