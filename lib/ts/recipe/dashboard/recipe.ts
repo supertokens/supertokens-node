@@ -36,6 +36,7 @@ import {
     USER_PASSWORD_API,
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
+    UNLINK_USER,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "../../framework";
@@ -61,6 +62,7 @@ import signOut from "./api/signOut";
 import { getSearchTags } from "./api/search/tagsGet";
 import analyticsPost from "./api/analytics";
 import listTenants from "./api/listTenants";
+import { userUnlink } from "./api/userdetails/userUnlinkGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -245,6 +247,12 @@ export default class Recipe extends RecipeModule {
                 disabled: false,
                 method: "get",
             },
+            {
+                id: UNLINK_USER,
+                pathWithoutApiBasePath: new NormalisedURLPath(getApiPathWithDashboardBase(UNLINK_USER)),
+                disabled: false,
+                method: "get",
+            },
         ];
     };
 
@@ -335,6 +343,8 @@ export default class Recipe extends RecipeModule {
             apiFunction = analyticsPost;
         } else if (id === TENANTS_LIST_API) {
             apiFunction = listTenants;
+        } else if (id === UNLINK_USER) {
+            apiFunction = userUnlink;
         }
 
         // If the id doesnt match any APIs return false

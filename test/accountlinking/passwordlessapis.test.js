@@ -498,8 +498,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                 const accountLinkingSegment = `account linking ${
                     b.accountLinking.enabled ? "enabled" : "disabled"
                 } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
-
-                // (b.only ? it.only : it)
                 it(`should return status: ${b.expect.status} if ${otherUserSegment} with ${accountLinkingSegment}`, () =>
                     getCreateCodeTestCase(b));
             }
@@ -516,8 +514,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                 const accountLinkingSegment = `account linking ${
                     b.accountLinking.enabled ? "enabled" : "disabled"
                 } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
-
-                // (b.only ? it.only : it)(
                 it(`should return status: ${b.expect.status} for a ${
                     b.pwlessUser.linked ? "primary" : "not-linked"
                 } user if ${otherUserSegment} with ${accountLinkingSegment}`, () => getCreateCodeTestCase(b));
@@ -537,13 +533,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                 const accountLinkingSegment = `account linking ${
                     b.accountLinking.enabled ? "enabled" : "disabled"
                 } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
-
-                (b.only
-                    ? it.only
-                    : it)(
-                    `should return status: ${b.expect.status} if ${otherUserSegment} with ${accountLinkingSegment}`,
-                    () => getConsumeCodeTestCase(b)
-                );
+                it(`should return status: ${b.expect.status} if ${otherUserSegment} with ${accountLinkingSegment}`, () =>
+                    getConsumeCodeTestCase(b));
             }
         });
 
@@ -558,13 +549,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                 const accountLinkingSegment = `account linking ${
                     b.accountLinking.enabled ? "enabled" : "disabled"
                 } and email verification ${b.accountLinking.requiresVerification ? "required" : "not-required"}`;
-
-                (b.only ? it.only : it)(
-                    `should return status: ${b.expect.status} for a ${
-                        b.pwlessUser.linked ? "primary" : "not-linked"
-                    } user if ${otherUserSegment} with ${accountLinkingSegment}`,
-                    () => getConsumeCodeTestCase(b)
-                );
+                it(`should return status: ${b.expect.status} for a ${
+                    b.pwlessUser.linked ? "primary" : "not-linked"
+                } user if ${otherUserSegment} with ${accountLinkingSegment}`, () => getConsumeCodeTestCase(b));
             }
         });
 
@@ -759,7 +746,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
 });
 
 /*
-    Setup emails: 
+    Setup emails:
         tp-nonprimary-verified@example.com
         tp-nonprimary-unverified@example.com
         tp-primary-verified@example.com
