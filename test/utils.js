@@ -503,7 +503,7 @@ module.exports.emailVerifyTokenRequest = async function (app, accessToken, antiC
             .set("Cookie", ["sAccessToken=" + accessToken])
             .set("anti-csrf", antiCsrf)
             .send({
-                userId,
+                userId: typeof userId === "string" ? userId : userId.getAsString(),
             })
             .end((err, res) => {
                 if (err) {

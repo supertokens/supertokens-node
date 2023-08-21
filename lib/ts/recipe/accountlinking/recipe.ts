@@ -591,6 +591,7 @@ export default class Recipe extends RecipeModule {
             }
             logDebugMessage(
                 "isSignInUpAllowedHelper returning false cause primary user does not have the same email or phone number that is verified"
+                //"isSignInUpAllowedHelper returning false because new user's email is not verified, and primary user with the same email was found."
             );
             return false;
         }

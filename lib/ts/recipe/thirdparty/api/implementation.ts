@@ -189,7 +189,7 @@ export default function getAPIInterface(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support.",
+                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ANOTHER_PRIM_USER_HAS_EMAIL)",
                     };
                 }
             }
@@ -245,7 +245,8 @@ export default function getAPIInterface(): APIInterface {
                 if (!isSignInAllowed) {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "Cannot sign in / up due to security reasons. Please contact support.",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)",
                     };
                 }
 

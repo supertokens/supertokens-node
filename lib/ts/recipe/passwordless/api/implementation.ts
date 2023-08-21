@@ -52,7 +52,8 @@ export default function getAPIImplementation(): APIInterface {
                     // to login using a different method.
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "Cannot sign in / up due to security reasons. Please contact support.",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
                     };
                 }
             } else if (existingUsers.length > 1) {
@@ -108,7 +109,8 @@ export default function getAPIImplementation(): APIInterface {
                 if (!isSignInAllowed) {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "Cannot sign in / up due to security reasons. Please contact support.",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)",
                     };
                 }
 
@@ -172,7 +174,8 @@ export default function getAPIImplementation(): APIInterface {
                     // to login using a different method.
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "Cannot sign in / up due to security reasons. Please contact support.",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
                     };
                 }
             } else if (existingUsers.length === 1) {
@@ -192,7 +195,8 @@ export default function getAPIImplementation(): APIInterface {
                 if (!isSignInAllowed) {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
-                        reason: "Cannot sign in / up due to security reasons. Please contact support.",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)",
                     };
                 }
             } else {

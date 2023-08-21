@@ -341,7 +341,8 @@ export default function getAPIImplementation(): APIInterface {
             if (hasOtherEmailOrPhone) {
                 return {
                     status: "PASSWORD_RESET_NOT_ALLOWED",
-                    reason: "Token generation was not done because of account take over risk. Please contact support.",
+                    reason:
+                        "Token generation was not done because of account take over risk. Please contact support. (HAS_OTHER_EMAIL_OR_PHONE)",
                 };
             } else {
                 return await generateAndSendPasswordResetToken(

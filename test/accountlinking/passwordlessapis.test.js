@@ -311,7 +311,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             assert(createCodeResponse !== undefined);
             assert.deepStrictEqual(createCodeResponse, {
                 status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot sign in / up due to security reasons. Please contact support.",
+                reason:
+                    "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
             });
         });
 
@@ -481,7 +482,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             assert(createCodeResponse !== undefined);
             assert.deepStrictEqual(createCodeResponse, {
                 status: "SIGN_IN_UP_NOT_ALLOWED",
-                reason: "Cannot sign in / up due to security reasons. Please contact support.",
+                reason:
+                    "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
             });
         });
 
