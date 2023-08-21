@@ -117,35 +117,12 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 return response;
             }
 
-            let userId = response.user.id;
-
-            // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
-            // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
-            let recipeUserId: RecipeUserId | undefined = undefined;
-            for (let i = 0; i < response.user.loginMethods.length; i++) {
-                if (
-                    response.user.loginMethods[i].recipeId === "thirdparty" &&
-                    response.user.loginMethods[i].hasSameThirdPartyInfoAs({
-                        id: thirdPartyId,
-                        userId: thirdPartyUserId,
-                    })
-                ) {
-                    recipeUserId = response.user.loginMethods[i].recipeUserId;
-                    break;
-                }
-            }
-
-            userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
-                recipeUserId: recipeUserId!,
+                user: response.user,
                 userContext,
             });
 
-            let updatedUser = await getUser(userId, userContext);
-
-            if (updatedUser === undefined) {
-                throw new Error("Should never come here.");
-            }
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,

@@ -13,11 +13,11 @@ export default class Wrapper {
      * same as the input recipeUserID if it was made into a primary user, or if there was
      * no linking that happened.
      */
-    static createPrimaryUserIdOrLinkAccounts(input: {
-        tenantId: string;
-        recipeUserId: RecipeUserId;
-        userContext?: any;
-    }): Promise<string>;
+    static createPrimaryUserIdOrLinkAccounts(
+        recipeUserId: RecipeUserId,
+        tenantId: string,
+        userContext?: any
+    ): Promise<import("../../types").User>;
     /**
      * This function returns the primary user that the input recipe ID can be
      * linked to. It can be used to determine which primary account the linking
@@ -27,10 +27,10 @@ export default class Wrapper {
      * that the input recipe ID can be linked to, and therefore it can be made
      * into a primary user itself.
      */
-    static getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
-        recipeUserId: RecipeUserId;
-        userContext?: any;
-    }): Promise<import("../../types").User | undefined>;
+    static getPrimaryUserThatCanBeLinkedToRecipeUserId(
+        recipeUserId: RecipeUserId,
+        userContext?: any
+    ): Promise<import("../../types").User | undefined>;
     static canCreatePrimaryUser(
         recipeUserId: RecipeUserId,
         userContext?: any
@@ -142,7 +142,7 @@ export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
 export declare const unlinkAccount: typeof Wrapper.unlinkAccount;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
-export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
+export declare const getPrimaryUserThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserThatCanBeLinkedToRecipeUserId;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export declare const isSignInAllowed: typeof Wrapper.isSignInAllowed;
 export declare const isEmailChangeAllowed: typeof Wrapper.isEmailChangeAllowed;

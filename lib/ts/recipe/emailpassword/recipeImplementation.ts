@@ -38,18 +38,11 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
-                // we can use index 0 cause this is a new recipe user
-                recipeUserId: response.user.loginMethods[0].recipeUserId,
+                user: response.user,
                 userContext,
             });
-
-            let updatedUser = await getUser(userId, userContext);
-
-            if (updatedUser === undefined) {
-                throw new Error("Should never come here.");
-            }
 
             return {
                 status: "OK",

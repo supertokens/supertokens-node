@@ -547,12 +547,12 @@ export default function getAPIImplementation(): APIInterface {
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the
                         // email is shared.
-                        let linkedToUserId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                        let linkedToUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                             tenantId,
-                            recipeUserId: createUserResponse.user.loginMethods[0].recipeUserId,
+                            user: createUserResponse.user,
                             userContext,
                         });
-                        if (linkedToUserId !== existingUser.id) {
+                        if (linkedToUser.id !== existingUser.id) {
                             // this means that the account we just linked to
                             // was not the one we had expected to link it to. This can happen
                             // due to some race condition or the other.. Either way, this
@@ -561,7 +561,7 @@ export default function getAPIImplementation(): APIInterface {
                         return {
                             status: "OK",
                             email: tokenConsumptionResponse.email,
-                            user: (await getUser(linkedToUserId, userContext))!, // we refetch cause we want to return the user object with the updated login methods.
+                            user: linkedToUser,
                         };
                     }
                 }
@@ -621,7 +621,7 @@ export default function getAPIImplementation(): APIInterface {
             // so we want to call it only once this is up to date,
 
             let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                recipeUserId: emailPasswordRecipeUser.recipeUserId,
+                user: response.user,
                 tenantId,
                 userContext,
             });
@@ -633,13 +633,11 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             // the above sign in recipe function does not do account linking - so we do it here.
-            let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
-                recipeUserId: emailPasswordRecipeUser.recipeUserId!,
+                user: response.user,
                 userContext,
             });
-
-            response.user = (await getUser(userId, userContext))!;
 
             let session = await Session.createNewSession(
                 options.req,

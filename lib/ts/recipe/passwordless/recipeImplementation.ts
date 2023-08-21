@@ -95,8 +95,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            let userId = response.user.id;
-
             // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
             // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
             let recipeUserId: RecipeUserId | undefined = undefined;
@@ -115,13 +113,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 throw new Error("Should never come here");
             }
 
-            userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId: input.tenantId,
-                recipeUserId: recipeUserId!,
+                user: response.user,
                 userContext: input.userContext,
             });
-
-            let updatedUser = await getUser(userId, input.userContext);
 
             if (updatedUser === undefined) {
                 throw new Error("Should never come here.");

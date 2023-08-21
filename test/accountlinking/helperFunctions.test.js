@@ -484,8 +484,8 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
         });
     });
 
-    describe("getPrimaryUserIdThatCanBeLinkedToRecipeUserId tests", function () {
-        it("calling getPrimaryUserIdThatCanBeLinkedToRecipeUserId returns undefined if nothing can be linked", async function () {
+    describe("getPrimaryUserThatCanBeLinkedToRecipeUserId tests", function () {
+        it("calling getPrimaryUserThatCanBeLinkedToRecipeUserId returns undefined if nothing can be linked", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -535,7 +535,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId({
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
                 tenantId: "public",
@@ -544,7 +544,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response === undefined);
         });
 
-        it("calling getPrimaryUserIdThatCanBeLinkedToRecipeUserId returns the right primary user if it can be linked", async function () {
+        it("calling getPrimaryUserThatCanBeLinkedToRecipeUserId returns the right primary user if it can be linked", async function () {
             await startST();
             supertokens.init({
                 supertokens: {
@@ -594,7 +594,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
+            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId({
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 checkAccountsToLinkTableAsWell: true,
                 tenantId: "public",
@@ -2739,6 +2739,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                tenantId: "public",
                 recipeUserId: user.user.loginMethods[0].recipeUserId,
             });
         });
@@ -2806,6 +2807,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.linkAccounts("public", tpUser.user.loginMethods[0].recipeUserId, user.user.id);
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 
@@ -2880,6 +2882,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.linkAccounts("public", tpUser.user.loginMethods[0].recipeUserId, user.user.id);
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 
@@ -2949,6 +2952,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.linkAccounts("public", tpUser.user.loginMethods[0].recipeUserId, user.user.id);
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 
@@ -3014,6 +3018,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 

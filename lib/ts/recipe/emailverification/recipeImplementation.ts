@@ -3,6 +3,8 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
 import { GetEmailForRecipeUserIdFunc } from "./types";
+import type AccountLinkingRecipe from "../accountlinking/recipe";
+import { getUser } from "../..";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -62,18 +64,20 @@ export default function getRecipeInterface(
                 }
             );
             if (response.status === "OK") {
+                const recipeUserId = new RecipeUserId(response.userId);
                 if (attemptAccountLinking) {
                     // before attempting this, we must check that the email that got verified
                     // from the ID is the one that is currently associated with the ID (since
                     // email verification can be done for any combination of (user id, email)
                     // and not necessarily the email that is currently associated with the ID)
-                    let emailInfo = await getEmailForRecipeUserId(new RecipeUserId(response.userId), userContext);
+                    let emailInfo = await getEmailForRecipeUserId(recipeUserId, userContext);
                     if (emailInfo.status === "OK" && emailInfo.email === response.email) {
                         // we do this here to prevent cyclic dependencies.
                         // TODO: Fix this.
-                        let AccountLinking = require("../accountlinking");
+                        let AccountLinking = require("../accountlinking/recipe").getInstance() as AccountLinkingRecipe;
                         await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                            recipeUserId: new RecipeUserId(response.userId),
+                            tenantId,
+                            user: (await getUser(recipeUserId.getAsString()))!, // TODO: this should not happen ideally
                             userContext,
                         });
                     }
@@ -82,7 +86,7 @@ export default function getRecipeInterface(
                 return {
                     status: "OK",
                     user: {
-                        recipeUserId: new RecipeUserId(response.userId),
+                        recipeUserId,
                         email: response.email,
                     },
                 };

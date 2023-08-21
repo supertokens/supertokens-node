@@ -35,26 +35,26 @@ export default class Recipe extends RecipeModule {
     static reset(): void;
     createPrimaryUserIdOrLinkAccounts: ({
         tenantId,
-        recipeUserId,
+        user,
         userContext,
     }: {
         tenantId: string;
-        recipeUserId: RecipeUserId;
+        user: User;
         userContext: any;
-    }) => Promise<string>;
-    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
-        recipeUserId,
+    }) => Promise<User>;
+    getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
+        user,
         userContext,
     }: {
-        recipeUserId: RecipeUserId;
+        user: User;
         userContext: any;
     }) => Promise<User | undefined>;
     isSignInAllowed: ({
-        recipeUserId,
+        user,
         tenantId,
         userContext,
     }: {
-        recipeUserId: RecipeUserId;
+        user: User;
         tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
@@ -81,7 +81,7 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {
-        recipeUserId: RecipeUserId;
+        user?: User;
         newEmail: string;
         isVerified: boolean;
         tenantId: string;

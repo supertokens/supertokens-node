@@ -16,6 +16,7 @@
 import Recipe from "./recipe";
 import type { RecipeInterface, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
+import { getUser } from "../..";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -29,15 +30,21 @@ export default class Wrapper {
      * same as the input recipeUserID if it was made into a primary user, or if there was
      * no linking that happened.
      */
-    static async createPrimaryUserIdOrLinkAccounts(input: {
-        tenantId: string;
-        recipeUserId: RecipeUserId;
-        userContext?: any;
-    }) {
+    static async createPrimaryUserIdOrLinkAccounts(
+        recipeUserId: RecipeUserId,
+        tenantId: string,
+        userContext: any = {}
+    ) {
+        const user = await getUser(recipeUserId.getAsString(), userContext);
+        if (user === undefined) {
+            // Should never really come here unless a programming error happened in the app
+            throw new Error("Unknown recipeUserId");
+        }
+
         return await Recipe.getInstance().createPrimaryUserIdOrLinkAccounts({
-            tenantId: input.tenantId,
-            recipeUserId: input.recipeUserId,
-            userContext: input.userContext === undefined ? {} : input.userContext,
+            tenantId,
+            user,
+            userContext,
         });
     }
 
@@ -50,51 +57,58 @@ export default class Wrapper {
      * that the input recipe ID can be linked to, and therefore it can be made
      * into a primary user itself.
      */
-    static async getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
-        recipeUserId: RecipeUserId;
-        userContext?: any;
-    }) {
-        return await Recipe.getInstance().getPrimaryUserIdThatCanBeLinkedToRecipeUserId({
-            recipeUserId: input.recipeUserId,
-            userContext: input.userContext === undefined ? {} : input.userContext,
+    static async getPrimaryUserThatCanBeLinkedToRecipeUserId(recipeUserId: RecipeUserId, userContext: any = {}) {
+        const user = await getUser(recipeUserId.getAsString(), userContext);
+        if (user === undefined) {
+            // Should never really come here unless a programming error happened in the app
+            throw new Error("Unknown recipeUserId");
+        }
+        return await Recipe.getInstance().getPrimaryUserThatCanBeLinkedToRecipeUserId({
+            user,
+            userContext,
         });
     }
 
-    static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext?: any) {
+    static async canCreatePrimaryUser(recipeUserId: RecipeUserId, userContext: any = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.canCreatePrimaryUser({
             recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async createPrimaryUser(recipeUserId: RecipeUserId, userContext?: any) {
+    static async createPrimaryUser(recipeUserId: RecipeUserId, userContext: any = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.createPrimaryUser({
             recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
+    static async canLinkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext: any = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.canLinkAccounts({
             recipeUserId,
             primaryUserId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async linkAccounts(tenantId: string, recipeUserId: RecipeUserId, primaryUserId: string, userContext?: any) {
+    static async linkAccounts(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        primaryUserId: string,
+        userContext: any = {}
+    ) {
         return await Recipe.getInstance().recipeInterfaceImpl.linkAccounts({
             tenantId,
             recipeUserId,
             primaryUserId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async unlinkAccount(recipeUserId: RecipeUserId, userContext?: any) {
+    static async unlinkAccount(recipeUserId: RecipeUserId, userContext: any = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.unlinkAccount({
             recipeUserId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
@@ -108,15 +122,21 @@ export default class Wrapper {
             newUser,
             isVerified,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
-    static async isSignInAllowed(recipeUserId: RecipeUserId, tenantId: string, userContext?: any) {
+    static async isSignInAllowed(recipeUserId: RecipeUserId, tenantId: string, userContext: any = {}) {
+        const user = await getUser(recipeUserId.getAsString(), userContext);
+        if (user === undefined) {
+            // Should never really come here unless a programming error happened in the app
+            throw new Error("Unknown recipeUserId");
+        }
+
         return await Recipe.getInstance().isSignInAllowed({
-            recipeUserId,
+            user,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 
@@ -127,12 +147,14 @@ export default class Wrapper {
         tenantId: string,
         userContext?: any
     ) {
+        const user = await getUser(recipeUserId.getAsString(), userContext);
+
         return await Recipe.getInstance().isEmailChangeAllowed({
-            recipeUserId,
+            user,
             newEmail,
             isVerified,
             tenantId,
-            userContext: userContext === undefined ? {} : userContext,
+            userContext,
         });
     }
 }
@@ -144,7 +166,7 @@ export const canLinkAccounts = Wrapper.canLinkAccounts;
 export const linkAccounts = Wrapper.linkAccounts;
 export const unlinkAccount = Wrapper.unlinkAccount;
 export const createPrimaryUserIdOrLinkAccounts = Wrapper.createPrimaryUserIdOrLinkAccounts;
-export const getPrimaryUserIdThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
+export const getPrimaryUserThatCanBeLinkedToRecipeUserId = Wrapper.getPrimaryUserThatCanBeLinkedToRecipeUserId;
 export const isSignUpAllowed = Wrapper.isSignUpAllowed;
 export const isSignInAllowed = Wrapper.isSignInAllowed;
 export const isEmailChangeAllowed = Wrapper.isEmailChangeAllowed;
