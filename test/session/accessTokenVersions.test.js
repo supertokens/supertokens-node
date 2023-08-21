@@ -549,6 +549,171 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             });
         });
 
+        it("should validate v4 tokens", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "3.0";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {},
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyToken = legacySessionResp.accessToken.token;
+
+            const app = getTestExpressApp();
+
+            let res = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(
+                new Set(Object.keys(res.body.payload)),
+                new Set([
+                    "antiCsrfToken",
+                    "exp",
+                    "iat",
+                    "parentRefreshTokenHash1",
+                    "refreshTokenHash1",
+                    "sessionHandle",
+                    "sub",
+                    "tId",
+                ])
+            );
+            delete res.body.payload;
+            assert.deepStrictEqual(res.body, {
+                message: true,
+                sessionExists: true,
+                sessionHandle: legacySessionResp.session.handle,
+            });
+        });
+
+        it("should validate v4 tokens with check database enabled", async function () {
+            await startST();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+            // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+            Querier.apiVersion = "3.0";
+            const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+                new NormalisedURLPath("/recipe/session"),
+                {
+                    userId: "test-user-id",
+                    enableAntiCsrf: false,
+                    userDataInJWT: {},
+                    userDataInDatabase: {},
+                }
+            );
+            Querier.apiVersion = undefined;
+
+            const legacyToken = legacySessionResp.accessToken.token;
+
+            const app = getTestExpressApp();
+
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/revoke-session")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            let resDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify-checkdb")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(401)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(resDBCheck.body, { message: "unauthorised" });
+
+            let resNoDBCheck = await new Promise((resolve, reject) =>
+                request(app)
+                    .get("/verify")
+                    .set("Authorization", `Bearer ${legacyToken}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(
+                new Set(Object.keys(resNoDBCheck.body.payload)),
+                new Set([
+                    "antiCsrfToken",
+                    "exp",
+                    "iat",
+                    "parentRefreshTokenHash1",
+                    "refreshTokenHash1",
+                    "sessionHandle",
+                    "sub",
+                    "tId",
+                ])
+            );
+            delete resNoDBCheck.body.payload;
+
+            assert.deepStrictEqual(resNoDBCheck.body, {
+                message: true,
+                sessionExists: true,
+                sessionHandle: legacySessionResp.session.handle,
+            });
+        });
+
         it("should validate v5 tokens with check database enabled", async function () {
             await startST();
             SuperTokens.init({

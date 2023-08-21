@@ -51,12 +51,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             },
             override: (oI) => ({
                 ...oI,
-                exchangeAuthCodeForOAuthTokens: () => ({}),
-                getUserInfo: () => {
+                exchangeAuthCodeForOAuthTokens: ({ redirectURIInfo }) => redirectURIInfo,
+                getUserInfo: ({ oAuthTokens }) => {
                     return {
-                        thirdPartyUserId: "user",
+                        thirdPartyUserId: oAuthTokens.userId ?? "user",
                         email: {
-                            id: "email@test.com",
+                            id: oAuthTokens.email ?? "email@test.com",
                             isVerified: true,
                         },
                         rawUserInfoFromProvider: {},
@@ -1370,6 +1370,126 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
             );
+        });
+
+        describe("with primary user that has both unverified and verified login methods", () => {
+            it("signInUpPOST successfully links account and returns the session of the right recipe user if it's a sign up", async function () {
+                let date = Date.now();
+                let email = `john.doe+${date}@supertokens.com`;
+                await startST();
+                supertokens.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init(),
+                        EmailVerification.init({
+                            mode: "OPTIONAL",
+                        }),
+                        Session.init(),
+                        ThirdParty.init({
+                            signInAndUpFeature: {
+                                providers: [
+                                    this.customProviderWithEmailVerified,
+                                    {
+                                        config: {
+                                            thirdPartyId: "google",
+                                            clients: [
+                                                {
+                                                    clientId: "",
+                                                    clientSecret: "",
+                                                },
+                                            ],
+                                        },
+                                    },
+                                ],
+                            },
+                        }),
+                        AccountLinking.init({
+                            shouldDoAutomaticAccountLinking: async () => {
+                                return {
+                                    shouldAutomaticallyLink: true,
+                                    shouldRequireVerification: true,
+                                };
+                            },
+                        }),
+                    ],
+                });
+
+                const app = express();
+                app.use(middleware());
+                app.use(errorHandler());
+
+                nock("https://test.com").post("/oauth/token").reply(200, {});
+
+                let tpUser = (
+                    await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd" + date, email, true)
+                ).user;
+                await AccountLinking.createPrimaryUser(tpUser.loginMethods[0].recipeUserId);
+
+                let tpUserUnverified = (
+                    await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd2" + date, email, false)
+                ).user;
+
+                const linkRes = await AccountLinking.linkAccounts(
+                    "public",
+                    tpUserUnverified.loginMethods[0].recipeUserId,
+                    tpUser.id
+                );
+
+                assert.strictEqual(linkRes.status, "OK");
+
+                await EmailVerification.unverifyEmail(tpUserUnverified.loginMethods[0].recipeUserId);
+                const primUser = await supertokens.getUser(linkRes.user.id);
+
+                let response = await new Promise((resolve) =>
+                    request(app)
+                        .post("/auth/signinup")
+                        .send({
+                            thirdPartyId: "custom-ev",
+                            redirectURIInfo: {
+                                redirectURIOnProviderDashboard: "http://127.0.0.1/callback",
+                                redirectURIQueryParams: {
+                                    code: "abcdefghj",
+                                },
+                                email,
+                                userId: "user" + date,
+                            },
+                        })
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                );
+
+                assert(response.body.status === "OK");
+                assert(response.body.createdNewUser === true);
+
+                let updatedPUser = await supertokens.getUser(primUser.id);
+                assert(updatedPUser.isPrimaryUser === true);
+                assert(updatedPUser.loginMethods.length === 3);
+                assert(updatedPUser.loginMethods[2].thirdParty.id === "custom-ev");
+                assert(updatedPUser.loginMethods[1].thirdParty.id === "google");
+                assert(updatedPUser.loginMethods[0].thirdParty.id === "google");
+
+                // checking session
+                tokens = extractInfoFromResponse(response);
+                let session = await Session.getSessionWithoutRequestResponse(tokens.accessTokenFromAny);
+                assert.strictEqual(session.getUserId(), primUser.id);
+                assert.strictEqual(
+                    session.getRecipeUserId().getAsString(),
+                    updatedPUser.loginMethods[2].recipeUserId.getAsString()
+                );
+            });
         });
     });
 });
