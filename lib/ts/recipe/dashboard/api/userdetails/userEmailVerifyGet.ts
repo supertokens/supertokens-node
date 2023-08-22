@@ -37,7 +37,7 @@ export const userEmailVerifyGet: APIFunction = async (
         };
     }
 
-    const response = await EmailVerification.isEmailVerified(new RecipeUserId(recipeUserId), userContext);
+    const response = await EmailVerification.isEmailVerified(new RecipeUserId(recipeUserId), undefined, userContext);
     return {
         status: "OK",
         isVerified: response,

@@ -28,6 +28,13 @@ export declare class Querier {
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>
     ) => Promise<any>;
+    sendGetRequestWithResponseHeaders: (
+        path: NormalisedURLPath,
+        params: Record<string, boolean | number | string | undefined>
+    ) => Promise<{
+        body: any;
+        headers: Headers;
+    }>;
     sendPutRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     getAllCoreUrlsForPath(path: string): string[];
     private sendRequestHelper;

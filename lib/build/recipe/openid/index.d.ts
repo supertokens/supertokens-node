@@ -27,6 +27,7 @@ export default class OpenIdRecipeWrapper {
         userContext?: any
     ): Promise<{
         keys: import("../jwt").JsonWebKey[];
+        validityInSeconds?: number | undefined;
     }>;
 }
 export declare let init: typeof OpenIdRecipe.init;

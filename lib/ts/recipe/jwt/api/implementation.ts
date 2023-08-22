@@ -25,7 +25,13 @@ export default function getAPIImplementation(): APIInterface {
             options: APIOptions;
             userContext: any;
         }): Promise<{ keys: JsonWebKey[] } | GeneralErrorResponse> {
-            return await options.recipeImplementation.getJWKS({ userContext });
+            const resp = await options.recipeImplementation.getJWKS({ userContext });
+
+            if (resp.validityInSeconds !== undefined) {
+                options.res.setHeader("Cache-Control", `max-age=${resp.validityInSeconds}, must-revalidate`, false);
+            }
+
+            return resp;
         },
     };
 }

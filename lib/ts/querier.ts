@@ -19,6 +19,7 @@ import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
+import { RATE_LIMIT_STATUS_CODE } from "./constants";
 
 export class Querier {
     private static initCalled = false;
@@ -47,7 +48,7 @@ export class Querier {
             return Querier.apiVersion;
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
-        let response = await this.sendRequestHelper(
+        let { body: response } = await this.sendRequestHelper(
             new NormalisedURLPath("/apiversion"),
             "GET",
             async (url: string) => {
@@ -110,7 +111,7 @@ export class Querier {
 
     // path should start with "/"
     sendPostRequest = async <T = any>(path: NormalisedURLPath, body: any): Promise<T> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
             path,
             "POST",
             async (url: string) => {
@@ -139,11 +140,12 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+        return respBody;
     };
 
     // path should start with "/"
     sendDeleteRequest = async (path: NormalisedURLPath, body: any, params?: any): Promise<any> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
             path,
             "DELETE",
             async (url: string) => {
@@ -173,6 +175,7 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+        return respBody;
     };
 
     // path should start with "/"
@@ -180,7 +183,44 @@ export class Querier {
         path: NormalisedURLPath,
         params: Record<string, boolean | number | string | undefined>
     ): Promise<any> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
+            path,
+            "GET",
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion();
+                let headers: any = { "cdi-version": apiVersion };
+                if (Querier.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": Querier.apiKey,
+                    };
+                }
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
+                    headers = {
+                        ...headers,
+                        rid: this.rIdToCore,
+                    };
+                }
+                const finalURL = new URL(url);
+                const searchParams = new URLSearchParams(
+                    Object.entries(params).filter(([_, value]) => value !== undefined) as string[][]
+                );
+                finalURL.search = searchParams.toString();
+                return await fetch(finalURL.toString(), {
+                    method: "GET",
+                    headers,
+                });
+            },
+            this.__hosts?.length || 0
+        );
+        return respBody;
+    };
+
+    sendGetRequestWithResponseHeaders = async (
+        path: NormalisedURLPath,
+        params: Record<string, boolean | number | string | undefined>
+    ): Promise<{ body: any; headers: Headers }> => {
+        return await this.sendRequestHelper(
             path,
             "GET",
             async (url: string) => {
@@ -214,7 +254,7 @@ export class Querier {
 
     // path should start with "/"
     sendPutRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
-        return this.sendRequestHelper(
+        const { body: respBody } = await this.sendRequestHelper(
             path,
             "PUT",
             async (url: string) => {
@@ -241,6 +281,7 @@ export class Querier {
             },
             this.__hosts?.length || 0
         );
+        return respBody;
     };
 
     public getAllCoreUrlsForPath(path: string) {
@@ -263,7 +304,8 @@ export class Querier {
         path: NormalisedURLPath,
         method: string,
         requestFunc: (url: string) => Promise<Response>,
-        numberOfTries: number
+        numberOfTries: number,
+        retryInfoMap?: Record<string, number>
     ): Promise<any> => {
         if (this.__hosts === undefined) {
             throw Error(
@@ -276,6 +318,16 @@ export class Querier {
         let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
         const url = currentDomain + currentBasePath + path.getAsStringDangerous();
+        const maxRetries = 5;
+
+        if (retryInfoMap === undefined) {
+            retryInfoMap = {};
+        }
+
+        if (retryInfoMap[url] === undefined) {
+            retryInfoMap[url] = maxRetries;
+        }
+
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
@@ -288,17 +340,33 @@ export class Querier {
                 throw response;
             }
             if (response.headers.get("content-type")?.startsWith("text")) {
-                return await response.text();
+                return { body: await response.text(), headers: response.headers };
             }
-            return await response.json();
+            return { body: await response.json(), headers: response.headers };
         } catch (err) {
             if (
                 err.message !== undefined &&
                 (err.message.includes("Failed to fetch") || err.message.includes("ECONNREFUSED"))
             ) {
-                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1);
+                return await this.sendRequestHelper(path, method, requestFunc, numberOfTries - 1, retryInfoMap);
             }
+
             if (err instanceof Response) {
+                if (err.status === RATE_LIMIT_STATUS_CODE) {
+                    const retriesLeft = retryInfoMap[url];
+
+                    if (retriesLeft > 0) {
+                        retryInfoMap[url] = retriesLeft - 1;
+
+                        const attemptsMade = maxRetries - retriesLeft;
+                        const delay = 10 + 250 * attemptsMade;
+
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+
+                        return await this.sendRequestHelper(path, method, requestFunc, numberOfTries, retryInfoMap);
+                    }
+                }
+
                 throw new Error(
                     "SuperTokens core threw an error for a " +
                         method +
@@ -309,9 +377,9 @@ export class Querier {
                         " and message: " +
                         (await err.text())
                 );
-            } else {
-                throw err;
             }
+
+            throw err;
         }
     };
 }
