@@ -1731,3 +1731,22 @@ ThirdPartyPasswordless.init({
 });
 
 const recipeUserId = new Supertokens.RecipeUserId("asdf");
+
+Session.init({
+    override: {
+        openIdFeature: {
+            jwtFeature: {
+                apis: (oI) => {
+                    return {
+                        ...oI,
+                        getJWKSGET: async function (input) {
+                            let result = await oI.getJWKSGET!(input);
+                            input.options.res.setHeader("custom-header", "custom-value", false);
+                            return result;
+                        },
+                    };
+                },
+            },
+        },
+    },
+});

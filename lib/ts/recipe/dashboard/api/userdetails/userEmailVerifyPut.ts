@@ -56,7 +56,7 @@ export const userEmailVerifyPut = async (
             throw new Error("Should not come here");
         }
     } else {
-        await EmailVerification.unverifyEmail(new RecipeUserId(recipeUserId), userContext);
+        await EmailVerification.unverifyEmail(new RecipeUserId(recipeUserId), undefined, userContext);
     }
 
     return {

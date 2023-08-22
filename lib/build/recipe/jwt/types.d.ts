@@ -57,6 +57,7 @@ export declare type RecipeInterface = {
         userContext: any;
     }): Promise<{
         keys: JsonWebKey[];
+        validityInSeconds?: number;
     }>;
 };
 export declare type APIInterface = {

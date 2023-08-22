@@ -97,7 +97,7 @@ export default class SessionWrapper {
         }
 
         for (const claim of claimsAddedByOtherRecipes) {
-            const update = await claim.build(userId, recipeUserId, userContext);
+            const update = await claim.build(userId, recipeUserId, tenantId, userContext);
             finalAccessTokenPayload = {
                 ...finalAccessTokenPayload,
                 ...update,

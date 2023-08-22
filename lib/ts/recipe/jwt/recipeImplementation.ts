@@ -18,6 +18,8 @@ import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
 import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
 
+const defaultJWKSMaxAge = 60; // This corresponds to the dynamicSigningKeyOverlapMS in the core
+
 export default function getRecipeInterface(
     querier: Querier,
     config: TypeNormalisedInput,
@@ -66,8 +68,26 @@ export default function getRecipeInterface(
             }
         },
 
-        getJWKS: async function (): Promise<{ keys: JsonWebKey[] }> {
-            return await querier.sendGetRequest(new NormalisedURLPath("/.well-known/jwks.json"), {});
+        getJWKS: async function (): Promise<{ keys: JsonWebKey[]; validityInSeconds: number }> {
+            const { body, headers } = await querier.sendGetRequestWithResponseHeaders(
+                new NormalisedURLPath("/.well-known/jwks.json"),
+                {}
+            );
+            let validityInSeconds = defaultJWKSMaxAge;
+            const cacheControl = headers.get("Cache-Control");
+            if (cacheControl) {
+                const maxAgeHeader = cacheControl.match(/,?\s*max-age=(\d+)(?:,|$)/);
+                if (maxAgeHeader !== null) {
+                    validityInSeconds = Number.parseInt(maxAgeHeader[1]);
+                    if (!Number.isSafeInteger(validityInSeconds)) {
+                        validityInSeconds = defaultJWKSMaxAge;
+                    }
+                }
+            }
+            return {
+                validityInSeconds,
+                ...body,
+            };
         },
     };
 }

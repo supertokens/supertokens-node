@@ -21,6 +21,7 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         keys: JsonWebKey[];
+        validityInSeconds?: number | undefined;
     }>;
 }
 export declare let init: typeof Recipe.init;
