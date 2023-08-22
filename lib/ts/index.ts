@@ -25,6 +25,7 @@ export default class SuperTokensWrapper {
     static init = SuperTokens.init;
 
     static Error = SuperTokensError;
+    static RecipeUserId = RecipeUserId;
 
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
@@ -160,3 +161,5 @@ export let convertToRecipeUserId = SuperTokensWrapper.convertToRecipeUserId;
 export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserContext;
 
 export let Error = SuperTokensWrapper.Error;
+
+export { default as RecipeUserId } from "./recipeUserId";

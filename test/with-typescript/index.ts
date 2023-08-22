@@ -1,5 +1,5 @@
 import * as express from "express";
-import Supertokens from "../..";
+import Supertokens, { RecipeUserId } from "../..";
 import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
@@ -1728,3 +1728,5 @@ ThirdPartyPasswordless.init({
     contactMethod: "EMAIL",
     flowType: "MAGIC_LINK",
 });
+
+const recipeUserId = new Supertokens.RecipeUserId("asdf");

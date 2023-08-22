@@ -7,6 +7,7 @@ import RecipeUserId from "./recipeUserId";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
+    static RecipeUserId: typeof RecipeUserId;
     static getAllCORSHeaders(): string[];
     static getUserCount(includeRecipeIds?: string[], tenantId?: string): Promise<number>;
     static getUsersOldestFirst(input: {
@@ -108,3 +109,4 @@ export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersBy
 export declare let convertToRecipeUserId: typeof SuperTokensWrapper.convertToRecipeUserId;
 export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getRequestFromUserContext;
 export declare let Error: typeof SuperTokensError;
+export { default as RecipeUserId } from "./recipeUserId";
