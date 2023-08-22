@@ -82,7 +82,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 }
             }
 
-            if (!response.createdNewUser) {
+            if (!response.createdNewRecipeUser) {
                 // Unlike in the sign up scenario, we do not do account linking here
                 // cause we do not want sign in to change the potentially user ID of a user
                 // due to linking when this function is called by the dev in their API.
@@ -124,7 +124,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
             return {
                 status: "OK",
-                createdNewRecipeUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewRecipeUser,
                 user: updatedUser,
             };
         },

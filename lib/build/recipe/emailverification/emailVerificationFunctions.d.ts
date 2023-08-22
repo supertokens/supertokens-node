@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { User } from "./types";
+import { UserEmailInfo } from "./types";
 import { NormalisedAppinfo } from "../../types";
 export declare function createAndSendEmailUsingSupertokensService(
     appInfo: NormalisedAppinfo,
-    user: User,
+    user: UserEmailInfo,
     emailVerifyURLWithToken: string
 ): Promise<void>;

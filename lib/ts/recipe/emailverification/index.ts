@@ -15,7 +15,13 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
+import {
+    RecipeInterface,
+    APIOptions,
+    APIInterface,
+    UserEmailInfo,
+    TypeEmailVerificationEmailDeliveryInput,
+} from "./types";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
 import RecipeUserId from "../../recipeUserId";
 import { getEmailVerifyLink } from "./utils";
@@ -42,7 +48,7 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -110,7 +116,7 @@ export default class Wrapper {
         if (email === undefined) {
             const recipeInstance = Recipe.getInstanceOrThrowError();
 
-            const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -163,7 +169,7 @@ export default class Wrapper {
     static async isEmailVerified(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
 
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
@@ -193,7 +199,7 @@ export default class Wrapper {
         // but redeeming those tokens would have no effect on isEmailVerified called without the old address
         // so in general that is not necessary either.
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -218,7 +224,7 @@ export default class Wrapper {
     static async unverifyEmail(recipeUserId: RecipeUserId, email?: string, userContext: any = {}) {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
-            const emailInfo = await recipeInstance.getEmailForRecipeUserId(recipeUserId, userContext);
+            const emailInfo = await recipeInstance.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
@@ -264,7 +270,7 @@ export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens
 
 export let unverifyEmail = Wrapper.unverifyEmail;
 
-export type { RecipeInterface, APIOptions, APIInterface, User };
+export type { RecipeInterface, APIOptions, APIInterface, UserEmailInfo };
 
 export let sendEmail = Wrapper.sendEmail;
 

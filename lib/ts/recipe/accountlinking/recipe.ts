@@ -29,7 +29,6 @@ import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
 import EmailVerificationRecipe from "../emailverification/recipe";
-import { getUser } from "../..";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -233,19 +232,19 @@ export default class Recipe extends RecipeModule {
             });
 
             if (linkAccountsResult.status === "OK") {
-                return primaryUser;
+                return linkAccountsResult.user;
             } else if (
                 linkAccountsResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
             ) {
                 // this can happen cause of a race condition
                 // wherein the recipe user ID get's linked to
                 // some other primary user whilst this function is running.
-                // But this is OK, we can just refresh
-                return (await getUser(user.id, userContext))!;
+                // But this is OK, we can just return the primary user it is linked to
+                return linkAccountsResult.user;
             } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
                 // this can be possible during a race condition wherein the primary user
                 // that we fetched somehow is no more a primary user. This can happen if
-                // the unlink function was called in parallel on that user. So we can just recurse
+                // the unlink function was called in parallel on that user. So we can just retry
                 return await this.createPrimaryUserIdOrLinkAccounts({
                     tenantId,
                     user,
@@ -347,6 +346,7 @@ export default class Recipe extends RecipeModule {
         try {
             EmailVerificationRecipe.getInstanceOrThrowError();
             let emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
+                user,
                 user.loginMethods[0].recipeUserId,
                 userContext
             );

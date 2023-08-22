@@ -6,11 +6,11 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     /**
      * This is a function which is a combination of createPrimaryUser and
-     * linkAccounts where the input recipeUserID is either linked to a user that it can be
+     * linkAccounts where the input recipeUserId is either linked to a user that it can be
      * linked to, or is made into a primary user.
      *
      * The output will be the user ID of the user that it was linked to, or it will be the
-     * same as the input recipeUserID if it was made into a primary user, or if there was
+     * same as the input recipeUserId if it was made into a primary user, or if there was
      * no linking that happened.
      */
     static createPrimaryUserIdOrLinkAccounts(
@@ -58,9 +58,11 @@ export default class Wrapper {
               wasAlreadyAPrimaryUser: boolean;
           }
         | {
-              status:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              user: import("../../types").User;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
           }
@@ -101,8 +103,7 @@ export default class Wrapper {
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
+              user: import("../../types").User;
           }
         | {
               status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";

@@ -105,7 +105,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
             }
 
-            if (!response.createdNewUser) {
+            if (!response.createdNewRecipeUser) {
                 // Unlike in the sign up scenario, we do not do account linking here
                 // cause we do not want sign in to change the potentially user ID of a user
                 // due to linking when this function is called by the dev in their API.
@@ -126,7 +126,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
             return {
                 status: "OK",
-                createdNewRecipeUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewRecipeUser,
                 user: updatedUser,
             };
         },

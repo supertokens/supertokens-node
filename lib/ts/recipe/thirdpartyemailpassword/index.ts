@@ -140,11 +140,6 @@ export default class Wrapper {
         email: string,
         userContext: any = {}
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
-        let link = await createResetPasswordLink(userId, tenantId, email, userContext);
-        if (link.status === "UNKNOWN_USER_ID_ERROR") {
-            return link;
-        }
-
         const user = await getUser(userId, userContext);
         if (!user) {
             return { status: "UNKNOWN_USER_ID_ERROR" };
@@ -153,6 +148,11 @@ export default class Wrapper {
         const loginMethod = user.loginMethods.find((m) => m.recipeId === "emailpassword" && m.hasSameEmailAs(email));
         if (!loginMethod) {
             return { status: "UNKNOWN_USER_ID_ERROR" };
+        }
+
+        let link = await createResetPasswordLink(userId, tenantId, email, userContext);
+        if (link.status === "UNKNOWN_USER_ID_ERROR") {
+            return link;
         }
 
         await sendEmail({

@@ -1,4 +1,4 @@
-import { APIInterface, User } from "../";
+import { APIInterface, UserEmailInfo } from "../";
 import { logDebugMessage } from "../../../logger";
 import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
@@ -13,7 +13,7 @@ export default function getAPIInterface(): APIInterface {
             this: APIInterface,
             { token, tenantId, options, session, userContext }
         ): Promise<
-            | { status: "OK"; user: User; newSession?: SessionContainerInterface }
+            | { status: "OK"; user: UserEmailInfo; newSession?: SessionContainerInterface }
             | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
             | GeneralErrorResponse
         > {
@@ -60,6 +60,7 @@ export default function getAPIInterface(): APIInterface {
             // In this API, we will check if the session's recipe user id's email is verified or not.
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
+                undefined,
                 session.getRecipeUserId(),
                 userContext
             );
@@ -131,6 +132,7 @@ export default function getAPIInterface(): APIInterface {
             const tenantId = session.getTenantId();
 
             const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
+                undefined,
                 session.getRecipeUserId(),
                 userContext
             );

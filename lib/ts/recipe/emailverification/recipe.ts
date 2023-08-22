@@ -193,7 +193,7 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc = async (recipeUserId, userContext) => {
+    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc = async (user, recipeUserId, userContext) => {
         if (this.config.getEmailForRecipeUserId !== undefined) {
             const userRes = await this.config.getEmailForRecipeUserId(recipeUserId, userContext);
             if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
@@ -201,12 +201,14 @@ export default class Recipe extends RecipeModule {
             }
         }
 
-        let user = await getUser(recipeUserId.getAsString(), userContext);
-
         if (user === undefined) {
-            return {
-                status: "UNKNOWN_USER_ID_ERROR",
-            };
+            user = await getUser(recipeUserId.getAsString(), userContext);
+
+            if (user === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            }
         }
 
         for (let i = 0; i < user.loginMethods.length; i++) {
