@@ -56,6 +56,7 @@ export default function getAPIInterface(): APIInterface {
                 };
             }
             let existingUsers = await listUsersByAccountInfo(
+                tenantId,
                 {
                     thirdParty: {
                         id: provider.id,

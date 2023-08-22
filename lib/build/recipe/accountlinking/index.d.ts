@@ -28,6 +28,7 @@ export default class Wrapper {
      * into a primary user itself.
      */
     static getPrimaryUserThatCanBeLinkedToRecipeUserId(
+        tenantId: string,
         recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<import("../../types").User | undefined>;

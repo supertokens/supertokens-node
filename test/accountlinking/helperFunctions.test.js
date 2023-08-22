@@ -535,11 +535,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-                tenantId: "public",
-            });
+            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === undefined);
         });
@@ -594,11 +593,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-                tenantId: "public",
-            });
+            let response = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response.id === primaryUser.id);
         });

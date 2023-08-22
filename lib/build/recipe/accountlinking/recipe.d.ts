@@ -43,9 +43,11 @@ export default class Recipe extends RecipeModule {
         userContext: any;
     }) => Promise<User>;
     getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
+        tenantId,
         user,
         userContext,
     }: {
+        tenantId: string;
         user: User;
         userContext: any;
     }) => Promise<User | undefined>;

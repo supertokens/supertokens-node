@@ -173,6 +173,7 @@ export type RecipeInterface = {
     }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {
+        tenantId: string;
         accountInfo: AccountInfo;
         doUnionOfAccountInfo: boolean;
         userContext: any;

@@ -80,6 +80,7 @@ export default class SuperTokensWrapper {
     }>;
     static getUser(userId: string, userContext?: any): Promise<User | undefined>;
     static listUsersByAccountInfo(
+        tenantId: string,
         accountInfo: AccountInfo,
         doUnionOfAccountInfo?: boolean,
         userContext?: any

@@ -57,6 +57,7 @@ export default function getAPIImplementation(): APIInterface {
             // exists an email password user with the same email cause the function
             // above does not check for that.
             let users = await listUsersByAccountInfo(
+                tenantId,
                 {
                     email,
                 },
@@ -157,6 +158,7 @@ export default function getAPIImplementation(): APIInterface {
              * check if primaryUserId is linked with this email
              */
             let users = await listUsersByAccountInfo(
+                tenantId,
                 {
                     email,
                 },

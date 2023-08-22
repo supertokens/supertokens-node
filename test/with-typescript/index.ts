@@ -1162,6 +1162,7 @@ Supertokens.init({
                             if (
                                 (
                                     await Supertokens.listUsersByAccountInfo(
+                                        "public",
                                         {
                                             email: input.email,
                                         },

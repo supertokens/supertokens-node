@@ -262,7 +262,7 @@ app.post("/addPhoneNumber", verifySession(), async (req: SessionRequest, res) =>
 
     const phoneNumber = req.body.phoneNumber;
 
-    const otherUsers = await listUsersByAccountInfo({ phoneNumber });
+    const otherUsers = await listUsersByAccountInfo({ tenantId: "public", phoneNumber });
     if (otherUsers.length > 0) {
         return res.json({
             status: "GENERAL_ERROR",

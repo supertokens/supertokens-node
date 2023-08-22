@@ -265,15 +265,22 @@ export default function getRecipeImplementation(
 
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
-            { accountInfo, doUnionOfAccountInfo }: { accountInfo: AccountInfo; doUnionOfAccountInfo: boolean }
-        ): Promise<UserType[]> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/users/by-accountinfo"), {
-                email: accountInfo.email,
-                phoneNumber: accountInfo.phoneNumber,
-                thirdPartyId: accountInfo.thirdParty?.id,
-                thirdPartyUserId: accountInfo.thirdParty?.userId,
+            {
+                tenantId,
+                accountInfo,
                 doUnionOfAccountInfo,
-            });
+            }: { tenantId: string; accountInfo: AccountInfo; doUnionOfAccountInfo: boolean }
+        ): Promise<UserType[]> {
+            let result = await querier.sendGetRequest(
+                new NormalisedURLPath(`${tenantId ?? "public"}/users/by-accountinfo`),
+                {
+                    email: accountInfo.email,
+                    phoneNumber: accountInfo.phoneNumber,
+                    thirdPartyId: accountInfo.thirdParty?.id,
+                    thirdPartyUserId: accountInfo.thirdParty?.userId,
+                    doUnionOfAccountInfo,
+                }
+            );
             return result.users.map((u: any) => new User(u));
         },
 

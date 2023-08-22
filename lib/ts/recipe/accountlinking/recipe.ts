@@ -154,6 +154,7 @@ export default class Recipe extends RecipeModule {
 
         // now we try and find a linking candidate.
         let primaryUser = await this.getPrimaryUserThatCanBeLinkedToRecipeUserId({
+            tenantId,
             user: user,
             userContext,
         });
@@ -274,9 +275,11 @@ export default class Recipe extends RecipeModule {
     };
 
     getPrimaryUserThatCanBeLinkedToRecipeUserId = async ({
+        tenantId,
         user,
         userContext,
     }: {
+        tenantId: string;
         user: User;
         userContext: any;
     }): Promise<User | undefined> => {
@@ -289,6 +292,7 @@ export default class Recipe extends RecipeModule {
         // finally, we try and find a primary user based on
         // the email / phone number / third party ID.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId,
             accountInfo: user.loginMethods[0],
             doUnionOfAccountInfo: true,
             userContext,
@@ -425,6 +429,7 @@ export default class Recipe extends RecipeModule {
         // cause we want to guarantee that the output array contains just one
         // primary user.
         let users = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId,
             accountInfo,
             doUnionOfAccountInfo: true,
             userContext,
@@ -629,6 +634,7 @@ export default class Recipe extends RecipeModule {
         }
 
         let existingUsersWithNewEmail = await this.recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId: input.tenantId,
             accountInfo: {
                 email: input.newEmail,
             },

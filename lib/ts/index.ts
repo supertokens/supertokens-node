@@ -106,11 +106,13 @@ export default class SuperTokensWrapper {
     }
 
     static async listUsersByAccountInfo(
+        tenantId: string,
         accountInfo: AccountInfo,
         doUnionOfAccountInfo: boolean = false,
         userContext?: any
     ) {
         return await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId,
             accountInfo,
             doUnionOfAccountInfo,
             userContext: userContext === undefined ? {} : userContext,

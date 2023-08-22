@@ -57,13 +57,18 @@ export default class Wrapper {
      * that the input recipe ID can be linked to, and therefore it can be made
      * into a primary user itself.
      */
-    static async getPrimaryUserThatCanBeLinkedToRecipeUserId(recipeUserId: RecipeUserId, userContext: any = {}) {
+    static async getPrimaryUserThatCanBeLinkedToRecipeUserId(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        userContext: any = {}
+    ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
             throw new Error("Unknown recipeUserId");
         }
         return await Recipe.getInstance().getPrimaryUserThatCanBeLinkedToRecipeUserId({
+            tenantId,
             user,
             userContext,
         });

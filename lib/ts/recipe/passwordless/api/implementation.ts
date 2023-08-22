@@ -21,6 +21,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let existingUsers = await listUsersByAccountInfo(
+                input.tenantId,
                 {
                     phoneNumber: deviceInfo.phoneNumber,
                     email: deviceInfo.email,
@@ -150,7 +151,7 @@ export default function getAPIImplementation(): APIInterface {
             if ("phoneNumber" in input) {
                 accountInfo.email = input.phoneNumber;
             }
-            let existingUsers = await listUsersByAccountInfo(accountInfo, false, input.userContext);
+            let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
             existingUsers = existingUsers.filter((u) =>
                 u.loginMethods.some(
                     (m) =>
@@ -297,6 +298,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         emailExistsGET: async function (input) {
             let users = await listUsersByAccountInfo(
+                input.tenantId,
                 {
                     email: input.email,
                     // tenantId: input.tenantId,
@@ -312,6 +314,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         phoneNumberExistsGET: async function (input) {
             let users = await listUsersByAccountInfo(
+                input.tenantId,
                 {
                     phoneNumber: input.phoneNumber,
                     // tenantId: input.tenantId,
