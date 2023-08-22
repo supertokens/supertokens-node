@@ -1623,7 +1623,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
 function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, isNew, isPrimary }) {
     assert.strictEqual(validUserInputCodeResponse.status, "OK");
-    assert.strictEqual(validUserInputCodeResponse.createdNewUser, isNew);
+    assert.strictEqual(validUserInputCodeResponse.createdNewRecipeUser, isNew);
 
     assert.strictEqual(typeof validUserInputCodeResponse.user.id, "string");
     assert.strictEqual(typeof validUserInputCodeResponse.user.timeJoined, "number");

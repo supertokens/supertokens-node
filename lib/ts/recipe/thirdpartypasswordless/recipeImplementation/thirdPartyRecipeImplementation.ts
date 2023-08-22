@@ -17,7 +17,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: User }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
@@ -34,7 +34,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: User }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -53,7 +53,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             }
             return {
                 status: "OK",
-                createdNewUser: result.createdNewUser,
+                createdNewRecipeUser: result.createdNewRecipeUser,
                 user: result.user,
             };
         },

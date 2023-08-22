@@ -143,7 +143,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                     delete user.loginMethods[0].hasSamePhoneNumberAs;
                                     delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     delete user.toJson;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     return response;
                                 },
                             };
@@ -293,7 +293,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                         delete user.toJson;
-                                        newUser = response.createdNewUser;
+                                        newUser = response.createdNewRecipeUser;
                                     }
                                     return response;
                                 },
@@ -419,7 +419,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                 thirdPartySignInUp: async (input) => {
                                     let response = await oI.thirdPartySignInUp(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",
@@ -569,7 +569,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                 thirdPartySignInUpPOST: async (input) => {
                                     let response = await oI.thirdPartySignInUpPOST(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",

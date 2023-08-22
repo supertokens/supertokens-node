@@ -1543,7 +1543,7 @@ Passwordless.init({
                             });
                             return {
                                 status: "OK",
-                                createdNewUser: user.createdNewUser,
+                                createdNewRecipeUser: user.createdNewRecipeUser,
                                 user: user.user,
                             };
                         }

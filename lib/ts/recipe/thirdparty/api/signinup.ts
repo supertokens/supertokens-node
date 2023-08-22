@@ -93,7 +93,7 @@ export default async function signInUpAPI(
         send200Response(options.res, {
             status: result.status,
             user: result.user,
-            createdNewUser: result.createdNewUser,
+            createdNewRecipeUser: result.createdNewRecipeUser,
         });
     } else {
         send200Response(options.res, result);

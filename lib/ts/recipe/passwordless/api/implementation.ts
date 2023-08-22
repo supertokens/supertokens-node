@@ -138,7 +138,7 @@ export default function getAPIImplementation(): APIInterface {
 
             return {
                 status: "OK",
-                createdNewUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewRecipeUser,
                 user: response.user,
                 session,
             };

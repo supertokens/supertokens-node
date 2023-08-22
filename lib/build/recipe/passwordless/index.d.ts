@@ -73,7 +73,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: import("../../types").User;
           }
         | {
@@ -163,7 +163,7 @@ export default class Wrapper {
               }
     ): Promise<{
         status: string;
-        createdNewUser: boolean;
+        createdNewRecipeUser: boolean;
         user: import("../../types").User;
     }>;
     static sendEmail(

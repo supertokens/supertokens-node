@@ -824,7 +824,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "google");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "googleuser");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
@@ -858,7 +858,7 @@ describe(`providerConfigTest: ${printPath("[test/thirdparty/provider.config.test
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "google");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "googleuser");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");

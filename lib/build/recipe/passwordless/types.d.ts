@@ -142,7 +142,7 @@ export declare type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
           }
         | {
@@ -285,7 +285,7 @@ export declare type APIInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
               session: SessionContainerInterface;
           }

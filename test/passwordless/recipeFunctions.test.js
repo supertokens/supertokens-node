@@ -374,7 +374,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             assert(resp.status === "OK");
-            assert(resp.createdNewUser);
+            assert(resp.createdNewRecipeUser);
             assert.strictEqual(typeof resp.user.id, "string");
             assert.strictEqual(resp.user.emails[0], "test@example.com");
             assert.strictEqual(resp.user.phoneNumbers[0], undefined);
@@ -1024,7 +1024,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         });
 
         assert(result.status === "OK");
-        assert(result.createdNewUser === true);
+        assert(result.createdNewRecipeUser === true);
         assert(Object.keys(result).length === 3);
 
         assert(result.user.phoneNumbers[0] === "+12345678901");

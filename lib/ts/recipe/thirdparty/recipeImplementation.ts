@@ -31,7 +31,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext: any;
             }
         ): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: UserType }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: UserType }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -125,7 +125,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
             return {
                 status: "OK",
-                createdNewUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewUser,
                 user: updatedUser,
             };
         },
@@ -150,7 +150,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
         ): Promise<
             | {
                   status: "OK";
-                  createdNewUser: boolean;
+                  createdNewRecipeUser: boolean;
                   user: UserType;
               }
             | {

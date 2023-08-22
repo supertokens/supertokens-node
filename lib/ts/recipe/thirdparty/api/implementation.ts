@@ -275,7 +275,7 @@ export default function getAPIInterface(): APIInterface {
 
             return {
                 status: "OK",
-                createdNewUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewRecipeUser,
                 user: response.user,
                 session,
                 oAuthTokens: oAuthTokensToUse,

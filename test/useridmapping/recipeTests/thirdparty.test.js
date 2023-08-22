@@ -90,7 +90,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             );
 
             assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.createdNewUser, false);
+            assert.strictEqual(response.createdNewRecipeUser, false);
             assert.strictEqual(response.user.id, externalId);
         });
     });

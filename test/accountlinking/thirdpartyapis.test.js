@@ -451,7 +451,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) !== undefined
             );
-            assert(response.body.createdNewUser === true);
+            assert(response.body.createdNewRecipeUser === true);
 
             let pUser = await supertokens.getUser(tpUser.id);
             assert(pUser.isPrimaryUser === true);
@@ -564,7 +564,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
             );
-            assert(response.body.createdNewUser === false);
+            assert(response.body.createdNewRecipeUser === false);
 
             let pUser = await supertokens.getUser(tpUser.id);
             assert(pUser.isPrimaryUser === true);
@@ -1173,7 +1173,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
 
             assert(response.body.status === "OK");
-            assert(response.body.createdNewUser === false);
+            assert(response.body.createdNewRecipeUser === false);
             assert(response.body.user.id === tpUser2.id);
             assert(response.body.user.loginMethods.length === 2);
 
@@ -1481,7 +1481,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 );
 
                 assert(response.body.status === "OK");
-                assert(response.body.createdNewUser === true);
+                assert(response.body.createdNewRecipeUser === true);
 
                 let updatedPUser = await supertokens.getUser(primUser.id);
                 assert(updatedPUser.isPrimaryUser === true);

@@ -146,7 +146,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                     delete user.loginMethods[0].hasSamePhoneNumberAs;
                                     delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     delete user.toJson;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     return response;
                                 },
                             };
@@ -286,7 +286,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                         delete user.toJson;
-                                        newUser = response.createdNewUser;
+                                        newUser = response.createdNewRecipeUser;
                                     }
                                     return response;
                                 },
@@ -402,7 +402,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                 signInUp: async (input) => {
                                     let response = await oI.signInUp(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",
@@ -536,7 +536,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                 signInUpPOST: async (input) => {
                                     let response = await oI.signInUpPOST(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",

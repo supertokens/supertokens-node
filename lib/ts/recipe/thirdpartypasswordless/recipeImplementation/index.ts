@@ -89,7 +89,7 @@ export default function getRecipeInterface(
         }): Promise<
             | {
                   status: "OK";
-                  createdNewUser: boolean;
+                  createdNewRecipeUser: boolean;
                   user: User;
               }
             | {
@@ -108,7 +108,7 @@ export default function getRecipeInterface(
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: User }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;

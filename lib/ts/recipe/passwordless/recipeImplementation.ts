@@ -124,7 +124,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
             return {
                 status: "OK",
-                createdNewUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewUser,
                 user: updatedUser,
             };
         },

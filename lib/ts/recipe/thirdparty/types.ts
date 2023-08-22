@@ -154,7 +154,7 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
           }
         | {
@@ -171,7 +171,7 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: any;
     }): Promise<
-        | { status: "OK"; createdNewUser: boolean; user: User }
+        | { status: "OK"; createdNewRecipeUser: boolean; user: User }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
@@ -235,7 +235,7 @@ export type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };

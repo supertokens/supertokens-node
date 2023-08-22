@@ -277,7 +277,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");

@@ -296,7 +296,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
@@ -341,7 +341,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
 
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
-        assert.strictEqual(response2.body.createdNewUser, false);
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
         assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response2.body.user.emails[0], "email@test.com");
@@ -481,7 +481,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
@@ -530,7 +530,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
 
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
-        assert.strictEqual(response2.body.createdNewUser, false);
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
         assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response2.body.user.emails[0], "email@test.com");
@@ -616,7 +616,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");

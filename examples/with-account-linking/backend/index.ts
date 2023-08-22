@@ -204,7 +204,7 @@ app.post("/addThirdPartyUser", verifySession(), async (req: SessionRequest, res)
         return res.json(signUpResp);
     }
 
-    if (!signUpResp.createdNewUser) {
+    if (!signUpResp.createdNewRecipeUser) {
         return res.json({
             status: "GENERAL_ERROR",
             message: "This user has already signed up. Please delete it first.",
@@ -276,7 +276,7 @@ app.post("/addPhoneNumber", verifySession(), async (req: SessionRequest, res) =>
         userContext: { doNotLink: true },
     });
 
-    if (signUpResp.createdNewUser === false) {
+    if (signUpResp.createdNewRecipeUser === false) {
         // This is possible only in a race-condition where 2 users are adding the same phone number.
         return res.json({
             status: "GENERAL_ERROR",
