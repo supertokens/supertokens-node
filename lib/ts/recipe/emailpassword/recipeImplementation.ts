@@ -114,6 +114,7 @@ export default function getRecipeInterface(
                 }
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                     tenantId,
+                    user: response.user,
                     recipeUserId: recipeUserId!,
                     userContext,
                 });
@@ -220,15 +221,26 @@ export default function getRecipeInterface(
             // a change in email. The check for email verification should actually go in
             // an update email API (post login update).
 
-            let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
-                recipeUserId: input.recipeUserId.getAsString(),
-                email: input.email,
-                password: input.password,
-            });
+            let response = await querier.sendPutRequest(
+                new NormalisedURLPath(`${input.tenantIdForPasswordPolicy}/recipe/user`),
+                {
+                    recipeUserId: input.recipeUserId.getAsString(),
+                    email: input.email,
+                    password: input.password,
+                }
+            );
 
             if (response.status === "OK") {
+                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+                if (user === undefined) {
+                    // This means that the user was deleted between the put and get requests
+                    return {
+                        status: "UNKNOWN_USER_ID_ERROR",
+                    };
+                }
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                     tenantId: input.tenantIdForPasswordPolicy,
+                    user,
                     recipeUserId: input.recipeUserId,
                     userContext: input.userContext,
                 });

@@ -195,22 +195,36 @@ export default function getRecipeImplementation(
                 }
             );
 
+            // TODO: replace with: accountsLinkingResult.user = new User(accountsLinkingResult.user);
+            if (
+                ["OK", "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"].includes(
+                    accountsLinkingResult.user
+                )
+            ) {
+                accountsLinkingResult.user = await this.getUser({
+                    userId: primaryUserId,
+                    userContext,
+                });
+            }
+
             if (accountsLinkingResult.status === "OK") {
-                let user: UserType | undefined;
+                let user: UserType = accountsLinkingResult.user;
                 if (!accountsLinkingResult.accountsAlreadyLinked) {
                     await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                         tenantId,
+                        user: user,
                         recipeUserId,
                         userContext,
                     });
 
-                    user = await this.getUser({
+                    const updatedUser = await this.getUser({
                         userId: primaryUserId,
                         userContext,
                     });
-                    if (user === undefined) {
+                    if (updatedUser === undefined) {
                         throw Error("this error should never be thrown");
                     }
+                    user = updatedUser;
                     let loginMethodInfo = user.loginMethods.find(
                         (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
                     );
@@ -219,12 +233,6 @@ export default function getRecipeImplementation(
                     }
 
                     await config.onAccountLinked(user, loginMethodInfo, tenantId, userContext);
-                } else {
-                    // In the other case we get it after email verification
-                    user = await this.getUser({
-                        userId: primaryUserId,
-                        userContext,
-                    });
                 }
                 accountsLinkingResult.user = user;
             }

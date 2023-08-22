@@ -191,6 +191,19 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 new NormalisedURLPath(`${input.tenantId}/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input)
             );
+            const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+            if (user === undefined) {
+                // This means that the user was deleted between the put and get requests
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            }
+            await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                tenantId: input.tenantId,
+                user,
+                recipeUserId: input.recipeUserId,
+                userContext: input.userContext,
+            });
             return response;
         },
     };

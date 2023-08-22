@@ -711,6 +711,7 @@ export default class Recipe extends RecipeModule {
 
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified = async (input: {
         tenantId: string;
+        user: User;
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => {
@@ -729,20 +730,10 @@ export default class Recipe extends RecipeModule {
         // Finally, we only mark the email of this recipe user as verified and not
         // the other recipe users in the primary user (if this user's email is verified),
         // cause when those other users sign in, this function will be called for them anyway
-
-        let user = await this.recipeInterfaceImpl.getUser({
-            userId: input.recipeUserId.getAsString(),
-            userContext: input.userContext,
-        });
-
-        if (user === undefined) {
-            throw new Error("Passed in recipe user id does not exist");
-        }
-
-        if (user.isPrimaryUser) {
+        if (input.user.isPrimaryUser) {
             let recipeUserEmail: string | undefined = undefined;
             let isAlreadyVerified = false;
-            user.loginMethods.forEach((lm) => {
+            input.user.loginMethods.forEach((lm) => {
                 if (lm.recipeUserId.getAsString() === input.recipeUserId.getAsString()) {
                     recipeUserEmail = lm.email;
                     isAlreadyVerified = lm.verified;
@@ -754,7 +745,7 @@ export default class Recipe extends RecipeModule {
                     return;
                 }
                 let shouldVerifyEmail = false;
-                user.loginMethods.forEach((lm) => {
+                input.user.loginMethods.forEach((lm) => {
                     if (lm.hasSameEmailAs(recipeUserEmail) && lm.verified) {
                         shouldVerifyEmail = true;
                     }
