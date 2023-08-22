@@ -7,6 +7,154 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Breaking changes
+
+-   Now only supporting CDI 4.0
+
+### FDI Changes
+
+-   General
+    -   the returned user objects changed to match the new `User` type
+    -   `userId` has been renamed to `recipeUserId` in most auth recipe endpoints
+    -   `createdNewUser` has been renamed to `createdNewRecipeUser`
+-   Dashboard
+    -   userDelete: added `removeAllLinkedAccounts` query param
+    -   userGet:
+        -   the `recipeId` query param is removed
+        -   the `recipeId` has been removed from the response
+    -   userPasswordPut:
+        -   now directly calls `updateEmailOrPassword` instead of generating and consuming a password reset token
+    -   userPut:
+        -   new status: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`
+    -   userUnlink:
+        -   new API
+-   EmailPassword:
+    -   emailExistsGET:
+        -   now also checks `isSignUpAllowed`
+        -   now calls `listUsersByAccountInfo` instead of `getUserByEmail`
+    -   generatePasswordResetTokenPOST:
+        -   new status: `PASSWORD_RESET_NOT_ALLOWED`
+    -   passwordResetPOST:
+        -   now returns the updated `user` object and the `email` address
+-   EmailVerification:
+    -   all endpoints (`verifyEmailPOST`, `isEmailVerifiedGET`, `generateEmailVerifyTokenPOST`) can now sometimes update (re-create) the session
+-   Passwordless:
+    -   `consumeCodePOST` and `createCodePOST`: can now return the `SIGN_IN_UP_NOT_ALLOWED` status
+-   ThirdParty:
+    -   `signInUpPOST` can now return new statuses:
+        -   `EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT`
+        -   `SIGN_IN_UP_NOT_ALLOWED`
+-   ThirdPartyEmailPassword:
+    -   `thirdPartySignInUpPOST` can now return new statuses:
+        -   `EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT`
+        -   `SIGN_IN_UP_NOT_ALLOWED`
+    -   `emailPasswordEmailExistsGET`:
+        -   now also checks `isSignUpAllowed`
+        -   now calls `listUsersByAccountInfo` instead of `getUserByEmail`
+    -   `generatePasswordResetTokenPOST`:
+        -   new status: `PASSWORD_RESET_NOT_ALLOWED`
+    -   `passwordResetPOST`:
+        -   now returns the updated `user` object and the `email` address
+-   ThirdPartyPasswordless:
+    -   `thirdPartySignInUpPOST` can now return new statuses:
+        -   `EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT`
+        -   `SIGN_IN_UP_NOT_ALLOWED`
+    -   `consumeCodePOST` and `createCodePOST`: can now return the `SIGN_IN_UP_NOT_ALLOWED` status
+
+### Interface Changes
+
+-   EmailPassword
+    -   removed `getUserById`, `getUserByEmail`
+    -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
+    -   added `consumePasswordResetToken`
+    -   added an overrideable `createNewRecipeUser` function that is called during sign up and in the “invitation link” flow
+    -   `updateEmailOrPassword` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   `email` was added to the input of `createResetPasswordToken` , `sendResetPasswordEmail`, `createResetPasswordLink`
+    -   `recipeUserId` is added to the input of `getContent` of the email delivery config
+    -   `signInPOST`:
+        -   now also checks `isSignInAllowed` before creating a session
+    -   `signUpPOST`:
+        -   now also checks `isSignUpAllowed`
+-   EmailVerification
+    -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
+    -   `createEmailVerificationToken`, `createEmailVerificationLink`, `isEmailVerified`, `revokeEmailVerificationTokens` , `unverifyEmail`:
+        -   now takes `recipeUserId` instead of `userId`
+    -   `sendEmailVerificationEmail` :
+        -   now takes an additional `recipeUserId` parameter
+    -   `verifyEmailUsingToken`:
+        -   now takes a new `attemptAccountLinking` parameter
+    -   `sendEmail` now requires a new `recipeUserId` as part of the user info
+-   Passwordless:
+    -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
+    -   removed `getUserById`, `getUserByEmail`, `getUserByPhoneNumber`
+    -   `updateUser` :
+        -   now takes `recipeUserId` instead of `userId`
+    -   `consumeCode`:
+        -   `createdNewUser` has been renamed to `createdNewRecipeUser`
+-   Session:
+    -   access tokens and session objects now contain the recipe user id
+    -   Support for new access token version
+    -   `recipeUserId` is now added to the payload of the `TOKEN_THEFT_DETECTED` error
+    -   `createNewSession`: now takes `recipeUserId` instead of `userId`
+    -   Removed `validateClaimsInJWTPayload`
+    -   `revokeAllSessionsForUser` now takes an optional `revokeSessionsForLinkedAccounts` param
+    -   `getAllSessionHandlesForUser` now takes an optional `fetchSessionsForAllLinkedAccounts` param
+    -   `regenerateAccessToken` return value now includes `recipeUserId`
+    -   `getGlobalClaimValidators` , `validateClaims` now get a new `recipeUserId` param
+    -   Added `getRecipeUserId` to the session class
+-   ThirdParty:
+    -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
+    -   The `signInUp` override:
+        -   now get a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `manuallyCreateOrUpdateUser`:
+        -   now get a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserById`
+-   ThirdPartyEmailPassword:
+    -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserById`
+    -   `thirdPartyManuallyCreateOrUpdateUser`:
+        -   now get a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   `email` was added to the input of `createResetPasswordToken` , `sendResetPasswordEmail`, `createResetPasswordLink`
+    -   added `consumePasswordResetToken`
+    -   `updateEmailOrPassword` :
+        -   now takes `recipeUserId` instead of `userId`
+        -   can return the new `EMAIL_CHANGE_NOT_ALLOWED_ERROR` status
+    -   The `thirdPartySignInUp` override:
+        -   now get a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   added an overrideable `createNewEmailPasswordRecipeUser` function that is called during sign up and in the “invitation link” flow
+-   ThirdPartyPasswordless:
+    -   removed the recipe specific `User` type, now all functions are using the new generic `User` type
+    -   Removed `getUserByThirdPartyInfo`, `getUsersByEmail`, `getUserByPhoneNumber`, `getUserById`
+    -   `thirdPartyManuallyCreateOrUpdateUser`:
+        -   now get a new `isVerified` param
+        -   can return new statuses: `EMAIL_CHANGE_NOT_ALLOWED_ERROR`, `SIGN_IN_UP_NOT_ALLOWED`
+    -   The `thirdPartySignInUp` override:
+        -   now get a new `isVerified` param
+        -   can return new status: `SIGN_IN_UP_NOT_ALLOWED`
+    -   `updatePasswordlessUser`:
+        -   now takes `recipeUserId` instead of `userId`
+    -   `consumeCode`:
+        -   `createdNewUser` has been renamed to `createdNewRecipeUser`
+
+### Changes
+
+-   Added `RecipeUserId` and a generic `User` class
+-   Added `getUser`, `listUsersByAccountInfo`, `convertToRecipeUserId` to the main exports
+-   The `fetchValue` callback of claims now take a new `recipeUserId` param
+-   Updated compilation target of typescript to ES2017 to make debugging easier.
+-   Added account-linking recipe
+-   Added support for FDI version `X.Y`
+
+### Migration guide
+
+TODO
+
 ## [15.1.0] - 2023-08-14
 
 ### Changes
