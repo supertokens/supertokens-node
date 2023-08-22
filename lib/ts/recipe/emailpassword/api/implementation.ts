@@ -653,7 +653,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 session,
-                user: response.user,
+                user: response.user.toJson(),
             };
         },
 
@@ -739,7 +739,7 @@ export default function getAPIImplementation(): APIInterface {
             return {
                 status: "OK",
                 session,
-                user: response.user,
+                user: response.user.toJson(),
             };
         },
     };

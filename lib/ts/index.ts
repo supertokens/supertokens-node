@@ -15,10 +15,11 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { User } from "./types";
+import { User as UserType } from "./types";
 import AccountLinking from "./recipe/accountlinking/recipe";
 import { AccountInfo } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
+import { User } from "./user";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -26,6 +27,7 @@ export default class SuperTokensWrapper {
 
     static Error = SuperTokensError;
     static RecipeUserId = RecipeUserId;
+    static User = User;
 
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
@@ -42,7 +44,7 @@ export default class SuperTokensWrapper {
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
     }): Promise<{
-        users: User[];
+        users: UserType[];
         nextPaginationToken?: string;
     }> {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
@@ -59,7 +61,7 @@ export default class SuperTokensWrapper {
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
     }): Promise<{
-        users: User[];
+        users: UserType[];
         nextPaginationToken?: string;
     }> {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
@@ -165,3 +167,4 @@ export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserCont
 export let Error = SuperTokensWrapper.Error;
 
 export { default as RecipeUserId } from "./recipeUserId";
+export { User } from "./user";

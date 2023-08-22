@@ -78,6 +78,27 @@ export default class Wrapper {
               status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
+    static resetPasswordUsingToken(
+        tenantId: string,
+        token: string,
+        newPassword: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+        | {
+              status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+        | {
+              status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
+              reason: string;
+          }
+        | {
+              status: "PASSWORD_POLICY_VIOLATED_ERROR";
+              failureReason: string;
+          }
+    >;
     static consumePasswordResetToken(
         tenantId: string,
         token: string,
@@ -147,6 +168,7 @@ export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
 export declare let thirdPartyGetProvider: typeof Wrapper.thirdPartyGetProvider;
 export declare let thirdPartyManuallyCreateOrUpdateUser: typeof Wrapper.thirdPartyManuallyCreateOrUpdateUser;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
+export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
 export declare let consumePasswordResetToken: typeof Wrapper.consumePasswordResetToken;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export type { RecipeInterface, TypeProvider, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };

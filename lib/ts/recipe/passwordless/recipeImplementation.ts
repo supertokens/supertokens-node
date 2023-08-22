@@ -181,14 +181,14 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         revokeCode: async function (input) {
             await querier.sendPostRequest(
-                new NormalisedURLPath(`${input.tenantId}/recipe/signinup/code/remove`),
+                new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/remove`),
                 copyAndRemoveUserContextAndTenantId(input)
             );
             return { status: "OK" };
         },
         updateUser: async function (input) {
             let response = await querier.sendPutRequest(
-                new NormalisedURLPath(`${input.tenantId}/recipe/user`),
+                new NormalisedURLPath(`/${input.tenantId}/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input)
             );
             const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
