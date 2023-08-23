@@ -449,7 +449,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             assert(!user.isPrimaryUser);
             assert(user.loginMethods[0].verified === false);
 
-            await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(user.loginMethods[0].recipeUserId, tpUser.id);
 
             user = (await EmailPassword.signIn("public", "test@example.com", "password123")).user;
             assert(user.isPrimaryUser === true);
@@ -659,7 +659,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
-            await AccountLinking.linkAccounts("public", recipeUserId, user.id);
+            await AccountLinking.linkAccounts(recipeUserId, user.id);
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com");
             assert(isAllowed === true);

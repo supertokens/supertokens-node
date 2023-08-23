@@ -159,12 +159,10 @@ export default function getRecipeImplementation(
         linkAccounts: async function (
             this: RecipeInterface,
             {
-                tenantId,
                 recipeUserId,
                 primaryUserId,
                 userContext,
             }: {
-                tenantId: string;
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
                 userContext: any;
@@ -208,7 +206,6 @@ export default function getRecipeImplementation(
                 let user: UserType = accountsLinkingResult.user;
                 if (!accountsLinkingResult.accountsAlreadyLinked) {
                     await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                        tenantId,
                         user: user,
                         recipeUserId,
                         userContext,
@@ -229,7 +226,7 @@ export default function getRecipeImplementation(
                         throw Error("this error should never be thrown");
                     }
 
-                    await config.onAccountLinked(user, loginMethodInfo, tenantId, userContext);
+                    await config.onAccountLinked(user, loginMethodInfo, userContext);
                 }
                 accountsLinkingResult.user = user;
             }

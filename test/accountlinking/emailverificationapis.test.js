@@ -352,7 +352,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             );
             assert(tpUser.user.isPrimaryUser === false);
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.user.id));
-            await AccountLinking.linkAccounts("public", epUser.loginMethods[0].recipeUserId, tpUser.user.id);
+            await AccountLinking.linkAccounts(epUser.loginMethods[0].recipeUserId, tpUser.user.id);
 
             const app = express();
 
@@ -1398,7 +1398,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             await AccountLinking.createPrimaryUser(epUser.user.loginMethods[0].recipeUserId);
 
             let epUser2 = await EmailPassword.signUp("public", "random2@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser2.user.loginMethods[0].recipeUserId, epUser.user.id);
+            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, epUser.user.id);
 
             let pUser = await supertokens.getUser(epUser.user.id);
             assert(pUser.isPrimaryUser === true);

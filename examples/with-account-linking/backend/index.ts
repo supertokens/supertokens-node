@@ -116,7 +116,7 @@ app.post("/addPassword", verifySession(), async (req: SessionRequest, res) => {
         await EmailVerification.verifyEmailUsingToken(session.getTenantId(), tokenResp.token, false);
     }
 
-    const linkResp = await AccountLinking.linkAccounts(session.getTenantId(), newRecipeUserId, session.getUserId());
+    const linkResp = await AccountLinking.linkAccounts(newRecipeUserId, session.getUserId());
     if (linkResp.status !== "OK") {
         return res.json({
             status: "GENERAL_ERROR",
@@ -223,7 +223,7 @@ app.post("/addThirdPartyUser", verifySession(), async (req: SessionRequest, res)
         await EmailVerification.verifyEmailUsingToken(session.getTenantId(), tokenResp.token, false);
     }
 
-    const linkResp = await AccountLinking.linkAccounts(session.getTenantId(), newRecipeUserId, session.getUserId());
+    const linkResp = await AccountLinking.linkAccounts(newRecipeUserId, session.getUserId());
     if (linkResp.status !== "OK") {
         return res.json({
             status: "GENERAL_ERROR",
@@ -285,7 +285,7 @@ app.post("/addPhoneNumber", verifySession(), async (req: SessionRequest, res) =>
     }
     const newRecipeUserId = signUpResp.user.loginMethods[0].recipeUserId;
 
-    const linkResp = await AccountLinking.linkAccounts(session.getTenantId(), newRecipeUserId, session.getUserId());
+    const linkResp = await AccountLinking.linkAccounts(newRecipeUserId, session.getUserId());
     if (linkResp.status !== "OK") {
         return res.json({
             status: "GENERAL_ERROR",

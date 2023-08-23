@@ -2388,7 +2388,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
             });
-            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.user.id);
 
             let res = await new Promise((resolve) =>
                 request(app)

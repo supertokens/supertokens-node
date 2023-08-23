@@ -1,5 +1,5 @@
 import * as express from "express";
-import Supertokens, { RecipeUserId } from "../..";
+import Supertokens, { RecipeUserId, User } from "../..";
 import Session, { RecipeInterface, SessionClaimValidator, VerifySessionOptions } from "../../recipe/session";
 import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";

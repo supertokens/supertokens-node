@@ -1162,7 +1162,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             ).user;
             assert(user2.isPrimaryUser === false);
 
-            await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+            await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
             // link accuonts above also verifies the account
             await EmailVerification.unverifyEmail(user2.loginMethods[0].recipeUserId);

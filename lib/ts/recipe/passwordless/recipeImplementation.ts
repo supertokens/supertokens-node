@@ -170,7 +170,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 };
             }
             await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                tenantId: input.tenantId,
                 user,
                 recipeUserId: input.recipeUserId,
                 userContext: input.userContext,

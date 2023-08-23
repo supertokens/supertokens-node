@@ -225,7 +225,6 @@ export default class Recipe extends RecipeModule {
             }
 
             let linkAccountsResult = await this.recipeInterfaceImpl.linkAccounts({
-                tenantId,
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 primaryUserId: primaryUser.id,
                 userContext,
@@ -710,7 +709,6 @@ export default class Recipe extends RecipeModule {
     };
 
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified = async (input: {
-        tenantId: string;
         user: User;
         recipeUserId: RecipeUserId;
         userContext: any;
@@ -754,7 +752,10 @@ export default class Recipe extends RecipeModule {
                 if (shouldVerifyEmail) {
                     let resp = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(
                         {
-                            tenantId: input.tenantId,
+                            // While the token we create here is tenant specific, the verification status is not
+                            // So we can use any tenantId the user is associated with here as long as we use the
+                            // same in the verifyEmailUsingToken call
+                            tenantId: input.user.tenantIds[0],
                             recipeUserId: input.recipeUserId,
                             email: recipeUserEmail,
                             userContext: input.userContext,
@@ -765,7 +766,8 @@ export default class Recipe extends RecipeModule {
                         // linking to happen
                         await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken(
                             {
-                                tenantId: input.tenantId,
+                                // See comment about tenantId in the createEmailVerificationToken params
+                                tenantId: input.user.tenantIds[0],
                                 token: resp.token,
                                 attemptAccountLinking: false,
                                 userContext: input.userContext,

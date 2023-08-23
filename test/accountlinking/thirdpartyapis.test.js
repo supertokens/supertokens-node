@@ -1446,7 +1446,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 ).user;
 
                 const linkRes = await AccountLinking.linkAccounts(
-                    "public",
                     tpUserUnverified.loginMethods[0].recipeUserId,
                     tpUser.id
                 );

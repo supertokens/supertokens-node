@@ -52,7 +52,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    tenantId,
                     user: response.user,
                     recipeUserId: response.recipeUserId,
                     userContext,

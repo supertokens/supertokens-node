@@ -14,8 +14,8 @@ export default class Wrapper {
      * no linking that happened.
      */
     static createPrimaryUserIdOrLinkAccounts(
-        recipeUserId: RecipeUserId,
         tenantId: string,
+        recipeUserId: RecipeUserId,
         userContext?: any
     ): Promise<import("../../types").User>;
     /**
@@ -91,7 +91,6 @@ export default class Wrapper {
           }
     >;
     static linkAccounts(
-        tenantId: string,
         recipeUserId: RecipeUserId,
         primaryUserId: string,
         userContext?: any
@@ -123,17 +122,17 @@ export default class Wrapper {
         wasLinked: boolean;
     }>;
     static isSignUpAllowed(
+        tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
-        tenantId: string,
         userContext?: any
     ): Promise<boolean>;
-    static isSignInAllowed(recipeUserId: RecipeUserId, tenantId: string, userContext?: any): Promise<boolean>;
+    static isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
     static isEmailChangeAllowed(
+        tenantId: string,
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
-        tenantId: string,
         userContext?: any
     ): Promise<boolean>;
 }

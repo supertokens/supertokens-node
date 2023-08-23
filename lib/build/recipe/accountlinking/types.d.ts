@@ -3,12 +3,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import type { User } from "../../types";
 import RecipeUserId from "../../recipeUserId";
 export declare type TypeInput = {
-    onAccountLinked?: (
-        user: User,
-        newAccountInfo: RecipeLevelUser,
-        tenantId: string,
-        userContext: any
-    ) => Promise<void>;
+    onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
@@ -31,7 +26,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, tenantId: string, userContext: any) => Promise<void>;
+    onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoWithRecipeId,
         user: User | undefined,
@@ -126,7 +121,6 @@ export declare type RecipeInterface = {
           }
     >;
     linkAccounts: (input: {
-        tenantId: string;
         recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: any;

@@ -449,7 +449,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             assert(!user.isPrimaryUser);
             assert(user.loginMethods[0].verified === false);
 
-            await AccountLinking.linkAccounts("public", user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(user.loginMethods[0].recipeUserId, tpUser.id);
 
             user = (await EmailPassword.signIn("public", "test@example.com", "password123")).user;
             assert(user.isPrimaryUser === true);
@@ -491,7 +491,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             const email2 = `test+${Date.now()}@example.com`;
             let user2 = (await EmailPassword.signUp("public", email2, "password123", { doNotLink: true })).user;
 
-            const linkResp = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+            const linkResp = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
             assert.strictEqual(linkResp.status, "OK");
 
             const primUser = linkResp.user;
@@ -575,10 +575,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             assert(response.status === "OK");
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
             assert(isAllowed === false);
 
@@ -649,10 +649,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
             assert(isAllowed === true);
 
@@ -723,13 +723,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpassword.t
             let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
-            await AccountLinking.linkAccounts("public", recipeUserId, user.id);
+            await AccountLinking.linkAccounts(recipeUserId, user.id);
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
             assert(isAllowed === true);
 

@@ -682,7 +682,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -780,7 +780,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -1669,7 +1669,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 doNotLink: true,
             });
             assert(epUser2.user.isPrimaryUser === false);
-            await AccountLinking.linkAccounts("public", epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
@@ -1784,7 +1784,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 doNotLink: true,
             });
             assert(epUser2.user.isPrimaryUser === false);
-            await AccountLinking.linkAccounts("public", epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
             let token = await EmailVerification.createEmailVerificationToken(
                 "public",
                 supertokens.convertToRecipeUserId(epUser2.user.id)
@@ -1912,7 +1912,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 false
             );
             assert(tpUser2.user.isPrimaryUser === false);
-            await AccountLinking.linkAccounts("public", supertokens.convertToRecipeUserId(tpUser2.user.id), tpUser.id);
+            await AccountLinking.linkAccounts(supertokens.convertToRecipeUserId(tpUser2.user.id), tpUser.id);
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234", {
                 doNotLink: true,
@@ -3100,7 +3100,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -3261,7 +3261,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -3423,10 +3423,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let epUser2 = await EmailPassword.signUp("public", "test2@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser2.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let pUser = await supertokens.getUser(epUser.user.id);
             assert(pUser.loginMethods.length === 3);
@@ -3601,7 +3601,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(tpUser.id));
 
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
-            await AccountLinking.linkAccounts("public", epUser.user.loginMethods[0].recipeUserId, tpUser.id);
+            await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, tpUser.id);
 
             let res = await new Promise((resolve) =>
                 request(app)
@@ -3764,11 +3764,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd2" + date, email, false)
             ).user;
 
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                tpUserUnverified.loginMethods[0].recipeUserId,
-                tpUser.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(tpUserUnverified.loginMethods[0].recipeUserId, tpUser.id);
 
             assert.strictEqual(linkRes.status, "OK");
 
@@ -3935,11 +3931,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd2" + date, email, false)
             ).user;
 
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                tpUserUnverified.loginMethods[0].recipeUserId,
-                epUser.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(tpUserUnverified.loginMethods[0].recipeUserId, epUser.id);
 
             assert.strictEqual(linkRes.status, "OK");
 
@@ -4099,11 +4091,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd2" + date, email, true)
             ).user;
 
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                tpUserUnverified.loginMethods[0].recipeUserId,
-                epUser.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(tpUserUnverified.loginMethods[0].recipeUserId, epUser.id);
 
             assert.strictEqual(linkRes.status, "OK");
 
@@ -4261,7 +4249,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let tpUser = (await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abcd2" + date, email, true))
                 .user;
 
-            const linkRes = await AccountLinking.linkAccounts("public", tpUser.loginMethods[0].recipeUserId, epUser.id);
+            const linkRes = await AccountLinking.linkAccounts(tpUser.loginMethods[0].recipeUserId, epUser.id);
             assert.strictEqual(linkRes.status, "OK");
 
             const deleteResp = await supertokens.deleteUser(epUser.id, false);

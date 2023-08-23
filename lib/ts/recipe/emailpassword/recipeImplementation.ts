@@ -116,7 +116,6 @@ export default function getRecipeInterface(
 
                 if (!loginMethod.verified) {
                     await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                        tenantId,
                         user: response.user,
                         recipeUserId: response.recipeUserId,
                         userContext,
@@ -243,7 +242,6 @@ export default function getRecipeInterface(
                     };
                 }
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    tenantId: input.tenantIdForPasswordPolicy,
                     user,
                     recipeUserId: input.recipeUserId,
                     userContext: input.userContext,

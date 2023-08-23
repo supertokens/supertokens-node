@@ -855,7 +855,6 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
         assert.strictEqual(consumeResp.status, "OK");
         if (pwlessUser.linked === true) {
             const linkResp = await AccountLinking.linkAccounts(
-                "public",
                 consumeResp.user.loginMethods[0].recipeUserId,
                 tpUser.user.id
             );
@@ -986,7 +985,6 @@ async function getConsumeCodeTestCase({ pwlessUser, otherRecipeUser, accountLink
         if (pwlessUser.linked === true) {
             if (tpUser) {
                 const linkResp = await AccountLinking.linkAccounts(
-                    "public",
                     consumeResp.user.loginMethods[0].recipeUserId,
                     tpUser.user.id
                 );

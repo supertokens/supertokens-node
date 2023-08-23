@@ -130,11 +130,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
             ).user;
             assert(user.isPrimaryUser === true);
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password123");
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                epUser.user.loginMethods[0].recipeUserId,
-                user.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, user.id);
             assert(linkRes.status, "OK");
 
             let res = await request(app).get("/auth/dashboard/api/users?limit=100").expect(200);
@@ -274,11 +270,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
             ).user;
             assert(user.isPrimaryUser === true);
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password123");
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                epUser.user.loginMethods[0].recipeUserId,
-                user.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, user.id);
             assert(linkRes.status, "OK");
 
             // TODO: validate that this should be a 200
@@ -457,11 +449,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
             ).user;
             assert(user.isPrimaryUser === true);
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password123");
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                epUser.user.loginMethods[0].recipeUserId,
-                user.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, user.id);
             assert(linkRes.status, "OK");
 
             const deleteRes = await request(app)
@@ -535,11 +523,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
             ).user;
             assert(user.isPrimaryUser === true);
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password123");
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                epUser.user.loginMethods[0].recipeUserId,
-                user.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, user.id);
             assert(linkRes.status, "OK");
 
             const deleteRes = await request(app)
@@ -627,11 +611,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
             ).user;
             assert(user.isPrimaryUser === true);
             let epUser = await EmailPassword.signUp("public", "test@example.com", "password123");
-            const linkRes = await AccountLinking.linkAccounts(
-                "public",
-                epUser.user.loginMethods[0].recipeUserId,
-                user.id
-            );
+            const linkRes = await AccountLinking.linkAccounts(epUser.user.loginMethods[0].recipeUserId, user.id);
             assert(linkRes.status, "OK");
 
             const deleteRes = await request(app)

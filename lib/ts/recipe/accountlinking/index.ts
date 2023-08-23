@@ -31,8 +31,8 @@ export default class Wrapper {
      * no linking that happened.
      */
     static async createPrimaryUserIdOrLinkAccounts(
-        recipeUserId: RecipeUserId,
         tenantId: string,
+        recipeUserId: RecipeUserId,
         userContext: any = {}
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
@@ -96,14 +96,8 @@ export default class Wrapper {
         });
     }
 
-    static async linkAccounts(
-        tenantId: string,
-        recipeUserId: RecipeUserId,
-        primaryUserId: string,
-        userContext: any = {}
-    ) {
+    static async linkAccounts(recipeUserId: RecipeUserId, primaryUserId: string, userContext: any = {}) {
         return await Recipe.getInstance().recipeInterfaceImpl.linkAccounts({
-            tenantId,
             recipeUserId,
             primaryUserId,
             userContext,
@@ -118,9 +112,9 @@ export default class Wrapper {
     }
 
     static async isSignUpAllowed(
+        tenantId: string,
         newUser: AccountInfoWithRecipeId,
         isVerified: boolean,
-        tenantId: string,
         userContext?: any
     ) {
         return await Recipe.getInstance().isSignUpAllowed({
@@ -131,7 +125,7 @@ export default class Wrapper {
         });
     }
 
-    static async isSignInAllowed(recipeUserId: RecipeUserId, tenantId: string, userContext: any = {}) {
+    static async isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext: any = {}) {
         const user = await getUser(recipeUserId.getAsString(), userContext);
         if (user === undefined) {
             // Should never really come here unless a programming error happened in the app
@@ -146,10 +140,10 @@ export default class Wrapper {
     }
 
     static async isEmailChangeAllowed(
+        tenantId: string,
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
-        tenantId: string,
         userContext?: any
     ) {
         const user = await getUser(recipeUserId.getAsString(), userContext);

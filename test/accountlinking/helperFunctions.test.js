@@ -71,10 +71,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(user.isPrimaryUser === true);
             assert(user.loginMethods[0].verified === true);
 
-            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-            });
+            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === user.id);
         });
@@ -127,10 +127,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             user = await supertokens.getUser(user.id);
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-            });
+            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === user.id);
             let userObj = await supertokens.getUser(user.id);
@@ -181,10 +181,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             assert(user.isPrimaryUser === false);
 
-            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-            });
+            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === user.id);
             let userObj = await supertokens.getUser(user.id);
@@ -227,10 +227,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(user.isPrimaryUser === false);
             assert(user.loginMethods[0].verified === false);
 
-            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-            });
+            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === user.id);
             let userObj = await supertokens.getUser(user.id);
@@ -315,10 +315,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(user.isPrimaryUser === false);
             assert(user.loginMethods[0].verified === true);
 
-            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-            });
+            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === primaryUser.id);
             let userObj = await supertokens.getUser(primaryUser.id);
@@ -395,10 +395,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(user.isPrimaryUser === false);
             assert(user.loginMethods[0].verified === true);
 
-            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-            });
+            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === user.id);
             let userObj = await supertokens.getUser(user.id);
@@ -471,10 +471,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(user.isPrimaryUser === false);
             assert(user.loginMethods[0].verified === false);
 
-            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                recipeUserId: user.loginMethods[0].recipeUserId,
-                checkAccountsToLinkTableAsWell: true,
-            });
+            let response = await AccountLinking.createPrimaryUserIdOrLinkAccounts(
+                "public",
+                user.loginMethods[0].recipeUserId
+            );
 
             assert(response === user.id);
             let userObj = await supertokens.getUser(user.id);
@@ -618,11 +618,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                true,
-                "public"
+                true
             );
 
             assert(isAllowed);
@@ -644,12 +644,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             try {
                 await AccountLinking.isSignUpAllowed(
+                    "public",
                     {
                         phoneNumber: "",
                         email: "test@example.com",
                     },
-                    true,
-                    "public"
+                    true
                 );
                 assert(false);
             } catch (err) {
@@ -692,11 +692,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                false,
-                "public"
+                false
             );
 
             assert(isAllowed);
@@ -731,11 +731,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                false,
-                "public"
+                false
             );
 
             assert(isAllowed);
@@ -776,11 +776,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                false,
-                "public"
+                false
             );
 
             assert(isAllowed);
@@ -821,11 +821,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                false,
-                "public"
+                false
             );
 
             assert(!isAllowed);
@@ -913,11 +913,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(!tpUser.user.isPrimaryUser);
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                false,
-                "public"
+                false
             );
 
             assert(!isAllowed);
@@ -959,11 +959,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(pUser.isPrimaryUser);
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                false,
-                "public"
+                false
             );
 
             assert(!isAllowed);
@@ -999,11 +999,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(pUser.isPrimaryUser);
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                false,
-                "public"
+                false
             );
 
             assert(isAllowed);
@@ -1049,11 +1049,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await EmailVerification.verifyEmailUsingToken("public", token.token);
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                true,
-                "public"
+                true
             );
 
             assert(isAllowed);
@@ -1118,11 +1118,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await ThirdParty.manuallyCreateOrUpdateUser("public", "abcd", "abcd", "test@example.com", false);
 
             let isAllowed = await AccountLinking.isSignUpAllowed(
+                "public",
                 {
                     email: "test@example.com",
                 },
-                true,
-                "public"
+                true
             );
 
             assert(isAllowed);
@@ -1294,7 +1294,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.status === "OK");
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
-            response = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com", false, "public");
+            response = await AccountLinking.isEmailChangeAllowed("public", recipeUserId, "test@example.com", false);
 
             assert(response === false);
         });
@@ -1366,10 +1366,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             let isAllowed = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
 
             assert(isAllowed === true);
@@ -1433,10 +1433,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(response.user.loginMethods[0].recipeUserId);
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
 
             assert(response === false);
@@ -1491,10 +1491,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(response.user.loginMethods[0].recipeUserId);
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
 
             assert(response === true);
@@ -1558,10 +1558,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.user.isPrimaryUser === true);
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
 
             assert(response === false);
@@ -1616,10 +1616,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             await AccountLinking.createPrimaryUser(response.user.loginMethods[0].recipeUserId);
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
 
             assert(response === true);
@@ -1688,10 +1688,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.user.isPrimaryUser === true);
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
-                "public",
                 {
                     doNotLink: true,
                 }
@@ -1754,10 +1754,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(response.user.isPrimaryUser === true);
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
-                "public",
                 {
                     doNotLink: true,
                 }
@@ -1826,10 +1826,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                true,
-                "public"
+                true
             );
 
             assert(response === true);
@@ -1895,10 +1895,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
-                false,
-                "public"
+                false
             );
 
             assert(response === true);
@@ -1969,10 +1969,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
-                "public",
                 {
                     doNotLink: true,
                 }
@@ -2047,10 +2047,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test@example.com",
                 false,
-                "public",
                 {
                     doNotLink: true,
                 }
@@ -2110,10 +2110,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             let recipeUserId = response.user.loginMethods[0].recipeUserId;
 
             response = await AccountLinking.isEmailChangeAllowed(
+                "public",
                 response.user.loginMethods[0].recipeUserId,
                 "test2@example.com",
-                false,
-                "public"
+                false
             );
 
             assert(response === true);
@@ -2137,7 +2137,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
 
             let user = await EmailPassword.signUp("public", "test@example.com", "abcd1234");
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", user.user.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
         });
@@ -2176,7 +2176,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", user.user.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
         });
@@ -2209,7 +2209,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", user.user.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
         });
@@ -2248,7 +2248,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", user.user.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
         });
@@ -2287,7 +2287,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 doNotLink: true,
             });
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user.user.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", user.user.loginMethods[0].recipeUserId);
 
             assert(!isAllowed);
             assert(
@@ -2373,7 +2373,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
             assert(!tpUser.user.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(tpUser.user.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", tpUser.user.loginMethods[0].recipeUserId);
 
             assert(!isAllowed);
             assert(
@@ -2430,7 +2430,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             pUser = await supertokens.getUser(pUser.id);
             assert(pUser.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", pUser.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
 
@@ -2439,7 +2439,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId, "public");
+            isAllowed = await AccountLinking.isSignInAllowed("public", tpUser.loginMethods[0].recipeUserId);
 
             assert(!isAllowed);
         });
@@ -2490,7 +2490,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             pUser = await supertokens.getUser(pUser.id);
             assert(pUser.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", pUser.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
 
@@ -2499,7 +2499,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             ).user;
             assert(tpUser.isPrimaryUser === false);
 
-            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId, "public");
+            isAllowed = await AccountLinking.isSignInAllowed("public", tpUser.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
         });
@@ -2573,7 +2573,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             assert(tpUser.isPrimaryUser === false);
             assert(tpUser.loginMethods[0].verified);
 
-            isAllowed = await AccountLinking.isSignInAllowed(tpUser.loginMethods[0].recipeUserId, "public");
+            isAllowed = await AccountLinking.isSignInAllowed("public", tpUser.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
         });
@@ -2644,7 +2644,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 true
             );
 
-            let isAllowed = await AccountLinking.isSignInAllowed(user2.user.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", user2.user.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
         });
@@ -2696,7 +2696,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             pUser = await supertokens.getUser(pUser.id);
             assert(pUser.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isSignInAllowed(pUser.loginMethods[0].recipeUserId, "public");
+            let isAllowed = await AccountLinking.isSignInAllowed("public", pUser.loginMethods[0].recipeUserId);
 
             assert(isAllowed);
 
@@ -2737,7 +2737,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             });
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                tenantId: "public",
                 recipeUserId: user.user.loginMethods[0].recipeUserId,
             });
         });
@@ -2802,10 +2801,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test@example.com",
                 false
             );
-            await AccountLinking.linkAccounts("public", tpUser.user.loginMethods[0].recipeUserId, user.user.id);
+            await AccountLinking.linkAccounts(tpUser.user.loginMethods[0].recipeUserId, user.user.id);
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 
@@ -2877,10 +2875,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test2@example.com",
                 false
             );
-            await AccountLinking.linkAccounts("public", tpUser.user.loginMethods[0].recipeUserId, user.user.id);
+            await AccountLinking.linkAccounts(tpUser.user.loginMethods[0].recipeUserId, user.user.id);
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 
@@ -2947,10 +2944,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
                 "test2@example.com",
                 false
             );
-            await AccountLinking.linkAccounts("public", tpUser.user.loginMethods[0].recipeUserId, user.user.id);
+            await AccountLinking.linkAccounts(tpUser.user.loginMethods[0].recipeUserId, user.user.id);
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 
@@ -3016,7 +3012,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/helperFunctions
             );
 
             await AccountLinkingRecipe.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                tenantId: "public",
                 recipeUserId: tpUser.user.loginMethods[0].recipeUserId,
             });
 

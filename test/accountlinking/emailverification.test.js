@@ -614,7 +614,7 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
             let epUser = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
             assert(epUser.isPrimaryUser === false);
 
-            await AccountLinking.linkAccounts("public", epUser.loginMethods[0].recipeUserId, tpUser.user.id);
+            await AccountLinking.linkAccounts(epUser.loginMethods[0].recipeUserId, tpUser.user.id);
 
             epUser = await supertokens.getUser(epUser.id);
             assert(epUser.isPrimaryUser === true);
