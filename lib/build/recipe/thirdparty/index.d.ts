@@ -23,6 +23,7 @@ export default class Wrapper {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: import("../../types").User;
+              recipeUserId: import("../..").RecipeUserId;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

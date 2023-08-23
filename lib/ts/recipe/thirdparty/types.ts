@@ -18,6 +18,7 @@ import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 
 export type UserInfo = {
     thirdPartyUserId: string;
@@ -155,6 +156,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
+              recipeUserId: RecipeUserId;
               user: User;
           }
         | {
@@ -171,7 +173,7 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: any;
     }): Promise<
-        | { status: "OK"; createdNewRecipeUser: boolean; user: User }
+        | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;

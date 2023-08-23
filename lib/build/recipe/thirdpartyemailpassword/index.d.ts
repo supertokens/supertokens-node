@@ -26,6 +26,7 @@ export default class Wrapper {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: import("../../types").User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -45,6 +46,7 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -59,6 +61,7 @@ export default class Wrapper {
         | {
               status: "OK";
               user: import("../../types").User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";

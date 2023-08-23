@@ -96,6 +96,7 @@ export type RecipeInterface = {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -111,7 +112,12 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: any;
     }): Promise<
-        | { status: "OK"; createdNewRecipeUser: boolean; user: GlobalUser }
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
@@ -127,7 +133,14 @@ export type RecipeInterface = {
         password: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: GlobalUser } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+    >;
 
     createNewEmailPasswordRecipeUser(input: {
         email: string;
@@ -137,6 +150,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               user: GlobalUser;
+              recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
     >;
@@ -146,7 +160,14 @@ export type RecipeInterface = {
         password: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: GlobalUser } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: GlobalUser;
+              recipeUserId: RecipeUserId;
+          }
+        | { status: "WRONG_CREDENTIALS_ERROR" }
+    >;
 
     createResetPasswordToken(input: {
         userId: string;

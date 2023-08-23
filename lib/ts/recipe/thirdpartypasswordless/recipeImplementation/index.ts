@@ -7,7 +7,7 @@ import { Querier } from "../../../querier";
 import DerivedPwdless from "./passwordlessRecipeImplementation";
 import DerivedTP from "./thirdPartyRecipeImplementation";
 import { User } from "../../../types";
-import { getUser } from "../../../";
+import { RecipeUserId, getUser } from "../../../";
 import { ProviderInput } from "../../thirdparty/types";
 
 export default function getRecipeInterface(
@@ -91,6 +91,7 @@ export default function getRecipeInterface(
                   status: "OK";
                   createdNewRecipeUser: boolean;
                   user: User;
+                  recipeUserId: RecipeUserId;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -108,7 +109,7 @@ export default function getRecipeInterface(
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewRecipeUser: boolean; user: User }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;

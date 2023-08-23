@@ -71,6 +71,7 @@ export default class Recipe extends RecipeModule {
     ) => Promise<{
         status: string;
         createdNewRecipeUser: boolean;
+        recipeUserId: import("../..").RecipeUserId;
         user: import("../../types").User;
     }>;
 }

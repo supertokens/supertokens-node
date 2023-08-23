@@ -4,6 +4,7 @@ import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type UserInfo = {
     thirdPartyUserId: string;
     email?: {
@@ -156,6 +157,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               createdNewRecipeUser: boolean;
+              recipeUserId: RecipeUserId;
               user: User;
           }
         | {
@@ -175,6 +177,7 @@ export declare type RecipeInterface = {
               status: "OK";
               createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

@@ -4,7 +4,7 @@ import AccountLinking from "../accountlinking/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailVerification from "../emailverification/recipe";
 import { logDebugMessage } from "../../logger";
-import { User } from "../../user";
+import { LoginMethod, User } from "../../user";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
 
@@ -23,13 +23,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
     return {
         consumeCode: async function (this: RecipeInterface, input) {
-            // TODO: this is not optimal
-            const deviceInfo = await this.listCodesByPreAuthSessionId({
-                tenantId: input.tenantId,
-                preAuthSessionId: input.preAuthSessionId,
-                userContext: input.userContext,
-            });
-
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${input.tenantId}/recipe/signinup/code/consume`),
                 copyAndRemoveUserContextAndTenantId(input)
@@ -39,16 +32,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 return response;
             }
 
-            if (deviceInfo === undefined) {
-                // This means we successfully consumed a code using a preAuthSessionId
-                // but the listing endpoint returned undefined for it
-                throw new Error("Should never come here.");
-            }
-
             logDebugMessage("Passwordless.consumeCode code consumed OK");
             response.user = new User(response.user);
+            response.recipeUserId = new RecipeUserId(response.recipeUserId);
+
             const loginMethod = response.user.loginMethods.find(
-                (m: User["loginMethods"][number]) => m.recipeId === "passwordless"
+                (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
             )!;
             if (loginMethod === undefined) {
                 throw new Error("This should never happen: login method not found after signin");
@@ -93,24 +82,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 // to link there since there is no user id change really from the dev's
                 // point of view who is calling the sign up recipe function.
                 return response;
-            }
-
-            // We do this here and not in createNewOrUpdateEmailOfRecipeUser cause
-            // createNewOrUpdateEmailOfRecipeUser is also called in post login account linking.
-            let recipeUserId: RecipeUserId | undefined = undefined;
-            for (let i = 0; i < response.user.loginMethods.length; i++) {
-                const m = response.user.loginMethods[i];
-                if (
-                    m.recipeId === "passwordless" &&
-                    (m.hasSameEmailAs(deviceInfo.email) || m.hasSamePhoneNumberAs(deviceInfo.phoneNumber))
-                ) {
-                    recipeUserId = m.recipeUserId;
-                    break;
-                }
-            }
-
-            if (recipeUserId === undefined) {
-                throw new Error("Should never come here");
             }
 
             let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({

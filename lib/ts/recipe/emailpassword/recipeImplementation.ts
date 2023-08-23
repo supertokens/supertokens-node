@@ -27,7 +27,9 @@ export default function getRecipeInterface(
                 tenantId: string;
                 userContext: any;
             }
-        ): Promise<{ status: "OK"; user: UserType } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        ): Promise<
+            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
             const response = await this.createNewRecipeUser({
                 email,
                 password,
@@ -47,6 +49,7 @@ export default function getRecipeInterface(
             return {
                 status: "OK",
                 user: updatedUser,
+                recipeUserId: response.recipeUserId,
             };
         },
 
@@ -59,6 +62,7 @@ export default function getRecipeInterface(
             | {
                   status: "OK";
                   user: User;
+                  recipeUserId: RecipeUserId;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -73,6 +77,7 @@ export default function getRecipeInterface(
             );
             if (resp.status === "OK") {
                 resp.user = new User(resp.user);
+                resp.recipeUserId = new RecipeUserId(resp.recipeUserId);
             }
             return resp;
 
@@ -90,7 +95,9 @@ export default function getRecipeInterface(
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: UserType } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }
+        > {
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
                 {
@@ -101,18 +108,17 @@ export default function getRecipeInterface(
 
             if (response.status === "OK") {
                 response.user = new User(response.user);
+                response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
                 const loginMethod: LoginMethod = response.user.loginMethods.find(
-                    (lm: LoginMethod) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email)
+                    (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
                 );
-
-                let recipeUserId: RecipeUserId | undefined = loginMethod.recipeUserId;
 
                 if (!loginMethod.verified) {
                     await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                         tenantId,
                         user: response.user,
-                        recipeUserId: recipeUserId!,
+                        recipeUserId: response.recipeUserId,
                         userContext,
                     });
 
@@ -128,7 +134,7 @@ export default function getRecipeInterface(
 
                     // We do this so that we get the updated user (in case the above
                     // function updated the verification status) and can return that
-                    response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
+                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
                 }
             }
 

@@ -31,7 +31,9 @@ export default function getRecipeInterface(
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
             return await originalEmailPasswordImplementation.createNewRecipeUser.bind(DerivedEP(this))(input);
         },
         emailPasswordSignUp: async function (input: {
@@ -39,7 +41,9 @@ export default function getRecipeInterface(
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
 
@@ -48,7 +52,7 @@ export default function getRecipeInterface(
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
 
@@ -69,6 +73,7 @@ export default function getRecipeInterface(
                   status: "OK";
                   createdNewRecipeUser: boolean;
                   user: User;
+                  recipeUserId: RecipeUserId;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -86,7 +91,7 @@ export default function getRecipeInterface(
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewRecipeUser: boolean; user: User }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;

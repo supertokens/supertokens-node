@@ -31,7 +31,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 userContext: any;
             }
         ): Promise<
-            | { status: "OK"; createdNewRecipeUser: boolean; user: UserType }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: UserType; recipeUserId: RecipeUserId }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -49,23 +49,12 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
             if (response.status === "OK") {
                 response.user = new User(response.user);
-                let recipeUserId: RecipeUserId | undefined = undefined;
-                for (let i = 0; i < response.user.loginMethods.length; i++) {
-                    if (
-                        response.user.loginMethods[i].recipeId === "thirdparty" &&
-                        response.user.loginMethods[i].hasSameThirdPartyInfoAs({
-                            id: thirdPartyId,
-                            userId: thirdPartyUserId,
-                        })
-                    ) {
-                        recipeUserId = response.user.loginMethods[i].recipeUserId;
-                        break;
-                    }
-                }
+                response.recipeUserId = new RecipeUserId(response.recipeUserId);
+
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
                     tenantId,
                     user: response.user,
-                    recipeUserId: recipeUserId!,
+                    recipeUserId: response.recipeUserId,
                     userContext,
                 });
 
@@ -83,7 +72,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                     if (isInitialized) {
                         let verifyResponse = await EmailVerification.createEmailVerificationToken(
                             tenantId,
-                            recipeUserId!,
+                            response.recipeUserId,
                             undefined,
                             userContext
                         );
@@ -102,7 +91,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
 
                 // we do this so that we get the updated user (in case the above
                 // function updated the verification status) and can return that
-                response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
+                response.user = (await getUser(response.recipeUserId.getAsString(), userContext))!;
             }
 
             if (!response.createdNewRecipeUser) {
@@ -128,6 +117,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 status: "OK",
                 createdNewRecipeUser: response.createdNewRecipeUser,
                 user: updatedUser,
+                recipeUserId: response.recipeUserId,
             };
         },
 
@@ -153,6 +143,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                   status: "OK";
                   createdNewRecipeUser: boolean;
                   user: UserType;
+                  recipeUserId: RecipeUserId;
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";

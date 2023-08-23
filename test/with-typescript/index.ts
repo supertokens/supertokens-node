@@ -1544,6 +1544,7 @@ Passwordless.init({
                             return {
                                 status: "OK",
                                 createdNewRecipeUser: user.createdNewRecipeUser,
+                                recipeUserId: user.recipeUserId,
                                 user: user.user,
                             };
                         }
