@@ -159,6 +159,17 @@ export declare type RecipeInterface = {
               createdNewRecipeUser: boolean;
               recipeUserId: RecipeUserId;
               user: User;
+              oAuthTokens: {
+                  [key: string]: any;
+              };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: {
+                      [key: string]: any;
+                  };
+                  fromUserInfoAPI?: {
+                      [key: string]: any;
+                  };
+              };
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";

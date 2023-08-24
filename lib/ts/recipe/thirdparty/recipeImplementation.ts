@@ -129,6 +129,8 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 isVerified,
                 tenantId,
                 userContext,
+                oAuthTokens,
+                rawUserInfoFromProvider,
             }: {
                 thirdPartyId: string;
                 thirdPartyUserId: string;
@@ -136,6 +138,11 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 isVerified: boolean;
                 tenantId: string;
                 userContext: any;
+                oAuthTokens: { [key: string]: any };
+                rawUserInfoFromProvider: {
+                    fromIdTokenPayload?: { [key: string]: any };
+                    fromUserInfoAPI?: { [key: string]: any };
+                };
             }
         ): Promise<
             | {
@@ -143,6 +150,11 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                   createdNewRecipeUser: boolean;
                   user: UserType;
                   recipeUserId: RecipeUserId;
+                  oAuthTokens: { [key: string]: any };
+                  rawUserInfoFromProvider: {
+                      fromIdTokenPayload?: { [key: string]: any };
+                      fromUserInfoAPI?: { [key: string]: any };
+                  };
               }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -165,6 +177,15 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                         "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ANOTHER_PRIM_USER_HAS_EMAIL)",
                 };
             }
+
+            if (response.status === "OK") {
+                return {
+                    ...response,
+                    oAuthTokens,
+                    rawUserInfoFromProvider,
+                };
+            }
+
             return response;
         },
 

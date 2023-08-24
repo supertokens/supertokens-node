@@ -14,7 +14,7 @@
  */
 
 import STError from "../error";
-import { send200Response } from "../../../utils";
+import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
 export default async function signInUpAPI(
@@ -92,8 +92,7 @@ export default async function signInUpAPI(
     if (result.status === "OK") {
         send200Response(options.res, {
             status: result.status,
-            user: result.user,
-            createdNewRecipeUser: result.createdNewRecipeUser,
+            ...getBackwardsCompatibleUserInfo(options.req, result),
         });
     } else {
         send200Response(options.res, result);

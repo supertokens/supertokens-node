@@ -158,6 +158,11 @@ export type RecipeInterface = {
               createdNewRecipeUser: boolean;
               recipeUserId: RecipeUserId;
               user: User;
+              oAuthTokens: { [key: string]: any };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: { [key: string]: any };
+                  fromUserInfoAPI?: { [key: string]: any };
+              };
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -173,7 +178,12 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: any;
     }): Promise<
-        | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+        | {
+              status: "OK";
+              createdNewRecipeUser: boolean;
+              user: User;
+              recipeUserId: RecipeUserId;
+          }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;

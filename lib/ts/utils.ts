@@ -5,8 +5,10 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
-import { HEADER_RID } from "./constants";
+import { HEADER_FDI, HEADER_RID } from "./constants";
 import fetch from "cross-fetch";
+import { User } from "./user";
+import { SessionContainer } from "./recipe/session";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -129,6 +131,70 @@ export function isAnIpAddress(ipaddress: string) {
     return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
         ipaddress
     );
+}
+
+export function getBackwardsCompatibleUserInfo(
+    req: BaseRequest,
+    result: {
+        user: User;
+        session: SessionContainer;
+        createdNewRecipeUser?: boolean;
+    }
+) {
+    let resp: JSONObject;
+    if (doesRequestSupportFDI(req, "1.18")) {
+        resp = {
+            user: result.user.toJson(),
+        };
+
+        if (result.createdNewRecipeUser !== undefined) {
+            resp.createdNewRecipeUser = result.createdNewRecipeUser;
+        }
+        return resp;
+    } else {
+        const loginMethod = result.user.loginMethods.find(
+            (lm) => lm.recipeUserId.getAsString() === result.session.getRecipeUserId().getAsString()
+        );
+
+        if (loginMethod === undefined) {
+            throw new Error("This should never happen: session and user mismatch");
+        }
+
+        const userObj: JSONObject = {
+            id: result.session.getUserId(),
+            timeJoined: result.user.timeJoined,
+        };
+        if (loginMethod.thirdParty) {
+            userObj.thirdParty = loginMethod.thirdParty;
+        }
+        if (loginMethod.email) {
+            userObj.email = loginMethod.email;
+        }
+        if (loginMethod.phoneNumber) {
+            userObj.phoneNumber = loginMethod.phoneNumber;
+        }
+
+        resp = {
+            user: userObj,
+        };
+
+        if (result.createdNewRecipeUser !== undefined) {
+            resp.createdNewUser = result.createdNewRecipeUser;
+        }
+    }
+    return resp;
+}
+
+export function doesRequestSupportFDI(req: BaseRequest, version: string) {
+    let requestFDI = req.getHeaderValue(HEADER_FDI);
+    if (requestFDI === undefined) {
+        // By default we assume they want to use the latest FDI, this also helps with tests
+        return true;
+    }
+    if (requestFDI === version || maxVersion(version, requestFDI) !== version) {
+        return true;
+    }
+    return false;
 }
 
 export function getRidFromHeader(req: BaseRequest): string | undefined {

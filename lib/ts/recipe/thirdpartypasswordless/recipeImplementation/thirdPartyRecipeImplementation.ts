@@ -18,7 +18,17 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: User;
+                  recipeUserId: RecipeUserId;
+                  oAuthTokens: { [key: string]: any };
+                  rawUserInfoFromProvider: {
+                      fromIdTokenPayload?: { [key: string]: any };
+                      fromUserInfoAPI?: { [key: string]: any };
+                  };
+              }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
