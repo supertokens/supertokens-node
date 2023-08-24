@@ -28,6 +28,7 @@ import { BooleanClaim, PrimitiveClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
 import Dashboard from "../../recipe/dashboard";
 import JWT from "../../recipe/jwt";
+import AccountLinking from "../../recipe/accountlinking";
 
 UserRoles.init({
     override: {
@@ -1751,3 +1752,79 @@ Session.init({
         },
     },
 });
+
+async function accountLinkingFuncsTest() {
+    const signUpResp = await EmailPassword.signUp("public", "asdf@asdf.asfd", "testpw");
+    if (signUpResp.status !== "OK") {
+        return signUpResp;
+    }
+
+    let user: User;
+    if (
+        !signUpResp.user.isPrimaryUser &&
+        (await AccountLinking.canCreatePrimaryUser(signUpResp.user.loginMethods[0].recipeUserId))
+    ) {
+        const createResp = await AccountLinking.createPrimaryUser(Supertokens.convertToRecipeUserId("asdf"));
+        if (createResp.status === "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR") {
+            throw new Error(createResp.status);
+        }
+        user = createResp.user;
+    } else {
+        user = signUpResp.user;
+    }
+
+    const signUpResp2 = await EmailPassword.signUp("public", "asdf2@asdf.asfd", "testpw");
+    if (signUpResp2.status !== "OK") {
+        return signUpResp2;
+    }
+    const linkResp = await AccountLinking.linkAccounts(signUpResp2.recipeUserId, user.id);
+
+    if (linkResp.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+        throw new Error("Should never happen");
+    }
+    if (
+        linkResp.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR" ||
+        linkResp.status === "OK"
+    ) {
+        user = linkResp.user;
+    } else {
+        throw new Error(linkResp.status);
+    }
+
+    const unlinkResp = await AccountLinking.unlinkAccount(signUpResp2.recipeUserId);
+
+    if (unlinkResp.wasRecipeUserDeleted) {
+        console.log("User deleted: " + signUpResp2.recipeUserId.getAsString());
+    }
+
+    const tpSignUp = await ThirdParty.manuallyCreateOrUpdateUser("public", "mytp", "tpuser", "asfd@asfd.asdf", false);
+    if (tpSignUp.status !== "OK") {
+        return tpSignUp;
+    }
+    // This should be true
+    const canLink = await AccountLinking.canLinkAccounts(tpSignUp.recipeUserId, user.id);
+
+    // This should be the same as the primary user above
+    const toLink = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId("public", tpSignUp.recipeUserId);
+
+    // This should be the same primary user as toLink updated with the new link
+    const linkResult = await AccountLinking.createPrimaryUserIdOrLinkAccounts("public", tpSignUp.recipeUserId);
+
+    return {
+        canChangeEmail: await AccountLinking.isEmailChangeAllowed(
+            "public",
+            tpSignUp.recipeUserId,
+            "asfd@asfd.asfd",
+            true
+        ),
+        canSignIn: await AccountLinking.isSignInAllowed("public", tpSignUp.recipeUserId),
+        canSignUp: await AccountLinking.isSignUpAllowed(
+            "public",
+            {
+                recipeId: "passwordless",
+                email: "asdf@asdf.asdf",
+            },
+            true
+        ),
+    };
+}
