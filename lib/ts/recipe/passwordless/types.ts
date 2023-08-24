@@ -176,7 +176,6 @@ export type RecipeInterface = {
     >;
 
     updateUser: (input: {
-        tenantId: string;
         recipeUserId: RecipeUserId; // the id can be either recipeUserId or primaryUserId
         email?: string | null;
         phoneNumber?: string | null;

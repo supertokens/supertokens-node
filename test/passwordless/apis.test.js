@@ -648,7 +648,6 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         // add users phoneNumber to userInfo
         await Passwordless.updateUser({
-            tenantId: "public",
             recipeUserId: emailUserInputCodeResponse.user.loginMethods[0].recipeUserId,
             phoneNumber: "+12345678901",
         });

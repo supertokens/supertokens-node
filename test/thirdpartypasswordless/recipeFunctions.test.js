@@ -670,7 +670,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
-                tenantId: "public",
             });
             assert(response.status === "OK");
 
@@ -683,7 +682,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: STExpress.convertToRecipeUserId("invalidUserId"),
                 email: "test2@example.com",
-                tenantId: "public",
             });
 
             assert(response.status === "UNKNOWN_USER_ID_ERROR");
@@ -698,7 +696,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             let result = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
-                tenantId: "public",
             });
 
             assert(result.status === "EMAIL_ALREADY_EXISTS_ERROR");
@@ -750,7 +747,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
-                tenantId: "public",
             });
             assert(response.status === "OK");
 
@@ -768,7 +764,6 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             let result = await ThirdPartyPasswordless.updatePasswordlessUser({
                 recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
-                tenantId: "public",
             });
 
             assert(result.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR");

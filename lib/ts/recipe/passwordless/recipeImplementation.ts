@@ -159,7 +159,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         updateUser: async function (input) {
             let response = await querier.sendPutRequest(
-                new NormalisedURLPath(`/${input.tenantId}/recipe/user`),
+                new NormalisedURLPath(`/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input)
             );
             const user = await getUser(input.recipeUserId.getAsString(), input.userContext);

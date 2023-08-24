@@ -156,7 +156,6 @@ export declare type RecipeInterface = {
           }
     >;
     updateUser: (input: {
-        tenantId: string;
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;

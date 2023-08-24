@@ -87,7 +87,6 @@ export default class Wrapper {
           }
     >;
     static updateUser(input: {
-        tenantId: string;
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;

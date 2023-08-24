@@ -166,7 +166,6 @@ const updateEmailForRecipeId = async (
         }
 
         const updateResult = await Passwordless.updateUser({
-            tenantId,
             recipeUserId,
             email,
             userContext,
@@ -217,7 +216,6 @@ const updateEmailForRecipeId = async (
         }
 
         const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            tenantId,
             recipeUserId,
             email,
             userContext,
@@ -292,7 +290,6 @@ const updatePhoneForRecipeId = async (
         }
 
         const updateResult = await Passwordless.updateUser({
-            tenantId,
             recipeUserId,
             phoneNumber: phone,
             userContext,
@@ -343,7 +340,6 @@ const updatePhoneForRecipeId = async (
         }
 
         const updateResult = await ThirdPartyPasswordless.updatePasswordlessUser({
-            tenantId,
             recipeUserId,
             phoneNumber: phone,
             userContext,

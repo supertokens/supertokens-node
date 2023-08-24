@@ -114,7 +114,6 @@ export default class Wrapper {
     }
 
     static updatePasswordlessUser(input: {
-        tenantId: string;
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
