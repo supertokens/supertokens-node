@@ -12,15 +12,25 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    startSTWithMultitenancyAndAccountLinking,
+} = require("../utils");
 let supertokens = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
-let ThirdParty = require("../../recipe/thirdparty");
-let AccountLinking = require("../../recipe/accountlinking");
 let EmailVerification = require("../../recipe/emailverification");
+let AccountLinking = require("../../recipe/accountlinking");
+let Passwordless = require("../../recipe/passwordless");
+let MultiTenancy = require("../../recipe/multitenancy");
 
 describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.test.js]")}`, function () {
     beforeEach(async function () {
@@ -34,27 +44,9 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
         await cleanST();
     });
 
-    describe("sign up tests", function () {
-        it("sign up without account linking does not make primary user", async function () {
-            await startST();
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [EmailPassword.init()],
-            });
-
-            let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-            assert(!user.isPrimaryUser);
-        });
-
-        it("sign up with account linking makes primary user if email verification is not require", async function () {
-            await startST();
+    describe("user sharing", function () {
+        it("should work fine for primary users", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -65,6 +57,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    MultiTenancy.init(),
                     EmailPassword.init(),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async () => {
@@ -77,12 +70,26 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 ],
             });
 
-            let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let user = (await EmailPassword.signUp("public", email, password)).user;
             assert(user.isPrimaryUser);
+
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", user.id);
+            assert.strictEqual(shareRes.status, "OK");
+
+            const signInRes = await EmailPassword.signIn("tenant1", email, password);
+            assert.strictEqual(signInRes.status, "OK");
         });
 
-        it("sign up with account linking does not make primary user if email verification is required", async function () {
-            await startST();
+        it("should share linked users", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -93,111 +100,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    MultiTenancy.init(),
                     EmailPassword.init(),
-                    AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async () => {
-                            return {
-                                shouldAutomaticallyLink: true,
-                                shouldRequireVerification: true,
-                            };
-                        },
-                    }),
-                ],
-            });
-
-            let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-            assert(!user.isPrimaryUser);
-        });
-
-        it("sign up allowed even if account linking is on and email already used by another recipe (cause in recipe level, it is allowed), but no linking happens if email verification is required", async function () {
-            await startST();
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    EmailPassword.init(),
-                    Session.init(),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    }),
-                    AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async () => {
-                            return {
-                                shouldAutomaticallyLink: true,
-                                shouldRequireVerification: true,
-                            };
-                        },
-                    }),
-                ],
-            });
-
-            let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
-                "public",
-                "google",
-                "abc",
-                "test@example.com",
-                false
-            );
-
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
-
-            let response = await EmailPassword.signUp("public", "test@example.com", "password123");
-
-            assert(response.status === "OK");
-            assert(response.user.id !== user.id);
-            assert(response.user.isPrimaryUser === false);
-        });
-
-        it("sign up allowed if account linking is on, email verification is off, and email already used by another recipe", async function () {
-            await startST();
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    EmailPassword.init(),
-                    Session.init(),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async () => {
@@ -210,25 +117,35 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 ],
             });
 
-            let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
-                "public",
-                "google",
-                "abc",
-                "test@example.com",
-                false
-            );
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
 
-            assert(user.isPrimaryUser);
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
 
-            let response = await EmailPassword.signUp("public", "test@example.com", "password123");
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "public" });
+            const linkRes = await AccountLinking.linkAccounts(pwlessSignUpResp.recipeUserId, primUser.id);
+            assert.strictEqual(linkRes.status, "OK");
+            assert.strictEqual(linkRes.user.id, primUser.id);
 
-            assert(response.status === "OK");
-            assert(response.user.id === user.id);
-            assert(response.user.loginMethods.length === 2);
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", primUser.id);
+            assert.strictEqual(shareRes.status, "OK");
+
+            const signInRes = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+
+            assert.strictEqual(signInRes.status, "OK");
+            assert.strictEqual(signInRes.user.id, primUser.id);
+            assert.strictEqual(signInRes.user.loginMethods.length, 2);
+            assert.strictEqual(signInRes.recipeUserId.getAsString(), pwlessSignUpResp.recipeUserId.getAsString());
         });
 
-        it("sign up allowed if account linking is off, and email already used by another recipe", async function () {
-            await startST();
+        it("should not allow sharing if there is a conflicting primary user", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -239,124 +156,48 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    MultiTenancy.init(),
                     EmailPassword.init(),
-                    Session.init(),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async () => {
                             return {
-                                shouldAutomaticallyLink: false,
-                            };
-                        },
-                    }),
-                ],
-            });
-
-            let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
-                "public",
-                "google",
-                "abc",
-                "test@example.com",
-                false
-            );
-
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
-
-            let response = await EmailPassword.signUp("public", "test@example.com", "password123");
-
-            assert(response.status === "OK");
-        });
-
-        it("sign up doesn't link user to existing account if email verification is needed", async function () {
-            await startST();
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    EmailPassword.init(),
-                    Session.init(),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    }),
-                    AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
-                            if (newAccountInfo.recipeId === "emailpassword") {
-                                let existingUser = await supertokens.listUsersByAccountInfo({
-                                    email: newAccountInfo.email,
-                                });
-                                let doesEmailPasswordUserExist = existingUser.length > 1;
-                                if (!doesEmailPasswordUserExist) {
-                                    return {
-                                        shouldAutomaticallyLink: false,
-                                    };
-                                }
-                            }
-                            return {
                                 shouldAutomaticallyLink: true,
-                                shouldRequireVerification: true,
+                                shouldRequireVerification: false,
                             };
                         },
                     }),
                 ],
             });
 
-            let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
-                "public",
-                "google",
-                "abc",
-                "test@example.com",
-                false
-            );
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
 
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
 
-            let response = await EmailPassword.signUp("public", "test@example.com", "password123");
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+            const createPrimRes = await AccountLinking.createPrimaryUser(pwlessSignUpResp.recipeUserId);
+            assert.strictEqual(createPrimRes.status, "OK");
+            assert(createPrimRes.user.isPrimaryUser);
+            assert.notStrictEqual(createPrimRes.user.id, primUser.id);
 
-            assert(response.status === "OK");
-            assert(response.user.id !== user.id);
-            assert(!response.user.isPrimaryUser);
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", primUser.id);
+            assert.notStrictEqual(shareRes.status, "OK");
         });
     });
 
-    describe("sign in tests", function () {
-        it("sign in recipe function does not do account linking", async function () {
-            await startST();
+    describe("getPrimaryUserThatCanBeLinkedToRecipeUserId", () => {
+        it("should not suggest linking users on separate tenants", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -367,14 +208,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    MultiTenancy.init(),
                     EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
-                            if (userContext.doNotLink) {
-                                return {
-                                    shouldAutomaticallyLink: false,
-                                };
-                            }
+                        shouldDoAutomaticAccountLinking: async () => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: false,
@@ -384,19 +225,28 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 ],
             });
 
-            let user = (
-                await EmailPassword.signUp("public", "test@example.com", "password123", {
-                    doNotLink: true,
-                })
-            ).user;
-            assert(!user.isPrimaryUser);
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
 
-            user = (await EmailPassword.signIn("public", "test@example.com", "password123")).user;
-            assert(!user.isPrimaryUser);
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+
+            const toLink = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
+                "tenant1",
+                pwlessSignUpResp.recipeUserId
+            );
+            assert.strictEqual(toLink, undefined);
         });
 
-        it("sign in recipe function marks email as verified if linked accounts has email as verified and uses the same email", async function () {
-            await startST();
+        it("should not check if recipeUser is associated with tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -407,27 +257,216 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    MultiTenancy.init(),
                     EmailPassword.init(),
-                    Session.init(),
-                    EmailVerification.init({
-                        mode: "OPTIONAL",
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     }),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
                         },
+                    }),
+                ],
+            });
+
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+
+            const toLink = await AccountLinking.getPrimaryUserThatCanBeLinkedToRecipeUserId(
+                "public",
+                pwlessSignUpResp.recipeUserId
+            );
+            assert.deepStrictEqual(toLink.toJson(), primUser.toJson());
+        });
+    });
+
+    describe("canCreatePrimaryUser", () => {
+        it("should return ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR if a conflicting user was shared on the tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    MultiTenancy.init(),
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", primUser.id);
+            assert.strictEqual(shareRes.status, "OK");
+
+            const resp = await AccountLinking.canCreatePrimaryUser(pwlessSignUpResp.recipeUserId);
+            assert.deepStrictEqual(resp.status, "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
+        });
+
+        it("should return OK if a conflicting user is only on a different tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    MultiTenancy.init(),
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+
+            const resp = await AccountLinking.canCreatePrimaryUser(pwlessSignUpResp.recipeUserId);
+            assert.deepStrictEqual(resp.status, "OK");
+        });
+    });
+
+    describe("isEmailChangeAllowed", () => {
+        it("should return false for primary user if a conflicting user was shared on the tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    MultiTenancy.init(),
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const email2 = `test2+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email: email2, tenantId: "tenant1" });
+            await AccountLinking.createPrimaryUser(pwlessSignUpResp.recipeUserId);
+
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", primUser.id);
+            assert.strictEqual(shareRes.status, "OK");
+
+            const resp = await AccountLinking.isEmailChangeAllowed(
+                "tenant1",
+                pwlessSignUpResp.recipeUserId,
+                email,
+                false
+            );
+
+            assert.deepStrictEqual(resp, false);
+        });
+
+        it("should return false for recipe user if a conflicting user was shared on the tenant and verification is required", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    MultiTenancy.init(),
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     }),
                     AccountLinking.init({
                         shouldDoAutomaticAccountLinking: async () => {
@@ -440,27 +479,36 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 ],
             });
 
-            let tpUser = (
-                await ThirdParty.manuallyCreateOrUpdateUser("public", "abc", "abcd", "test@example.com", true)
-            ).user;
-            assert(tpUser.isPrimaryUser);
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
 
-            let user = (await EmailPassword.signUp("public", "test@example.com", "password123")).user;
-            assert(!user.isPrimaryUser);
-            assert(user.loginMethods[0].verified === false);
+            const email = `test+${Date.now()}@example.com`;
+            const email2 = `test2+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            primUser = (await AccountLinking.createPrimaryUser(primUser.loginMethods[0].recipeUserId)).user;
+            assert(primUser.isPrimaryUser);
 
-            await AccountLinking.linkAccounts(user.loginMethods[0].recipeUserId, tpUser.id);
+            const pwlessSignUpResp = await Passwordless.signInUp({ email: email2, tenantId: "tenant1" });
 
-            user = (await EmailPassword.signIn("public", "test@example.com", "password123")).user;
-            assert(user.isPrimaryUser === true);
-            assert(user.loginMethods[0].verified === true);
-            assert(user.loginMethods[1].verified === true);
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", primUser.id);
+            assert.strictEqual(shareRes.status, "OK");
+
+            const resp = await AccountLinking.isEmailChangeAllowed(
+                "tenant1",
+                pwlessSignUpResp.recipeUserId,
+                email,
+                false
+            );
+
+            assert.deepStrictEqual(resp, false);
         });
-    });
 
-    describe("update email or password tests", function () {
-        it("update email which belongs to other primary account, and current user is also a primary user should not work", async function () {
-            await startST();
+        it("should return true if a conflicting user is only present on another tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -471,27 +519,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
+                    MultiTenancy.init(),
                     EmailPassword.init(),
-                    Session.init(),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        shouldDoAutomaticAccountLinking: async () => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: false,
@@ -501,35 +536,35 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 ],
             });
 
-            let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
-                "public",
-                "google",
-                "abc",
-                "test@example.com",
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const email2 = `test2+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email: email2, tenantId: "tenant1" });
+            await AccountLinking.createPrimaryUser(pwlessSignUpResp.recipeUserId);
+
+            const resp = await AccountLinking.isEmailChangeAllowed(
+                "tenant1",
+                pwlessSignUpResp.recipeUserId,
+                email,
                 false
             );
-            assert(user.isPrimaryUser);
 
-            let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
-            assert(response.user.isPrimaryUser);
-            assert(response.status === "OK");
-
-            let isAllowed = await AccountLinking.isEmailChangeAllowed(
-                response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
-            );
-            assert(isAllowed === false);
-
-            response = await EmailPassword.updateEmailOrPassword({
-                recipeUserId: response.user.loginMethods[0].recipeUserId,
-                email: "test@example.com",
-            });
-
-            assert(response.status === "EMAIL_CHANGE_NOT_ALLOWED_ERROR");
+            assert.deepStrictEqual(resp, true);
         });
+    });
 
-        it("update email which belongs to other primary account should work if email password user is not a primary user or is not linked, and account linking is disabled", async function () {
-            await startST();
+    describe("isSignUpAllowed", () => {
+        it("should return false if a conflicting user was shared on the tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
                     connectionURI: "http://localhost:8080",
@@ -540,104 +575,18 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
-                    EmailPassword.init(),
                     Session.init(),
                     EmailVerification.init({
-                        mode: "OPTIONAL",
+                        mode: "REQUIRED",
                     }),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    }),
-                    AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
-                            return {
-                                shouldAutomaticallyLink: false,
-                            };
-                        },
-                    }),
-                ],
-            });
-
-            let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
-                "public",
-                "google",
-                "abc",
-                "test@example.com",
-                true
-            );
-
-            await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
-
-            let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
-            assert(response.status === "OK");
-            let recipeUserId = response.user.loginMethods[0].recipeUserId;
-
-            let isAllowed = await AccountLinking.isEmailChangeAllowed(
-                response.user.loginMethods[0].recipeUserId,
-                "test@example.com"
-            );
-            assert(isAllowed === true);
-
-            response = await EmailPassword.updateEmailOrPassword({
-                recipeUserId: response.user.loginMethods[0].recipeUserId,
-                email: "test@example.com",
-            });
-
-            assert(response.status === "OK");
-            let isVerified = await EmailVerification.isEmailVerified(recipeUserId);
-            assert(!isVerified);
-        });
-
-        it("update email which belongs to linked user should mark email as verified of email password user", async function () {
-            await startST();
-            supertokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
+                    MultiTenancy.init(),
                     EmailPassword.init(),
-                    Session.init(),
-                    EmailVerification.init({
-                        mode: "OPTIONAL",
-                    }),
-                    ThirdParty.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                {
-                                    config: {
-                                        thirdPartyId: "google",
-                                        clients: [
-                                            {
-                                                clientId: "",
-                                                clientSecret: "",
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (newAccountInfo, user) => {
+                        shouldDoAutomaticAccountLinking: async () => {
                             return {
                                 shouldAutomaticallyLink: true,
                                 shouldRequireVerification: true,
@@ -647,31 +596,185 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/multitenancy.te
                 ],
             });
 
-            let { user } = await ThirdParty.manuallyCreateOrUpdateUser(
-                "public",
-                "google",
-                "abc",
-                "test@example.com",
-                true
-            );
-            assert(user.isPrimaryUser);
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
 
-            let response = await EmailPassword.signUp("public", "test2@example.com", "password123");
-            assert(response.status === "OK");
-            let recipeUserId = response.user.loginMethods[0].recipeUserId;
-            await AccountLinking.linkAccounts(recipeUserId, user.id);
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            primUser = (await AccountLinking.createPrimaryUser(primUser.loginMethods[0].recipeUserId)).user;
+            assert(primUser.isPrimaryUser);
 
-            let isAllowed = await AccountLinking.isEmailChangeAllowed(recipeUserId, "test@example.com");
-            assert(isAllowed === true);
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", primUser.id);
+            assert.strictEqual(shareRes.status, "OK");
 
-            response = await EmailPassword.updateEmailOrPassword({
-                recipeUserId: recipeUserId,
-                email: "test@example.com",
+            const resp = await AccountLinking.isSignUpAllowed("tenant1", {
+                email,
+                recipeId: "passwordless",
+            });
+            assert.deepStrictEqual(resp, false);
+        });
+
+        it("should return true if a conflicting user is only on a different tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    MultiTenancy.init(),
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
             });
 
-            assert(response.status === "OK");
-            let isVerified = await EmailVerification.isEmailVerified(recipeUserId);
-            assert(isVerified);
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            primUser = (await AccountLinking.createPrimaryUser(primUser.loginMethods[0].recipeUserId)).user;
+            assert(primUser.isPrimaryUser);
+
+            const resp = await AccountLinking.isSignUpAllowed(
+                "tenant1",
+                {
+                    email,
+                    recipeId: "passwordless",
+                },
+                false
+            );
+            assert.deepStrictEqual(resp, true);
+        });
+    });
+
+    describe("isSignInAllowed", () => {
+        it("should return false if a conflicting user was shared on the tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "REQUIRED",
+                    }),
+                    MultiTenancy.init(),
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            primUser = (await AccountLinking.createPrimaryUser(primUser.loginMethods[0].recipeUserId)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+
+            const shareRes = await MultiTenancy.associateUserToTenant("tenant1", primUser.id);
+            assert.strictEqual(shareRes.status, "OK");
+
+            const resp = await AccountLinking.isSignInAllowed("tenant1", pwlessSignUpResp.recipeUserId);
+            assert.deepStrictEqual(resp, false);
+        });
+
+        it("should return true if a conflicting user is only on a different tenant", async function () {
+            await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "REQUIRED",
+                    }),
+                    MultiTenancy.init(),
+                    EmailPassword.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => {
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const createTenant = await MultiTenancy.createOrUpdateTenant("tenant1", {
+                emailPasswordEnabled: true,
+                passwordlessEnabled: true,
+            });
+            assert.strictEqual(createTenant.status, "OK");
+
+            const email = `test+${Date.now()}@example.com`;
+            const password = "password123";
+            let primUser = (await EmailPassword.signUp("public", email, password)).user;
+            primUser = (await AccountLinking.createPrimaryUser(primUser.loginMethods[0].recipeUserId)).user;
+            assert(primUser.isPrimaryUser);
+
+            const pwlessSignUpResp = await Passwordless.signInUp({ email, tenantId: "tenant1" });
+
+            const resp = await AccountLinking.isSignInAllowed("tenant1", pwlessSignUpResp.recipeUserId);
+            assert.deepStrictEqual(resp, true);
         });
     });
 });

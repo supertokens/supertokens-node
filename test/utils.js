@@ -327,6 +327,22 @@ module.exports.startSTWithMultitenancy = async function (host = "localhost", por
     });
 };
 
+module.exports.startSTWithMultitenancyAndAccountLinking = async function (host = "localhost", port = 8080) {
+    await module.exports.startST(host, port);
+    const OPAQUE_KEY_WITH_FEATURES =
+        "N2yITHflaFS4BPm7n0bnfFCjP4sJoTERmP0J=kXQ5YONtALeGnfOOe2rf2QZ0mfOh0aO3pBqfF-S0jb0ABpat6pySluTpJO6jieD6tzUOR1HrGjJO=50Ob3mHi21tQHJ";
+
+    await fetch(`http://${host}:${port}/ee/license`, {
+        method: "PUT",
+        headers: {
+            "content-type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+            licenseKey: OPAQUE_KEY_WITH_FEATURES,
+        }),
+    });
+};
+
 module.exports.removeAppAndTenants = async function (appId) {
     const tenantsResp = await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/list`);
     if (tenantsResp.status === 200) {
