@@ -340,29 +340,9 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
-        // this is now a recipe user sign in.
-        let isVerified = true;
-        try {
-            EmailVerificationRecipe.getInstanceOrThrowError();
-            let emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForRecipeUserId(
-                user,
-                user.loginMethods[0].recipeUserId,
-                userContext
-            );
-            if (emailInfo.status === "OK") {
-                isVerified = await EmailVerificationRecipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified(
-                    {
-                        recipeUserId: user.loginMethods[0].recipeUserId,
-                        email: emailInfo.email,
-                        userContext,
-                    }
-                );
-            }
-        } catch (ignored) {}
-
         return this.isSignInUpAllowedHelper({
             accountInfo: user.loginMethods[0],
-            isVerified,
+            isVerified: user.loginMethods[0].verified,
             tenantId,
             userContext,
         });
