@@ -196,7 +196,7 @@ export default function getRecipeImplementation(
 
             if (
                 ["OK", "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"].includes(
-                    accountsLinkingResult.user
+                    accountsLinkingResult.status
                 )
             ) {
                 accountsLinkingResult.user = new User(accountsLinkingResult.user);
