@@ -13,9 +13,13 @@
  * under the License.
  */
 
+import RecipeError from "./error";
+import { logDebugMessage } from "../../logger";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
+import { normaliseHttpMethod } from "../../utils";
 import { dashboardVersion } from "../../version";
+import { DASHBOARD_ANALYTICS_API } from "./constants";
 import { RecipeInterface } from "./types";
 import { validateApiKey } from "./utils";
 
@@ -36,7 +40,41 @@ export default function getRecipeImplementation(): RecipeInterface {
                         sessionId: authHeaderValue,
                     }
                 );
-                return sessionVerificationResponse.status === "OK";
+
+                if (sessionVerificationResponse.status !== "OK") {
+                    return false;
+                }
+
+                // For all non GET requests we also want to check if the user is allowed to perform this operation
+                if (normaliseHttpMethod(input.req.getMethod()) !== "get") {
+                    // We dont want to block the analytics API
+                    if (input.req.getOriginalURL().endsWith(DASHBOARD_ANALYTICS_API)) {
+                        return true;
+                    }
+
+                    const admins = input.config.admins;
+
+                    // If the user has provided no admins, allow
+                    if (admins.length === 0) {
+                        return true;
+                    }
+
+                    const emailInHeaders = input.req.getHeaderValue("email");
+
+                    if (emailInHeaders === undefined) {
+                        logDebugMessage(
+                            "User Dashboard: Returniing OPERATION_NOT_ALLOWED because no email was provided in headers"
+                        );
+                        return false;
+                    }
+
+                    if (!admins.includes(emailInHeaders)) {
+                        logDebugMessage("User Dashboard: Throwing OPERATION_NOT_ALLOWED because user is not an admin");
+                        throw new RecipeError();
+                    }
+                }
+
+                return true;
             }
             return await validateApiKey(input);
         },

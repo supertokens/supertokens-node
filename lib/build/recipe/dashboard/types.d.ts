@@ -4,6 +4,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 export declare type TypeInput = {
     apiKey?: string;
+    admins?: string[];
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -14,6 +15,7 @@ export declare type TypeInput = {
 };
 export declare type TypeNormalisedInput = {
     apiKey?: string;
+    admins: string[];
     authMode: AuthMode;
     override: {
         functions: (
