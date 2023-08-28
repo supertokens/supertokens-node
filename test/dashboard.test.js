@@ -1,6 +1,7 @@
 const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("./utils");
 let STExpress = require("../");
 let Session = require("../recipe/session");
+let Passwordless = require("../recipe/passwordless");
 let ThirdParty = require("../recipe/thirdparty");
 let EmailPassword = require("../recipe/emailpassword");
 let AccountLinking = require("../recipe/accountlinking");
@@ -628,6 +629,138 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
             const expectedUser = user.toJson();
             delete expectedUser.loginMethods[0].phoneNumber;
             assert.deepStrictEqual(res.body.users, [expectedUser]);
+        });
+    });
+
+    describe("deleteUser", () => {
+        it("should respond with error if userId is missing", async function () {
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        override: {
+                            functions: (oI) => ({
+                                ...oI,
+                                shouldAllowAccess: async () => true,
+                            }),
+                        },
+                    }),
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => ({
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        }),
+                    }),
+                    EmailVerification.init({ mode: "REQUIRED" }),
+                    UserMetadata.init(),
+                    Session.init(),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const deleteRes = await request(app).delete(`/auth/dashboard/api/user`).expect(400);
+            assert.deepStrictEqual(deleteRes.body, {
+                message: "Missing required parameter 'userId'",
+            });
+        });
+    });
+
+    describe("userPut", () => {
+        it("should respond with error if userId is missing", async function () {
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        override: {
+                            functions: (oI) => ({
+                                ...oI,
+                                shouldAllowAccess: async () => true,
+                            }),
+                        },
+                    }),
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => ({
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        }),
+                    }),
+                    EmailVerification.init({ mode: "REQUIRED" }),
+                    UserMetadata.init(),
+                    Session.init(),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const signUp1 = await Passwordless.signInUp({
+                tenantId: "public",
+                phoneNumber: `+3630${Date.now().toString().substr(-7)}`,
+            });
+            assert.strictEqual(signUp1.status, "OK");
+            const signUp2 = await Passwordless.signInUp({
+                tenantId: "public",
+                phoneNumber: `+3670${Date.now().toString().substr(-7)}`,
+            });
+            assert.strictEqual(signUp2.status, "OK");
+
+            const resp = await request(app)
+                .put(`/auth/dashboard/api/user`)
+                .set("Content-Type", "application/json")
+                .send(
+                    JSON.stringify({
+                        recipeId: "passwordless",
+                        recipeUserId: signUp2.user.loginMethods[0].recipeUserId.getAsString(),
+                        phone: signUp1.user.phoneNumbers[0],
+                        email: "",
+                        firstName: "",
+                        lastName: "",
+                    })
+                )
+                .expect(200);
+            assert.strictEqual(resp.body.status, "PHONE_ALREADY_EXISTS_ERROR");
         });
     });
 });
