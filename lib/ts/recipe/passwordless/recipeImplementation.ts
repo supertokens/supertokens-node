@@ -71,7 +71,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 }
             }
 
-            if (!response.createdNewRecipeUser) {
+            if (!response.createdNewUser) {
                 // Unlike in the sign up scenario, we do not do account linking here
                 // cause we do not want sign in to change the potentially user ID of a user
                 // due to linking when this function is called by the dev in their API.
@@ -81,7 +81,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 // In the case of sign up, since we are creating a new user, it's fine
                 // to link there since there is no user id change really from the dev's
                 // point of view who is calling the sign up recipe function.
-                return response;
+                return {
+                    status: "OK",
+                    createdNewRecipeUser: response.createdNewUser,
+                    user: response.user,
+                    recipeUserId: response.recipeUserId,
+                };
             }
 
             let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
@@ -95,8 +100,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
             return {
                 status: "OK",
-                createdNewRecipeUser: response.createdNewRecipeUser,
+                createdNewRecipeUser: response.createdNewUser,
                 user: updatedUser,
+                recipeUserId: response.recipeUserId,
             };
         },
         createCode: async function (input) {
