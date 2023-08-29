@@ -19,6 +19,7 @@ import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
+import { RATE_LIMIT_STATUS_CODE } from "./constants";
 
 export class Querier {
     private static initCalled = false;
@@ -238,7 +239,8 @@ export class Querier {
         path: NormalisedURLPath,
         method: string,
         axiosFunction: (url: string) => Promise<any>,
-        numberOfTries: number
+        numberOfTries: number,
+        retryInfoMap?: Record<string, number>
     ): Promise<any> => {
         if (this.__hosts === undefined) {
             throw Error(
@@ -250,11 +252,23 @@ export class Querier {
         }
         let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
         let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
+
+        const url = currentDomain + currentBasePath + path.getAsStringDangerous();
+        const maxRetries = 5;
+
+        if (retryInfoMap === undefined) {
+            retryInfoMap = {};
+        }
+
+        if (retryInfoMap[url] === undefined) {
+            retryInfoMap[url] = maxRetries;
+        }
+
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
-            let response = await axiosFunction(currentDomain + currentBasePath + path.getAsStringDangerous());
+            let response = await axiosFunction(url);
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
@@ -264,8 +278,28 @@ export class Querier {
             return response.data;
         } catch (err) {
             if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
-                return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
+                return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1, retryInfoMap);
             }
+
+            if (
+                err.response !== undefined &&
+                err.response.status !== undefined &&
+                err.response.status === RATE_LIMIT_STATUS_CODE
+            ) {
+                const retriesLeft = retryInfoMap[url];
+
+                if (retriesLeft > 0) {
+                    retryInfoMap[url] = retriesLeft - 1;
+
+                    const attemptsMade = maxRetries - retriesLeft;
+                    const delay = 10 + 250 * attemptsMade;
+
+                    await new Promise((resolve) => setTimeout(resolve, delay));
+
+                    return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries, retryInfoMap);
+                }
+            }
+
             if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
                 throw new Error(
                     "SuperTokens core threw an error for a " +
