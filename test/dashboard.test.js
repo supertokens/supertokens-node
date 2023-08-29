@@ -692,6 +692,66 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
                 message: "Missing required parameter 'userId'",
             });
         });
+
+        it("should respond with error if userId is empty", async function () {
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Dashboard.init({
+                        override: {
+                            functions: (oI) => ({
+                                ...oI,
+                                shouldAllowAccess: async () => true,
+                            }),
+                        },
+                    }),
+                    EmailPassword.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async () => ({
+                            shouldAutomaticallyLink: true,
+                            shouldRequireVerification: true,
+                        }),
+                    }),
+                    EmailVerification.init({ mode: "REQUIRED" }),
+                    UserMetadata.init(),
+                    Session.init(),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const deleteRes = await request(app).delete(`/auth/dashboard/api/user?userId`).expect(400);
+            assert.deepStrictEqual(deleteRes.body, {
+                message: "Missing required parameter 'userId'",
+            });
+        });
     });
 
     describe("userPut", () => {
