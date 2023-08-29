@@ -19,7 +19,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
 import { normaliseHttpMethod } from "../../utils";
 import { dashboardVersion } from "../../version";
-import { DASHBOARD_ANALYTICS_API } from "./constants";
+import { DASHBOARD_ANALYTICS_API, SIGN_OUT_API } from "./constants";
 import { RecipeInterface } from "./types";
 import { validateApiKey } from "./utils";
 
@@ -49,6 +49,11 @@ export default function getRecipeImplementation(): RecipeInterface {
                 if (normaliseHttpMethod(input.req.getMethod()) !== "get") {
                     // We dont want to block the analytics API
                     if (input.req.getOriginalURL().endsWith(DASHBOARD_ANALYTICS_API)) {
+                        return true;
+                    }
+
+                    // We do not want to block the sign out request
+                    if (input.req.getOriginalURL().endsWith(SIGN_OUT_API)) {
                         return true;
                     }
 
