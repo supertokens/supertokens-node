@@ -75,7 +75,7 @@ export default function (
 
         let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
 
-        if (jwtExpiry <= 0) {
+        if (jwtExpiry < 1) {
             // it can come here if someone calls this function well after
             // the access token and the jwt payload have expired. In this case,
             // we still want the jwt payload to update, but the resulting JWT should
