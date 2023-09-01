@@ -66,20 +66,25 @@ export default function getRecipeInterface(
             if (response.status === "OK") {
                 const recipeUserId = new RecipeUserId(response.userId);
                 if (attemptAccountLinking) {
-                    // before attempting this, we must check that the email that got verified
-                    // from the ID is the one that is currently associated with the ID (since
-                    // email verification can be done for any combination of (user id, email)
-                    // and not necessarily the email that is currently associated with the ID)
-                    let emailInfo = await getEmailForRecipeUserId(undefined, recipeUserId, userContext);
-                    if (emailInfo.status === "OK" && emailInfo.email === response.email) {
-                        // we do this here to prevent cyclic dependencies.
-                        // TODO: Fix this.
-                        let AccountLinking = require("../accountlinking/recipe").getInstance() as AccountLinkingRecipe;
-                        await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                            tenantId,
-                            user: (await getUser(recipeUserId.getAsString()))!, // TODO: this should not happen ideally
-                            userContext,
-                        });
+                    // TODO: this should ideally come from the api response
+                    const updatedUser = await getUser(recipeUserId.getAsString());
+
+                    if (updatedUser) {
+                        // before attempting this, we must check that the email that got verified
+                        // from the ID is the one that is currently associated with the ID (since
+                        // email verification can be done for any combination of (user id, email)
+                        // and not necessarily the email that is currently associated with the ID)
+                        let emailInfo = await getEmailForRecipeUserId(updatedUser, recipeUserId, userContext);
+                        if (emailInfo.status === "OK" && emailInfo.email === response.email) {
+                            // we do this here to prevent cyclic dependencies.
+                            // TODO: Fix this.
+                            let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
+                            await AccountLinking.createPrimaryUserIdOrLinkAccounts({
+                                tenantId,
+                                user: updatedUser,
+                                userContext,
+                            });
+                        }
                     }
                 }
 

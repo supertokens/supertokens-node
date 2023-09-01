@@ -22,11 +22,11 @@ describe(`getRolesForUser: ${printPath("[test/userroles/getRolesForUser.test.js]
 
     describe("getRolesForUser", () => {
         it("create roles, add them to a user check that the user has the roles", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

@@ -23,10 +23,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("consumeCode", () => {
         it("create a passwordless user and map their userId, signIn again and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -108,10 +108,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserById", () => {
         it("create a passwordless user and map their userId, call getUserById and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -179,10 +179,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserByEmail", () => {
         it("create a passwordless user and map their userId, call getUserByEmail and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -242,7 +242,7 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await STExpress.listUsersByAccountInfo({
+            let response = await STExpress.listUsersByAccountInfo("public", {
                 email,
             });
             assert.ok(response !== undefined);
@@ -252,10 +252,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("getUserByPhoneNumber", () => {
         it("create a passwordless user and map their userId, call getUserByPhoneNumber and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -315,7 +315,7 @@ describe(`userIdMapping with passwordless: ${printPath(
                 externalUserId: externalId,
             });
 
-            let response = await STExpress.listUsersByAccountInfo({
+            let response = await STExpress.listUsersByAccountInfo("public", {
                 phoneNumber,
             });
             assert.ok(response !== undefined);
@@ -325,10 +325,10 @@ describe(`userIdMapping with passwordless: ${printPath(
 
     describe("updateUser", () => {
         it("create a passwordless user and map their userId, call updateUser to add their email and retrieve the user to see if the changes are reflected", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -396,7 +396,7 @@ describe(`userIdMapping with passwordless: ${printPath(
             assert.strictEqual(updateUserResponse.status, "OK");
 
             // retrieve user
-            let response = await STExpress.listUsersByAccountInfo({
+            let response = await STExpress.listUsersByAccountInfo("public", {
                 phoneNumber,
             });
             assert.strictEqual(response[0].id, externalId);

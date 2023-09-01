@@ -148,10 +148,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test that disable api, the default signinup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -217,10 +217,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config without code for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -320,10 +320,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test missing redirectURIInfo and oAuthTokens", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -364,10 +364,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -485,10 +485,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test minimum config for thirdparty module, email unverified", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -564,10 +564,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test thirdparty provider doesn't exist", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -615,10 +615,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test email not returned in getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -668,10 +668,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test error thrown from getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -727,10 +727,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     });
 
     it("test invalid POST params for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

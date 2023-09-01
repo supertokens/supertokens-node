@@ -61,10 +61,10 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
     });
 
     it("test with thirdPartyPasswordless, minimum config for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -117,12 +117,12 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
     });
 
     it("test calling authorisation url API with empty init", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         // testing with the google OAuth development key
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -166,12 +166,12 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
     });
 
     it("test calling authorisation url API with empty init with dynamic third party provider", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         // testing with the google OAuth development key
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -230,10 +230,10 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
 
     // testing 4xx error correctly thrown from sub-recipe
     it("test with thirdPartyPasswordless, thirdparty provider doesn't exist", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

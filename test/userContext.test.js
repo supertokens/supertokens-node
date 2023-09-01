@@ -50,12 +50,12 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
     });
 
     it("testing context across interface and recipe function", async function () {
-        await startST();
+        const connectionURI = await startST();
         let works = false;
         let signUpContextWorks = false;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -187,14 +187,14 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
     });
 
     it("testing default context across interface and recipe function", async function () {
-        await startST();
+        const connectionURI = await startST();
         let signInContextWorks = false;
         let signInAPIContextWorks = false;
         let createNewSessionContextWorks = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -290,14 +290,14 @@ describe(`userContext: ${printPath("[test/userContext.test.js]")}`, function () 
     });
 
     it("Test that SuperTokens.getRequestFromUserContext works as expected", async function () {
-        await startST();
+        const connectionURI = await startST();
         let signInContextWorks = false;
         let signInAPIContextWorks = false;
         let createNewSessionContextWorks = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

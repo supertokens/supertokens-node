@@ -2,7 +2,6 @@ import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import AccountLinking from "../accountlinking/recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
-import EmailVerification from "../emailverification/recipe";
 import { logDebugMessage } from "../../logger";
 import { LoginMethod, User } from "../../user";
 import { getUser } from "../..";
@@ -41,34 +40,6 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             )!;
             if (loginMethod === undefined) {
                 throw new Error("This should never happen: login method not found after signin");
-            }
-            if (loginMethod.email !== undefined) {
-                logDebugMessage("Passwordless.consumeCode checking if email verification is initialized");
-                const emailVerificationInstance = EmailVerification.getInstance();
-                if (emailVerificationInstance) {
-                    logDebugMessage("Passwordless.consumeCode checking email verification status");
-                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
-                        {
-                            tenantId: input.tenantId,
-                            recipeUserId: loginMethod.recipeUserId,
-                            email: loginMethod.email,
-                            userContext: input.userContext,
-                        }
-                    );
-
-                    if (tokenResponse.status === "OK") {
-                        logDebugMessage("Passwordless.consumeCode verifying email address");
-                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
-                            tenantId: input.tenantId,
-                            token: tokenResponse.token,
-                            attemptAccountLinking: false,
-                            userContext: input.userContext,
-                        });
-                        // we do this so that we get the updated user (in case the above
-                        // function updated the verification status) and can return that
-                        response.user = await getUser(loginMethod.recipeUserId.getAsString(), input.userContext);
-                    }
-                }
             }
 
             if (!response.createdNewUser) {

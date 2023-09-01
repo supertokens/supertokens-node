@@ -74,9 +74,14 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    await startST();
+                    const connectionURI = await startST();
 
-                    SuperTokens.init(stConfig);
+                    SuperTokens.init({
+                        supertokens: {
+                            connectionURI,
+                        },
+                        ...stConfig,
+                    });
 
                     app = express();
 
@@ -153,10 +158,13 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    await startST();
+                    const connectionURI = await startST();
 
                     SuperTokens.init({
                         framework: "fastify",
+                        supertokens: {
+                            connectionURI,
+                        },
                         ...stConfig,
                     });
 
@@ -229,10 +237,13 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    await startST();
+                    const connectionURI = await startST();
 
                     SuperTokens.init({
                         framework: "hapi",
+                        supertokens: {
+                            connectionURI,
+                        },
                         ...stConfig,
                     });
 
@@ -303,10 +314,13 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
 
             getTestCases(
                 async ({ stConfig, routes }) => {
-                    await startST();
+                    const connectionURI = await startST();
 
                     SuperTokens.init({
                         framework: "koa",
+                        supertokens: {
+                            connectionURI,
+                        },
                         ...stConfig,
                     });
 
@@ -387,10 +401,13 @@ module.exports.addCrossFrameworkTests = (getTestCases, { allTokenTransferMethods
                     }
                     app = require("./loopback-server/index.js");
 
-                    await startST();
+                    const connectionURI = await startST();
 
                     SuperTokens.init({
                         framework: "loopback",
+                        supertokens: {
+                            connectionURI,
+                        },
                         ...stConfig,
                     });
 

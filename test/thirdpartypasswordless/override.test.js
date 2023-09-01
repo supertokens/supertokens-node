@@ -74,12 +74,12 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding functions tests", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -251,12 +251,12 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding api tests", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -373,11 +373,11 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding functions tests, throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -539,13 +539,13 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding api tests, throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         let emailExists = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

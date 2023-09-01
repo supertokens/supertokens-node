@@ -21,6 +21,7 @@ const {
     cleanST,
     resetAll,
     extractInfoFromResponse,
+    startSTWithMultitenancyAndAccountLinking,
 } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
@@ -48,11 +49,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
     describe("generatePasswordResetTokenPOST tests", function () {
         it("calling generatePasswordResetTokenPOST with no primary user and no email password user should be OK, and not send any email", async function () {
-            await startST();
             let sendEmailCallbackCalled = false;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -145,11 +146,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with no primary user and existing email password user should be OK, and should send an email", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -235,11 +236,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user, and email is in unverified state of primary user, and email verification is required, should return OK, but should not send an email", async function () {
-            await startST();
             let sendEmailCallbackCalled = false;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -332,11 +333,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user, and email is in unverified state of primary user, and email verification is NOT required, should return OK, and should send an email", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -429,11 +430,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user, account linking enabled, and email verification required, should return OK, and should send an email", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -529,11 +530,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user, account linking disabled, should return OK, but should not send an email", async function () {
-            await startST();
             let sendEmailCallbackCalled = false;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -613,12 +614,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, where both accounts are linked, should send email if account linking is enabled", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -711,12 +712,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, where both accounts are linked, should send email if account linking is disabled", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -809,12 +810,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user existing, primary user is not verified, and email verification is required, should not send email", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -941,12 +942,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with recipe user existing, and no email password user existing, primary user is not verified, and email verification is required, should not send email", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1072,12 +1073,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and no email password user existing, primary user is not verified, and email verification is not required, should send email", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1167,12 +1168,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with recipe user existing, and no email password user existing, primary user is not verified, and email verification is not required, should not send email - cause no primary user exists", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1270,13 +1271,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, but account linking is disabled should send email, but for email password user", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToRecipeUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1378,12 +1379,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, account linking enabled, but email verification not required should send email, for primary user", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1483,12 +1484,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, and email password user existing, account linking enabled, email verification required should send email, for primary user", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1589,12 +1590,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and email is verified in one of those methods, and email password user existing, account linking enabled, email verification required should send email, for primary user", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1703,12 +1704,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and email right is not verified in the login methods, and email password user existing, account linking enabled, email verification required should say not allowed", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1827,12 +1828,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and all of them having the same email, but none are verified, and email password user existing, account linking enabled, email verification required should send email with primary user", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1948,14 +1949,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
 
     describe("passwordResetPOST tests", function () {
         it("calling passwordResetPOST with no primary user and existing email password user should change password and not link account, and not mark email as verified.", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -2088,14 +2089,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with bad password returns a PASSWORD_POLICY_VIOLATED_ERROR", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -2230,14 +2231,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and no email password user, and email is in unverified state of primary user, and email verification is NOT required, should create an email password user and link to the existing primary user.", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -2389,14 +2390,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and no email password user, and email is in unverified state of primary user, and email verification is NOT required, but right before the token is consumed, account linking is switched off, should only create an email password user and not link it, but very it.", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -2550,14 +2551,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and email password user existing (not linked), but the ep user was created after the reset password token was generated should result in an invalid token error, even though the token was consumed just fine.", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -2704,14 +2705,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and email password user existing (not linked), but the ep user was created and linked after the reset password token was generated should result in invalid token error", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -2854,14 +2855,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and no email password user, and email is in unverified state of primary user, and email verification is required, should create an email password user and link to the existing primary user.", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -3011,15 +3012,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked, should change existing email password account's password if account linking is enabled, and NOT mark both as verified", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -3173,15 +3174,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked, should change existing email password account's password if account linking is disabled, and NOT mark both as verified", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -3334,15 +3335,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and multiple email password user existing, where all accounts are linked, should change the right email password account's password, and NOT mark both as verified", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -3512,15 +3513,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
         });
 
         it("calling passwordResetPOST with primary user existing, and email password user existing, where both accounts are linked, when the token was created, but then get unlinked right before token consumption, should result in OK, but no linking done", async function () {
-            await startST();
             let sendEmailToUserId = undefined;
             let sendEmailToUserEmail = undefined;
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -3680,10 +3681,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -3841,10 +3842,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -4008,10 +4009,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -4167,10 +4168,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             let token = undefined;
             let userPostPasswordReset = undefined;
             let emailPostPasswordReset = undefined;
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

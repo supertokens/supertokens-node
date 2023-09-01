@@ -71,11 +71,11 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             process.env.user = undefined;
             await killAllST();
             await setupST();
-            await startST();
+            const connectionURI = await startST();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -412,11 +412,11 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             process.env.user = undefined;
             await killAllST();
             await setupST();
-            await startST();
+            const connectionURI = await startST();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -533,11 +533,11 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             process.env.user = undefined;
             await killAllST();
             await setupST();
-            await startST();
+            const connectionURI = await startST();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

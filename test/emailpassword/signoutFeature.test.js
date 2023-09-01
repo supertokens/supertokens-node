@@ -56,11 +56,11 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
     // Test the default route and it should revoke the session (with clearing the cookies)
     it("test the default route and it should revoke the session", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -113,11 +113,11 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
     // Disable default route and test that that API returns 404
     it("test that disabling default route and calling the API returns 404", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -162,11 +162,11 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
     // Call the API without a session and it should return "OK"
     it("test that calling the API without a session should return OK", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -201,13 +201,11 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
     //Call the API with an expired access token, refresh, and call the API again to get OK and clear cookies
     it("test that signout API reutrns try refresh token, refresh session and signout should return OK", async function () {
-        await setKeyValueInConfig("access_token_validity", 2);
-
-        await startST();
+        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

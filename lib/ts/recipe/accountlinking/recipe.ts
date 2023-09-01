@@ -29,6 +29,7 @@ import RecipeUserId from "../../recipeUserId";
 import { ProcessState, PROCESS_STATE } from "../../processState";
 import { logDebugMessage } from "../../logger";
 import EmailVerificationRecipe from "../emailverification/recipe";
+import { LoginMethod } from "../../user";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -139,6 +140,7 @@ export default class Recipe extends RecipeModule {
         user: User;
         userContext: any;
     }): Promise<User> => {
+        logDebugMessage("createPrimaryUserIdOrLinkAccounts called");
         // TODO: fix this
         if (user === undefined) {
             // This can come here if the user is using session + email verification
@@ -159,6 +161,7 @@ export default class Recipe extends RecipeModule {
         });
 
         if (primaryUser === undefined) {
+            logDebugMessage("createPrimaryUserIdOrLinkAccounts user can become a primary user");
             // this means that this can become a primary user.
 
             // we can use the 0 index cause this user is
@@ -171,12 +174,19 @@ export default class Recipe extends RecipeModule {
             );
 
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                logDebugMessage(
+                    "createPrimaryUserIdOrLinkAccounts not creating primary user because shouldAutomaticallyLink is false"
+                );
                 return user;
             }
 
             if (shouldDoAccountLinking.shouldRequireVerification && !user.loginMethods[0].verified) {
+                logDebugMessage(
+                    "createPrimaryUserIdOrLinkAccounts not creating primary user because shouldRequireVerification is true but the login method is not verified"
+                );
                 return user;
             }
+            logDebugMessage("createPrimaryUserIdOrLinkAccounts creating primary user");
 
             let createPrimaryUserResult = await this.recipeInterfaceImpl.createPrimaryUser({
                 recipeUserId: user.loginMethods[0].recipeUserId,
@@ -184,6 +194,7 @@ export default class Recipe extends RecipeModule {
             });
 
             if (createPrimaryUserResult.status === "OK") {
+                logDebugMessage("createPrimaryUserIdOrLinkAccounts created primary user");
                 return createPrimaryUserResult.user;
             }
 
@@ -200,7 +211,9 @@ export default class Recipe extends RecipeModule {
                 userContext,
             });
         } else {
+            logDebugMessage("createPrimaryUserIdOrLinkAccounts got linking candidate");
             if (primaryUser.id === user.id) {
+                logDebugMessage("createPrimaryUserIdOrLinkAccounts user already linked");
                 // This can only happen cause of a race condition cause we already check
                 // if the input recipeUserId is a primary user early on in the function.
                 return user;
@@ -217,13 +230,20 @@ export default class Recipe extends RecipeModule {
             );
 
             if (!shouldDoAccountLinking.shouldAutomaticallyLink) {
+                logDebugMessage(
+                    "createPrimaryUserIdOrLinkAccounts not linking because shouldAutomaticallyLink is false"
+                );
                 return user;
             }
 
             if (shouldDoAccountLinking.shouldRequireVerification && !user.loginMethods[0].verified) {
+                logDebugMessage(
+                    "createPrimaryUserIdOrLinkAccounts not linking because shouldRequireVerification is true but the login method is not verified"
+                );
                 return user;
             }
 
+            logDebugMessage("createPrimaryUserIdOrLinkAccounts linking");
             let linkAccountsResult = await this.recipeInterfaceImpl.linkAccounts({
                 recipeUserId: user.loginMethods[0].recipeUserId,
                 primaryUserId: primaryUser.id,
@@ -231,6 +251,7 @@ export default class Recipe extends RecipeModule {
             });
 
             if (linkAccountsResult.status === "OK") {
+                logDebugMessage("createPrimaryUserIdOrLinkAccounts successfully linked");
                 return linkAccountsResult.user;
             } else if (
                 linkAccountsResult.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
@@ -239,8 +260,10 @@ export default class Recipe extends RecipeModule {
                 // wherein the recipe user ID get's linked to
                 // some other primary user whilst this function is running.
                 // But this is OK, we can just return the primary user it is linked to
+                logDebugMessage("createPrimaryUserIdOrLinkAccounts already linked to another user");
                 return linkAccountsResult.user;
             } else if (linkAccountsResult.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER") {
+                logDebugMessage("createPrimaryUserIdOrLinkAccounts linking failed because of a race condition");
                 // this can be possible during a race condition wherein the primary user
                 // that we fetched somehow is no more a primary user. This can happen if
                 // the unlink function was called in parallel on that user. So we can just retry
@@ -250,6 +273,7 @@ export default class Recipe extends RecipeModule {
                     userContext,
                 });
             } else {
+                logDebugMessage("createPrimaryUserIdOrLinkAccounts linking failed because of a race condition");
                 // status is "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"
                 // it can come here if the recipe user ID
                 // can't be linked to the primary user ID cause
@@ -295,7 +319,9 @@ export default class Recipe extends RecipeModule {
             doUnionOfAccountInfo: true,
             userContext,
         });
+        logDebugMessage(`getPrimaryUserThatCanBeLinkedToRecipeUserId found ${users.length} matching users`);
         let pUsers = users.filter((u) => u.isPrimaryUser);
+        logDebugMessage(`getPrimaryUserThatCanBeLinkedToRecipeUserId found ${pUsers.length} matching primary users`);
         if (pUsers.length > 1) {
             // this means that the new user has account info such that it's
             // spread across multiple primary user IDs. In this case, even
@@ -380,7 +406,7 @@ export default class Recipe extends RecipeModule {
         tenantId,
         userContext,
     }: {
-        accountInfo: AccountInfoWithRecipeId;
+        accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
         tenantId: string;
         userContext: any;

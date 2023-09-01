@@ -6,6 +6,7 @@ import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
+import { LoginMethod } from "../../user";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -77,7 +78,7 @@ export default class Recipe extends RecipeModule {
         tenantId,
         userContext,
     }: {
-        accountInfo: AccountInfoWithRecipeId;
+        accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
         tenantId: string;
         userContext: any;

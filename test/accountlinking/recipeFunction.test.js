@@ -12,7 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, assertJSONEquals } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    assertJSONEquals,
+    startSTWithMultitenancyAndAccountLinking,
+} = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -35,10 +45,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user success", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -69,10 +79,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user succcess - already is a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -96,10 +106,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user failure - recipe user already linked to another user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -129,10 +139,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user failure - account info user already associated with a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -175,12 +185,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         let newAccountInfoInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -230,12 +240,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success, even if using recipe user id that is linked to the primary user id", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         let newAccountInfoInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -278,12 +288,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success - already linked", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         let newAccountInfoInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -335,11 +345,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts failure - recipe user id already linked with another primary user id", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -379,11 +389,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts failure - input user is not a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -411,10 +421,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("account linking failure - account info user already associated with a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -464,10 +474,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("unlinking accounts success and removes session", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -511,10 +521,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("unlinking account of primary user causes it to become a recipe user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -549,10 +559,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("unlinking accounts where user id is primary user causes that user id to be deleted", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -597,10 +607,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("delete user successful", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -650,10 +660,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("delete user successful - primary user being deleted", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -703,10 +713,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("delete user successful - remove all linked accounts", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -758,10 +768,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success causes new account's email to be verified if same email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -818,10 +828,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success does not cause primary user's account's email to be verified if same email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -888,10 +898,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success does not cause new account's email to be verified if different email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -947,10 +957,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts does not cause primary user's account's email to be verified if different email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

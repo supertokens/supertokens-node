@@ -20,7 +20,7 @@ import RecipeUserId from "../../recipeUserId";
 export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
-        newAccountInfo: AccountInfoWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId & { recipeUserId?: RecipeUserId },
         user: User | undefined,
         tenantId: string,
         userContext: any
@@ -44,7 +44,7 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
-        newAccountInfo: AccountInfoWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId & { recipeUserId?: RecipeUserId },
         user: User | undefined,
         tenantId: string,
         userContext: any

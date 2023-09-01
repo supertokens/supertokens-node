@@ -30,10 +30,10 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
     describe("recipe init", () => {
         it("should add claims to session without config", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -61,10 +61,10 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
         });
 
         it("should not add claims if disabled in config", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -98,10 +98,10 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
         });
 
         it("should add claims to session with values", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -133,10 +133,10 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
 
     describe("validation", () => {
         it("should validate roles", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -181,10 +181,10 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             });
         });
         it("should validate roles after refetching", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -218,10 +218,10 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             await session.assertClaims([UserRoles.UserRoleClaim.validators.includes("test")]);
         });
         it("should validate permissions", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -266,10 +266,10 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             });
         });
         it("should validate permissions after refetching", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

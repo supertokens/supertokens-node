@@ -37,10 +37,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersOldestFirst", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -101,10 +101,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersOldestFirst with search queries", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -146,10 +146,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersNewestFirst", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -210,10 +210,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUsersNewestFirst with search queries", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -249,10 +249,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     });
 
     it("test getUserCount", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

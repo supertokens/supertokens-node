@@ -38,10 +38,10 @@ describe(`multitenant role: ${printPath("[test/userroles/multitenantRole.test.js
     });
 
     it("test that different roles can be assigned for the same user for each tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

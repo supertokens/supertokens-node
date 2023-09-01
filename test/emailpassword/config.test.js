@@ -42,10 +42,10 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for emailpassword module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -83,10 +83,10 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
 
     // Failure condition: passing data of invalid type/ syntax to the module
     it("test config for emailpassword module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -128,10 +128,10 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
      *         - Check that the default password and email validators work fine
      */
     it("test that no email/password validators given should add them", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -160,10 +160,10 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
     });
 
     it("test that giving optional true in email / password field should be ignored", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -195,10 +195,10 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
 
     //Check that the default password and email validators work fine
     it("test that default password and email validators work fine", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

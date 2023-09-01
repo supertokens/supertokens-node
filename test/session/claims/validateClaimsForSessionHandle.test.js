@@ -40,11 +40,11 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
         });
 
         it("should return the right validation errors", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -101,11 +101,11 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
         });
 
         it("should work for not existing handle", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

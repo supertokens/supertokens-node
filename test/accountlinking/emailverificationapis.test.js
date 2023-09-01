@@ -21,6 +21,7 @@ const {
     cleanST,
     resetAll,
     extractInfoFromResponse,
+    startSTWithMultitenancyAndAccountLinking,
 } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
@@ -51,10 +52,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
     describe("updateSessionIfRequiredPostEmailVerification tests", function () {
         it("updateSessionIfRequiredPostEmailVerification throws unauthorised error in case user does not exist and session exists", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -123,10 +124,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("updateSessionIfRequiredPostEmailVerification does not throws unauthorised error in case user does not exist and session does not exists", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -191,10 +192,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("updateSessionIfRequiredPostEmailVerification sets the right claim in the session post verification of the current logged in user, if it did not get linked to another user ", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -284,10 +285,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("updateSessionIfRequiredPostEmailVerification creates a new session if the user is linked to another user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -393,10 +394,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("updateSessionIfRequiredPostEmailVerification works fine if session does not exist for user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -478,10 +479,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
     describe("isEmailVerifiedGET tests", function () {
         it("calling isEmailVerifiedGET  gives false for currently logged in user if email is not verified, and does not update session", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -560,10 +561,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling isEmailVerifiedGET gives true for currently logged in user if email is verified, and does not update session", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -648,10 +649,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling isEmailVerifiedGET gives false for currently logged in user if email is not verified, and updates session if needed", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -740,10 +741,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling isEmailVerifiedGET gives true for currently logged in user if email is verified, and updates session if needed", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -832,11 +833,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
     describe("generateEmailVerifyTokenPOST tests", function () {
         it("calling generateEmailVerifyTokenPOST generates for currently logged in user if email is not verified, and does not update session", async function () {
-            await startST();
             let userInCallback = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -928,11 +929,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling generateEmailVerifyTokenPOST gives already verified for currently logged in user if email is verified, and does not update session", async function () {
-            await startST();
             let userInCallback = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1028,11 +1029,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling generateEmailVerifyTokenPOST sends email for currently logged in user if email is not verified, and updates session if needed", async function () {
-            await startST();
             let userInCallback = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1134,11 +1135,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling generateEmailVerifyTokenPOST gives email already verified for currently logged in user if email is verified, and updates session if needed", async function () {
-            await startST();
             let userInCallback = undefined;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1238,11 +1239,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
     describe("getEmailForRecipeUserId tests", function () {
         it("calling getEmailForRecipeUserId returns email provided from the config", async function () {
-            await startST();
             let email;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1294,11 +1295,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling getEmailForRecipeUserId falls back on default method of getting email if UNKNOWN_USER_ID_ERROR is returned", async function () {
-            await startST();
             let email;
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1348,10 +1349,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("calling getEmailForRecipeUserId with recipe user id that has many other linked recipe user ids returns the right email", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1427,7 +1428,8 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             let count = content.split("getUser(").length - 1;
             getUserCount += count;
         }
-        assert(getUserCount === 2);
+
+        assert.strictEqual(getUserCount, 3);
 
         let listUsersCount = 0;
         for (let i = 0; i < files.length; i++) {
@@ -1436,7 +1438,7 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
             let count = content.split("listUsersByAccountInfo(").length - 1;
             listUsersCount += count;
         }
-        assert(listUsersCount === 0);
+        assert.strictEqual(listUsersCount, 0);
 
         // define recursive function used above
         function recursive(dir, done) {
@@ -1464,11 +1466,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
     });
 
     it("email and session flow work with random user ID", async function () {
-        await startST();
         let token = undefined;
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1608,11 +1610,11 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
     });
 
     it("email and session flow work with random user ID, with session during verify email", async function () {
-        await startST();
         let token = undefined;
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1754,10 +1756,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
 
     describe("verifyEmailPOST tests", function () {
         it("verifyEmailPOST links accounts if required for new user post sign up", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1851,10 +1853,10 @@ describe(`emailverificationapiTests: ${printPath("[test/accountlinking/emailveri
         });
 
         it("verifyEmailPOST does not link accounts if account linking is disabled", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

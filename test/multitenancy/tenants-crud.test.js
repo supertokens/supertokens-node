@@ -36,10 +36,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test creation of tenants", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -63,10 +63,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test get tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -105,10 +105,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test update tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -142,10 +142,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test delete tenant", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -178,10 +178,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test creation of thirdParty config", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -212,10 +212,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test deletion of thirdparty id", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -248,10 +248,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test updation of thirdparty provider", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -292,10 +292,10 @@ describe(`tenants-crud: ${printPath("[test/multitenancy/tenants-crud.test.js]")}
     });
 
     it("test user association and disassociation with tenants", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

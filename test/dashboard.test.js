@@ -1,4 +1,13 @@
-const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startSTWithMultitenancyAndAccountLinki,
+    startSTWithMultitenancyAndAccountLinkingng,
+    killAllST,
+    cleanST,
+    resetAll,
+    startSTWithMultitenancyAndAccountLinking,
+} = require("./utils");
 let STExpress = require("../");
 let Session = require("../recipe/session");
 let Passwordless = require("../recipe/passwordless");
@@ -28,12 +37,12 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
     });
 
     it("Test that normalised config is generated correctly", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
 
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -54,7 +63,7 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -73,10 +82,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
 
     describe("with account linking", () => {
         it("should get user info with first&last names", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -213,10 +222,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should reset password of linked user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -306,10 +315,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should link accounts after verification", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -392,10 +401,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should delete all linked users if removeAllLinkedAccounts is true", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -466,10 +475,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should not delete all linked users if removeAllLinkedAccounts is false when deleting the primary user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -554,10 +563,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should not delete all linked users if removeAllLinkedAccounts is false when deleting the recipe user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -634,10 +643,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
 
     describe("deleteUser", () => {
         it("should respond with error if userId is missing", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -694,10 +703,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
         });
 
         it("should respond with error if userId is empty", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -756,10 +765,10 @@ describe(`dashboard: ${printPath("[test/dashboard.test.js]")}`, function () {
 
     describe("userPut", () => {
         it("should respond with error if userId is missing", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

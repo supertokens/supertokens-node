@@ -12,7 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    startSTWithMultitenancyAndAccountLinking,
+} = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -36,10 +45,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
 
     describe("verifyEmailUsingToken tests", function () {
         it("verifyEmailUsingToken links account if required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -114,10 +123,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
         });
 
         it("verifyEmailUsingToken links account only if the associated email is verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -203,10 +212,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
         });
 
         it("verifyEmailUsingToken creates primary user if required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -270,10 +279,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
         });
 
         it("verifyEmailUsingToken does not link account if account linking is disabled", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -347,10 +356,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
         });
 
         it("verifyEmailUsingToken does not create a primary user if account linking is disabled", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -413,10 +422,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
         });
 
         it("verifyEmailUsingToken does not create a primary user if account linking is disabled and attemptAccountLinking is false", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -479,10 +488,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
         });
 
         it("verifyEmailUsingToken does not link accounts if attemptAccountLinking is false even if account linking callback allows it", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -559,10 +568,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
 
     describe("isEmailVerified tests", function () {
         it("isEmailVerified checks recipe level user and not primary user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -633,10 +642,10 @@ describe(`emailverificationTests: ${printPath("[test/accountlinking/emailverific
 
     describe("unverifyEmail tests", function () {
         it("unverifyEmail unverifies only recipe level user and has no effect on account linking", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

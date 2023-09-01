@@ -53,11 +53,11 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding functions tests", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -217,12 +217,12 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding api tests", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let emailExists = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -365,11 +365,11 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding functions tests, throws error", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -495,12 +495,12 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
     });
 
     it("overriding api tests, throws error", async () => {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let emailExists = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

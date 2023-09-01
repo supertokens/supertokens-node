@@ -21,13 +21,13 @@ describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.t
 
     describe("getUserMetadata", () => {
         it("should return an empty object for unknown userIds", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const testUserId = "userId";
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -51,7 +51,7 @@ describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.t
         });
 
         it("should return an object if it's created.", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -60,7 +60,7 @@ describe(`getUserMetadataTest: ${printPath("[test/usermetadata/getUserMetadata.t
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

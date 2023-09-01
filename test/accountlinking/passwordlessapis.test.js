@@ -22,6 +22,7 @@ const {
     resetAll,
     extractInfoFromResponse,
     assertJSONEquals,
+    startSTWithMultitenancyAndAccountLinking,
 } = require("../utils");
 let supertokens = require("../..");
 let Session = require("../../recipe/session");
@@ -233,10 +234,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
 
     describe("createCodePOST tests", function () {
         it("calling createCodePOST fails if email exists in some non passwordless primary user - account linking enabled and email verification required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -317,10 +318,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
         });
 
         it("calling createCodePOST succeeds, if email exists in some non passwordless, non primary user, verified account with account linking enabled, and email verification required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -399,14 +400,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
                     })
             );
             assert.notEqual(createCodeResponse, undefined);
-            assert.strictEqual(createCodeResponse.status, "SIGN_IN_UP_NOT_ALLOWED");
+            assert.strictEqual(createCodeResponse.status, "OK");
         });
 
         it("calling createCodePOST fails, if email exists in some non passwordless, non primary user, with account linking enabled, and email verification required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -459,9 +460,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             app.use(errorHandler());
 
             const email = "test@example.com";
-            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, true, {
-                doNotLink: true,
-            });
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, false);
 
             // createCodeAPI with email
             let createCodeResponse = await new Promise((resolve) =>
@@ -557,10 +556,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
 
         describe("SIGN_IN_UP_NOT_ALLOWED", () => {
             it("should be returned if another (non-primary, unverified) user signs up after the code was created for a pwless sign up", async () => {
-                await startST();
+                const connectionURI = await startSTWithMultitenancyAndAccountLinking();
                 supertokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -649,10 +648,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             });
 
             it("should be returned if another (primary, unverified) user signs up after the code was created for a pwless sign up", async () => {
-                await startST();
+                const connectionURI = await startSTWithMultitenancyAndAccountLinking();
                 supertokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -753,10 +752,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
 */
 
 async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinking, expect }) {
-    await startST();
+    const connectionURI = await startSTWithMultitenancyAndAccountLinking();
     supertokens.init({
         supertokens: {
-            connectionURI: "http://localhost:8080",
+            connectionURI,
         },
         appInfo: {
             apiDomain: "api.supertokens.io",
@@ -882,10 +881,10 @@ async function getCreateCodeTestCase({ pwlessUser, otherRecipeUser, accountLinki
 }
 
 async function getConsumeCodeTestCase({ pwlessUser, otherRecipeUser, accountLinking, expect }) {
-    await startST();
+    const connectionURI = await startSTWithMultitenancyAndAccountLinking();
     supertokens.init({
         supertokens: {
-            connectionURI: "http://localhost:8080",
+            connectionURI,
         },
         appInfo: {
             apiDomain: "api.supertokens.io",

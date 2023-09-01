@@ -55,10 +55,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
         describe("createNewSession", () => {
             describe("with default getTokenTransferMethod", () => {
                 it("should default to header based session w/ no auth-mode header", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -79,10 +79,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should default to header based session w/ bad auth-mode header", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -103,10 +103,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should use headers if auth-mode specifies it", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -127,10 +127,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should use cookies if auth-mode specifies it", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -157,10 +157,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
 
             describe("with user provided getTokenTransferMethod", () => {
                 it("should use headers if getTokenTransferMethod returns any", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -181,10 +181,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should use headers if getTokenTransferMethod returns header", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -205,10 +205,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should use clear cookies (if present) if getTokenTransferMethod returns header", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -245,10 +245,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should use cookies if getTokenTransferMethod returns cookie", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -273,10 +273,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should clear headers (if present) if getTokenTransferMethod returns cookie", async function () {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -345,10 +345,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 for (let i = 0; i < behaviourTable.length; ++i) {
                     const conf = behaviourTable[i];
                     it(`should match line ${i + 1} with a valid token`, async () => {
-                        await startST();
+                        const connectionURI = await startST();
                         SuperTokens.init({
                             supertokens: {
-                                connectionURI: "http://localhost:8080",
+                                connectionURI,
                             },
                             appInfo: {
                                 apiDomain: "api.supertokens.io",
@@ -397,11 +397,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     });
 
                     it(`should match line ${i + 1} with a expired token`, async () => {
-                        await setKeyValueInConfig("access_token_validity", 2);
-                        await startST();
+                        const connectionURI = await startST({ coreConfig: { access_token_validity: 2 } });
                         SuperTokens.init({
                             supertokens: {
-                                connectionURI: "http://localhost:8080",
+                                connectionURI,
                             },
                             appInfo: {
                                 apiDomain: "api.supertokens.io",
@@ -453,10 +452,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
 
             describe("with access tokens in both headers and cookies", () => {
                 it("should use the value from headers if getTokenTransferMethod returns any", async () => {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -500,10 +499,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should use the value from headers if getTokenTransferMethod returns header", async () => {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -548,10 +547,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should use the value from cookies if getTokenTransferMethod returns cookie", async () => {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -597,10 +596,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
             });
 
             it("should reject requests with sIdRefreshToken", async () => {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -640,10 +639,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
 
             describe("with non ST in Authorize header", () => {
                 it("should use the value from cookies if present and getTokenTransferMethod returns any", async () => {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -683,10 +682,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should reject with UNAUTHORISED if getTokenTransferMethod returns header", async () => {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -727,10 +726,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 });
 
                 it("should reject with UNAUTHORISED if cookies are not present", async () => {
-                    await startST();
+                    const connectionURI = await startST();
                     SuperTokens.init({
                         supertokens: {
-                            connectionURI: "http://localhost:8080",
+                            connectionURI,
                         },
                         appInfo: {
                             apiDomain: "api.supertokens.io",
@@ -768,10 +767,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
 
         describe("mergeIntoAccessTokenPayload", () => {
             it("should update cookies if the session was cookie based", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -805,10 +804,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
             });
 
             it("should allow headers if the session was header based", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -863,10 +862,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                 for (let i = 0; i < behaviourTable.length; ++i) {
                     const conf = behaviourTable[i];
                     it(`should match line ${i + 1} with a valid token`, async () => {
-                        await startST();
+                        const connectionURI = await startST();
                         SuperTokens.init({
                             supertokens: {
-                                connectionURI: "http://localhost:8080",
+                                connectionURI,
                             },
                             appInfo: {
                                 apiDomain: "api.supertokens.io",
@@ -955,10 +954,10 @@ describe(`auth-modes: ${printPath("[test/auth-modes.test.js]")}`, function () {
                     const conf = behaviourTable[i];
 
                     it(`should match line ${i + 1} with a invalid token`, async () => {
-                        await startST();
+                        const connectionURI = await startST();
                         SuperTokens.init({
                             supertokens: {
-                                connectionURI: "http://localhost:8080",
+                                connectionURI,
                             },
                             appInfo: {
                                 apiDomain: "api.supertokens.io",

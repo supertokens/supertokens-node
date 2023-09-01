@@ -197,10 +197,12 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let shouldDoAccountLinkingResponse = await AccountLinking.getInstance().config.shouldDoAutomaticAccountLinking(
-                {
-                    recipeId: "emailpassword",
-                    email,
-                },
+                emailPasswordAccount !== undefined
+                    ? emailPasswordAccount
+                    : {
+                          recipeId: "emailpassword",
+                          email,
+                      },
                 primaryUserAssociatedWithEmail,
                 tenantId,
                 userContext
@@ -544,7 +546,11 @@ export default function getAPIImplementation(): APIInterface {
                             createUserResponse.user.loginMethods[0].recipeUserId,
                             tokenConsumptionResponse.email
                         );
-
+                        const updatedUser = await getUser(createUserResponse.user.id, userContext);
+                        if (updatedUser === undefined) {
+                            throw new Error("Should never happen - user deleted after during password reset");
+                        }
+                        createUserResponse.user = updatedUser;
                         // Now we try and link the accounts. The function below will try and also
                         // create a primary user of the new account, and if it does that, it's OK..
                         // But in most cases, it will end up linking to existing account since the

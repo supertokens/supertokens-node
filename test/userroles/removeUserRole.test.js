@@ -22,11 +22,11 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
 
     describe("removeUserRole", () => {
         it("remove role from user", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -84,11 +84,11 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
         });
 
         it("remove a role the user does not have", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -124,11 +124,11 @@ describe(`removeUserRoleTest: ${printPath("[test/userroles/removeUserRole.test.j
         });
 
         it("remove an unknown role from the user", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

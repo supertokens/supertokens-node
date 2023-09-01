@@ -62,10 +62,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
      *      - check that the generated password reset link is correct
      */
     it("test email validation checks in generate token API", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -107,14 +107,14 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test that generated password link is correct", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let resetURL = "";
         let tokenInfo = "";
         let ridInfo = "";
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -181,10 +181,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
      *        - input is valid, check that password has changed (call sign in)
      */
     it("test password validation", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -249,10 +249,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test token missing from input", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -291,10 +291,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test invalid token input", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -334,13 +334,13 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     });
 
     it("test valid token input and passoword has changed", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let passwordResetUserId = undefined;
         let token = "";
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -498,10 +498,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
     describe("createPasswordResetToken tests", function () {
         it("createPasswordResetToken with random user ID fails", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -517,10 +517,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
 
         it("createPasswordResetToken with primary user, non email password succeeds", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -565,10 +565,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
     describe("consumePasswordResetToken tests", function () {
         it("consumePasswordResetToken works when token is valid", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -594,10 +594,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
 
         it("consumePasswordResetToken returns RESET_PASSWORD_INVALID_TOKEN_ERROR error if the token does not exist", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -613,10 +613,10 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
 
         it("consumePasswordResetToken with primary user, non email password succeeds", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

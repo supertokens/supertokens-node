@@ -3,8 +3,6 @@ import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { findAndCreateProviderInstance, mergeProvidersFromCoreAndStatic } from "./providers/configUtils";
 import AccountLinking from "../accountlinking/recipe";
-import EmailVerification from "../emailverification";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import MultitenancyRecipe from "../multitenancy/recipe";
 import RecipeUserId from "../../recipeUserId";
 import { getUser } from "../..";
@@ -44,7 +42,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
             let response = await querier.sendPostRequest(new NormalisedURLPath(`/${tenantId}/recipe/signinup`), {
                 thirdPartyId,
                 thirdPartyUserId,
-                email: { id: email },
+                email: { id: email, isVerified },
             });
 
             if (response.status !== "OK") {
@@ -59,37 +57,6 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 recipeUserId: response.recipeUserId,
                 userContext,
             });
-
-            // The above may have marked the user's email as verified already, but in case
-            // this is a sign up, or it's a sign in from a non primary user, and the
-            // provider said that the user's email is verified, we should mark it as verified
-            // here as well
-
-            if (isVerified) {
-                let isInitialized = false;
-                try {
-                    EmailVerificationRecipe.getInstanceOrThrowError();
-                    isInitialized = true;
-                } catch (ignored) {}
-                if (isInitialized) {
-                    let verifyResponse = await EmailVerification.createEmailVerificationToken(
-                        tenantId,
-                        response.recipeUserId,
-                        undefined,
-                        userContext
-                    );
-                    if (verifyResponse.status === "OK") {
-                        // we pass in false here cause we do not want to attempt account linking
-                        // as of yet.
-                        await EmailVerification.verifyEmailUsingToken(
-                            tenantId,
-                            verifyResponse.token,
-                            false,
-                            userContext
-                        );
-                    }
-                }
-            }
 
             // we do this so that we get the updated user (in case the above
             // function updated the verification status) and can return that

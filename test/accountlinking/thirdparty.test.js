@@ -12,7 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    startSTWithMultitenancyAndAccountLinking,
+} = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -36,10 +45,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
 
     describe("sign in up tests", function () {
         it("sign up in succeeds and makes primary user if verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -86,10 +95,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in succeeds and does not make primary user if not verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -136,10 +145,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in succeeds and makes primary user if not verified and verification not required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -186,10 +195,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in succeeds and does not make primary user if account linking is disabled even if verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -235,10 +244,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in succeeds and does not make primary user if account linking is disabled and not verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -284,10 +293,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in fails cause changed email already associated with another primary user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -349,10 +358,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in fails cause changed email already associated with another primary user when the user trying to sign in is linked with another user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -421,10 +430,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in succeeds when changed email belongs to a recipe user even though the new email is already associated with another primary user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -485,10 +494,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in succeeds when changed email belongs to a primary user even though the new email is already associated with another recipe user user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -549,10 +558,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up change email succeeds when email is changed to another recipe user's account", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -613,10 +622,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in succeeds to change email of primary user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -671,14 +680,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(resp.status === "OK");
 
             {
-                let users = await supertokens.listUsersByAccountInfo({
+                let users = await supertokens.listUsersByAccountInfo("public", {
                     email: "test@example.com",
                 });
                 assert(users.length === 0);
             }
 
             {
-                let users = await supertokens.listUsersByAccountInfo({
+                let users = await supertokens.listUsersByAccountInfo("public", {
                     email: "test2@example.com",
                 });
                 assert(users.length === 1);
@@ -686,10 +695,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in does not create primary user during sign in", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -740,10 +749,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in does not link accounts during sign in", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -799,10 +808,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in links accounts during sign up with another third party account", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -858,10 +867,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up creates primary user only if verified and verification is required and marks email as verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -911,10 +920,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up does not creates primary user if not verified and verification is required and does not mark email as verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -964,10 +973,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up creates primary user if not verified and verification is not required and does not mark email as verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1016,11 +1025,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             assert(isVerified === false);
         });
 
-        it("sign up does not crash if is verified boolean is true, but email verification recipe is not initialised, and does not create primary user", async function () {
-            await startST();
+        it("sign up does not crash if is verified boolean is true, but email verification recipe is not initialised, and creates primary user", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1059,14 +1068,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
             let user = (
                 await ThirdParty.manuallyCreateOrUpdateUser("public", "github", "abcd", "test@example.com", true)
             ).user;
-            assert(user.isPrimaryUser === false);
+            assert(user.isPrimaryUser);
         });
 
         it("sign up does not crash if is verified boolean is true, but email verification recipe is not initialised, and creates primary user if verification not required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1109,10 +1118,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign in up verifies email based on linked accounts", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1181,10 +1190,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign in up verifies email if provider says that the email is verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1238,10 +1247,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign in up does not crash if email verification recipe is not used", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1279,7 +1288,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
                 .user;
             assert(user.isPrimaryUser === false);
             assert(user.loginMethods.length === 1);
-            assert(user.loginMethods[0].verified === false);
+            assert(user.loginMethods[0].verified === true);
             assert(user.loginMethods[0].thirdParty.id === "google");
 
             // during sign up as well
@@ -1287,15 +1296,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
                 .user;
             assert(user.isPrimaryUser === false);
             assert(user.loginMethods.length === 1);
-            assert(user.loginMethods[0].verified === false);
+            assert(user.loginMethods[0].verified === true);
             assert(user.loginMethods[0].thirdParty.id === "github");
         });
 
         it("sign in up does not mark email as unverified even if provider says it's not verified but it was previously verified", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1341,10 +1350,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdparty.test
         });
 
         it("sign up in does not attempt to make primary user / account link during sign in", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

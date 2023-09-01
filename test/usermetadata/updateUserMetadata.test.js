@@ -21,7 +21,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
 
     describe("updateUserMetadata", () => {
         it("should create metadata for unknown user id", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -30,7 +30,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -58,7 +58,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
         });
 
         it("should create metadata with utf8 encoding", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -67,7 +67,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -95,7 +95,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
         });
 
         it("should create metadata for cleared user id", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -104,7 +104,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -135,7 +135,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
         });
 
         it("should update metadata by shallow merge", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             const testUserId = "userId";
             const testMetadata = {
@@ -166,7 +166,7 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
