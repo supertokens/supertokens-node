@@ -44,7 +44,6 @@
         "nodemailer": "^6.7.2",
         "pkce-challenge": "^3.0.0",
         "psl": "1.8.0",
-        "raw-body": "^2.5.2",
         "supertokens-js-override": "^0.0.4",
         "twilio": "^4.7.2"
     },

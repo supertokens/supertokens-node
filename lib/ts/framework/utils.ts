@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import { Readable } from "stream";
 import { parse, serialize } from "cookie";
 import type { Request, Response } from "express";
 import type { IncomingMessage } from "http";
@@ -23,7 +24,6 @@ import { NextApiRequest } from "next";
 import { COOKIE_HEADER } from "./constants";
 import { getFromObjectCaseInsensitive } from "../utils";
 import contentType from "content-type";
-import raw from "raw-body";
 import inflate from "inflation";
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
@@ -124,7 +124,8 @@ export async function parseJSONBodyFromRequest(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const str = await raw(inflate(req), { encoding });
+    const buffer = await getBody(inflate(req));
+    const str = buffer.toString(encoding as BufferEncoding);
 
     if (str.length === 0) {
         return {};
@@ -137,7 +138,8 @@ export async function parseURLEncodedFormData(req: IncomingMessage) {
     if (!encoding.startsWith("utf-")) {
         throw new Error(`unsupported charset ${encoding.toUpperCase()}`);
     }
-    const str = await raw(inflate(req), { encoding });
+    const buffer = await getBody(inflate(req));
+    const str = buffer.toString(encoding as BufferEncoding);
 
     let body: any = {};
     for (const [key, val] of new URLSearchParams(str).entries()) {
@@ -352,4 +354,18 @@ export function serializeCookieValue(
     };
 
     return serialize(key, value, opts);
+}
+
+// based on https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction
+function getBody(request: Readable) {
+    return new Promise<Buffer>((resolve) => {
+        const bodyParts: Uint8Array[] = [];
+        request
+            .on("data", (chunk) => {
+                bodyParts.push(chunk);
+            })
+            .on("end", () => {
+                resolve(Buffer.concat(bodyParts));
+            });
+    });
 }
