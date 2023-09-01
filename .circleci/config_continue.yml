@@ -88,9 +88,15 @@ workflows:
                       parameters:
                           cdi-version: placeholder
             - test-website:
+                  requires:
+                      - test-dev-tag-as-not-passed
                   context:
                       - slack-notification
-                  filters: {}
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
             - test-authreact:
                   requires:
                       - test-dev-tag-as-not-passed
