@@ -263,7 +263,14 @@ module.exports.killAllSTCoresOnly = async function () {
     }
 };
 
-module.exports.startST = async function (host = "localhost", port = 8080) {
+module.exports.startST = async function (config = {}) {
+    const host = config.host ?? "localhost";
+    const port = config.port ?? 8080;
+    if (config.coreConfig && (host !== "localhost" || port !== 8080 || config.noApp === true)) {
+        for (const [k, v] of Object.entries(config.coreConfig)) {
+            await module.exports.setKeyValueInConfig(k, v);
+        }
+    }
     return new Promise(async (resolve, reject) => {
         let installationPath = process.env.INSTALL_PATH;
         let pidsBefore = await getListOfPids();
@@ -300,7 +307,49 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
             } else {
                 if (!returned) {
                     returned = true;
-                    resolve(nonIntersection[0]);
+                    if (host !== "localhost" || port !== 8080 || config.noApp) {
+                        return resolve(`http://${host}:${port}`);
+                    }
+                    try {
+                        // Math.random is an unsafe random but it doesn't actually matter here
+                        // const appId = configs.appId ?? `testapp-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                        const appId = config.appId ?? `testapp`;
+
+                        await module.exports.removeAppAndTenants(appId);
+
+                        const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
+                            "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
+
+                        await fetch(`http://${host}:${port}/ee/license`, {
+                            method: "PUT",
+                            headers: {
+                                "content-type": "application/json; charset=utf-8",
+                            },
+                            body: JSON.stringify({
+                                licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
+                            }),
+                        });
+
+                        // Create app
+                        const createAppResp = await fetch(`http://${host}:${port}/recipe/multitenancy/app`, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                appId,
+                                emailPasswordEnabled: true,
+                                thirdPartyEnabled: true,
+                                passwordlessEnabled: true,
+                                coreConfig: config.coreConfig,
+                            }),
+                        });
+                        const respBody = await createAppResp.json();
+                        assert.strictEqual(respBody.status, "OK");
+                        resolve(`http://${host}:${port}/appid-${appId}`);
+                    } catch (err) {
+                        reject(err);
+                    }
                 }
             }
         }
@@ -311,12 +360,12 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
     });
 };
 
-module.exports.startSTWithMultitenancy = async function (host = "localhost", port = 8080) {
-    await module.exports.startST(host, port);
+module.exports.startSTWithMultitenancy = async function (config) {
+    const connectionURI = await module.exports.startST(config);
     const OPAQUE_KEY_WITH_MULTITENANCY_FEATURE =
         "ijaleljUd2kU9XXWLiqFYv5br8nutTxbyBqWypQdv2N-BocoNriPrnYQd0NXPm8rVkeEocN9ayq0B7c3Pv-BTBIhAZSclXMlgyfXtlwAOJk=9BfESEleW6LyTov47dXu";
 
-    await fetch(`http://${host}:${port}/ee/license`, {
+    await fetch(`${connectionURI}/ee/license`, {
         method: "PUT",
         headers: {
             "content-type": "application/json; charset=utf-8",
@@ -325,14 +374,16 @@ module.exports.startSTWithMultitenancy = async function (host = "localhost", por
             licenseKey: OPAQUE_KEY_WITH_MULTITENANCY_FEATURE,
         }),
     });
+    return connectionURI;
 };
 
-module.exports.startSTWithMultitenancyAndAccountLinking = async function (host = "localhost", port = 8080) {
-    await module.exports.startST(host, port);
+module.exports.startSTWithMultitenancyAndAccountLinking = async function (config) {
+    const connectionURI = await module.exports.startST(config);
+
     const OPAQUE_KEY_WITH_FEATURES =
         "N2yITHflaFS4BPm7n0bnfFCjP4sJoTERmP0J=kXQ5YONtALeGnfOOe2rf2QZ0mfOh0aO3pBqfF-S0jb0ABpat6pySluTpJO6jieD6tzUOR1HrGjJO=50Ob3mHi21tQHJ";
 
-    await fetch(`http://${host}:${port}/ee/license`, {
+    await fetch(`${connectionURI}/ee/license`, {
         method: "PUT",
         headers: {
             "content-type": "application/json; charset=utf-8",
@@ -341,11 +392,26 @@ module.exports.startSTWithMultitenancyAndAccountLinking = async function (host =
             licenseKey: OPAQUE_KEY_WITH_FEATURES,
         }),
     });
+
+    return connectionURI;
 };
 
 module.exports.removeAppAndTenants = async function (appId) {
     const tenantsResp = await fetch(`http://localhost:8080/appid-${appId}/recipe/multitenancy/tenant/list`);
-    if (tenantsResp.status === 200) {
+    if (tenantsResp.status === 401) {
+        const updateAppResp = await fetch(`http://localhost:8080/recipe/multitenancy/app`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                appId,
+                coreConfig: { api_keys: null },
+            }),
+        });
+        assert.strictEqual(updateAppResp.status, 200);
+        await module.exports.removeAppAndTenants(appId);
+    } else if (tenantsResp.status === 200) {
         const tenants = (await tenantsResp.json()).tenants;
         for (const t of tenants) {
             if (t.tenantId !== "public") {
@@ -360,15 +426,18 @@ module.exports.removeAppAndTenants = async function (appId) {
                 });
             }
         }
-        await fetch(`http://localhost:8080/recipe/multitenancy/app/remove`, {
+
+        const removeResp = await fetch(`http://localhost:8080/recipe/multitenancy/app/remove`, {
             method: "POST",
             headers: {
                 "content-type": "application/json; charset=utf-8",
             },
             body: JSON.stringify({
-                appId: `${appId}`,
+                appId,
             }),
         });
+        const removeRespBody = await removeResp.json();
+        assert.strictEqual(removeRespBody.status, "OK");
     }
 };
 
@@ -685,7 +754,7 @@ module.exports.createUsers = async (emailpassword = null, passwordless = null, t
         }
 
         if (user.recipe === "thirdparty" && thirdparty !== null) {
-            await thirdparty.manuallyCreateOrUpdateUser("public", user.provider, user.userId, user.email);
+            await thirdparty.manuallyCreateOrUpdateUser("public", user.provider, user.userId, user.email, false);
         }
     }
 };
