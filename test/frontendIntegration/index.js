@@ -26,6 +26,8 @@ let noOfTimesRefreshAttemptedDuringTest = 0;
 let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
 let supertokens_node_version = require("../../lib/build/version").version;
+const { Querier } = require("../../lib/build/querier");
+const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
@@ -203,6 +205,41 @@ app.post("/login", async (req, res) => {
     let userId = req.body.userId;
     let session = await Session.createNewSession(res, userId);
     res.send(session.getUserId());
+});
+
+app.post("/login-2.18", async (req, res) => {
+    // This CDI version is no longer supported by this SDK, but we want to ensure that sessions keep working after the upgrade
+    // We can hard-code the structure of the request&response, since this is a fixed CDI version and it's not going to change
+    Querier.apiVersion = "2.18";
+    const payload = req.body.payload || {};
+    const userId = req.body.userId;
+    const legacySessionResp = await Querier.getNewInstanceOrThrowError().sendPostRequest(
+        new NormalisedURLPath("/recipe/session"),
+        {
+            userId,
+            enableAntiCsrf: false,
+            userDataInJWT: payload,
+            userDataInDatabase: {},
+        }
+    );
+    Querier.apiVersion = undefined;
+
+    const legacyAccessToken = legacySessionResp.accessToken.token;
+    const legacyRefreshToken = legacySessionResp.refreshToken.token;
+
+    res.set("st-access-token", legacyAccessToken)
+        .set("st-refresh-token", legacyRefreshToken)
+        .set(
+            "front-token",
+            Buffer.from(
+                JSON.stringify({
+                    uid: userId,
+                    ate: Date.now() + 3600000,
+                    up: payload,
+                })
+            ).toString("base64")
+        )
+        .send();
 });
 
 app.post("/beforeeach", async (req, res) => {

@@ -182,6 +182,14 @@ app.get("/sessioninfo", verifySession(), async (req, res) => {
     }
 });
 
+app.post("/deleteUser", async (req, res) => {
+    if (req.body.rid !== "emailpassword") {
+        res.status(400).send({ message: "Not implemented" });
+    }
+    const user = await EmailPassword.getUserByEmail(req.body.email);
+    res.send(await SuperTokens.deleteUser(user.id));
+});
+
 app.get("/unverifyEmail", verifySession(), async (req, res) => {
     let session = req.session;
     await EmailVerification.unverifyEmail(session.getUserId());
