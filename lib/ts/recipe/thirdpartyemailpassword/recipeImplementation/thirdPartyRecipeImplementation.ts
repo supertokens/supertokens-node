@@ -1,6 +1,7 @@
 import { RecipeInterface, TypeProvider } from "../../thirdparty/types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 import { User } from "../../../types";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPasswordRecipeInterface): RecipeInterface {
     return {
@@ -17,7 +18,17 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: User;
+                  recipeUserId: RecipeUserId;
+                  oAuthTokens: { [key: string]: any };
+                  rawUserInfoFromProvider: {
+                      fromIdTokenPayload?: { [key: string]: any };
+                      fromUserInfoAPI?: { [key: string]: any };
+                  };
+              }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
@@ -36,8 +47,9 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         }): Promise<
             | {
                   status: "OK";
-                  createdNewUser: boolean;
+                  createdNewRecipeUser: boolean;
                   user: User;
+                  recipeUserId: RecipeUserId;
               }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -58,8 +70,9 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             }
             return {
                 status: "OK",
-                createdNewUser: result.createdNewUser,
+                createdNewRecipeUser: result.createdNewRecipeUser,
                 user: result.user,
+                recipeUserId: result.recipeUserId,
             };
         },
 

@@ -74,12 +74,12 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding functions tests", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -143,7 +143,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                     delete user.loginMethods[0].hasSamePhoneNumberAs;
                                     delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     delete user.toJson;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     return response;
                                 },
                             };
@@ -251,12 +251,12 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding api tests", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -293,7 +293,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                         delete user.toJson;
-                                        newUser = response.createdNewUser;
+                                        newUser = response.createdNewRecipeUser;
                                     }
                                     return response;
                                 },
@@ -373,11 +373,11 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding functions tests, throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -419,7 +419,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                 thirdPartySignInUp: async (input) => {
                                     let response = await oI.thirdPartySignInUp(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",
@@ -539,13 +539,13 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
     });
 
     it("overriding api tests, throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         let emailExists = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -569,7 +569,7 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                                 thirdPartySignInUpPOST: async (input) => {
                                     let response = await oI.thirdPartySignInUpPOST(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",

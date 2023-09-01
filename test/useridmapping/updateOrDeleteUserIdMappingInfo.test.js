@@ -24,11 +24,11 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
 
     describe("updateOrDeleteUserIdMappingInfoTest", () => {
         it("update externalUserId mapping info with unknown userId", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -79,11 +79,11 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
         });
 
         it("update externalUserId mapping info with userIdType as SUPERTOKENS and EXTERNAL", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -182,11 +182,11 @@ describe(`updateOrDeleteUserIdMappingInfoTest: ${printPath(
         });
 
         it("update externalUserId mapping info with userIdType as ANY", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

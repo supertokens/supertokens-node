@@ -36,11 +36,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("getUser test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -91,7 +91,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         {
-            let user = await STExpress.listUsersByAccountInfo({
+            let user = await STExpress.listUsersByAccountInfo("public", {
                 email: "random",
             });
 
@@ -104,7 +104,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 })
             ).user;
 
-            let result = await STExpress.listUsersByAccountInfo({
+            let result = await STExpress.listUsersByAccountInfo("public", {
                 email: email,
             });
             assert(result.length === 1);
@@ -120,7 +120,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         {
-            let user = await STExpress.listUsersByAccountInfo({
+            let user = await STExpress.listUsersByAccountInfo("public", {
                 phoneNumber: "random",
             });
 
@@ -134,7 +134,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 })
             ).user;
 
-            let result = await STExpress.listUsersByAccountInfo({
+            let result = await STExpress.listUsersByAccountInfo("public", {
                 phoneNumber: phoneNumber,
             });
             assert(result.length === 1);
@@ -151,11 +151,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("createCode test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -218,11 +218,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("createNewCodeForDevice test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -327,11 +327,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("consumeCode test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -374,12 +374,12 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             assert(resp.status === "OK");
-            assert(resp.createdNewUser);
+            assert(resp.createdNewRecipeUser);
             assert.strictEqual(typeof resp.user.id, "string");
             assert.strictEqual(resp.user.emails[0], "test@example.com");
             assert.strictEqual(resp.user.phoneNumbers[0], undefined);
             assert.strictEqual(typeof resp.user.timeJoined, "number");
-            assert.strictEqual(Object.keys(resp).length, 3);
+            assert.strictEqual(Object.keys(resp).length, 4);
             assert.strictEqual(Object.keys(resp.user).length, 8);
 
             const emailVerified = await EmailVerification.isEmailVerified(
@@ -428,12 +428,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("consumeCode test with EXPIRED_USER_INPUT_CODE_ERROR", async function () {
-        await setKeyValueInConfig("passwordless_code_lifetime", 1000); // one second lifetime
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: {
+                passwordless_code_lifetime: 1000, // one second lifetime
+            },
+        });
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -483,11 +486,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // updateUser
     it("updateUser contactMethod email test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -523,7 +526,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             let response = await Passwordless.updateUser({
                 recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
-                tenantId: "public",
             });
             assert(response.status === "OK");
 
@@ -536,7 +538,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             let response = await Passwordless.updateUser({
                 recipeUserId: new RecipeUserId("invalidUserId"),
                 email: "test2@example.com",
-                tenantId: "public",
             });
             assert(response.status === "UNKNOWN_USER_ID_ERROR");
         }
@@ -550,7 +551,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             let result = await Passwordless.updateUser({
                 recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 email: "test2@example.com",
-                tenantId: "public",
             });
 
             assert(result.status === "EMAIL_ALREADY_EXISTS_ERROR");
@@ -558,11 +558,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("updateUser contactMethod phone test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -602,7 +602,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             let response = await Passwordless.updateUser({
                 recipeUserId: userInfo.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
-                tenantId: "public",
             });
             assert(response.status === "OK");
 
@@ -620,7 +619,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             let result = await Passwordless.updateUser({
                 recipeUserId: userInfo2.user.loginMethods[0].recipeUserId,
                 phoneNumber: phoneNumber_2,
-                tenantId: "public",
             });
 
             assert(result.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR");
@@ -629,11 +627,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // revokeAllCodes
     it("revokeAllCodes test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -700,11 +698,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     });
 
     it("revokeCode test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -772,11 +770,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // listCodesByEmail
     it("listCodesByEmail test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -828,11 +826,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     //listCodesByPhoneNumber
     it("listCodesByPhoneNumber test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -884,11 +882,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // listCodesByDeviceId and listCodesByPreAuthSessionId
     it("listCodesByDeviceId and listCodesByPreAuthSessionId test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -942,11 +940,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     */
 
     it("createMagicLink test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -988,11 +986,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
     // signInUp test
     it("signInUp test", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1024,8 +1022,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         });
 
         assert(result.status === "OK");
-        assert(result.createdNewUser === true);
-        assert(Object.keys(result).length === 3);
+        assert(result.createdNewRecipeUser === true);
+        assert(Object.keys(result).length === 4);
 
         assert(result.user.phoneNumbers[0] === "+12345678901");
         assert(typeof result.user.id === "string");

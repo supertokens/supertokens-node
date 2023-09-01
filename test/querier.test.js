@@ -40,10 +40,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     // Check that once the API version is there, it doesn't need to query again
     it("test that if that once API version is there, it doesn't need to query again", async function () {
-        await startST();
+        const connectionURI = await startST();
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -73,10 +73,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     // Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
     it("test that rid is added to the header if it's a recipe request", async function () {
-        await startST();
+        const connectionURI = await startST();
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -88,7 +88,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         let querier = Querier.getNewInstanceOrThrowError(SessionRecipe.getInstanceOrThrowError().getRecipeId());
 
-        nock("http://localhost:8080", {
+        nock(connectionURI, {
             allowUnmocked: true,
         })
             .get("/recipe")
@@ -99,7 +99,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {});
         assert.deepStrictEqual(response.rid, ["session"]);
 
-        nock("http://localhost:8080", {
+        nock(connectionURI, {
             allowUnmocked: true,
         })
             .get("/recipe/random")
@@ -110,7 +110,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         let response2 = await querier.sendGetRequest(new NormalisedURLPath("/recipe/random"), {});
         assert.deepStrictEqual(response2.rid, ["session"]);
 
-        nock("http://localhost:8080", {
+        nock(connectionURI, {
             allowUnmocked: true,
         })
             .get("/test")
@@ -146,12 +146,13 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("three cores and round robin", async function () {
-        await startST();
-        await startST("localhost", 8081);
-        await startST("localhost", 8082);
+        const connectionURI = await startST();
+        await startST({ host: "localhost", port: 8081 });
+        await startST({ host: "localhost", port: 8082 });
+
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080;http://localhost:8081/;http://localhost:8082",
+                connectionURI: `${connectionURI};http://localhost:8081/;http://localhost:8082`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -168,17 +169,17 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
-        assert.equal(hostsAlive.has("http://localhost:8080"), true);
+        assert.equal(hostsAlive.has(connectionURI), true);
         assert.equal(hostsAlive.has("http://localhost:8081"), true);
         assert.equal(hostsAlive.has("http://localhost:8082"), true);
     });
 
     it("three cores, one dead and round robin", async function () {
-        await startST();
-        await startST("localhost", 8082);
+        const connectionURI = await startST();
+        await startST({ host: "localhost", port: 8082 });
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080;http://localhost:8081/;http://localhost:8082",
+                connectionURI: `${connectionURI};http://localhost:8081/;http://localhost:8082`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -195,13 +196,13 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(await q.sendPutRequest(new NormalisedURLPath("/hello"), {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
-        assert.equal(hostsAlive.has("http://localhost:8080"), true);
+        assert.equal(hostsAlive.has(connectionURI), true);
         assert.equal(hostsAlive.has("http://localhost:8081"), false);
         assert.equal(hostsAlive.has("http://localhost:8082"), true);
     });
 
     it("test that no connectionURI given, but recipe used throws an error", async function () {
-        await startST();
+        const connectionURI = await startST();
         ST.init({
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -223,7 +224,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("test that no connectionURI given, recipe override and used doesn't thrown an error", async function () {
-        await startST();
+        const connectionURI = await startST();
         ST.init({
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -253,11 +254,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with core base path", async function () {
         // first we need to know if the core used supports base_path config
-        await setKeyValueInConfig("base_path", "/test");
-        await startST();
+        const connectionURI = await startST({ port: 8081, coreConfig: { base_path: "/test" } });
 
         try {
-            const res = await fetch("http://localhost:8080/test/hello");
+            const res = await fetch(`${connectionURI}/test/hello`);
             if (res.status === 404) {
                 return;
             }
@@ -267,7 +267,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080/test",
+                connectionURI: `${connectionURI}/test`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -284,11 +284,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with incorrect core base path should fail", async function () {
         // first we need to know if the core used supports base_path config
-        await setKeyValueInConfig("base_path", "/some/path");
-        await startST();
+        const connectionURI = await startST({ port: 8081, coreConfig: { base_path: "/some/path" } });
 
         try {
-            const res = await fetch("http://localhost:8080/some/path/hello");
+            const res = await fetch(`${connectionURI}/some/path/hello`);
             if (res.status === 404) {
                 return;
             }
@@ -302,7 +301,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080/test",
+                connectionURI: `${connectionURI}/test`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -325,11 +324,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with multiple core base path", async function () {
         // first we need to know if the core used supports base_path config
-        await setKeyValueInConfig("base_path", "/some/path");
-        await startST();
+        const connectionURI = await startST({ port: 8081, coreConfig: { base_path: "/some/path" } });
 
         try {
-            const res = await fetch("http://localhost:8080/some/path/hello");
+            const res = await fetch(`${connectionURI}/some/path/hello`);
             if (res.status === 404) {
                 return;
             }
@@ -341,12 +339,17 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             throw error;
         }
 
-        await setKeyValueInConfig("base_path", "/test");
-        await startST("localhost", 8082);
+        await startST({
+            host: "localhost",
+            port: 8082,
+            coreConfig: {
+                base_path: "/test",
+            },
+        });
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080/some/path;http://localhost:8082/test",
+                connectionURI: `${connectionURI}/some/path;http://localhost:8082/test`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

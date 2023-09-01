@@ -12,18 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startSTWithMultitenancy, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startSTWithMultitenancy, killAllST, cleanST } = require("../utils");
 let SuperTokens = require("../../");
-let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
 let ThirdParty = require("../../recipe/thirdparty");
-let { middleware, errorHandler } = require("../../framework/express");
 let Multitenancy = require("../../recipe/multitenancy");
 
 describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`, function () {
@@ -41,10 +34,10 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test recipe functions", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -59,12 +52,30 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
         await Multitenancy.createOrUpdateTenant("t3", { thirdPartyEnabled: true });
 
         // Sign up
-        let user1a = await ThirdParty.manuallyCreateOrUpdateUser("t1", "google", "googleid1", "test@example.com");
-        let user1b = await ThirdParty.manuallyCreateOrUpdateUser("t1", "facebook", "fbid1", "test@example.com");
-        let user2a = await ThirdParty.manuallyCreateOrUpdateUser("t2", "google", "googleid1", "test@example.com");
-        let user2b = await ThirdParty.manuallyCreateOrUpdateUser("t2", "facebook", "fbid1", "test@example.com");
-        let user3a = await ThirdParty.manuallyCreateOrUpdateUser("t3", "google", "googleid1", "test@example.com");
-        let user3b = await ThirdParty.manuallyCreateOrUpdateUser("t3", "facebook", "fbid1", "test@example.com");
+        let user1a = await ThirdParty.manuallyCreateOrUpdateUser(
+            "t1",
+            "google",
+            "googleid1",
+            "test@example.com",
+            false
+        );
+        let user1b = await ThirdParty.manuallyCreateOrUpdateUser("t1", "facebook", "fbid1", "test@example.com", false);
+        let user2a = await ThirdParty.manuallyCreateOrUpdateUser(
+            "t2",
+            "google",
+            "googleid1",
+            "test@example.com",
+            false
+        );
+        let user2b = await ThirdParty.manuallyCreateOrUpdateUser("t2", "facebook", "fbid1", "test@example.com", false);
+        let user3a = await ThirdParty.manuallyCreateOrUpdateUser(
+            "t3",
+            "google",
+            "googleid1",
+            "test@example.com",
+            false
+        );
+        let user3b = await ThirdParty.manuallyCreateOrUpdateUser("t3", "facebook", "fbid1", "test@example.com", false);
 
         assert.deepEqual(user1a.user.loginMethods[0].tenantIds, ["t1"]);
         assert.deepEqual(user1b.user.loginMethods[0].tenantIds, ["t1"]);
@@ -90,10 +101,10 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
     });
 
     it("test getProvider", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -154,10 +165,10 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
     });
 
     it("test getProvider merges the config from static and core 1", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -196,10 +207,10 @@ describe(`multitenancy: ${printPath("[test/thirdparty/multitenancy.test.js]")}`,
     });
 
     it("test getProvider returns correct config from core", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

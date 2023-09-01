@@ -72,6 +72,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -86,6 +87,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -100,6 +102,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";

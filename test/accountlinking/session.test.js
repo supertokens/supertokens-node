@@ -21,6 +21,7 @@ const {
     cleanST,
     resetAll,
     extractInfoFromResponse,
+    startSTWithMultitenancyAndAccountLinking,
 } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
@@ -49,10 +50,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("createNewSessionWithoutRequestResponse tests", function () {
         it("create new session with no linked accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -73,10 +74,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("create new session with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -91,7 +92,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -104,10 +105,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("create new session with no linked and no auth recipe accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -129,10 +130,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("createNewSession tests", function () {
         it("create new session with no linked accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -177,10 +178,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("create new session with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -195,7 +196,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             const app = express();
 
@@ -232,10 +233,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("create new session with no linked accounts and no auth recipe should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -281,10 +282,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("getSessionWithoutRequestResponse tests", function () {
         it("getSessionWithoutRequestResponse with no linked accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -307,10 +308,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getSessionWithoutRequestResponse with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -325,7 +326,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -340,10 +341,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getSessionWithoutRequestResponse with no linked and no auth recipe accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -365,10 +366,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getSessionWithoutRequestResponse with no linked accounts should have same user id and recipe id, with check db", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -393,10 +394,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getSessionWithoutRequestResponse with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -411,7 +412,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -428,10 +429,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getSessionWithoutRequestResponse with no linked and no auth recipe accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -457,12 +458,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("getSession tests", function () {
         it("get session with no linked accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             let userId = undefined;
             let recipeUserId = undefined;
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -512,12 +513,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("get session with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             let userId = undefined;
             let recipeUserId = undefined;
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -532,7 +533,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -574,12 +575,12 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("get session with no linked accounts and no auth recipe should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             let userId = undefined;
             let recipeUserId = undefined;
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -630,10 +631,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("getSessionInformation tests", function () {
         it("getSessionInformation with no linked accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -656,10 +657,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getSessionInformation with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -674,7 +675,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -689,10 +690,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getSessionInformation with no linked and no auth recipe accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -716,10 +717,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("refreshSessionWithoutRequestResponse tests", function () {
         it("refreshSessionWithoutRequestResponse with no linked accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -744,10 +745,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("refreshSessionWithoutRequestResponse with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -762,7 +763,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -779,10 +780,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("refreshSessionWithoutRequestResponse with no linked and no auth recipe accounts should have same user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -806,10 +807,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("refreshSessionWithoutRequestResponse with token theft uses the right recipe user id and session user id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -824,7 +825,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -850,10 +851,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("refreshSession tests", function () {
         it("refreshSession with linked accounts should have different user id and recipe id", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -868,7 +869,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -914,10 +915,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("revokeAllSessionsForUser test", function () {
         it("revokeAllSessionsForUser with linked accounts should delete all the sessions if revokeSessionsForLinkedAccounts is true", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -932,7 +933,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -952,10 +953,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("revokeAllSessionsForUser with linked accounts should delete only specific account's sessions if revokeSessionsForLinkedAccounts is false", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -970,7 +971,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -990,10 +991,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("revokeAllSessionsForUser with linked accounts should delete only the primary user's session if that id is passed and if revokeSessionsForLinkedAccounts is false", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1008,7 +1009,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -1030,10 +1031,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("getAllSessionHandlesForUser test", function () {
         it("getAllSessionHandlesForUser with linked accounts should return all the sessions if fetchSessionsForAllLinkedAccounts is true", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1048,7 +1049,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -1067,10 +1068,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getAllSessionHandlesForUser with linked accounts should return only specific account's sessions if fetchSessionsForAllLinkedAccounts is false", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1085,7 +1086,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -1104,10 +1105,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("getAllSessionHandlesForUser with linked accounts should return only the primary user's session if that id is passed and if fetchSessionsForAllLinkedAccounts is false", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1122,7 +1123,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let epuser2session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -1143,10 +1144,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("protected props tests", function () {
         it("mergeIntoAccessTokenPayload should not allow rsub since it's a protected claim", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1187,10 +1188,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("mergeIntoAccessTokenPayload with session handle not allow rsub since it's a protected claim", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1235,10 +1236,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("createNewSession should not allow rsub since it's a protected claim", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1284,10 +1285,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("fetch claim function tests", function () {
         it("fetch callback in claim gets right recipeUserId and userId when using fetch and set claim with session object", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1314,7 +1315,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -1328,10 +1329,10 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("fetch callback in claim gets right recipeUserId and userId when using fetch and set claim with session handle", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1358,7 +1359,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -1372,7 +1373,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
         });
 
         it("fetch callback in claim gets right recipeUserId and userId when creating a new session", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
 
             let userIdInCallback;
             let recipeUserIdInCallback;
@@ -1388,7 +1389,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1421,7 +1422,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",
@@ -1435,11 +1436,11 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
     describe("validateClaimsForSessionHandle tests", function () {
         it("validateClaimsForSessionHandle uses the correct recipeUserId and userId", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
 
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1466,7 +1467,7 @@ describe(`sessionTests: ${printPath("[test/accountlinking/session.test.js]")}`, 
 
             let epUser2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
 
-            await AccountLinking.linkAccounts("public", epUser2.loginMethods[0].recipeUserId, epUser.id);
+            await AccountLinking.linkAccounts(epUser2.loginMethods[0].recipeUserId, epUser.id);
 
             let session = await Session.createNewSessionWithoutRequestResponse(
                 "public",

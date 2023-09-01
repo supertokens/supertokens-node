@@ -155,10 +155,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, that if you disable the signInUp api, it does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -234,10 +234,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, minimum config without code for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -296,7 +296,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
@@ -341,7 +341,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
 
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
-        assert.strictEqual(response2.body.createdNewUser, false);
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
         assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response2.body.user.emails[0], "email@test.com");
@@ -359,10 +359,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, missing code and authCodeResponse", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -413,10 +413,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test for thirdPartyPasswordless, minimum config for thirdParty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -481,7 +481,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
@@ -530,7 +530,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
 
         assert.notStrictEqual(response2, undefined);
         assert.strictEqual(response2.body.status, "OK");
-        assert.strictEqual(response2.body.createdNewUser, false);
+        assert.strictEqual(response2.body.createdNewRecipeUser, false);
         assert.strictEqual(response2.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response2.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response2.body.user.emails[0], "email@test.com");
@@ -548,10 +548,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, with minimum config for thirdparty module, email unverified", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -616,7 +616,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
@@ -642,10 +642,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, thirdparty provider doesn't exist in config", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -703,10 +703,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, email not returned in getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -766,10 +766,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, error thrown from getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -835,10 +835,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, invalid POST params for thirdparty module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -966,11 +966,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test with thirdPartyPasswordless, getUserById when user does not exist", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1037,11 +1037,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
     });
 
     it("test getUserByThirdPartyInfo when user does not exist", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1070,7 +1070,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
 
         assert.strictEqual(
             (
-                await STExpress.listUsersByAccountInfo({
+                await STExpress.listUsersByAccountInfo("public", {
                     thirdParty: { id: "custom", userId: "user" },
                 })
             ).length,
@@ -1108,7 +1108,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await STExpress.listUsersByAccountInfo({
+        let userInfo = await STExpress.listUsersByAccountInfo("public", {
             thirdParty: { id: "custom", userId: "user" },
         });
 

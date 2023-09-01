@@ -49,11 +49,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
 
     //check basic usage of session
     it("test basic usage of sessions", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -192,11 +192,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("sending custom response", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -237,11 +237,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -286,11 +286,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that tags request respond with correct tags", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -338,11 +338,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -396,11 +396,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for multiple search items", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -455,11 +455,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -514,11 +514,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -576,11 +576,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -638,11 +638,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'provider: google', phone: 1", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -746,11 +746,11 @@ describe(`Loopback: ${printPath("[test/framework/loopback.withTenantId.test.js]"
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "loopback",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

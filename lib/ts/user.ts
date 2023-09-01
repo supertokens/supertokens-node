@@ -8,9 +8,9 @@ export class LoginMethod implements RecipeLevelUser {
     public readonly recipeUserId: RecipeUserId;
     public readonly tenantIds: string[];
 
-    public readonly email: string | undefined;
-    public readonly phoneNumber: string | undefined;
-    public readonly thirdParty: RecipeLevelUser["thirdParty"];
+    public readonly email?: string;
+    public readonly phoneNumber?: string;
+    public readonly thirdParty?: RecipeLevelUser["thirdParty"];
     public readonly verified: boolean;
 
     public readonly timeJoined: number;

@@ -6,9 +6,9 @@ export declare class LoginMethod implements RecipeLevelUser {
     readonly recipeId: RecipeLevelUser["recipeId"];
     readonly recipeUserId: RecipeUserId;
     readonly tenantIds: string[];
-    readonly email: string | undefined;
-    readonly phoneNumber: string | undefined;
-    readonly thirdParty: RecipeLevelUser["thirdParty"];
+    readonly email?: string;
+    readonly phoneNumber?: string;
+    readonly thirdParty?: RecipeLevelUser["thirdParty"];
     readonly verified: boolean;
     readonly timeJoined: number;
     constructor(loginMethod: UserWithoutHelperFunctions["loginMethods"][number]);

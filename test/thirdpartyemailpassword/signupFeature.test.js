@@ -124,10 +124,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test that disable api, the default signinup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -191,11 +191,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test that if disable api, the default signup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -228,10 +228,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test minimum config with one provider", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -277,7 +277,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.createdNewRecipeUser, true);
         assert.strictEqual(response1.body.user.thirdParty[0].id, "custom");
         assert.strictEqual(response1.body.user.thirdParty[0].userId, "user");
         assert.strictEqual(response1.body.user.emails[0], "email@test.com");
@@ -292,11 +292,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test signUpAPI works when input is fine", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -322,7 +322,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test handlePostSignUpIn gets set correctly", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         process.env.userId = "";
         process.env.loginType = "";
@@ -332,7 +332,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -396,7 +396,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test handlePostSignUp gets set correctly", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         process.env.userId = "";
         process.env.loginType = "";
@@ -406,7 +406,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -453,11 +453,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
     // will test that the error is correctly propagated to the required sub-recipe
     it("test signUpAPI throws an error in case of a duplicate email (emailpassword)", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -493,10 +493,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
     // NO_EMAIL_GIVEN_BY_PROVIDER thrown from sub recipe
     it("test email not returned in getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -544,10 +544,10 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test error thrown from getProfileInfo function", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -601,11 +601,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("test getUserCount and pagination works fine", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -677,11 +677,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     });
 
     it("updateEmailOrPassword function test for third party login", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -714,7 +714,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         assert.strictEqual(
             (
-                await STExpress.listUsersByAccountInfo({
+                await STExpress.listUsersByAccountInfo("public", {
                     thirdParty: { id: "custom", userId: "user" },
                 })
             ).length,
@@ -753,7 +753,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             assert.strictEqual(response.statusCode, 200);
 
             let signUpUserInfo = response.body.user;
-            let userInfo = await STExpress.listUsersByAccountInfo({
+            let userInfo = await STExpress.listUsersByAccountInfo("public", {
                 thirdParty: { id: "custom", userId: "user" },
             });
 

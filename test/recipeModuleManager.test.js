@@ -50,11 +50,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     });
 
     it("calling init multiple times", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -69,7 +69,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -86,7 +86,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Check that querier has been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that querier has been initiated when we call supertokens.init", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         try {
             await Querier.getNewInstanceOrThrowError(undefined);
@@ -99,7 +99,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -115,7 +115,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Check that modules have been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that modules have been initiated when we call supertokens.init", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         try {
             SessionRecipe.getInstanceOrThrowError();
@@ -140,7 +140,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -165,10 +165,10 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail is using the incorrect base path
     it("test various inputs to routing with default base path", async function () {
-        await startST();
+        const connectionURI = await startST();
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -246,11 +246,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail is using the wrong base path
     it("test various inputs to routing when base path is /", async function () {
-        await startST();
+        const connectionURI = await startST();
         {
             ST.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -333,11 +333,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     //Failure condition: Tests will fail if the incorrect rid header value is set when sending a request the path
     it("test routing with multiple recipes", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -398,11 +398,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Test various inputs to errorHandler (if it accepts or not)
     it("test various inputs to errorHandler", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -456,11 +456,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Error thrown from APIs implemented by recipes must not go unhandled
     it("test that error thrown from APIs implemented by recipes must not go unhandled", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -514,11 +514,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     // Disable a default route, and then implement your own API and check that that gets called
     // Failure condition: in testRecipe1 if the disabled value for the /default-route-disabled is set to false, the test will fail
     it("test if you diable a default route, and then implement your own API, your own api is called", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -555,11 +555,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // If an error handler in a recipe throws an error, that error next to go to the user's error handler
     it("test if the error handler in a recipe throws an error, it goes to the user's error handler", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -598,11 +598,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
     // Test getAllCORSHeaders
     it("test the getAllCORSHeaders function", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

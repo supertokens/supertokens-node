@@ -20,8 +20,9 @@ import RecipeUserId from "../../recipeUserId";
 export type TypeInput = {
     onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
-        newAccountInfo: AccountInfoWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId & { recipeUserId?: RecipeUserId },
         user: User | undefined,
+        tenantId: string,
         userContext: any
     ) => Promise<
         | {
@@ -43,8 +44,9 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
-        newAccountInfo: AccountInfoWithRecipeId,
+        newAccountInfo: AccountInfoWithRecipeId & { recipeUserId?: RecipeUserId },
         user: User | undefined,
+        tenantId: string,
         userContext: any
     ) => Promise<
         | {
@@ -101,9 +103,11 @@ export type RecipeInterface = {
               wasAlreadyAPrimaryUser: boolean;
           }
         | {
-              status:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              user: User;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
           }
@@ -132,7 +136,6 @@ export type RecipeInterface = {
           }
     >;
     linkAccounts: (input: {
-        tenantId: string;
         recipeUserId: RecipeUserId;
         primaryUserId: string;
         userContext: any;
@@ -144,8 +147,7 @@ export type RecipeInterface = {
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
+              user: User;
           }
         | {
               status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -166,6 +168,7 @@ export type RecipeInterface = {
     }>;
     getUser: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
     listUsersByAccountInfo: (input: {
+        tenantId: string;
         accountInfo: AccountInfo;
         doUnionOfAccountInfo: boolean;
         userContext: any;

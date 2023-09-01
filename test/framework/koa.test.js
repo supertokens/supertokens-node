@@ -51,11 +51,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     // check if disabling api, the default refresh API does not work - you get a 404
     it("test that if disabling api, the default refresh API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -123,12 +123,12 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that if disabling api, the default sign out API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -193,11 +193,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //- check for token theft detection
     it("koa token theft detection", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -316,11 +316,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //- check for token theft detection
     it("koa token theft detection with auto refresh middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -413,11 +413,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check basic usage of session
     it("test basic usage of express sessions", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -568,11 +568,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test signout API works", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -631,12 +631,12 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check basic usage of session
     it("test basic usage of express sessions with auto refresh", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -785,11 +785,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check session verify for with / without anti-csrf present
     it("test express session verify with anti-csrf present", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -868,11 +868,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present express", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -955,11 +955,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check revoking session(s)**
     it("test revoking express sessions", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -1098,11 +1098,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check manipulating session data
     it("test manipulating session data with express", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -1248,11 +1248,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
 
     //check manipulating jwt payload
     it("test manipulating jwt payload with express", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -1463,11 +1463,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("sending custom response koa", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1515,11 +1515,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1570,11 +1570,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that tags request respond with correct tags", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1628,11 +1628,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'email: t'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1692,11 +1692,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for multiple search items", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1756,11 +1756,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'email: iresh'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1820,11 +1820,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'phone: +1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1887,11 +1887,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'phone: 1('", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1954,11 +1954,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -2062,11 +2062,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     });
 
     it("test that search results correct output for 'provider: google, phone: 1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "koa",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

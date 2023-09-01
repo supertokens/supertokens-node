@@ -1,6 +1,7 @@
 import { RecipeInterface, TypeProvider } from "../../thirdparty/types";
 import { RecipeInterface as ThirdPartyPasswordlessRecipeInterface } from "../types";
 import { User } from "../../../types";
+import RecipeUserId from "../../../recipeUserId";
 
 export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordlessRecipeInterface): RecipeInterface {
     return {
@@ -17,7 +18,17 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | {
+                  status: "OK";
+                  createdNewRecipeUser: boolean;
+                  user: User;
+                  recipeUserId: RecipeUserId;
+                  oAuthTokens: { [key: string]: any };
+                  rawUserInfoFromProvider: {
+                      fromIdTokenPayload?: { [key: string]: any };
+                      fromUserInfoAPI?: { [key: string]: any };
+                  };
+              }
             | {
                   status: "SIGN_IN_UP_NOT_ALLOWED";
                   reason: string;
@@ -34,7 +45,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             tenantId: string;
             userContext: any;
         }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
+            | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
             | {
                   status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
                   reason: string;
@@ -53,7 +64,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             }
             return {
                 status: "OK",
-                createdNewUser: result.createdNewUser,
+                createdNewRecipeUser: result.createdNewRecipeUser,
+                recipeUserId: result.recipeUserId,
                 user: result.user,
             };
         },

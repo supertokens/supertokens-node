@@ -305,7 +305,8 @@ export default class Recipe extends RecipeModule {
         if (consumeCodeResponse.status === "OK") {
             return {
                 status: "OK",
-                createdNewUser: consumeCodeResponse.createdNewUser,
+                createdNewRecipeUser: consumeCodeResponse.createdNewRecipeUser,
+                recipeUserId: consumeCodeResponse.recipeUserId,
                 user: consumeCodeResponse.user,
             };
         } else {

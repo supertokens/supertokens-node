@@ -21,6 +21,7 @@ const {
     cleanST,
     resetAll,
     extractInfoFromResponse,
+    startSTWithMultitenancyAndAccountLinking,
 } = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
@@ -105,10 +106,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
 
     describe("signInUpPOST tests", function () {
         it("signInUpPOST calls isSignUpAllowed if it's sign up even if user with email already exists with third party", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -196,10 +197,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST does not call isSignUpAllowed if it's a sign in even if user's email has changed", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -282,10 +283,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST returns EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT if isSignUpAllowed returns false", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -368,10 +369,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST successfully links account and returns the session of the right recipe user if it's a sign up", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -451,7 +452,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) !== undefined
             );
-            assert(response.body.createdNewUser === true);
+            assert(response.body.createdNewRecipeUser === true);
 
             let pUser = await supertokens.getUser(tpUser.id);
             assert(pUser.isPrimaryUser === true);
@@ -467,10 +468,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST successfully does linking of accounts and returns the session of the right recipe user if it's a sign in", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -502,7 +503,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -564,7 +565,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
             );
-            assert(response.body.createdNewUser === false);
+            assert(response.body.createdNewRecipeUser === false);
 
             let pUser = await supertokens.getUser(tpUser.id);
             assert(pUser.isPrimaryUser === true);
@@ -580,11 +581,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST gives the right user in the override on successful account linking", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             let userInCallback = undefined;
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -687,10 +688,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST returns SIGN_IN_NOT_ALLOWED if the sign in user's email has changed to another primary user's email", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -782,10 +783,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED if it's a sign in and isEmailChangeAllowed returns false", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -880,10 +881,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST checks verification from email verification recipe before calling  isEmailChangeAllowed", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -916,7 +917,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -986,10 +987,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED if it's a sign in and isSignInAllowed returns false cause there is no email change", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1081,10 +1082,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST does account linking during sign in if required", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1117,7 +1118,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                         },
                     }),
                     AccountLinking.init({
-                        shouldDoAutomaticAccountLinking: async (_, __, userContext) => {
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
                             if (userContext.doNotLink) {
                                 return {
                                     shouldAutomaticallyLink: false,
@@ -1173,7 +1174,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
 
             assert(response.body.status === "OK");
-            assert(response.body.createdNewUser === false);
+            assert(response.body.createdNewRecipeUser === false);
             assert(response.body.user.id === tpUser2.id);
             assert(response.body.user.loginMethods.length === 2);
 
@@ -1184,10 +1185,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED even though isEmailChangeAllowed returns true if other recipe exist with unverified, same email", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1279,10 +1280,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
         });
 
         it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED even though isEmailChangeAllowed returns true if primary user exists with same email, new email is verified for recipe user, but not for primary user", async function () {
-            await startST();
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1385,10 +1386,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             it("signInUpPOST successfully links account and returns the session of the right recipe user if it's a sign up", async function () {
                 let date = Date.now();
                 let email = `john.doe+${date}@supertokens.com`;
-                await startST();
+                const connectionURI = await startSTWithMultitenancyAndAccountLinking();
                 supertokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -1446,7 +1447,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 ).user;
 
                 const linkRes = await AccountLinking.linkAccounts(
-                    "public",
                     tpUserUnverified.loginMethods[0].recipeUserId,
                     tpUser.id
                 );
@@ -1481,7 +1481,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                 );
 
                 assert(response.body.status === "OK");
-                assert(response.body.createdNewUser === true);
+                assert(response.body.createdNewRecipeUser === true);
 
                 let updatedPUser = await supertokens.getUser(primUser.id);
                 assert(updatedPUser.isPrimaryUser === true);

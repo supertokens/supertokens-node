@@ -15,16 +15,19 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { User } from "./types";
+import { User as UserType } from "./types";
 import AccountLinking from "./recipe/accountlinking/recipe";
 import { AccountInfo } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
+import { User } from "./user";
 
 // For Express
 export default class SuperTokensWrapper {
     static init = SuperTokens.init;
 
     static Error = SuperTokensError;
+    static RecipeUserId = RecipeUserId;
+    static User = User;
 
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
@@ -41,7 +44,7 @@ export default class SuperTokensWrapper {
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
     }): Promise<{
-        users: User[];
+        users: UserType[];
         nextPaginationToken?: string;
     }> {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
@@ -58,7 +61,7 @@ export default class SuperTokensWrapper {
         includeRecipeIds?: string[];
         query?: { [key: string]: string };
     }): Promise<{
-        users: User[];
+        users: UserType[];
         nextPaginationToken?: string;
     }> {
         return AccountLinking.getInstance().recipeInterfaceImpl.getUsers({
@@ -105,11 +108,13 @@ export default class SuperTokensWrapper {
     }
 
     static async listUsersByAccountInfo(
+        tenantId: string,
         accountInfo: AccountInfo,
         doUnionOfAccountInfo: boolean = false,
         userContext?: any
     ) {
         return await AccountLinking.getInstance().recipeInterfaceImpl.listUsersByAccountInfo({
+            tenantId,
             accountInfo,
             doUnionOfAccountInfo,
             userContext: userContext === undefined ? {} : userContext,
@@ -160,3 +165,6 @@ export let convertToRecipeUserId = SuperTokensWrapper.convertToRecipeUserId;
 export let getRequestFromUserContext = SuperTokensWrapper.getRequestFromUserContext;
 
 export let Error = SuperTokensWrapper.Error;
+
+export { default as RecipeUserId } from "./recipeUserId";
+export { User } from "./user";

@@ -3,7 +3,7 @@ import Session from "../../session";
 import AccountLinking from "../../accountlinking/recipe";
 
 import { RecipeLevelUser } from "../../accountlinking/types";
-import { listUsersByAccountInfo, getUser } from "../../..";
+import { listUsersByAccountInfo } from "../../..";
 import RecipeUserId from "../../../recipeUserId";
 import EmailVerification from "../../emailverification";
 import EmailVerificationRecipe from "../../emailverification/recipe";
@@ -56,6 +56,7 @@ export default function getAPIInterface(): APIInterface {
                 };
             }
             let existingUsers = await listUsersByAccountInfo(
+                tenantId,
                 {
                     thirdParty: {
                         id: provider.id,
@@ -77,6 +78,7 @@ export default function getAPIInterface(): APIInterface {
                         },
                     },
                     isVerified: emailInfo.isVerified,
+                    tenantId,
                     userContext,
                 });
 
@@ -179,9 +181,10 @@ export default function getAPIInterface(): APIInterface {
                  */
 
                 let isEmailChangeAllowed = await AccountLinking.getInstance().isEmailChangeAllowed({
-                    recipeUserId: recipeUserId!,
+                    user: existingUsers[0],
                     isVerified: emailInfo.isVerified,
                     newEmail: emailInfo.id,
+                    tenantId,
                     userContext,
                 });
 
@@ -238,7 +241,8 @@ export default function getAPIInterface(): APIInterface {
                 // condition checking happens before calling the recipe function anyway.
 
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    recipeUserId: loginMethod.recipeUserId,
+                    user: response.user,
+                    tenantId,
                     userContext,
                 });
 
@@ -252,13 +256,11 @@ export default function getAPIInterface(): APIInterface {
 
                 // we do account linking only during sign in here cause during sign up,
                 // the recipe function above does account linking for us.
-                let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId,
-                    recipeUserId: loginMethod.recipeUserId,
+                    user: response.user,
                     userContext,
                 });
-
-                response.user = (await getUser(userId, userContext))!;
             }
 
             let session = await Session.createNewSession(
@@ -273,7 +275,7 @@ export default function getAPIInterface(): APIInterface {
 
             return {
                 status: "OK",
-                createdNewUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewRecipeUser,
                 user: response.user,
                 session,
                 oAuthTokens: oAuthTokensToUse,

@@ -9,6 +9,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 import { SessionContainerInterface } from "../session/types";
 import RecipeUserId from "../../recipeUserId";
+import { User } from "../../types";
 export declare type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
@@ -57,7 +58,7 @@ export declare type TypeNormalisedInput = {
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type User = {
+export declare type UserEmailInfo = {
     recipeUserId: RecipeUserId;
     email: string;
 };
@@ -84,7 +85,7 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              user: User;
+              user: UserEmailInfo;
           }
         | {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
@@ -129,7 +130,7 @@ export declare type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    user: User;
+                    user: UserEmailInfo;
                     newSession?: SessionContainerInterface;
                 }
               | {
@@ -179,6 +180,7 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
     tenantId: string;
 };
 export declare type GetEmailForRecipeUserIdFunc = (
+    user: User | undefined,
     recipeUserId: RecipeUserId,
     userContext: any
 ) => Promise<

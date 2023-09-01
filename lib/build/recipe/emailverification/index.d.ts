@@ -1,7 +1,13 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
+import {
+    RecipeInterface,
+    APIOptions,
+    APIInterface,
+    UserEmailInfo,
+    TypeEmailVerificationEmailDeliveryInput,
+} from "./types";
 import RecipeUserId from "../../recipeUserId";
 export default class Wrapper {
     static init: typeof Recipe.init;
@@ -57,7 +63,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              user: User;
+              user: UserEmailInfo;
           }
         | {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
@@ -94,6 +100,6 @@ export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
-export type { RecipeInterface, APIOptions, APIInterface, User };
+export type { RecipeInterface, APIOptions, APIInterface, UserEmailInfo };
 export declare let sendEmail: typeof Wrapper.sendEmail;
 export { EmailVerificationClaim } from "./emailVerificationClaim";

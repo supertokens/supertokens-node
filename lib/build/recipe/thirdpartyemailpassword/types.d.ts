@@ -81,8 +81,20 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
+              oAuthTokens: {
+                  [key: string]: any;
+              };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: {
+                      [key: string]: any;
+                  };
+                  fromUserInfoAPI?: {
+                      [key: string]: any;
+                  };
+              };
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -99,8 +111,9 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: GlobalUser;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -120,6 +133,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: GlobalUser;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -133,6 +147,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: GlobalUser;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -147,6 +162,7 @@ export declare type RecipeInterface = {
         | {
               status: "OK";
               user: GlobalUser;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "WRONG_CREDENTIALS_ERROR";
@@ -305,7 +321,7 @@ export declare type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: GlobalUser;
                     session: SessionContainerInterface;
                     oAuthTokens: {

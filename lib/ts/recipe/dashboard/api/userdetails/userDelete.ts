@@ -15,7 +15,7 @@ export const userDelete = async (_: APIInterface, ___: string, options: APIOptio
     const removeAllLinkedAccounts =
         removeAllLinkedAccountsQueryValue === undefined ? undefined : removeAllLinkedAccountsQueryValue === "true";
 
-    if (userId === undefined) {
+    if (userId === undefined || userId === "") {
         throw new STError({
             message: "Missing required parameter 'userId'",
             type: STError.BAD_INPUT_ERROR,

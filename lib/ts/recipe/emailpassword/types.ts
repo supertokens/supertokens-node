@@ -93,6 +93,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
     >;
@@ -110,6 +111,7 @@ export type RecipeInterface = {
         | {
               status: "OK";
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
     >;
@@ -119,7 +121,7 @@ export type RecipeInterface = {
         password: string;
         tenantId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     /**
      * We pass in the email as well to this function cause the input userId

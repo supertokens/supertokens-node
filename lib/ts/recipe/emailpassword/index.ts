@@ -64,6 +64,22 @@ export default class Wrapper {
         });
     }
 
+    static async resetPasswordUsingToken(tenantId: string, token: string, newPassword: string, userContext?: any) {
+        const consumeResp = await Wrapper.consumePasswordResetToken(tenantId, token, userContext);
+
+        if (consumeResp.status !== "OK") {
+            return consumeResp;
+        }
+
+        return await Wrapper.updateEmailOrPassword({
+            recipeUserId: new RecipeUserId(consumeResp.userId),
+            email: consumeResp.email,
+            password: newPassword,
+            tenantIdForPasswordPolicy: tenantId,
+            userContext,
+        });
+    }
+
     static consumePasswordResetToken(tenantId: string, token: string, userContext?: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumePasswordResetToken({
             token,
@@ -117,10 +133,6 @@ export default class Wrapper {
         email: string,
         userContext: any = {}
     ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" }> {
-        let link = await createResetPasswordLink(tenantId, userId, email, userContext);
-        if (link.status === "UNKNOWN_USER_ID_ERROR") {
-            return link;
-        }
         const user = await getUser(userId, userContext);
         if (!user) {
             return { status: "UNKNOWN_USER_ID_ERROR" };
@@ -129,6 +141,11 @@ export default class Wrapper {
         const loginMethod = user.loginMethods.find((m) => m.recipeId === "emailpassword" && m.hasSameEmailAs(email));
         if (!loginMethod) {
             return { status: "UNKNOWN_USER_ID_ERROR" };
+        }
+
+        let link = await createResetPasswordLink(tenantId, userId, email, userContext);
+        if (link.status === "UNKNOWN_USER_ID_ERROR") {
+            return link;
         }
 
         await sendEmail({
@@ -167,6 +184,8 @@ export let signUp = Wrapper.signUp;
 export let signIn = Wrapper.signIn;
 
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
+
+export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
 
 export let consumePasswordResetToken = Wrapper.consumePasswordResetToken;
 

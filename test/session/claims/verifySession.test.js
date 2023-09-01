@@ -47,10 +47,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
     describe("verifySession", () => {
         describe("with getGlobalClaimValidators override", () => {
             it("should allow without claims required or present", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -67,10 +67,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should allow with claim valid after refetching", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -101,10 +101,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with claim required but not added", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -145,14 +145,14 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should allow with custom validator returning true", async function () {
-                await startST();
+                const connectionURI = await startST();
                 const customValidator = {
                     id: "testid",
                     validate: () => ({ isValid: true }),
                 };
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -183,14 +183,14 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with custom validator returning false", async function () {
-                await startST();
+                const connectionURI = await startST();
                 const customValidator = {
                     id: "testid",
                     validate: () => ({ isValid: false }),
                 };
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -223,14 +223,14 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with validator returning false with reason", async function () {
-                await startST();
+                const connectionURI = await startST();
                 const customValidator = {
                     id: "testid",
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -290,10 +290,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                             },
                         ],
                     });
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -347,10 +347,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     .resolves({
                         invalidClaims: [],
                     });
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -383,10 +383,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
 
         describe("with overrideGlobalClaimValidators", () => {
             it("should allow with empty list as override", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -422,10 +422,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should allow with refetched claim", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -461,10 +461,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
             });
 
             it("should reject with invalid refetched claim", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -508,10 +508,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
 
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -557,10 +557,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     validate: () => ({ isValid: true }),
                 };
 
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -605,10 +605,10 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
 
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",

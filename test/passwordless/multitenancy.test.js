@@ -40,10 +40,10 @@ describe(`multitenancy: ${printPath("[test/passwordless/multitenancy.test.js]")}
     });
 
     it("test recipe functions", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

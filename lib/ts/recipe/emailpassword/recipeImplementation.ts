@@ -7,7 +7,7 @@ import { FORM_FIELD_PASSWORD_ID } from "./constants";
 import RecipeUserId from "../../recipeUserId";
 import { DEFAULT_TENANT_ID } from "../multitenancy/constants";
 import { User as UserType } from "../../types";
-import { User } from "../../user";
+import { LoginMethod, User } from "../../user";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -27,7 +27,9 @@ export default function getRecipeInterface(
                 tenantId: string;
                 userContext: any;
             }
-        ): Promise<{ status: "OK"; user: UserType } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        ): Promise<
+            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
             const response = await this.createNewRecipeUser({
                 email,
                 password,
@@ -38,22 +40,16 @@ export default function getRecipeInterface(
                 return response;
             }
 
-            let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+            let updatedUser = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                 tenantId,
-                // we can use index 0 cause this is a new recipe user
-                recipeUserId: response.user.loginMethods[0].recipeUserId,
+                user: response.user,
                 userContext,
             });
-
-            let updatedUser = await getUser(userId, userContext);
-
-            if (updatedUser === undefined) {
-                throw new Error("Should never come here.");
-            }
 
             return {
                 status: "OK",
                 user: updatedUser,
+                recipeUserId: response.recipeUserId,
             };
         },
 
@@ -66,6 +62,7 @@ export default function getRecipeInterface(
             | {
                   status: "OK";
                   user: User;
+                  recipeUserId: RecipeUserId;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {
@@ -80,6 +77,7 @@ export default function getRecipeInterface(
             );
             if (resp.status === "OK") {
                 resp.user = new User(resp.user);
+                resp.recipeUserId = new RecipeUserId(resp.recipeUserId);
             }
             return resp;
 
@@ -97,7 +95,9 @@ export default function getRecipeInterface(
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: UserType } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: UserType; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }
+        > {
             const response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId === undefined ? DEFAULT_TENANT_ID : tenantId}/recipe/signin`),
                 {
@@ -108,36 +108,33 @@ export default function getRecipeInterface(
 
             if (response.status === "OK") {
                 response.user = new User(response.user);
+                response.recipeUserId = new RecipeUserId(response.recipeUserId);
 
-                let recipeUserId: RecipeUserId | undefined = undefined;
-                for (let i = 0; i < response.user.loginMethods.length; i++) {
-                    if (
-                        response.user.loginMethods[i].recipeId === "emailpassword" &&
-                        response.user.loginMethods[i].hasSameEmailAs(email)
-                    ) {
-                        recipeUserId = response.user.loginMethods[i].recipeUserId;
-                        break;
-                    }
+                const loginMethod: LoginMethod = response.user.loginMethods.find(
+                    (lm: LoginMethod) => lm.recipeUserId.getAsString() === response.recipeUserId.getAsString()
+                );
+
+                if (!loginMethod.verified) {
+                    await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
+                        user: response.user,
+                        recipeUserId: response.recipeUserId,
+                        userContext,
+                    });
+
+                    // Unlike in the sign up recipe function, we do not do account linking here
+                    // cause we do not want sign in to change the potentially user ID of a user
+                    // due to linking when this function is called by the dev in their API -
+                    // for example in their update password API. If we did account linking
+                    // then we would have to ask the dev to also change the session
+                    // in such API calls.
+                    // In the case of sign up, since we are creating a new user, it's fine
+                    // to link there since there is no user id change really from the dev's
+                    // point of view who is calling the sign up recipe function.
+
+                    // We do this so that we get the updated user (in case the above
+                    // function updated the verification status) and can return that
+                    response.user = (await getUser(response.recipeUserId!.getAsString(), userContext))!;
                 }
-                await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    tenantId,
-                    recipeUserId: recipeUserId!,
-                    userContext,
-                });
-
-                // Unlike in the sign up recipe function, we do not do account linking here
-                // cause we do not want sign in to change the potentially user ID of a user
-                // due to linking when this function is called by the dev in their API -
-                // for example in their update password API. If we did account linking
-                // then we would have to ask the dev to also change the session
-                // in such API calls.
-                // In the case of sign up, since we are creating a new user, it's fine
-                // to link there since there is no user id change really from the dev's
-                // point of view who is calling the sign up recipe function.
-
-                // We do this so that we get the updated user (in case the above
-                // function updated the verification status) and can return that
-                response.user = (await getUser(recipeUserId!.getAsString(), userContext))!;
             }
 
             return response;
@@ -227,15 +224,25 @@ export default function getRecipeInterface(
             // a change in email. The check for email verification should actually go in
             // an update email API (post login update).
 
-            let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
-                recipeUserId: input.recipeUserId.getAsString(),
-                email: input.email,
-                password: input.password,
-            });
+            let response = await querier.sendPutRequest(
+                new NormalisedURLPath(`${input.tenantIdForPasswordPolicy}/recipe/user`),
+                {
+                    recipeUserId: input.recipeUserId.getAsString(),
+                    email: input.email,
+                    password: input.password,
+                }
+            );
 
             if (response.status === "OK") {
+                const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
+                if (user === undefined) {
+                    // This means that the user was deleted between the put and get requests
+                    return {
+                        status: "UNKNOWN_USER_ID_ERROR",
+                    };
+                }
                 await AccountLinking.getInstance().verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                    tenantId: input.tenantIdForPasswordPolicy,
+                    user,
                     recipeUserId: input.recipeUserId,
                     userContext: input.userContext,
                 });

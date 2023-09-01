@@ -26,7 +26,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
     });
 
     it("Test that network call is retried properly", async () => {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
                 // Using 8083 because we need querier to call the test express server instead of the core
@@ -105,7 +105,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
     });
 
     it("Test that rate limiting errors are thrown back to the user", async () => {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
                 // Using 8083 because we need querier to call the test express server instead of the core
@@ -159,7 +159,7 @@ describe(`Querier rate limiting: ${printPath("[test/ratelimiting.test.js]")}`, (
     });
 
     it("Test that parallel calls have independent retry counters", async () => {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
                 // Using 8083 because we need querier to call the test express server instead of the core

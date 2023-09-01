@@ -13,13 +13,13 @@
  * under the License.
  */
 
-import { User } from "./types";
+import { UserEmailInfo } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { postWithFetch } from "../../utils";
 
 export async function createAndSendEmailUsingSupertokensService(
     appInfo: NormalisedAppinfo,
-    user: User,
+    user: UserEmailInfo,
     emailVerifyURLWithToken: string
 ) {
     if (process.env.TEST_MODE === "testing") {

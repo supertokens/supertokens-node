@@ -12,7 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, assertJSONEquals } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    assertJSONEquals,
+    startSTWithMultitenancyAndAccountLinking,
+} = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -34,10 +44,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
     });
 
     it("hasSameEmailAs function in user object work", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -56,10 +66,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
     });
 
     it("toJson works as expected", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -78,10 +88,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
     });
 
     it("hasSameThirdPartyInfoAs function in user object work", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -167,10 +177,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/userstructure.t
     });
 
     it("hasSamePhoneNumberAs function in user object work", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

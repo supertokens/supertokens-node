@@ -102,9 +102,11 @@ export default function getRecipeImplementation(
                   wasAlreadyAPrimaryUser: boolean;
               }
             | {
-                  status:
-                      | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                      | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+                  status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+                  user: User;
+              }
+            | {
+                  status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
                   primaryUserId: string;
                   description: string;
               }
@@ -157,12 +159,10 @@ export default function getRecipeImplementation(
         linkAccounts: async function (
             this: RecipeInterface,
             {
-                tenantId,
                 recipeUserId,
                 primaryUserId,
                 userContext,
             }: {
-                tenantId: string;
                 recipeUserId: RecipeUserId;
                 primaryUserId: string;
                 userContext: any;
@@ -175,8 +175,7 @@ export default function getRecipeImplementation(
               }
             | {
                   status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-                  primaryUserId: string;
-                  description: string;
+                  user: User;
               }
             | {
                   status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -195,22 +194,31 @@ export default function getRecipeImplementation(
                 }
             );
 
+            if (
+                ["OK", "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR"].includes(
+                    accountsLinkingResult.status
+                )
+            ) {
+                accountsLinkingResult.user = new User(accountsLinkingResult.user);
+            }
+
             if (accountsLinkingResult.status === "OK") {
-                let user: UserType | undefined;
+                let user: UserType = accountsLinkingResult.user;
                 if (!accountsLinkingResult.accountsAlreadyLinked) {
                     await recipeInstance.verifyEmailForRecipeUserIfLinkedAccountsAreVerified({
-                        tenantId,
+                        user: user,
                         recipeUserId,
                         userContext,
                     });
 
-                    user = await this.getUser({
+                    const updatedUser = await this.getUser({
                         userId: primaryUserId,
                         userContext,
                     });
-                    if (user === undefined) {
+                    if (updatedUser === undefined) {
                         throw Error("this error should never be thrown");
                     }
+                    user = updatedUser;
                     let loginMethodInfo = user.loginMethods.find(
                         (u) => u.recipeUserId.getAsString() === recipeUserId.getAsString()
                     );
@@ -219,12 +227,6 @@ export default function getRecipeImplementation(
                     }
 
                     await config.onAccountLinked(user, loginMethodInfo, userContext);
-                } else {
-                    // In the other case we get it after email verification
-                    user = await this.getUser({
-                        userId: primaryUserId,
-                        userContext,
-                    });
                 }
                 accountsLinkingResult.user = user;
             }
@@ -265,15 +267,22 @@ export default function getRecipeImplementation(
 
         listUsersByAccountInfo: async function (
             this: RecipeInterface,
-            { accountInfo, doUnionOfAccountInfo }: { accountInfo: AccountInfo; doUnionOfAccountInfo: boolean }
-        ): Promise<UserType[]> {
-            let result = await querier.sendGetRequest(new NormalisedURLPath("/users/by-accountinfo"), {
-                email: accountInfo.email,
-                phoneNumber: accountInfo.phoneNumber,
-                thirdPartyId: accountInfo.thirdParty?.id,
-                thirdPartyUserId: accountInfo.thirdParty?.userId,
+            {
+                tenantId,
+                accountInfo,
                 doUnionOfAccountInfo,
-            });
+            }: { tenantId: string; accountInfo: AccountInfo; doUnionOfAccountInfo: boolean }
+        ): Promise<UserType[]> {
+            let result = await querier.sendGetRequest(
+                new NormalisedURLPath(`${tenantId ?? "public"}/users/by-accountinfo`),
+                {
+                    email: accountInfo.email,
+                    phoneNumber: accountInfo.phoneNumber,
+                    thirdPartyId: accountInfo.thirdParty?.id,
+                    thirdPartyUserId: accountInfo.thirdParty?.userId,
+                    doUnionOfAccountInfo,
+                }
+            );
             return result.users.map((u: any) => new User(u));
         },
 

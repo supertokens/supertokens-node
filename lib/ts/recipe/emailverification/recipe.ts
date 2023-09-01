@@ -37,6 +37,7 @@ import SessionError from "../session/error";
 import Session from "../session";
 import { getUser } from "../..";
 import RecipeUserId from "../../recipeUserId";
+import { logDebugMessage } from "../../logger";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -193,7 +194,7 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc = async (recipeUserId, userContext) => {
+    getEmailForRecipeUserId: GetEmailForRecipeUserIdFunc = async (user, recipeUserId, userContext) => {
         if (this.config.getEmailForRecipeUserId !== undefined) {
             const userRes = await this.config.getEmailForRecipeUserId(recipeUserId, userContext);
             if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
@@ -201,12 +202,14 @@ export default class Recipe extends RecipeModule {
             }
         }
 
-        let user = await getUser(recipeUserId.getAsString(), userContext);
-
         if (user === undefined) {
-            return {
-                status: "UNKNOWN_USER_ID_ERROR",
-            };
+            user = await getUser(recipeUserId.getAsString(), userContext);
+
+            if (user === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            }
         }
 
         for (let i = 0; i < user.loginMethods.length; i++) {
@@ -234,9 +237,10 @@ export default class Recipe extends RecipeModule {
         // We extract this into its own function like this cause we want to make sure that
         // this recipe does not get the email of the user ID from the getUser function.
         // In fact, there is a test "email verification recipe uses getUser function only in getEmailForRecipeUserId"
-        // which makes sure that this function is only called in 2 places in this recipe:
+        // which makes sure that this function is only called in 3 places in this recipe:
         // - this function
         // - getEmailForRecipeUserId function (above)
+        // - after verification to get the updated user in verifyEmailUsingToken
         // We want to isolate the result of calling this function as much as possible
         // so that the consumer of the getUser function does not read the email
         // from the primaryUser. Hence, this function only returns the string ID
@@ -266,6 +270,7 @@ export default class Recipe extends RecipeModule {
         // if a session exists in the API, then we can update the session
         // claim related to email verification
         if (input.session !== undefined) {
+            logDebugMessage("updateSessionIfRequiredPostEmailVerification got session");
             // Due to linking, we will have to correct the current
             // session's user ID. There are four cases here:
             // --> (Case 1) User signed up and did email verification and the new account
@@ -281,11 +286,17 @@ export default class Recipe extends RecipeModule {
             if (
                 input.session.getRecipeUserId().getAsString() === input.recipeUserIdWhoseEmailGotVerified.getAsString()
             ) {
+                logDebugMessage(
+                    "updateSessionIfRequiredPostEmailVerification the session belongs to the verified user"
+                );
                 // this means that the session's login method's account is the
                 // one that just got verified and that we are NOT doing post login
                 // account linking. So this is only for (Case 1) and (Case 2)
 
                 if (input.session.getUserId() === primaryUserId) {
+                    logDebugMessage(
+                        "updateSessionIfRequiredPostEmailVerification the session userId matches the primary user id, so we are only refreshing the claim"
+                    );
                     // if the session's primary user ID is equal to the
                     // primary user ID that the account was linked to, then
                     // this means that the new account became a primary user (Case 1)
@@ -315,6 +326,9 @@ export default class Recipe extends RecipeModule {
 
                     return;
                 } else {
+                    logDebugMessage(
+                        "updateSessionIfRequiredPostEmailVerification the session user id doesn't match the primary user id, so we are revoking all sessions and creating a new one"
+                    );
                     // if the session's primary user ID is NOT equal to the
                     // primary user ID that the account that it was linked to, then
                     // this means that the new account got linked to another primary user (Case 2)
@@ -343,6 +357,9 @@ export default class Recipe extends RecipeModule {
                     );
                 }
             } else {
+                logDebugMessage(
+                    "updateSessionIfRequiredPostEmailVerification the verified user doesn't match the session"
+                );
                 // this means that the session's login method's account was NOT the
                 // one that just got verified and that we ARE doing post login
                 // account linking. So this is only for (Case 3) and (Case 4)
@@ -355,6 +372,7 @@ export default class Recipe extends RecipeModule {
                 return undefined;
             }
         } else {
+            logDebugMessage("updateSessionIfRequiredPostEmailVerification got no session");
             // the session is updated when the is email verification GET API is called
             // so we don't do anything in this API.
             return undefined;

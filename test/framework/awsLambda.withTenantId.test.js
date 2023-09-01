@@ -50,11 +50,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
 
     //check basic usage of session
     it("test basic usage of sessions for lambda proxy event v1", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -225,11 +225,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
 
     //check basic usage of session
     it("test basic usage of sessions for lambda proxy event v2", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -394,11 +394,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("sending custom response awslambda", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -439,11 +439,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     for (const tokenTransferMethod of ["header", "cookie"]) {
         describe(`Throwing UNATHORISED w/ auth-mode=${tokenTransferMethod}`, () => {
             it("should clear all response cookies during refresh", async () => {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     framework: "awsLambda",
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "http://api.supertokens.io",
@@ -551,11 +551,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
             });
 
             it("test revoking a session after createNewSession with throwing unauthorised error", async function () {
-                await startST();
+                const connectionURI = await startST();
                 SuperTokens.init({
                     framework: "awsLambda",
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "http://api.supertokens.io",
@@ -621,11 +621,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     }
 
     it("test that authorization header is read correctly in dashboard recipe", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -674,11 +674,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that tags request respond with correct tags", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -732,11 +732,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that search results correct output for 'email: t", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -795,11 +795,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that search results correct output for multiple search items", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -858,11 +858,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that search results correct output for 'email: iresh", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -920,11 +920,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that search results correct output for 'phone: +1", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -985,11 +985,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that search results correct output for 'phone: 1(", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -1050,11 +1050,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that search results correct output for 'provider: google'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",
@@ -1156,11 +1156,11 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.withTenantId.test.j
     });
 
     it("test that search results correct output for 'provider: google, phone: 1'", async function () {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             framework: "awsLambda",
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "http://api.supertokens.io",

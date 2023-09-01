@@ -23,10 +23,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
     describe("signInUp", () => {
         it("create a thirdParty user and map their userId, signIn and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -90,17 +90,17 @@ describe(`userIdMapping with thirdparty: ${printPath(
             );
 
             assert.strictEqual(response.status, "OK");
-            assert.strictEqual(response.createdNewUser, false);
+            assert.strictEqual(response.createdNewRecipeUser, false);
             assert.strictEqual(response.user.id, externalId);
         });
     });
 
     describe("getUserById", () => {
         it("create a thirdParty user and map their userId, retrieve the user info using getUserById and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -164,10 +164,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
     describe("getUsersByEmail", () => {
         it("create a thirdParty user and map their userId, retrieve the user info using getUsersByEmail and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -223,7 +223,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // retrieve the user
-            let response = await STExpress.listUsersByAccountInfo({ email: "test@example.com" });
+            let response = await STExpress.listUsersByAccountInfo("public", { email: "test@example.com" });
             assert.strictEqual(response.length, 1);
             assert.strictEqual(response[0].id, externalId);
         });
@@ -231,10 +231,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
     describe("getUserByThirdPartyInfo", () => {
         it("create a thirdParty user and map their userId, retrieve the user info using getUserByThirdPartyInfo and check that the externalId is returned", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -292,7 +292,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // retrieve the user
-            let response = await STExpress.listUsersByAccountInfo({
+            let response = await STExpress.listUsersByAccountInfo("public", {
                 thirdParty: { id: thirdPartyId, userId: thirdPartyUserId },
             });
             assert.ok(response.length === 1);

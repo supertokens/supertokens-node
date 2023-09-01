@@ -163,8 +163,9 @@ export type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -175,7 +176,6 @@ export type RecipeInterface = {
     >;
 
     updateUser: (input: {
-        tenantId: string;
         recipeUserId: RecipeUserId; // the id can be either recipeUserId or primaryUserId
         email?: string | null;
         phoneNumber?: string | null;
@@ -304,7 +304,7 @@ export type APIInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
               session: SessionContainerInterface;
           }

@@ -57,12 +57,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     // test various inputs for appInfo
     // Failure condition: passing data of invalid type/ syntax to appInfo
     it("test values for optional inputs for appInfo", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -80,7 +80,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -100,13 +100,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("test values for compulsory inputs for appInfo", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         appName: "SuperTokens",
@@ -131,7 +131,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -156,7 +156,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -181,13 +181,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     // test using zero, one and two recipe modules
     // Failure condition: initial supertokens with the incorrect number of modules as specified in the checks
     it("test using zero, one and two recipe modules", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -208,7 +208,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -225,7 +225,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -244,10 +244,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     // test config for session module
     // Failure condition: passing data of invalid type/ syntax to the modules config
     it("test config for session module", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -269,12 +269,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("various sameSite values", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -292,7 +292,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -310,7 +310,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -329,7 +329,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -352,7 +352,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "api.supertokens.io",
@@ -374,7 +374,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -392,7 +392,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -410,7 +410,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -428,7 +428,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -445,7 +445,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("sameSite none invalid domain values", async function () {
-        await startST();
+        const connectionURI = await startST();
         const domainCombinations = [
             ["http://localhost:3000", "http://supertokensapi.io"],
             ["http://127.0.0.1:3000", "http://supertokensapi.io"],
@@ -458,7 +458,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             let err;
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     appName: "SuperTokens",
@@ -684,12 +684,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("various config values", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -705,7 +705,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -721,7 +721,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -741,7 +741,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -761,7 +761,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -780,7 +780,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                     apiKey: "haha",
                 },
                 appInfo: {
@@ -797,7 +797,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -814,7 +814,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080;try.supertokens.io;try.supertokens.io:8080;localhost:90",
+                    connectionURI: `${connectionURI};try.supertokens.io;try.supertokens.io:8080;localhost:90`,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -836,7 +836,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -855,7 +855,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "https://api.supertokens.io",
@@ -877,7 +877,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "https://api.supertokens.io",
@@ -898,7 +898,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -919,7 +919,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.com",
@@ -940,7 +940,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.co.uk",
@@ -961,7 +961,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "127.0.0.1:3000",
@@ -982,7 +982,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "127.0.0.1:3000",
@@ -1002,7 +1002,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1022,7 +1022,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "127.0.0.1:3000",
@@ -1042,7 +1042,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "https://127.0.0.1:3000",
@@ -1061,7 +1061,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "127.0.0.1:3000",
@@ -1085,7 +1085,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "http://api.test.com:3000",
@@ -1116,7 +1116,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             try {
                 STExpress.init({
                     supertokens: {
-                        connectionURI: "http://localhost:8080",
+                        connectionURI,
                     },
                     appInfo: {
                         apiDomain: "https://api.test.com:3000",
@@ -1146,7 +1146,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "https://api.test.com:3000",
@@ -1175,7 +1175,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "https://localhost",
@@ -1193,10 +1193,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("checking for default cookie config", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1216,10 +1216,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Test that the JWKS and OpenId endpoints are exposed by Session", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1254,11 +1254,11 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("apiGatewayPath test", async function () {
-        await startST();
+        const connectionURI = await startST();
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1317,7 +1317,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1378,7 +1378,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1435,12 +1435,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("checking for empty item in recipeList config", async function () {
-        await startST();
+        const connectionURI = await startST();
         let errorCaught = true;
         try {
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1457,10 +1457,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Check that telemetry is set to true properly", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1475,10 +1475,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Check that telemetry is set to false by default", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1492,10 +1492,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("Check that telemetry is set to false properly", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

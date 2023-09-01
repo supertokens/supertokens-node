@@ -13,22 +13,12 @@
  * under the License.
  */
 
-import type { NormalisedAppinfo, User } from "../../types";
-import type {
-    TypeInput,
-    RecipeLevelUser,
-    RecipeInterface,
-    TypeNormalisedInput,
-    AccountInfoWithRecipeId,
-} from "./types";
+import type { NormalisedAppinfo } from "../../types";
+import type { TypeInput, RecipeInterface, TypeNormalisedInput } from "./types";
 
-async function defaultOnAccountLinked(_user: User, _newAccountInfo: RecipeLevelUser, _userContext: any) {}
+async function defaultOnAccountLinked() {}
 
-async function defaultShouldDoAutomaticAccountLinking(
-    _newAccountInfo: AccountInfoWithRecipeId,
-    _user: User | undefined,
-    _userContext: any
-): Promise<{
+async function defaultShouldDoAutomaticAccountLinking(): Promise<{
     shouldAutomaticallyLink: false;
 }> {
     return {

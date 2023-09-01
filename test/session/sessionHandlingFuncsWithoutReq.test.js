@@ -35,10 +35,10 @@ describe(`Session handling functions without modifying response: ${printPath(
 
     describe("createNewSessionWithoutRequestResponse", () => {
         it("should create a new session", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -68,10 +68,10 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should create a new session w/ anti-csrf", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -106,10 +106,10 @@ describe(`Session handling functions without modifying response: ${printPath(
 
     describe("getSessionWithoutRequestResponse", () => {
         it("should validate basic access token", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -138,10 +138,10 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should validate basic access token with anti-csrf", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -192,10 +192,10 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should validate access tokens created by createJWT", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -227,10 +227,10 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should validate access tokens created by createJWT w/ checkDatabase", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -322,10 +322,10 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should return error for claim validation failures", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -358,10 +358,10 @@ describe(`Session handling functions without modifying response: ${printPath(
 
     describe("refreshSessionWithoutRequestResponse", () => {
         it("should refresh session", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -397,10 +397,10 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should work with anti-csrf", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -449,10 +449,10 @@ describe(`Session handling functions without modifying response: ${printPath(
         });
 
         it("should return error for non-tokens", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

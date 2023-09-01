@@ -6,6 +6,7 @@ import RecipeModule from "../../recipeModule";
 import type { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction, User } from "../../types";
 import type { TypeNormalisedInput, RecipeInterface, TypeInput, AccountInfoWithRecipeId } from "./types";
 import RecipeUserId from "../../recipeUserId";
+import { LoginMethod } from "../../user";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -35,53 +36,62 @@ export default class Recipe extends RecipeModule {
     static reset(): void;
     createPrimaryUserIdOrLinkAccounts: ({
         tenantId,
-        recipeUserId,
+        user,
         userContext,
     }: {
         tenantId: string;
-        recipeUserId: RecipeUserId;
+        user: User;
         userContext: any;
-    }) => Promise<string>;
-    getPrimaryUserIdThatCanBeLinkedToRecipeUserId: ({
-        recipeUserId,
+    }) => Promise<User>;
+    getPrimaryUserThatCanBeLinkedToRecipeUserId: ({
+        tenantId,
+        user,
         userContext,
     }: {
-        recipeUserId: RecipeUserId;
+        tenantId: string;
+        user: User;
         userContext: any;
     }) => Promise<User | undefined>;
     isSignInAllowed: ({
-        recipeUserId,
+        user,
+        tenantId,
         userContext,
     }: {
-        recipeUserId: RecipeUserId;
+        user: User;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     isSignUpAllowed: ({
         newUser,
         isVerified,
+        tenantId,
         userContext,
     }: {
         newUser: AccountInfoWithRecipeId;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     isSignInUpAllowedHelper: ({
         accountInfo,
         isVerified,
+        tenantId,
         userContext,
     }: {
-        accountInfo: AccountInfoWithRecipeId;
+        accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {
-        recipeUserId: RecipeUserId;
+        user?: User;
         newEmail: string;
         isVerified: boolean;
+        tenantId: string;
         userContext: any;
     }) => Promise<boolean>;
     verifyEmailForRecipeUserIfLinkedAccountsAreVerified: (input: {
-        tenantId: string;
+        user: User;
         recipeUserId: RecipeUserId;
         userContext: any;
     }) => Promise<void>;

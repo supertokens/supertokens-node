@@ -53,12 +53,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      */
 
     it("test the sign up /in flow with email using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInputCode = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -156,12 +156,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      */
 
     it("test the sign up /in flow with phoneNumber using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInputCode = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -258,13 +258,13 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      *   - create code with email and then resend code and make sure that sending email function is called  while resending code
      */
     it("test creating a code with email and then resending the code and check that the sending custom email function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomEmailCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -353,13 +353,13 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      *   - create code with phone and then resend code and make sure that sending SMS function is called  while resending code
      */
     it("test creating a code with phone and then resending the code and check that the sending custom SMS function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomTextMessageCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -449,11 +449,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
      *   - sending neither email and phone in createCode API throws bad request
      */
     it("test invalid input to createCodeAPI while using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -558,13 +558,13 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     */
 
     it("test adding phoneNumber to a users info and signing in will sign in the same user, using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInputCode = undefined;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -648,8 +648,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
         // add users phoneNumber to userInfo
         await Passwordless.updateUser({
-            tenantId: "public",
-            recipeUserId: emailUserInputCodeResponse.user.loginMethods[0].recipeUserId,
+            recipeUserId: STExpress.convertToRecipeUserId(emailUserInputCodeResponse.user.loginMethods[0].recipeUserId),
             phoneNumber: "+12345678901",
         });
 
@@ -698,11 +697,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
     // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
     it("test not passing any fields to consumeCodeAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -762,11 +761,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test consumeCodeAPI with magic link", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -857,11 +856,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test consumeCodeAPI with code", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -980,12 +979,15 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test consumeCodeAPI with expired code", async function () {
-        await setKeyValueInConfig("passwordless_code_lifetime", 1000); // one second lifetime
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: {
+                passwordless_code_lifetime: 1000, // one second lifetime
+            },
+        });
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1060,11 +1062,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test createCodeAPI with email", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1152,11 +1154,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test createCodeAPI with phoneNumber", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1244,12 +1246,12 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test magicLink format in createCodeAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let magicLinkURL = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1321,11 +1323,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test emailExistsAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1416,11 +1418,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test phoneNumberExistsAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1513,11 +1515,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     //resendCode API
 
     it("test resendCodeAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1602,11 +1604,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
     // test that you create a code with PHONE in config, you then change the config to use EMAIL, you call resendCode API, it should return RESTART_FLOW_ERROR
     it("test resendCodeAPI when changing contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1647,11 +1649,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             });
 
             await killAllST();
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1699,13 +1701,13 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     });
 
     it("test resend code from different tenant throws error", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
 
         let isCreateAndSendCustomEmailCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1796,7 +1798,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
 
 function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, isNew, isPrimary }) {
     assert.strictEqual(validUserInputCodeResponse.status, "OK");
-    assert.strictEqual(validUserInputCodeResponse.createdNewUser, isNew);
+    assert.strictEqual(validUserInputCodeResponse.createdNewRecipeUser, isNew);
 
     assert.strictEqual(typeof validUserInputCodeResponse.user.id, "string");
     assert.strictEqual(typeof validUserInputCodeResponse.user.timeJoined, "number");
@@ -1825,7 +1827,7 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
         recipeId: "passwordless",
         recipeUserId: validUserInputCodeResponse.user.id,
         timeJoined: validUserInputCodeResponse.user.timeJoined,
-        verified: phoneNumber !== undefined ? true : false, // false, since EV is not enabled in these tests
+        verified: true,
         tenantIds: ["public"],
     };
     if (email) {

@@ -4,6 +4,7 @@ import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { GeneralErrorResponse, User } from "../../types";
+import RecipeUserId from "../../recipeUserId";
 export declare type UserInfo = {
     thirdPartyUserId: string;
     email?: {
@@ -155,8 +156,20 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
+              recipeUserId: RecipeUserId;
               user: User;
+              oAuthTokens: {
+                  [key: string]: any;
+              };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: {
+                      [key: string]: any;
+                  };
+                  fromUserInfoAPI?: {
+                      [key: string]: any;
+                  };
+              };
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -173,8 +186,9 @@ export declare type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -238,7 +252,7 @@ export declare type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                     oAuthTokens: {

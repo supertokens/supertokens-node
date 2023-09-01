@@ -70,7 +70,8 @@ export default class Recipe extends RecipeModule {
               }
     ) => Promise<{
         status: string;
-        createdNewUser: boolean;
+        createdNewRecipeUser: boolean;
+        recipeUserId: import("../..").RecipeUserId;
         user: import("../../types").User;
     }>;
 }

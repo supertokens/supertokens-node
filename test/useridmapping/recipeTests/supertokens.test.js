@@ -24,10 +24,10 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
     describe("deleteUser", () => {
         it("create an emailPassword user and map their userId, then delete user with the externalId", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -108,10 +108,10 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
 
     describe("getUsers", () => {
         it("create multiple users and map one of the users userId, retrieve all users and check that response will contain the externalId for the mapped user", async function () {
-            await startST();
+            const connectionURI = await startST();
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

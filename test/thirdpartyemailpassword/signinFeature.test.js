@@ -73,10 +73,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test that disable api, the default signinup API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -140,10 +140,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test that disable api, the default signin API does not work", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -197,7 +197,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test handlePostSignUpIn gets set correctly", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         process.env.userId = "";
         process.env.loginType = "";
@@ -207,7 +207,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -271,10 +271,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI works when input is fine", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -325,10 +325,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI works when input is fine and user has added JSON middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -380,10 +380,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI works when input is fine and user has added urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -435,10 +435,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI works when input is fine and user has added both JSON and urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -491,10 +491,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI works when input is fine and user has added bodyParser JSON middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -546,10 +546,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI works when input is fine and user has added bodyParser urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -601,10 +601,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI works when input is fine and user has added both bodyParser JSON and bodyParser urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -657,10 +657,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI with empty JSON and user has added JSON middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -683,10 +683,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI with empty JSON and user has added urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -709,10 +709,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI with empty JSON and user has added both JSON and urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -736,10 +736,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI with empty JSON and user has added both bodyParser JSON and bodyParser urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -763,10 +763,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI with empty request body and user has added JSON middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -789,10 +789,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI with empty request body and user has added urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -815,10 +815,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     });
 
     it("test singinAPI with empty request body and user has added both JSON and urlencoded middleware", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -846,10 +846,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     */
     // testing error gets corectly routed to sub-recipe
     it("test singinAPI throws an error when email does not match", async function () {
-        await startST();
+        const connectionURI = await startST();
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -900,11 +900,11 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     having the email start with "test" (requierment of the custom validator) will cause the test to fail
     */
     it("test custom email validators to sign up and make sure they are applied to sign in", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

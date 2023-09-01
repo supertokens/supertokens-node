@@ -82,12 +82,12 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     });
 
     it("overriding functions tests", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -146,7 +146,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                     delete user.loginMethods[0].hasSamePhoneNumberAs;
                                     delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                     delete user.toJson;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     return response;
                                 },
                             };
@@ -249,12 +249,12 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     });
 
     it("overriding api tests", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -286,7 +286,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                         delete user.loginMethods[0].hasSamePhoneNumberAs;
                                         delete user.loginMethods[0].hasSameThirdPartyInfoAs;
                                         delete user.toJson;
-                                        newUser = response.createdNewUser;
+                                        newUser = response.createdNewRecipeUser;
                                     }
                                     return response;
                                 },
@@ -361,11 +361,11 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     });
 
     it("overriding functions tests, throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -402,7 +402,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                 signInUp: async (input) => {
                                     let response = await oI.signInUp(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",
@@ -511,13 +511,13 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     });
 
     it("overriding api tests, throws error", async function () {
-        await startST();
+        const connectionURI = await startST();
         let user = undefined;
         let newUser = undefined;
         let emailExists = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -536,7 +536,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                                 signInUpPOST: async (input) => {
                                     let response = await oI.signInUpPOST(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
+                                    newUser = response.createdNewRecipeUser;
                                     if (newUser) {
                                         throw {
                                             error: "signup error",

@@ -1,8 +1,10 @@
-import { RecipeInterface, User } from "./";
+import { RecipeInterface } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeUserId from "../../recipeUserId";
-import { GetEmailForRecipeUserIdFunc } from "./types";
+import { GetEmailForRecipeUserIdFunc, UserEmailInfo } from "./types";
+import type AccountLinkingRecipe from "../accountlinking/recipe";
+import { getUser } from "../..";
 
 export default function getRecipeInterface(
     querier: Querier,
@@ -53,7 +55,7 @@ export default function getRecipeInterface(
             attemptAccountLinking: boolean;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
+        }): Promise<{ status: "OK"; user: UserEmailInfo } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
             let response = await querier.sendPostRequest(
                 new NormalisedURLPath(`/${tenantId}/recipe/user/email/verify`),
                 {
@@ -62,27 +64,34 @@ export default function getRecipeInterface(
                 }
             );
             if (response.status === "OK") {
+                const recipeUserId = new RecipeUserId(response.userId);
                 if (attemptAccountLinking) {
-                    // before attempting this, we must check that the email that got verified
-                    // from the ID is the one that is currently associated with the ID (since
-                    // email verification can be done for any combination of (user id, email)
-                    // and not necessarily the email that is currently associated with the ID)
-                    let emailInfo = await getEmailForRecipeUserId(new RecipeUserId(response.userId), userContext);
-                    if (emailInfo.status === "OK" && emailInfo.email === response.email) {
-                        // we do this here to prevent cyclic dependencies.
-                        // TODO: Fix this.
-                        let AccountLinking = require("../accountlinking");
-                        await AccountLinking.createPrimaryUserIdOrLinkAccounts({
-                            recipeUserId: new RecipeUserId(response.userId),
-                            userContext,
-                        });
+                    // TODO: this should ideally come from the api response
+                    const updatedUser = await getUser(recipeUserId.getAsString());
+
+                    if (updatedUser) {
+                        // before attempting this, we must check that the email that got verified
+                        // from the ID is the one that is currently associated with the ID (since
+                        // email verification can be done for any combination of (user id, email)
+                        // and not necessarily the email that is currently associated with the ID)
+                        let emailInfo = await getEmailForRecipeUserId(updatedUser, recipeUserId, userContext);
+                        if (emailInfo.status === "OK" && emailInfo.email === response.email) {
+                            // we do this here to prevent cyclic dependencies.
+                            // TODO: Fix this.
+                            let AccountLinking = require("../accountlinking/recipe").default.getInstance() as AccountLinkingRecipe;
+                            await AccountLinking.createPrimaryUserIdOrLinkAccounts({
+                                tenantId,
+                                user: updatedUser,
+                                userContext,
+                            });
+                        }
                     }
                 }
 
                 return {
                     status: "OK",
                     user: {
-                        recipeUserId: new RecipeUserId(response.userId),
+                        recipeUserId,
                         email: response.email,
                     },
                 };

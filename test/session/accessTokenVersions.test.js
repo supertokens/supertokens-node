@@ -42,10 +42,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("createNewSession", () => {
         it("should create a V5 token", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -84,10 +84,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should create a V5 token signed by a static key if set in session recipe config", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -130,10 +130,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should throw an error when adding protected props", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -173,10 +173,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should make sign in/up return a 500 when adding protected props", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -237,10 +237,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("mergeIntoAccessTokenPayload", () => {
         it("should help migrating a v2 token using protected props", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -337,10 +337,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should help migrating a v2 token using protected props when called using session handle", async () => {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -405,10 +405,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("verifySession", () => {
         it("should validate v2 tokens", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -463,10 +463,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v2 tokens with check database enabled", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -551,10 +551,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v4 tokens", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -618,10 +618,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v4 tokens with check database enabled", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -716,10 +716,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should validate v5 tokens with check database enabled", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -798,10 +798,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should not validate token signed by a static key if not set in session recipe config", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -838,7 +838,7 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
             resetAll();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -872,10 +872,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
 
     describe("refresh session", () => {
         it("should refresh legacy sessions to new version", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -926,10 +926,10 @@ describe(`AccessToken versions: ${printPath("[test/session/accessTokenVersions.t
         });
 
         it("should throw when refreshing legacy session with protected prop in payload", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

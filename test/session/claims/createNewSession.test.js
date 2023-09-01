@@ -33,11 +33,11 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
 
     describe("createNewSession", () => {
         it("should create access token payload w/ session claims", async function () {
-            await startST();
+            const connectionURI = await startST();
 
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -80,10 +80,10 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
         });
 
         it("should create access token payload wo/ session claims with an undefined value", async function () {
-            await startST();
+            const connectionURI = await startST();
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -125,7 +125,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
         });
 
         it("should merge claims and the passed access token payload obj", async function () {
-            await startST();
+            const connectionURI = await startST();
             const payloadParam = { initial: true };
             const custom2 = { undef: undefined, nullProp: null, inner: "asdf" };
             const customClaims = {
@@ -135,7 +135,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             };
             SuperTokens.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",

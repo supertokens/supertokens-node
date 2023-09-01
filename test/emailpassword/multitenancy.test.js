@@ -42,10 +42,10 @@ describe(`multitenancy: ${printPath("[test/emailpassword/multitenancy.test.js]")
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test recipe functions", async function () {
-        await startSTWithMultitenancy();
+        const connectionURI = await startSTWithMultitenancy();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

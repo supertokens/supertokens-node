@@ -11,7 +11,7 @@ export class EmailVerificationClaimClass extends BooleanClaim {
             key: "st-ev",
             async fetchValue(_userId, recipeUserId, __tenantId, userContext) {
                 const recipe = EmailVerificationRecipe.getInstanceOrThrowError();
-                let emailInfo = await recipe.getEmailForRecipeUserId(recipeUserId, userContext);
+                let emailInfo = await recipe.getEmailForRecipeUserId(undefined, recipeUserId, userContext);
 
                 if (emailInfo.status === "OK") {
                     return recipe.recipeInterfaceImpl.isEmailVerified({

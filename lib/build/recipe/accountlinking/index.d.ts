@@ -6,18 +6,18 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     /**
      * This is a function which is a combination of createPrimaryUser and
-     * linkAccounts where the input recipeUserID is either linked to a user that it can be
+     * linkAccounts where the input recipeUserId is either linked to a user that it can be
      * linked to, or is made into a primary user.
      *
      * The output will be the user ID of the user that it was linked to, or it will be the
-     * same as the input recipeUserID if it was made into a primary user, or if there was
+     * same as the input recipeUserId if it was made into a primary user, or if there was
      * no linking that happened.
      */
-    static createPrimaryUserIdOrLinkAccounts(input: {
-        tenantId: string;
-        recipeUserId: RecipeUserId;
-        userContext?: any;
-    }): Promise<string>;
+    static createPrimaryUserIdOrLinkAccounts(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        userContext?: any
+    ): Promise<import("../../types").User>;
     /**
      * This function returns the primary user that the input recipe ID can be
      * linked to. It can be used to determine which primary account the linking
@@ -27,10 +27,11 @@ export default class Wrapper {
      * that the input recipe ID can be linked to, and therefore it can be made
      * into a primary user itself.
      */
-    static getPrimaryUserIdThatCanBeLinkedToRecipeUserId(input: {
-        recipeUserId: RecipeUserId;
-        userContext?: any;
-    }): Promise<import("../../types").User | undefined>;
+    static getPrimaryUserThatCanBeLinkedToRecipeUserId(
+        tenantId: string,
+        recipeUserId: RecipeUserId,
+        userContext?: any
+    ): Promise<import("../../types").User | undefined>;
     static canCreatePrimaryUser(
         recipeUserId: RecipeUserId,
         userContext?: any
@@ -57,9 +58,11 @@ export default class Wrapper {
               wasAlreadyAPrimaryUser: boolean;
           }
         | {
-              status:
-                  | "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR"
-                  | "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR";
+              user: import("../../types").User;
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
               primaryUserId: string;
               description: string;
           }
@@ -88,7 +91,6 @@ export default class Wrapper {
           }
     >;
     static linkAccounts(
-        tenantId: string,
         recipeUserId: RecipeUserId,
         primaryUserId: string,
         userContext?: any
@@ -100,8 +102,7 @@ export default class Wrapper {
           }
         | {
               status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
-              primaryUserId: string;
-              description: string;
+              user: import("../../types").User;
           }
         | {
               status: "ACCOUNT_INFO_ALREADY_ASSOCIATED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
@@ -120,9 +121,15 @@ export default class Wrapper {
         wasRecipeUserDeleted: boolean;
         wasLinked: boolean;
     }>;
-    static isSignUpAllowed(newUser: AccountInfoWithRecipeId, isVerified: boolean, userContext?: any): Promise<boolean>;
-    static isSignInAllowed(recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
+    static isSignUpAllowed(
+        tenantId: string,
+        newUser: AccountInfoWithRecipeId,
+        isVerified: boolean,
+        userContext?: any
+    ): Promise<boolean>;
+    static isSignInAllowed(tenantId: string, recipeUserId: RecipeUserId, userContext?: any): Promise<boolean>;
     static isEmailChangeAllowed(
+        tenantId: string,
         recipeUserId: RecipeUserId,
         newEmail: string,
         isVerified: boolean,
@@ -136,7 +143,7 @@ export declare const canLinkAccounts: typeof Wrapper.canLinkAccounts;
 export declare const linkAccounts: typeof Wrapper.linkAccounts;
 export declare const unlinkAccount: typeof Wrapper.unlinkAccount;
 export declare const createPrimaryUserIdOrLinkAccounts: typeof Wrapper.createPrimaryUserIdOrLinkAccounts;
-export declare const getPrimaryUserIdThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserIdThatCanBeLinkedToRecipeUserId;
+export declare const getPrimaryUserThatCanBeLinkedToRecipeUserId: typeof Wrapper.getPrimaryUserThatCanBeLinkedToRecipeUserId;
 export declare const isSignUpAllowed: typeof Wrapper.isSignUpAllowed;
 export declare const isSignInAllowed: typeof Wrapper.isSignInAllowed;
 export declare const isEmailChangeAllowed: typeof Wrapper.isEmailChangeAllowed;

@@ -136,8 +136,14 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
+              oAuthTokens: { [key: string]: any };
+              rawUserInfoFromProvider: {
+                  fromIdTokenPayload?: { [key: string]: any };
+                  fromUserInfoAPI?: { [key: string]: any };
+              };
           }
         | {
               status: "SIGN_IN_UP_NOT_ALLOWED";
@@ -153,7 +159,7 @@ export type RecipeInterface = {
         tenantId: string;
         userContext: any;
     }): Promise<
-        | { status: "OK"; createdNewUser: boolean; user: User }
+        | { status: "OK"; createdNewRecipeUser: boolean; user: User; recipeUserId: RecipeUserId }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
               reason: string;
@@ -228,8 +234,9 @@ export type RecipeInterface = {
     ) => Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -240,7 +247,6 @@ export type RecipeInterface = {
     >;
 
     updatePasswordlessUser: (input: {
-        tenantId: string;
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
@@ -338,7 +344,7 @@ export type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                     oAuthTokens: { [key: string]: any };
@@ -419,7 +425,7 @@ export type APIInterface = {
           ) => Promise<
               | {
                     status: "OK";
-                    createdNewUser: boolean;
+                    createdNewRecipeUser: boolean;
                     user: User;
                     session: SessionContainerInterface;
                 }

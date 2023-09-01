@@ -12,7 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, assertJSONEquals } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    assertJSONEquals,
+    startSTWithMultitenancyAndAccountLinking,
+} = require("../utils");
 let supertokens = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -35,10 +45,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user success", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -69,10 +79,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user succcess - already is a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -96,10 +106,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user failure - recipe user already linked to another user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -121,7 +131,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         let response = await AccountLinking.createPrimaryUser(user2.loginMethods[0].recipeUserId);
         assert(response.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_PRIMARY_USER_ID_ERROR");
@@ -129,10 +139,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("make primary user failure - account info user already associated with a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -175,12 +185,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         let newAccountInfoInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -212,7 +222,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
         assert(sessions.length === 1);
 
-        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
@@ -230,12 +240,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success, even if using recipe user id that is linked to the primary user id", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         let newAccountInfoInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -260,7 +270,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
@@ -268,7 +278,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let user3 = (await EmailPassword.signUp("public", "test3@example.com", "password123")).user;
         assert(user3.isPrimaryUser === false);
 
-        response = await AccountLinking.linkAccounts("public", user3.loginMethods[0].recipeUserId, user2.id);
+        response = await AccountLinking.linkAccounts(user3.loginMethods[0].recipeUserId, user2.id);
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
 
@@ -278,12 +288,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success - already linked", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         let newAccountInfoInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -308,7 +318,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        const initialResp = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        const initialResp = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
         assert.strictEqual(initialResp.status, "OK");
         assert.notStrictEqual(initialResp.user, undefined);
 
@@ -321,7 +331,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let sessions = await Session.getAllSessionHandlesForUser(user2.loginMethods[0].recipeUserId.getAsString());
         assert.strictEqual(sessions.length, 1);
 
-        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert.strictEqual(response.status, "OK");
         assert(response.accountsAlreadyLinked);
@@ -335,11 +345,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts failure - recipe user id already linked with another primary user id", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -363,18 +373,14 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         assert(user2.isPrimaryUser === false);
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         let otherPrimaryUser = (await EmailPassword.signUp("public", "test3@example.com", "password123")).user;
         await AccountLinking.createPrimaryUser(otherPrimaryUser.loginMethods[0].recipeUserId);
 
         primaryUserInCallback = undefined;
 
-        let response = await AccountLinking.linkAccounts(
-            "public",
-            user2.loginMethods[0].recipeUserId,
-            otherPrimaryUser.id
-        );
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, otherPrimaryUser.id);
 
         assert(response.status === "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR");
         assert(response.primaryUserId === user.id);
@@ -383,11 +389,11 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts failure - input user is not a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         let primaryUserInCallback;
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -410,15 +416,15 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        let resp = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let resp = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
         assert(resp.status === "INPUT_USER_IS_NOT_A_PRIMARY_USER");
     });
 
     it("account linking failure - account info user already associated with a primary user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -459,7 +465,6 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         await AccountLinking.createPrimaryUser(otherPrimaryUser.loginMethods[0].recipeUserId);
 
         let response = await AccountLinking.linkAccounts(
-            "public",
             supertokens.convertToRecipeUserId(user2.id),
             otherPrimaryUser.id
         );
@@ -469,10 +474,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("unlinking accounts success and removes session", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -489,7 +494,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         // we create a new session to check that the session has not been revoked
         // when we link accounts, cause these users are already linked.
@@ -516,10 +521,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("unlinking account of primary user causes it to become a recipe user", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -554,10 +559,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("unlinking accounts where user id is primary user causes that user id to be deleted", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -574,7 +579,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         await AccountLinking.createPrimaryUser(user.loginMethods[0].recipeUserId);
 
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         // we create a new session to check that the session has not been revoked
         // when we link accounts, cause these users are already linked.
@@ -602,10 +607,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("delete user successful", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -636,7 +641,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
         {
             let primaryUser = await supertokens.getUser(user.id);
             assert(primaryUser !== undefined);
@@ -655,10 +660,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("delete user successful - primary user being deleted", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -689,7 +694,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
         {
             let primaryUser = await supertokens.getUser(user.id);
             assert(primaryUser !== undefined);
@@ -708,10 +713,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("delete user successful - remove all linked accounts", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -742,7 +747,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
         let user2 = (await EmailPassword.signUp("public", "test2@example.com", "password123")).user;
         assert(user2.isPrimaryUser === false);
 
-        await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
         {
             let primaryUser = await supertokens.getUser(user.id);
             assert(primaryUser !== undefined);
@@ -763,10 +768,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success causes new account's email to be verified if same email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -813,7 +818,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
@@ -823,10 +828,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success does not cause primary user's account's email to be verified if same email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -874,12 +879,12 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
 
-        await AccountLinking.linkAccounts("public", user3.loginMethods[0].recipeUserId, user.id);
+        await AccountLinking.linkAccounts(user3.loginMethods[0].recipeUserId, user.id);
 
         {
             let isVerified = await EmailVerification.isEmailVerified(supertokens.convertToRecipeUserId(user.id));
@@ -893,10 +898,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts success does not cause new account's email to be verified if different email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -942,7 +947,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);
@@ -952,10 +957,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
     });
 
     it("link accounts does not cause primary user's account's email to be verified if different email", async function () {
-        await startST();
+        const connectionURI = await startSTWithMultitenancyAndAccountLinking();
         supertokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1001,7 +1006,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/recipeFunction.
 
         await AccountLinking.createPrimaryUser(supertokens.convertToRecipeUserId(user.id));
 
-        let response = await AccountLinking.linkAccounts("public", user2.loginMethods[0].recipeUserId, user.id);
+        let response = await AccountLinking.linkAccounts(user2.loginMethods[0].recipeUserId, user.id);
 
         assert(response.status === "OK");
         assert(response.accountsAlreadyLinked === false);

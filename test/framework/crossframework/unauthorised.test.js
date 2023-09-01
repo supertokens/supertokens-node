@@ -10,9 +10,6 @@ addCrossFrameworkTests(
             it("should clear all response cookies during refresh", async () => {
                 await setup({
                     stConfig: {
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
                         appInfo: {
                             apiDomain: "http://api.supertokens.io",
                             appName: "SuperTokens",
@@ -113,9 +110,6 @@ addCrossFrameworkTests(
             it("test revoking a session after createNewSession with throwing unauthorised error", async function () {
                 await setup({
                     stConfig: {
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
                         appInfo: {
                             apiDomain: "http://api.supertokens.io",
                             appName: "SuperTokens",
@@ -188,9 +182,6 @@ addCrossFrameworkTests(
             it("should return a 401 for invalid tokens", async function () {
                 await setup({
                     stConfig: {
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
                         appInfo: {
                             apiDomain: "http://api.supertokens.io",
                             appName: "SuperTokens",

@@ -10,7 +10,9 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
+        > {
             return await recipeInterface.emailPasswordSignUp(input);
         },
 
@@ -19,7 +21,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password: string;
             tenantId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        }): Promise<{ status: "OK"; user: User; recipeUserId: RecipeUserId } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return recipeInterface.emailPasswordSignIn(input);
         },
 
@@ -44,6 +46,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             | {
                   status: "OK";
                   user: User;
+                  recipeUserId: RecipeUserId;
               }
             | { status: "EMAIL_ALREADY_EXISTS_ERROR" }
         > {

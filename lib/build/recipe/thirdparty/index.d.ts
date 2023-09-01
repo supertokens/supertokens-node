@@ -21,8 +21,9 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: import("../../types").User;
+              recipeUserId: import("../..").RecipeUserId;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";

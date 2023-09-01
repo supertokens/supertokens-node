@@ -46,10 +46,10 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     it("should fetch the keys as expected", async () => {
         clock = sinon.useFakeTimers({ shouldAdvanceTime: true, now: Date.now() });
 
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -77,10 +77,10 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     it("should not re-fetch if the cache is available", async () => {
         clock = sinon.useFakeTimers({ shouldAdvanceTime: true, now: Date.now() });
 
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -106,11 +106,12 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("should re-fetch keys for unknown kid", async () => {
-        await setKeyValueInConfig("access_token_dynamic_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: { access_token_dynamic_signing_key_update_interval: "0.001" },
+        }); // 5 seconds is the update interval
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -151,10 +152,10 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("should throw if jwks endpoint errors", async () => {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -188,10 +189,10 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     it("should re-fetch after the cache expires", async () => {
         clock = sinon.useFakeTimers({ shouldAdvanceTime: true, now: Date.now() });
 
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -226,10 +227,10 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("jwks multiple cores work ok", async () => {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080;http://localhost:8081",
+                connectionURI: `${connectionURI};http://localhost:8081`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -254,11 +255,11 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("jwks endpoint throwing should fall back to next core if fetching throws", async () => {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
                 // We are using two valid core values here, but make it throw below
-                connectionURI: "http://localhost:8080;http://localhost:8080",
+                connectionURI: `${connectionURI};${connectionURI}`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -286,10 +287,10 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
     });
 
     it("jwks endpoint throwing should fall back to next core if fetching returns the wrong status/shape", async () => {
-        await startST();
+        const connectionURI = await startST();
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -311,7 +312,7 @@ describe(`JWKs caching: ${printPath("[test/session/jwksCache.test.js]")}`, funct
         // meaning we have to use a separate config
         SuperTokens.init({
             supertokens: {
-                connectionURI: "http://example.com;http://localhost:8080",
+                connectionURI: `http://example.com;${connectionURI}`,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",

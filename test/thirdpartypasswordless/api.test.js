@@ -42,12 +42,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
      */
 
     it("test for thirdPartyPasswordless, the sign up /in flow with email using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInputCode = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -145,12 +145,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
      */
 
     it("test for thirdPartyPasswordless, the sign up /in flow with phoneNumber using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInputCode = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -247,13 +247,13 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
      *   - create code with email and then resend code and make sure that sending email function is called  while resending code
      */
     it("test for thirdPartyPasswordless creating a code with email and then resending the code and check that the sending custom email function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomEmailCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -342,13 +342,13 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
      *   - create code with phone and then resend code and make sure that sending SMS function is called  while resending code
      */
     it("test with thirdPartyPasswordless, creating a code with phone and then resending the code and check that the sending custom SMS function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let isCreateAndSendCustomTextMessageCalled = false;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -438,11 +438,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
      *   - sending neither email and phone in createCode API throws bad request
      */
     it("test with thirdPartyPasswordless, invalid input to createCodeAPI while using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -529,13 +529,13 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     */
 
     it("test with thirdPartyPasswordless, adding phoneNumber to a users info and signing in will sign in the same user, using the EMAIL_OR_PHONE contactMethod", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let userInputCode = undefined;
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -619,7 +619,6 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
         // add users phoneNumber to userInfo
         await ThirdPartyPasswordless.updatePasswordlessUser({
-            tenantId: "public",
             recipeUserId: STExpress.convertToRecipeUserId(emailUserInputCodeResponse.user.loginMethods[0].recipeUserId),
             phoneNumber: "+12345678901",
         });
@@ -669,11 +668,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
     // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
     it("test for thirdPartyPasswordless, not passing any fields to consumeCodeAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -731,11 +730,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with thirdPartyPasswordless consumeCodeAPI with magic link", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -824,11 +823,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with thirdPartyPasswordless, consumeCodeAPI with code", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -945,12 +944,15 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with thirdPartyPasswordless, consumeCodeAPI with expired code", async function () {
-        await setKeyValueInConfig("passwordless_code_lifetime", 1000); // one second lifetime
-        await startST();
+        const connectionURI = await startST({
+            coreConfig: {
+                passwordless_code_lifetime: 1000, // one second lifetime
+            },
+        });
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1016,11 +1018,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with thirdPartyPasswordless, createCodeAPI with email", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1099,11 +1101,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with thirdPartyPasswordless, createCodeAPI with phoneNumber", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1182,12 +1184,12 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with thirdPartyPasswordless, magicLink format in createCodeAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         let magicLinkURL = undefined;
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1251,11 +1253,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with ThirdPartyPasswordless, emailExistsAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1344,11 +1346,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     });
 
     it("test with thirdPartyPasswordless, phoneNumberExistsAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1439,11 +1441,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
     //resendCode API
 
     it("test with thirdPartyPasswordless, resendCodeAPI", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1528,11 +1530,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
     // test that you create a code with PHONE in config, you then change the config to use EMAIL, you call resendCode API, it should return RESTART_FLOW_ERROR
     it("test with thirdPartyPasswordless, resendCodeAPI when changing contact method", async function () {
-        await startST();
+        const connectionURI = await startST();
 
         STExpress.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI,
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
@@ -1571,11 +1573,11 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
             });
 
             await killAllST();
-            await startST();
+            const connectionURI = await startST();
 
             STExpress.init({
                 supertokens: {
-                    connectionURI: "http://localhost:8080",
+                    connectionURI,
                 },
                 appInfo: {
                     apiDomain: "api.supertokens.io",
@@ -1623,7 +1625,7 @@ describe(`apiFunctions: ${printPath("[test/thirdpartypasswordless/api.test.js]")
 
 function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, isNew, isPrimary }) {
     assert.strictEqual(validUserInputCodeResponse.status, "OK");
-    assert.strictEqual(validUserInputCodeResponse.createdNewUser, isNew);
+    assert.strictEqual(validUserInputCodeResponse.createdNewRecipeUser, isNew);
 
     assert.strictEqual(typeof validUserInputCodeResponse.user.id, "string");
     assert.strictEqual(typeof validUserInputCodeResponse.user.timeJoined, "number");
@@ -1652,7 +1654,7 @@ function checkConsumeResponse(validUserInputCodeResponse, { email, phoneNumber, 
         recipeId: "passwordless",
         recipeUserId: validUserInputCodeResponse.user.id,
         timeJoined: validUserInputCodeResponse.user.timeJoined,
-        verified: phoneNumber !== undefined ? true : false, // Email based users will not be verified since EV is not enabled in this test
+        verified: true,
         tenantIds: ["public"],
     };
     if (email) {

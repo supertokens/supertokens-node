@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { send200Response } from "../../../utils";
+import { getBackwardsCompatibleUserInfo, send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
 
@@ -80,6 +80,10 @@ export default async function consumeCode(
     );
 
     if (result.status === "OK") {
+        result = {
+            ...result,
+            ...getBackwardsCompatibleUserInfo(options.req, result),
+        };
         delete (result as any).session;
     }
 

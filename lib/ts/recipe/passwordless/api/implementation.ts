@@ -2,7 +2,7 @@ import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import AccountLinking from "../../accountlinking/recipe";
 import Session from "../../session";
-import { getUser, listUsersByAccountInfo } from "../../..";
+import { listUsersByAccountInfo } from "../../..";
 import { RecipeLevelUser } from "../../accountlinking/types";
 
 export default function getAPIImplementation(): APIInterface {
@@ -21,6 +21,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let existingUsers = await listUsersByAccountInfo(
+                input.tenantId,
                 {
                     phoneNumber: deviceInfo.phoneNumber,
                     email: deviceInfo.email,
@@ -44,6 +45,7 @@ export default function getAPIImplementation(): APIInterface {
                         phoneNumber: deviceInfo.phoneNumber,
                     },
                     isVerified: true, // TODO: should this depend on if the EV recipe is enabled?
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
 
@@ -102,7 +104,8 @@ export default function getAPIImplementation(): APIInterface {
                 // conditions related to account linking
 
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    recipeUserId: loginMethod.recipeUserId,
+                    user: response.user,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
 
@@ -116,13 +119,11 @@ export default function getAPIImplementation(): APIInterface {
 
                 // we do account linking only during sign in here cause during sign up,
                 // the recipe function above does account linking for us.
-                let userId = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
+                response.user = await AccountLinking.getInstance().createPrimaryUserIdOrLinkAccounts({
                     tenantId: input.tenantId,
-                    recipeUserId: loginMethod.recipeUserId,
+                    user: response.user,
                     userContext: input.userContext,
                 });
-
-                response.user = (await getUser(userId, input.userContext))!;
             }
 
             const session = await Session.createNewSession(
@@ -137,7 +138,7 @@ export default function getAPIImplementation(): APIInterface {
 
             return {
                 status: "OK",
-                createdNewUser: response.createdNewUser,
+                createdNewRecipeUser: response.createdNewRecipeUser,
                 user: response.user,
                 session,
             };
@@ -150,7 +151,7 @@ export default function getAPIImplementation(): APIInterface {
             if ("phoneNumber" in input) {
                 accountInfo.email = input.phoneNumber;
             }
-            let existingUsers = await listUsersByAccountInfo(accountInfo, false, input.userContext);
+            let existingUsers = await listUsersByAccountInfo(input.tenantId, accountInfo, false, input.userContext);
             existingUsers = existingUsers.filter((u) =>
                 u.loginMethods.some(
                     (m) =>
@@ -166,6 +167,7 @@ export default function getAPIImplementation(): APIInterface {
                         ...accountInfo,
                     },
                     isVerified: true,
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
 
@@ -189,7 +191,8 @@ export default function getAPIImplementation(): APIInterface {
                     throw new Error("Should never come here");
                 }
                 let isSignInAllowed = await AccountLinking.getInstance().isSignInAllowed({
-                    recipeUserId: loginMethod.recipeUserId,
+                    user: existingUsers[0],
+                    tenantId: input.tenantId,
                     userContext: input.userContext,
                 });
                 if (!isSignInAllowed) {
@@ -295,6 +298,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         emailExistsGET: async function (input) {
             let users = await listUsersByAccountInfo(
+                input.tenantId,
                 {
                     email: input.email,
                     // tenantId: input.tenantId,
@@ -310,6 +314,7 @@ export default function getAPIImplementation(): APIInterface {
         },
         phoneNumberExistsGET: async function (input) {
             let users = await listUsersByAccountInfo(
+                input.tenantId,
                 {
                     phoneNumber: input.phoneNumber,
                     // tenantId: input.tenantId,

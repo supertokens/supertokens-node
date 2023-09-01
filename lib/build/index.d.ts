@@ -1,12 +1,15 @@
 // @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { User } from "./types";
+import { User as UserType } from "./types";
 import { AccountInfo } from "./recipe/accountlinking/types";
 import RecipeUserId from "./recipeUserId";
+import { User } from "./user";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
+    static RecipeUserId: typeof RecipeUserId;
+    static User: typeof User;
     static getAllCORSHeaders(): string[];
     static getUserCount(includeRecipeIds?: string[], tenantId?: string): Promise<number>;
     static getUsersOldestFirst(input: {
@@ -18,7 +21,7 @@ export default class SuperTokensWrapper {
             [key: string]: string;
         };
     }): Promise<{
-        users: User[];
+        users: UserType[];
         nextPaginationToken?: string;
     }>;
     static getUsersNewestFirst(input: {
@@ -30,7 +33,7 @@ export default class SuperTokensWrapper {
             [key: string]: string;
         };
     }): Promise<{
-        users: User[];
+        users: UserType[];
         nextPaginationToken?: string;
     }>;
     static createUserIdMapping(input: {
@@ -77,12 +80,13 @@ export default class SuperTokensWrapper {
     }): Promise<{
         status: "OK" | "UNKNOWN_MAPPING_ERROR";
     }>;
-    static getUser(userId: string, userContext?: any): Promise<User | undefined>;
+    static getUser(userId: string, userContext?: any): Promise<UserType | undefined>;
     static listUsersByAccountInfo(
+        tenantId: string,
         accountInfo: AccountInfo,
         doUnionOfAccountInfo?: boolean,
         userContext?: any
-    ): Promise<User[]>;
+    ): Promise<UserType[]>;
     static deleteUser(
         userId: string,
         removeAllLinkedAccounts?: boolean,
@@ -108,3 +112,5 @@ export declare let listUsersByAccountInfo: typeof SuperTokensWrapper.listUsersBy
 export declare let convertToRecipeUserId: typeof SuperTokensWrapper.convertToRecipeUserId;
 export declare let getRequestFromUserContext: typeof SuperTokensWrapper.getRequestFromUserContext;
 export declare let Error: typeof SuperTokensError;
+export { default as RecipeUserId } from "./recipeUserId";
+export { User } from "./user";

@@ -30,8 +30,9 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: import("../../types").User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "EMAIL_CHANGE_NOT_ALLOWED_ERROR";
@@ -103,8 +104,9 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              createdNewUser: boolean;
+              createdNewRecipeUser: boolean;
               user: import("../../types").User;
+              recipeUserId: RecipeUserId;
           }
         | {
               status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
@@ -116,7 +118,6 @@ export default class Wrapper {
           }
     >;
     static updatePasswordlessUser(input: {
-        tenantId: string;
         recipeUserId: RecipeUserId;
         email?: string | null;
         phoneNumber?: string | null;
@@ -193,7 +194,8 @@ export default class Wrapper {
               }
     ): Promise<{
         status: string;
-        createdNewUser: boolean;
+        createdNewRecipeUser: boolean;
+        recipeUserId: RecipeUserId;
         user: import("../../types").User;
     }>;
     static sendEmail(
