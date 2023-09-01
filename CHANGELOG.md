@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [11.3.1] - 2023-08-30
+
+-   Adds logic to retry network calls if the core returns status 429
+
 ## [11.3.0] - 2022-08-30
 
 ### Added:
