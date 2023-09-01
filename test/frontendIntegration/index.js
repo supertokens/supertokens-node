@@ -28,6 +28,7 @@ let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
 let supertokens_node_version = require("../../lib/build/version").version;
 const { Querier } = require("../../lib/build/querier");
+const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
