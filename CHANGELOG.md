@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [12.1.7] - 2023-08-28
+
+-   Adds logic to retry network calls if the core returns status 429
+
 ## [12.1.6] - 2023-01-22
 
 -   Updates jsonwebtoken dependency to version 9.0.0 to fix vulnerability in it's `verify` function.
