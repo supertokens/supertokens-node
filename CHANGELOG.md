@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [15.1.1] - 2023-08-14
+
+### Fixes
+
+-   Improve edge function compatibility by removing our `raw-body` dependency.
+
 ## [15.1.0] - 2023-08-14
 
 ### Changes
