@@ -66,9 +66,8 @@ export default function getAPIImplementation(): APIInterface {
             let emailPasswordUserExists =
                 users.find((u) => {
                     return (
-                        u.loginMethods.find((lm) => {
-                            return lm.recipeId === "emailpassword";
-                        }) !== undefined
+                        u.loginMethods.find((lm) => lm.recipeId === "emailpassword" && lm.hasSameEmailAs(email)) !==
+                        undefined
                     );
                 }) !== undefined;
 

@@ -416,6 +416,88 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(!res.body.exists);
         });
 
+        it("calling emailExistsGET returns false if email exists in some non email password primary user with another EP user linked to it - account linking enabled and email verification not required", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_newAccountInfo, _user, _tenantId, userContext) => {
+                            if (userContext.doNotLink === true) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: false,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let { user: tpUser } = await ThirdParty.manuallyCreateOrUpdateUser(
+                "public",
+                "google",
+                "abc",
+                "test@example.com",
+                false
+            );
+            assert(tpUser.isPrimaryUser);
+
+            let { user: epUser } = await EmailPassword.signUp("public", "test-2@example.com", "Asdf12..", {
+                doNotLink: true,
+            });
+            await AccountLinking.linkAccounts(epUser.loginMethods[0].recipeUserId, tpUser.id);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists?email=test@example.com")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(res !== undefined);
+            assert.strictEqual(res.body.status, "OK");
+            assert.strictEqual(res.body.exists, false);
+        });
+
         it("calling emailExistsGET returns false if email exists in some non email password, non primary user - account linking enabled, and email verification not required", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({

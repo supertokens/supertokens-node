@@ -1818,13 +1818,13 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
                     })
             );
             assert(res !== undefined);
-            assert(res.body.status === "PASSWORD_RESET_NOT_ALLOWED");
-            assert(
-                res.body.reason ===
-                    "Reset password link was not created because of account take over risk. Please contact support. (ERR_CODE_001)"
+            assert.strictEqual(res.body.status, "PASSWORD_RESET_NOT_ALLOWED");
+            assert.strictEqual(
+                res.body.reason,
+                "Reset password link was not created because of account take over risk. Please contact support. (ERR_CODE_001)"
             );
-            assert(sendEmailToUserId === undefined);
-            assert(sendEmailToUserEmail === undefined);
+            assert.strictEqual(sendEmailToUserId, undefined);
+            assert.strictEqual(sendEmailToUserEmail, undefined);
         });
 
         it("calling generatePasswordResetTokenPOST with primary user existing, with multiple login methods, and all of them having the same email, but none are verified, and email password user existing, account linking enabled, email verification required should send email with primary user", async function () {
