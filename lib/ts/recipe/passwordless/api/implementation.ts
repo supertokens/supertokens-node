@@ -55,7 +55,7 @@ export default function getAPIImplementation(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
                     };
                 }
             } else if (existingUsers.length > 1) {
@@ -113,7 +113,7 @@ export default function getAPIImplementation(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)",
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
                     };
                 }
 
@@ -177,7 +177,7 @@ export default function getAPIImplementation(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
                     };
                 }
             } else if (existingUsers.length === 1) {
@@ -199,7 +199,7 @@ export default function getAPIImplementation(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)",
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
                     };
                 }
             } else {

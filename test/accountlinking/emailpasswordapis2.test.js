@@ -1821,7 +1821,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert(res.body.status === "PASSWORD_RESET_NOT_ALLOWED");
             assert(
                 res.body.reason ===
-                    "Token generation was not done because of account take over risk. Please contact support. (HAS_OTHER_EMAIL_OR_PHONE)"
+                    "Reset password link was not created because of account take over risk. Please contact support. (ERR_CODE_001)"
             );
             assert(sendEmailToUserId === undefined);
             assert(sendEmailToUserEmail === undefined);

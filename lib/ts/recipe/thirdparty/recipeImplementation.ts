@@ -148,7 +148,7 @@ export default function getRecipeImplementation(querier: Querier, providers: Pro
                 return {
                     status: "SIGN_IN_UP_NOT_ALLOWED",
                     reason:
-                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ANOTHER_PRIM_USER_HAS_EMAIL)",
+                        "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
                 };
             }
 

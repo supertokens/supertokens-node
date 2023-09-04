@@ -87,6 +87,8 @@ export default function getAPIInterface(): APIInterface {
                     // to login using a different method.
                     return {
                         status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT",
+                        reason:
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
                     };
                 }
             } else {
@@ -192,7 +194,7 @@ export default function getAPIInterface(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ANOTHER_PRIM_USER_HAS_EMAIL)",
+                            "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)",
                     };
                 }
             }
@@ -250,7 +252,7 @@ export default function getAPIInterface(): APIInterface {
                     return {
                         status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
-                            "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)",
+                            "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)",
                     };
                 }
 

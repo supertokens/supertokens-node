@@ -313,7 +313,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             assert.deepStrictEqual(createCodeResponse, {
                 status: "SIGN_IN_UP_NOT_ALLOWED",
                 reason:
-                    "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
             });
         });
 
@@ -482,7 +482,94 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/passwordlessapi
             assert.deepStrictEqual(createCodeResponse, {
                 status: "SIGN_IN_UP_NOT_ALLOWED",
                 reason:
-                    "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_UP_ALLOWED_FALSE)",
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_002)",
+            });
+        });
+
+        it("calling createCodePOST fails, if email exists in some non passwordless, non primary user, with account linking enabled, and email verification required", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Passwordless.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomTextMessage: (input) => {
+                            return;
+                        },
+                        createAndSendCustomEmail: (input) => {
+                            userInputCode = input.userInputCode;
+                            return;
+                        },
+                    }),
+                    Session.init(),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_newAccountInfo, _user, _tenantId, userContext) => {
+                            if (userContext?.doNotLink === true) {
+                                return { shouldAutomaticallyLink: false };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            const email = "test@example.com";
+            let tpUser = await ThirdParty.manuallyCreateOrUpdateUser("public", "google", "abc", email, false);
+            await Passwordless.signInUp({ email, tenantId: "public", userContext: { doNotLink: true } });
+
+            // createCodeAPI with email
+            let createCodeResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        email: email,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(createCodeResponse !== undefined);
+            assert.deepStrictEqual(createCodeResponse, {
+                status: "SIGN_IN_UP_NOT_ALLOWED",
+                reason:
+                    "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_003)",
             });
         });
 

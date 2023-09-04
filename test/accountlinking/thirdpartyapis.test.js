@@ -363,6 +363,10 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
 
             assert(response.body.status === "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT");
+            assert.strictEqual(
+                response.body.reason,
+                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)"
+            );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) !== undefined
             );
@@ -775,7 +779,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
             assert.strictEqual(
                 response.body.reason,
-                "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ANOTHER_PRIM_USER_HAS_EMAIL)"
+                "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)"
             );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
@@ -870,7 +874,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
             assert(
                 response.body.reason ===
-                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ANOTHER_PRIM_USER_HAS_EMAIL)"
+                    "Cannot sign in / up because new email cannot be applied to existing account. Please contact support. (ERR_CODE_005)"
             );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_UP_ALLOWED_CALLED)) === undefined
@@ -1074,7 +1078,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert.strictEqual(response.body.status, "SIGN_IN_UP_NOT_ALLOWED");
             assert.strictEqual(
                 response.body.reason,
-                "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)"
+                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)"
             );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
@@ -1272,7 +1276,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert.strictEqual(response.body.status, "SIGN_IN_UP_NOT_ALLOWED");
             assert.strictEqual(
                 response.body.reason,
-                "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)"
+                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)"
             );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
@@ -1375,7 +1379,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             assert.strictEqual(response.body.status, "SIGN_IN_UP_NOT_ALLOWED");
             assert.strictEqual(
                 response.body.reason,
-                "Cannot sign in / up due to security reasons. Please contact support. (IS_SIGN_IN_ALLOWED_FALSE)"
+                "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_004)"
             );
             assert(
                 (await ProcessState.getInstance().waitForEvent(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED)) !== undefined
