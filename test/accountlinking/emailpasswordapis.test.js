@@ -2822,5 +2822,99 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/emailpasswordap
             assert.strictEqual(session.getUserId(), tpUser.user.id);
             assert.strictEqual(session.getRecipeUserId().getAsString(), epUser.user.id);
         });
+
+        it("calling signInPOST allows sign-in with a fresh user", async function () {
+            const connectionURI = await startSTWithMultitenancyAndAccountLinking();
+            supertokens.init({
+                supertokens: {
+                    connectionURI,
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init(),
+                    EmailVerification.init({
+                        mode: "OPTIONAL",
+                    }),
+                    ThirdParty.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                {
+                                    config: {
+                                        thirdPartyId: "google",
+                                        clients: [
+                                            {
+                                                clientId: "",
+                                                clientSecret: "",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    AccountLinking.init({
+                        shouldDoAutomaticAccountLinking: async (_, __, _tenantId, userContext) => {
+                            if (userContext.doNotLink) {
+                                return {
+                                    shouldAutomaticallyLink: false,
+                                };
+                            }
+                            return {
+                                shouldAutomaticallyLink: true,
+                                shouldRequireVerification: true,
+                            };
+                        },
+                    }),
+                ],
+            });
+
+            const app = express();
+            app.use(middleware());
+            app.use(errorHandler());
+
+            let epUser = await EmailPassword.signUp("public", "test@example.com", "password1234");
+            assert(epUser.user.isPrimaryUser === false);
+
+            let res = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signin")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "password1234",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.notStrictEqual(res, undefined);
+            assert.strictEqual(res.body.status, "OK");
+            let epUserFromResponse = await supertokens.getUser(res.body.user.id);
+            assert.strictEqual(epUserFromResponse.isPrimaryUser, false);
+            assert.strictEqual(epUserFromResponse.loginMethods.length, 1);
+            assert.strictEqual(epUserFromResponse.id, epUser.user.id);
+
+            let sessionTokens = extractInfoFromResponse(res);
+            let session = await Session.getSessionWithoutRequestResponse(sessionTokens.accessTokenFromAny);
+            assert.strictEqual(session.getUserId(), epUser.user.id);
+            assert.strictEqual(session.getRecipeUserId().getAsString(), epUser.user.id);
+        });
     });
 });

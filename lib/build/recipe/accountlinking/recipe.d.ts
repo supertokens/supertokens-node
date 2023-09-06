@@ -76,11 +76,13 @@ export default class Recipe extends RecipeModule {
         accountInfo,
         isVerified,
         tenantId,
+        isSignIn,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
         tenantId: string;
+        isSignIn: boolean;
         userContext: any;
     }) => Promise<boolean>;
     isEmailChangeAllowed: (input: {

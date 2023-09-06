@@ -44,7 +44,7 @@ export default function getAPIImplementation(): APIInterface {
                         email: deviceInfo.email,
                         phoneNumber: deviceInfo.phoneNumber,
                     },
-                    isVerified: true, // TODO: should this depend on if the EV recipe is enabled?
+                    isVerified: true,
                     tenantId: input.tenantId,
                     userContext: input.userContext,
                 });

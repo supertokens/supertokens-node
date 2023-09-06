@@ -362,7 +362,7 @@ export default class Recipe extends RecipeModule {
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_ALLOWED_CALLED);
 
-        if (user.isPrimaryUser) {
+        if (user.isPrimaryUser || user.loginMethods[0].verified) {
             return true;
         }
 
@@ -370,6 +370,7 @@ export default class Recipe extends RecipeModule {
             accountInfo: user.loginMethods[0],
             isVerified: user.loginMethods[0].verified,
             tenantId,
+            isSignIn: true,
             userContext,
         });
     };
@@ -397,6 +398,7 @@ export default class Recipe extends RecipeModule {
             isVerified,
             tenantId,
             userContext,
+            isSignIn: false,
         });
     };
 
@@ -404,11 +406,13 @@ export default class Recipe extends RecipeModule {
         accountInfo,
         isVerified,
         tenantId,
+        isSignIn,
         userContext,
     }: {
         accountInfo: AccountInfoWithRecipeId | LoginMethod;
         isVerified: boolean;
         tenantId: string;
+        isSignIn: boolean;
         userContext: any;
     }): Promise<boolean> => {
         ProcessState.getInstance().addState(PROCESS_STATE.IS_SIGN_IN_UP_ALLOWED_HELPER_CALLED);
@@ -445,6 +449,12 @@ export default class Recipe extends RecipeModule {
             return true;
         }
 
+        if (users.length === 1 && isSignIn) {
+            logDebugMessage(
+                "isSignInUpAllowedHelper returning true because this is sign in and there is only a single user with the given account info"
+            );
+            return true;
+        }
         // now we check if there exists some primary user with the same email / phone number
         // such that that info is not verified for that account. In this case, we do not allow
         // sign up cause we cannot link this new account to that primary account yet (since
