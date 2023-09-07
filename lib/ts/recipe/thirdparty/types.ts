@@ -77,7 +77,7 @@ type CommonProviderConfig = {
      * @param input.userContext Refer to https://supertokens.com/docs/thirdparty/advanced-customizations/user-context
      */
     validateAccessToken?: (input: {
-        accessTokenPayload: { [key: string]: any };
+        accessToken: string;
         clientConfig: ProviderConfigForClientType;
         userContext: any;
     }) => Promise<void>;

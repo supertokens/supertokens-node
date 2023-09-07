@@ -342,7 +342,7 @@ export default function NewProvider(input: ProviderInput): TypeProvider {
              */
             if (impl.config.validateAccessToken !== undefined) {
                 await impl.config.validateAccessToken({
-                    accessTokenPayload: rawUserInfoFromProvider.fromUserInfoAPI,
+                    accessToken: accessToken,
                     clientConfig: impl.config,
                     userContext,
                 });
