@@ -340,7 +340,7 @@ export declare type APIInterface = {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
               | {
-                    status: "SIGN_IN_UP_NOT_ALLOWED" | "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT";
+                    status: "SIGN_IN_UP_NOT_ALLOWED";
                     reason: string;
                 }
               | GeneralErrorResponse

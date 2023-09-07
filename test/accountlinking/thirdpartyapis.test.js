@@ -282,7 +282,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
             );
         });
 
-        it("signInUpPOST returns EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT if isSignUpAllowed returns false", async function () {
+        it("signInUpPOST returns SIGN_IN_UP_NOT_ALLOWED if isSignUpAllowed returns false", async function () {
             const connectionURI = await startSTWithMultitenancyAndAccountLinking();
             supertokens.init({
                 supertokens: {
@@ -362,7 +362,7 @@ describe(`accountlinkingTests: ${printPath("[test/accountlinking/thirdpartyapis.
                     })
             );
 
-            assert(response.body.status === "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT");
+            assert(response.body.status === "SIGN_IN_UP_NOT_ALLOWED");
             assert.strictEqual(
                 response.body.reason,
                 "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)"

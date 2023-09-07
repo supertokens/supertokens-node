@@ -86,7 +86,7 @@ export default function getAPIInterface(): APIInterface {
                     // On the frontend, this should show a UI of asking the user
                     // to login using a different method.
                     return {
-                        status: "EMAIL_ALREADY_USED_IN_ANOTHER_ACCOUNT",
+                        status: "SIGN_IN_UP_NOT_ALLOWED",
                         reason:
                             "Cannot sign in / up due to security reasons. Please try a different login method or contact support. (ERR_CODE_006)",
                     };
