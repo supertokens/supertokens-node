@@ -69,6 +69,21 @@ declare type CommonProviderConfig = {
         clientConfig: ProviderConfigForClientType;
         userContext: any;
     }) => Promise<void>;
+    /**
+     * This function is responsible for validating the access token received from the third party provider.
+     * This check can include checking the expiry of the access token, checking the audience of the access token, etc.
+     *
+     * This function should throw an error if the access token should be considered invalid, or return nothing if it is valid
+     *
+     * @param input.accessToken The access token to be validated
+     * @param input.clientConfig The configuration provided for the third party provider when initialising SuperTokens
+     * @param input.userContext Refer to https://supertokens.com/docs/thirdparty/advanced-customizations/user-context
+     */
+    validateAccessToken?: (input: {
+        accessToken: string;
+        clientConfig: ProviderConfigForClientType;
+        userContext: any;
+    }) => Promise<void>;
     requireEmail?: boolean;
     generateFakeEmail?: (input: { thirdPartyUserId: string; tenantId: string; userContext: any }) => Promise<string>;
 };

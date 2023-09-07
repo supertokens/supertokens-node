@@ -31,6 +31,14 @@ export default function getAPIInterface(): APIInterface {
                 throw Error("should never come here");
             }
 
+            if (provider.config.validateAccessToken !== undefined) {
+                await provider.config.validateAccessToken({
+                    accessToken: oAuthTokensToUse.access_token,
+                    clientConfig: provider.config,
+                    userContext,
+                });
+            }
+
             const userInfo = await provider.getUserInfo({ oAuthTokens: oAuthTokensToUse, userContext });
 
             if (userInfo.email === undefined && provider.config.requireEmail === false) {
