@@ -58,6 +58,31 @@ export default function Github(input: ProviderInput): TypeProvider {
         input.config.tokenEndpoint = "https://github.com/login/oauth/access_token";
     }
 
+    if (input.config.validateAccessToken === undefined) {
+        input.config.validateAccessToken = async ({ accessToken, clientConfig }) => {
+            const basicAuthToken = Buffer.from(
+                `${clientConfig.clientId}:${clientConfig.clientSecret === undefined ? "" : clientConfig.clientSecret}`
+            ).toString("base64");
+
+            const applicationsResponse = await fetch(`https://api.github.com/applications/${clientConfig.clientId}`, {
+                headers: {
+                    Authorization: `Basic ${basicAuthToken}`,
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify({
+                    access_token: accessToken,
+                }),
+            });
+
+            if (applicationsResponse.status !== 200) {
+                throw new Error("Invalid access token");
+            }
+
+            console.log("Response", await applicationsResponse.json());
+        };
+    }
+
     const oOverride = input.override;
 
     input.override = function (originalImplementation) {
