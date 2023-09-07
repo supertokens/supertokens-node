@@ -139,6 +139,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 new NormalisedURLPath(`/recipe/user`),
                 copyAndRemoveUserContextAndTenantId(input)
             );
+            if (response.status !== "OK") {
+                return response;
+            }
             const user = await getUser(input.recipeUserId.getAsString(), input.userContext);
             if (user === undefined) {
                 // This means that the user was deleted between the put and get requests

@@ -121,17 +121,23 @@ export declare type RecipeInterface = {
                   | "UNKNOWN_USER_ID_ERROR"
                   | "EMAIL_ALREADY_EXISTS_ERROR"
                   | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
-                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
+                  | "ASSOCIATION_NOT_ALLOWED_ERROR";
           }
     >;
     disassociateUserFromTenant: (input: {
         tenantId: string;
         userId: string;
         userContext: any;
-    }) => Promise<{
-        status: "OK";
-        wasAssociated: boolean;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              wasAssociated: boolean;
+          }
+        | {
+              status: "DISASSOCIATION_NOT_ALLOWED_ERROR";
+          }
+    >;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

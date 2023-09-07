@@ -156,7 +156,8 @@ export default class Wrapper {
                   | "UNKNOWN_USER_ID_ERROR"
                   | "EMAIL_ALREADY_EXISTS_ERROR"
                   | "PHONE_NUMBER_ALREADY_EXISTS_ERROR"
-                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR";
+                  | "THIRD_PARTY_USER_ALREADY_EXISTS_ERROR"
+                  | "ASSOCIATION_NOT_ALLOWED_ERROR";
           }
     > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
@@ -171,10 +172,15 @@ export default class Wrapper {
         tenantId: string,
         userId: string,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        wasAssociated: boolean;
-    }> {
+    ): Promise<
+        | {
+              status: "OK";
+              wasAssociated: boolean;
+          }
+        | {
+              status: "DISASSOCIATION_NOT_ALLOWED_ERROR";
+          }
+    > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.recipeInterfaceImpl.disassociateUserFromTenant({
             tenantId,
