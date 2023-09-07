@@ -98,6 +98,14 @@ export default function Github(input: ProviderInput): TypeProvider {
         };
 
         originalImplementation.getUserInfo = async function (input) {
+            if (originalImplementation.config.validateAccessToken !== undefined) {
+                await originalImplementation.config.validateAccessToken({
+                    accessToken: input.oAuthTokens.access_token,
+                    clientConfig: originalImplementation.config,
+                    userContext: input.userContext,
+                });
+            }
+
             const headers = {
                 Authorization: `Bearer ${input.oAuthTokens.access_token}`,
                 Accept: "application/vnd.github.v3+json",
