@@ -64,22 +64,29 @@ export default function Github(input: ProviderInput): TypeProvider {
                 `${clientConfig.clientId}:${clientConfig.clientSecret === undefined ? "" : clientConfig.clientSecret}`
             ).toString("base64");
 
-            const applicationsResponse = await fetch(`https://api.github.com/applications/${clientConfig.clientId}`, {
-                headers: {
-                    Authorization: `Basic ${basicAuthToken}`,
-                    "Content-Type": "application/json",
-                },
-                method: "POST",
-                body: JSON.stringify({
-                    access_token: accessToken,
-                }),
-            });
+            const applicationsResponse = await fetch(
+                `https://api.github.com/applications/${clientConfig.clientId}/token`,
+                {
+                    headers: {
+                        Authorization: `Basic ${basicAuthToken}`,
+                        "Content-Type": "application/json",
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        access_token: accessToken,
+                    }),
+                }
+            );
 
             if (applicationsResponse.status !== 200) {
                 throw new Error("Invalid access token");
             }
 
-            console.log("Response", await applicationsResponse.json());
+            const body = await applicationsResponse.json();
+
+            if (body.app === undefined || body.app.client_id !== clientConfig.clientId) {
+                throw new Error("Access token does not belong to your application");
+            }
         };
     }
 
